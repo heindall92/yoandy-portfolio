@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Github, Linkedin, ExternalLink, Shield, Terminal, Wrench, CheckCircle, BookOpen, MapPin } from "lucide-react";
 import profileImg from "@/assets/profile.jpg";
 import TypingAnimation from "@/components/TypingAnimation";
@@ -37,22 +38,64 @@ const projects = [
   { emoji: "🚩", name: "ctf-writeups", description: "Writeups de máquinas y retos CTF de HackTheBox y TryHackMe.", tags: ["CTF", "HackTheBox", "TryHackMe"], url: "https://github.com/heindall92/ctf-writeups" },
 ];
 
-const contactLinks = [
-  { icon: Linkedin, label: "LinkedIn", url: "https://www.linkedin.com/in/yoandyrd92/", username: "yoandyrd92" },
-  { icon: Github, label: "GitHub", url: "https://github.com/heindall92", username: "heindall92" },
-  { icon: ExternalLink, label: "TryHackMe", url: "https://tryhackme.com/p/yoandy92", username: "yoandy92" },
-  { icon: ExternalLink, label: "HackTheBox", url: "https://app.hackthebox.com/users/019c5812-b4ca-7315-b12f-14db6d2b42fa", username: "heindall92" },
-];
 
 const Section = ({ id, children, className = "" }: { id: string; children: React.ReactNode; className?: string }) => (
-  <section id={id} className={`py-16 flex items-center ${className}`}>
+  <section id={id} className={`py-16 flex items-center relative z-10 ${className}`}>
     <div className="container mx-auto px-4 max-w-5xl w-full animate-fade-in">{children}</div>
   </section>
 );
 
+const MatrixRain = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const chars = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF{}[]<>/\\|";
+    const fontSize = 14;
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops: number[] = Array(columns).fill(1).map(() => Math.random() * -100);
+
+    const draw = () => {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#00ff4130";
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    };
+
+    const interval = setInterval(draw, 50);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />;
+};
+
 const Index = () => {
   return (
-    <div className="scroll-smooth">
+    <div className="scroll-smooth relative">
+      <MatrixRain />
       {/* ===== HOME ===== */}
       <Section id="home" className="relative overflow-hidden">
         <div className="absolute inset-0 scanlines pointer-events-none" />
@@ -214,27 +257,6 @@ const Index = () => {
         </div>
       </Section>
 
-      {/* ===== CONTACT ===== */}
-      <Section id="contact">
-        <h2 className="font-display text-3xl font-bold text-primary text-glow-green mb-8 text-center">{">"} Contact & Links</h2>
-        <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto mb-8">
-          {contactLinks.map((link) => (
-            <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-5 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center group-hover:glow-green transition-all duration-300">
-                <link.icon size={22} className="text-primary" />
-              </div>
-              <div>
-                <p className="font-display text-sm font-bold text-foreground group-hover:text-primary transition-colors">{link.label}</p>
-                <p className="font-mono text-xs text-muted-foreground">{link.username}</p>
-              </div>
-            </a>
-          ))}
-        </div>
-        <div className="flex items-center justify-center gap-2 text-muted-foreground font-mono text-sm">
-          <MapPin size={16} className="text-primary" />
-          <span>Lepe, Huelva, España 🇪🇸</span>
-        </div>
-      </Section>
     </div>
   );
 };
