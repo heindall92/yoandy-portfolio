@@ -97,7 +97,7 @@ const Index = () => {
     <div className="scroll-smooth relative">
       <MatrixRain />
       {/* ===== HOME ===== */}
-      <Section id="home" className="relative overflow-hidden">
+      <Section id="home" className="relative overflow-hidden pt-16">
         <div className="absolute inset-0 scanlines pointer-events-none" />
         <div
           className="absolute inset-0 opacity-[0.04]"
