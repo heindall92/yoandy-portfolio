@@ -46,16 +46,25 @@ const Section = ({ id, children, className = "" }: { id: string; children: React
 );
 
 const MatrixRain = () => (
-  <div
-    className="fixed inset-0 z-0 pointer-events-none"
-    style={{
-      backgroundImage: `
-        radial-gradient(ellipse at 20% 50%, hsl(120 100% 50% / 0.03) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, hsl(120 100% 50% / 0.02) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 80%, hsl(180 100% 50% / 0.02) 0%, transparent 50%)
-      `,
-    }}
-  />
+  <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden opacity-20">
+    {Array.from({ length: 30 }).map((_, i) => (
+      <div
+        key={i}
+        className="absolute top-0 text-primary font-mono text-xs leading-tight animate-matrix-fall"
+        style={{
+          left: `${(i / 30) * 100}%`,
+          animationDuration: `${8 + Math.random() * 12}s`,
+          animationDelay: `${-Math.random() * 20}s`,
+        }}
+      >
+        {Array.from({ length: 40 }).map((_, j) => (
+          <div key={j} className="opacity-60">
+            {"アイウエオカキクケコ0123456789ABCDEF"[Math.floor(Math.random() * 34)]}
+          </div>
+        ))}
+      </div>
+    ))}
+  </div>
 );
 
 const Index = () => {
