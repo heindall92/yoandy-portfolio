@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { } from "react";
 import { Github, Linkedin, ExternalLink, Shield, Terminal, Wrench, CheckCircle, BookOpen, MapPin } from "lucide-react";
 import profileImg from "@/assets/profile.jpg";
 import TypingAnimation from "@/components/TypingAnimation";
@@ -46,74 +46,27 @@ const Section = ({ id, children, className = "" }: { id: string; children: React
 );
 
 const MatrixRain = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let animationId: number;
-    let lastTime = 0;
-    const interval = 80; // ms between frames
-
-    const chars = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF{}[]<>/\\|";
-    const fontSize = 14;
-    let columns = 0;
-    let drops: number[] = [];
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      columns = Math.floor(canvas.width / fontSize);
-      drops = Array(columns).fill(0).map(() => Math.floor(Math.random() * (canvas.height / fontSize)));
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const draw = (timestamp: number) => {
-      animationId = requestAnimationFrame(draw);
-
-      if (timestamp - lastTime < interval) return;
-      lastTime = timestamp;
-
-      // Clear entire canvas each frame to prevent black buildup
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.font = `${fontSize}px monospace`;
-
-      for (let i = 0; i < columns; i++) {
-        const char = chars[Math.floor(Math.random() * chars.length)];
-        const y = drops[i] * fontSize;
-
-        // Draw a faint trail (multiple chars above current position)
-        for (let t = 0; t < 15; t++) {
-          const trailY = y - t * fontSize;
-          if (trailY < 0 || trailY > canvas.height) continue;
-          const opacity = Math.max(0.02, 0.15 - t * 0.01);
-          ctx.fillStyle = `hsl(120 100% 50% / ${opacity})`;
-          const trailChar = chars[Math.floor(Math.random() * chars.length)];
-          ctx.fillText(trailChar, i * fontSize, trailY);
-        }
-
-        drops[i]++;
-        if (drops[i] * fontSize > canvas.height + fontSize * 15) {
-          if (Math.random() > 0.95) {
-            drops[i] = 0;
-          }
-        }
-      }
-    };
-
-    animationId = requestAnimationFrame(draw);
-    return () => {
-      cancelAnimationFrame(animationId);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />;
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden opacity-20">
+      {Array.from({ length: 30 }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute top-0 text-primary font-mono text-xs leading-tight animate-matrix-fall"
+          style={{
+            left: `${(i / 30) * 100}%`,
+            animationDuration: `${8 + Math.random() * 12}s`,
+            animationDelay: `${-Math.random() * 20}s`,
+          }}
+        >
+          {Array.from({ length: 40 }).map((_, j) => (
+            <div key={j} className="opacity-60">
+              {"アイウエオカキクケコ0123456789ABCDEF"[Math.floor(Math.random() * 34)]}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
 };
 
 const Index = () => {
