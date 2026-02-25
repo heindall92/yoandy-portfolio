@@ -11,7 +11,7 @@ const socialLinks = [
 
 const stats = [
   { label: "eJPT Preparation", value: 75 },
-  { label: "HTB Academy Level", value: 80 },
+  { label: "TryHackMe Level", value: 80 },
   { label: "TryHackMe Streak", value: 65 },
   { label: "Master's Progress", value: 50 },
 ];
@@ -45,7 +45,7 @@ const contactLinks = [
 ];
 
 const Section = ({ id, children, className = "" }: { id: string; children: React.ReactNode; className?: string }) => (
-  <section id={id} className={`min-h-screen py-24 flex items-center ${className}`}>
+  <section id={id} className={`py-16 flex items-center ${className}`}>
     <div className="container mx-auto px-4 max-w-5xl w-full animate-fade-in">{children}</div>
   </section>
 );
@@ -140,7 +140,7 @@ const Index = () => {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              {[{ label: "HTB Academy", value: "Level 8" }, { label: "THM Streak", value: "31+ days" }, { label: "Focus", value: "Offensive" }, { label: "Master's", value: "2024-2026" }].map((fact) => (
+              {[{ label: "THM Level", value: "Level 8" }, { label: "THM Streak", value: "31+ days" }, { label: "Focus", value: "Offensive" }, { label: "Master's", value: "2024-2026" }].map((fact) => (
                 <div key={fact.label} className="p-4 rounded-lg bg-card neon-border text-center neon-border-hover transition-all duration-300">
                   <p className="font-mono text-xs text-muted-foreground">{fact.label}</p>
                   <p className="font-display text-lg font-bold text-primary mt-1">{fact.value}</p>
