@@ -85,7 +85,7 @@ export default {
         },
         "matrix-fall": {
           "0%": { transform: "translateY(-100%)" },
-          "100%": { transform: "translateY(100vh)" },
+          "100%": { transform: "translateY(2000px)" },
         },
       },
       animation: {
