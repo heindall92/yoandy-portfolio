@@ -67,9 +67,8 @@ const MatrixRain = () => {
     const drops: number[] = Array(columns).fill(1).map(() => Math.random() * -100);
 
     const draw = () => {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#00ff4130";
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "hsl(120 100% 50% / 0.12)";
       ctx.font = `${fontSize}px monospace`;
 
       for (let i = 0; i < drops.length; i++) {
