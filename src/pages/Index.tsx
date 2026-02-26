@@ -1,5 +1,6 @@
 import { } from "react";
-import { Github, Linkedin, ExternalLink, Shield, Terminal, Wrench, CheckCircle, BookOpen, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Github, Linkedin, ExternalLink, Shield, Terminal, Wrench, CheckCircle, BookOpen, MapPin, FileText } from "lucide-react";
 import profileImg from "@/assets/profile.jpg";
 import TypingAnimation from "@/components/TypingAnimation";
 
@@ -229,6 +230,36 @@ const Index = () => {
               </div>
             </a>
           ))}
+        </div>
+
+        {/* ===== PENTEST REPORTS ===== */}
+        <h3 className="font-display text-xl font-bold text-secondary text-glow-cyan mt-12 mb-6">{">"} Pentest Reports</h3>
+        <div className="grid md:grid-cols-2 gap-6">
+          <Link
+            to="/report/vaccine-htb"
+            className="group block p-6 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🏴‍☠️</span>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">Vaccine — HTB</h3>
+              </div>
+              <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              Reporte completo de pentesting de la máquina Vaccine (HackTheBox Starting Point). FTP anónimo → SQLi → RCE → Root.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {["SQLi", "FTP", "PostgreSQL", "GTFOBins", "Privilege Escalation"].map((tag) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20">2 CRITICAL</span>
+              <span className="px-2 py-0.5 rounded bg-neon-yellow/10 text-neon-yellow border border-neon-yellow/20">2 HIGH</span>
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
+            </div>
+          </Link>
         </div>
       </Section>
 
