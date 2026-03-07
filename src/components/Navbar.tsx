@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Shield } from "lucide-react";
 
 const navItems = [
@@ -10,10 +11,18 @@ const navItems = [
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const scrollTo = (e: React.MouseEvent, href: string) => {
     e.preventDefault();
     setMobileOpen(false);
+
+    if (location.pathname !== "/") {
+      navigate("/" + href);
+      return;
+    }
+
     const el = document.querySelector(href);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
