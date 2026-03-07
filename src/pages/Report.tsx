@@ -62,13 +62,25 @@ const Report = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <iframe
-        src={report.file}
-        title={report.title}
-        className="w-full border-0"
-        style={{ height: "100vh" }}
-      />
+    <div className="min-h-screen bg-background pt-16">
+      <div className="fixed top-16 left-0 right-0 z-20 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3 flex items-center gap-3">
+        <Link
+          to="/#projects"
+          className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-mono text-sm"
+        >
+          <ArrowLeft size={16} />
+          Back
+        </Link>
+        <span className="text-primary font-mono text-sm">{report.title}</span>
+      </div>
+      <div className="pt-12">
+        <iframe
+          src={report.file}
+          title={report.title}
+          className="w-full border-0"
+          style={{ height: "calc(100vh - 7rem)" }}
+        />
+      </div>
     </div>
   );
 };
