@@ -6,6 +6,22 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Pentest Report — Vaccine (HTB)",
     file: "/reports/vaccine-htb.html",
   },
+  "crownjewel1-sherlock": {
+    title: "Sherlock — CrownJewel-1 (HTB)",
+    file: "/reports/crownjewel1-sherlock.html",
+  },
+  "dreamjob1-sherlock": {
+    title: "Sherlock — Dream Job-1 (HTB)",
+    file: "/reports/dreamjob1-sherlock.html",
+  },
+  "dreamjob2-sherlock": {
+    title: "Sherlock — Dream Job-2 (HTB)",
+    file: "/reports/dreamjob2-sherlock.html",
+  },
+  "romcom-sherlock": {
+    title: "Sherlock — RomCom (HTB)",
+    file: "/reports/romcom-sherlock.html",
+  },
 };
 
 const Report = () => {

@@ -261,6 +261,110 @@ const Index = () => {
             </div>
           </Link>
         </div>
+
+        {/* ===== HTB SHERLOCKS ===== */}
+        <h3 className="font-display text-xl font-bold text-secondary text-glow-cyan mt-12 mb-6">{">"} HTB Sherlocks</h3>
+        <div className="grid md:grid-cols-2 gap-6">
+          <Link
+            to="/report/crownjewel1-sherlock"
+            className="group block p-6 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">👑</span>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">CrownJewel-1</h3>
+              </div>
+              <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              Análisis forense de Active Directory. Investigación de ataques contra AD CS y extracción de credenciales.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {["Active Directory", "AD CS", "DFIR", "Forensics"].map((tag) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">SHERLOCK</span>
+              <span className="px-2 py-0.5 rounded bg-neon-yellow/10 text-neon-yellow border border-neon-yellow/20">MEDIUM</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/report/dreamjob1-sherlock"
+            className="group block p-6 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">💼</span>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">Dream Job-1</h3>
+              </div>
+              <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              Investigación de campaña de spear-phishing con análisis de documentos maliciosos y técnicas de ingeniería social.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {["Phishing", "Malware Analysis", "DFIR", "Social Engineering"].map((tag) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">SHERLOCK</span>
+              <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20">HARD</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/report/dreamjob2-sherlock"
+            className="group block p-6 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">💼</span>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">Dream Job-2</h3>
+              </div>
+              <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              Continuación del análisis forense de la campaña Dream Job. Investigación avanzada de artefactos y persistencia.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {["Persistence", "Forensics", "DFIR", "Threat Hunting"].map((tag) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">SHERLOCK</span>
+              <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20">HARD</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/report/romcom-sherlock"
+            className="group block p-6 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🎭</span>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">RomCom</h3>
+              </div>
+              <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              Análisis del grupo APT RomCom. Investigación de malware, C2 y técnicas de evasión utilizadas.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {["APT", "Malware", "C2", "Threat Intel", "DFIR"].map((tag) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">SHERLOCK</span>
+              <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20">HARD</span>
+            </div>
+          </Link>
+        </div>
       </Section>
 
     </div>
