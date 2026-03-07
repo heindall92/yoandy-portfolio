@@ -3,8 +3,24 @@ import { Link, useParams } from "react-router-dom";
 
 const reports: Record<string, { title: string; file: string }> = {
   "vaccine-htb": {
-    title: "Pentest Report — Vaccine (HTB)",
+    title: "Writeup — Vaccine (HTB)",
     file: "/reports/vaccine-htb.html",
+  },
+  "archetype-htb": {
+    title: "Writeup — Archetype (HTB)",
+    file: "/reports/archetype-htb.html",
+  },
+  "oopsie-htb": {
+    title: "Writeup — Oopsie (HTB)",
+    file: "/reports/oopsie-htb.html",
+  },
+  "pterodactyl-htb": {
+    title: "Writeup — Pterodactyl (HTB)",
+    file: "/reports/pterodactyl-htb.html",
+  },
+  "unified-htb": {
+    title: "Writeup — Unified (HTB)",
+    file: "/reports/unified-htb.html",
   },
   "crownjewel1-sherlock": {
     title: "Sherlock — CrownJewel-1 (HTB)",
