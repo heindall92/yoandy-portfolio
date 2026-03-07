@@ -364,6 +364,28 @@ const Index = () => {
               <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20">HARD</span>
             </div>
           </Link>
+          <Link
+            to="/report/brutus-sherlock"
+            className="group block p-6 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <FileText size={20} className="text-primary" />
+              <h4 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">Brutus</h4>
+            </div>
+            <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
+              Análisis forense de un servidor Linux comprometido mediante fuerza bruta SSH. Investigación de logs auth.log y wtmp para rastrear acceso no autorizado.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-muted text-muted-foreground">SSH Brute Force</span>
+              <span className="px-2 py-0.5 rounded bg-muted text-muted-foreground">Log Analysis</span>
+              <span className="px-2 py-0.5 rounded bg-muted text-muted-foreground">DFIR</span>
+              <span className="px-2 py-0.5 rounded bg-muted text-muted-foreground">Linux</span>
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">SHERLOCK</span>
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">EASY</span>
+            </div>
+          </Link>
         </div>
       </Section>
 

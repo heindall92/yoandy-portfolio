@@ -22,6 +22,10 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Sherlock — RomCom (HTB)",
     file: "/reports/romcom-sherlock.html",
   },
+  "brutus-sherlock": {
+    title: "Sherlock — Brutus (HTB)",
+    file: "/reports/brutus-sherlock.html",
+  },
 };
 
 const Report = () => {
