@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dream Job-1 — HTB Sherlock Writeup | Yoandy Ramirez</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #0f1526;
+    --bg3: #151d35;
+    --border: #1e2d50;
+    --accent: #a78bfa;
+    --accent2: #f472b6;
+    --green: #4ade80;
+    --red: #ff4d6d;
+    --yellow: #ffd166;
+    --blue: #4f9eff;
+    --text: #c9d1d9;
+    --text-muted: #8b949e;
+    --code-bg: #0d1117;
+    --font-mono: 'Courier New', monospace;
+    --font-sans: 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; }
+
+  .hero {
+    background: linear-gradient(135deg, #0a0e1a 0%, #1a0a2e 50%, #0f0a1a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 0 40px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(167,139,250,.08) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: ''; position: absolute; bottom: -60px; left: -40px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(244,114,182,.06) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  .breadcrumb { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); margin-bottom: 20px; letter-spacing: .5px; }
+  .breadcrumb span { color: var(--accent2); }
+  .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; }
+  .badge-platform { background: rgba(167,139,250,.12); color: var(--accent); border: 1px solid rgba(167,139,250,.25); }
+  .badge-category { background: rgba(244,114,182,.12); color: var(--accent2); border: 1px solid rgba(244,114,182,.25); }
+  .badge-hard     { background: rgba(255,77,109,.12); color: var(--red); border: 1px solid rgba(255,77,109,.25); }
+  .badge-medium   { background: rgba(255,209,102,.12); color: var(--yellow); border: 1px solid rgba(255,209,102,.25); }
+  .hero h1 { font-size: clamp(26px, 5vw, 44px); font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 10px; letter-spacing: -.5px; }
+  .hero h1 span { color: var(--accent); }
+  .hero-subtitle { font-size: 16px; color: var(--text-muted); max-width: 640px; margin-bottom: 28px; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 20px; font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); border-top: 1px solid var(--border); padding-top: 20px; }
+  .hero-meta-item { display: flex; align-items: center; gap: 6px; }
+  .hero-meta-item .label { color: var(--text-muted); }
+  .hero-meta-item .value { color: var(--text); font-weight: 600; }
+  .layout { display: grid; grid-template-columns: 1fr 280px; gap: 32px; padding: 40px 0 80px; align-items: start; }
+  @media (max-width: 720px) { .layout { grid-template-columns: 1fr; } .sidebar { order: -1; } }
+  .content h2 { font-size: 22px; font-weight: 700; color: #e6edf3; margin: 40px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .content h2:first-child { margin-top: 0; }
+  .content h2 .ico { width: 26px; height: 26px; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .content h3 { font-size: 16px; font-weight: 700; color: #c9d1d9; margin: 24px 0 10px; }
+  .content p { margin-bottom: 14px; }
+  code { font-family: var(--font-mono); font-size: 13px; background: var(--code-bg); border: 1px solid var(--border); color: #a78bfa; padding: 2px 7px; border-radius: 4px; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; overflow-x: auto; margin: 16px 0; position: relative; }
+  pre code { background: none; border: none; padding: 0; font-size: 13px; color: #c4b5fd; line-height: 1.6; }
+  .pre-label { position: absolute; top: 10px; right: 14px; font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); letter-spacing: .5px; }
+  .callout { border-radius: 8px; padding: 14px 18px; margin: 20px 0; border-left: 3px solid; font-size: 14px; }
+  .callout-info    { background: rgba(167,139,250,.07); border-color: var(--accent); }
+  .callout-warning { background: rgba(255,209,102,.07); border-color: var(--yellow); }
+  .callout-danger  { background: rgba(255,77,109,.07); border-color: var(--red); }
+  .callout-success { background: rgba(74,222,128,.07); border-color: var(--green); }
+  .callout strong  { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .callout-info strong    { color: var(--accent); }
+  .callout-warning strong { color: var(--yellow); }
+  .callout-danger strong  { color: var(--red); }
+  .callout-success strong { color: var(--green); }
+  .table-wrap { overflow-x: auto; margin: 20px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: var(--bg3); border-bottom: 2px solid var(--border); }
+  th { padding: 10px 14px; text-align: left; font-weight: 700; color: #e6edf3; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  .mitre-tag { display: inline-block; background: rgba(167,139,250,.1); border: 1px solid rgba(167,139,250,.25); color: var(--accent); font-size: 11px; font-family: var(--font-mono); padding: 3px 9px; border-radius: 4px; margin: 2px; }
+  .sidebar { position: sticky; top: 20px; }
+  .sidebar-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+  .sidebar-card-header { padding: 12px 16px; background: var(--bg3); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text-muted); }
+  .sidebar-card-body { padding: 16px; }
+  .info-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 10px; }
+  .info-row:last-child { border: none; }
+  .info-row .k { color: var(--text-muted); flex-shrink: 0; }
+  .info-row .v { color: var(--text); font-weight: 600; text-align: right; word-break: break-all; }
+  .tool-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .tool-item:last-child { border: none; }
+  .tool-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
+  .score-bar { margin: 6px 0; }
+  .score-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .score-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .score-fill  { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+  .toc-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(30,45,80,.6); font-size: 13px; color: var(--text-muted); }
+  .toc-item:last-child { border: none; }
+  .toc-num { font-family: var(--font-mono); font-size: 10px; color: var(--accent); flex-shrink: 0; }
+  .footer { border-top: 1px solid var(--border); padding: 24px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--text-muted); }
+  .footer-author { font-weight: 700; color: var(--text); }
+  .phase-header { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin: 24px 0 16px; display: flex; align-items: center; gap: 12px; }
+  .phase-num { background: var(--accent); color: #000; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+  .phase-title { font-weight: 700; color: #e6edf3; font-size: 15px; }
+  .phase-desc { font-size: 12px; color: var(--text-muted); }
+  .highlight-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
+  .apt-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 20px 0; position: relative; overflow: hidden; }
+  .apt-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .apt-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+  .apt-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; font-family: var(--font-mono); }
+  .apt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .apt-item { }
+  .apt-item-label { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin-bottom: 3px; }
+  .apt-item-value { font-size: 13px; font-weight: 600; color: var(--text); }
+  .campaign-tag { display: inline-block; background: rgba(167,139,250,.1); border: 1px solid rgba(167,139,250,.2); color: var(--accent); font-size: 11px; padding: 3px 9px; border-radius: 4px; margin: 2px; font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <p class="breadcrumb">HTB Sherlocks &nbsp;/&nbsp; <span>Cyber Threat Intelligence</span> &nbsp;/&nbsp; Dream Job-1</p>
+    <div class="hero-badges">
+      <span class="badge badge-platform">HackTheBox</span>
+      <span class="badge badge-category">CTI</span>
+      <span class="badge badge-hard">Hard</span>
+    </div>
+    <h1>Dream Job-1 <span>Sherlock</span></h1>
+    <p class="hero-subtitle">
+      Investigación de Cyber Threat Intelligence sobre la Operación Dream Job del Grupo Lazarus (APT38). Análisis de TTPs, IOCs y campañas de spearphishing dirigidas a la industria de defensa y aeroespacial.
+    </p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><span class="label">Autor:</span><span class="value">Yoandy Ramirez Delgado</span></div>
+      <div class="hero-meta-item"><span class="label">Tipo:</span><span class="value">Cyber Threat Intelligence (CTI)</span></div>
+      <div class="hero-meta-item"><span class="label">Threat Actor:</span><span class="value">Lazarus Group / APT38</span></div>
+      <div class="hero-meta-item"><span class="label">Origen:</span><span class="value">Corea del Norte</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="layout">
+
+    <main class="content">
+
+      <h2 id="scenario"><div class="ico">📋</div> Escenario</h2>
+      <p>
+        El analista de CTI de una organización de defensa ha recibido alertas sobre un posible ataque de spearphishing con temática de ofertas de empleo. Se sospecha que el actor detrás del ataque es <strong>Lazarus Group</strong>, el prolífico APT de origen norcoreano. La investigación requiere recopilar Cyber Threat Intelligence para caracterizar la campaña, identificar sus IOCs y mapear las TTPs del actor.
+      </p>
+
+      <div class="apt-card">
+        <div class="apt-title">Lazarus Group</div>
+        <div class="apt-sub">APT38 &nbsp;·&nbsp; Nexo gubernamental: Corea del Norte &nbsp;·&nbsp; Bureau 121</div>
+        <div class="apt-grid">
+          <div class="apt-item">
+            <div class="apt-item-label">Primera actividad</div>
+            <div class="apt-item-value">~2009</div>
+          </div>
+          <div class="apt-item">
+            <div class="apt-item-label">Motivación</div>
+            <div class="apt-item-value">Espionaje + Financiero</div>
+          </div>
+          <div class="apt-item">
+            <div class="apt-item-label">Sectores objetivo</div>
+            <div class="apt-item-value">Defensa, Crypto, Finanzas</div>
+          </div>
+          <div class="apt-item">
+            <div class="apt-item-label">Operación analizada</div>
+            <div class="apt-item-value">Dream Job</div>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="operacion"><div class="ico">🎯</div> Operación Dream Job</h2>
+      <p>
+        La <strong>Operación Dream Job</strong> es una campaña de spearphishing altamente sofisticada que explota la psicología humana: el deseo de mejorar profesionalmente. Los objetivos reciben ofertas de empleo atractivas de empresas de defensa y tecnología de alto perfil como Lockheed Martin, BAE Systems o Boeing. Toda la cadena de infección parte de este engaño.
+      </p>
+
+      <div class="callout callout-warning">
+        <strong>⚠ Primera observación</strong>
+        La Operación Dream Job fue detectada por primera vez en <strong>septiembre de 2019</strong> y continúa activa en variantes evolutivas. Esta longevidad demuestra la efectividad de las técnicas de ingeniería social del actor.
+      </div>
+
+      <h3>Sub-Campañas Identificadas</h3>
+      <p>
+        La operación no es monolítica; evolucionó en sub-campañas que comparten infraestructura y TTPs pero adaptan el señuelo al objetivo:
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;">
+        <span class="campaign-tag">Operation Dream Job (original)</span>
+        <span class="campaign-tag">Operation North Star</span>
+        <span class="campaign-tag">Operation Interception</span>
+      </div>
+      <p>
+        Todas las sub-campañas comparten el eje central: documentos de Office con macros maliciosas disfrazados de contratos de empleo, hojas salariales o descripciones de puestos en empresas de defensa reconocidas.
+      </p>
+
+      <h2 id="cadena"><div class="ico">⛓</div> Cadena de Infección</h2>
+
+      <div class="phase-header">
+        <div class="phase-num">1</div>
+        <div>
+          <div class="phase-title">Initial Access — Spearphishing</div>
+          <div class="phase-desc">Documento Word malicioso como señuelo laboral</div>
+        </div>
+      </div>
+      <p>
+        El vector inicial es un documento de Microsoft Word especialmente crafteado, nombrado para parecer una oferta legítima:
+      </p>
+      <div class="highlight-box">
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:8px;">DOCUMENTO SEÑUELO</div>
+        <code>Salary_Lockheed_Martin_confidential_job_opportunities.doc</code>
+        <div style="margin-top:8px;font-size:13px;color:var(--text-muted);">El nombre invoca una empresa de defensa de alto perfil (Lockheed Martin) y sugiere información confidencial, creando urgencia y curiosidad en el objetivo.</div>
+      </div>
+
+      <div class="phase-header">
+        <div class="phase-num">2</div>
+        <div>
+          <div class="phase-title">Execution — Macro VBA</div>
+          <div class="phase-desc">Descarga de payload de segunda etapa</div>
+        </div>
+      </div>
+      <p>
+        El documento contiene una macro VBA que, al ser ejecutada (habitualmente con la excusa de "habilitar contenido"), realiza una petición HTTP a la infraestructura C2 del actor para descargar el payload de segunda etapa:
+      </p>
+      <pre><code>https://markettrendingcenter.com/lk_job_oppor.docx</code><span class="pre-label">URL C2</span></pre>
+      <p>
+        El dominio está diseñado para parecer legítimo (simulando un centro de tendencias de mercado). El payload descargado es otro documento que finalmente despliega el RAT <strong>DRATzarus</strong>.
+      </p>
+
+      <div class="phase-header">
+        <div class="phase-num">3</div>
+        <div>
+          <div class="phase-title">Execution — LOLBins</div>
+          <div class="phase-desc">Ejecución mediante binarios legítimos del sistema</div>
+        </div>
+      </div>
+      <p>
+        Una característica distintiva de Lazarus Group es el abuso de <strong>LOLBins</strong> (Living-off-the-Land Binaries). En lugar de ejecutar malware directamente (lo que podría activar antivirus), utiliza binarios firmados y legítimos de Windows:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>LOLBin</th><th>Uso por Lazarus</th><th>MITRE</th></tr></thead>
+          <tbody>
+            <tr><td><code>regsvr32.exe</code></td><td>Cargar DLLs maliciosas desde URLs remotas</td><td><span class="mitre-tag">T1218.010</span></td></tr>
+            <tr><td><code>rundll32.exe</code></td><td>Ejecución de código malicioso en DLLs</td><td><span class="mitre-tag">T1218.011</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="phase-header">
+        <div class="phase-num">4</div>
+        <div>
+          <div class="phase-title">Lateral Movement — Internal Spearphishing</div>
+          <div class="phase-desc">T1534 — Expansión dentro de la red comprometida</div>
+        </div>
+      </div>
+      <p>
+        Una vez dentro de la red, Lazarus no usa herramientas de movimiento lateral convencionales. En cambio, aplica <strong>Internal Spearphishing (T1534)</strong>: envío de emails de phishing desde cuentas internas ya comprometidas hacia otros empleados de la organización. Esto elude controles de seguridad de email porque el remitente es interno y de confianza.
+      </p>
+
+      <div class="phase-header">
+        <div class="phase-num">5</div>
+        <div>
+          <div class="phase-title">Command &amp; Control — DRATzarus RAT</div>
+          <div class="phase-desc">Remote Access Trojan de Lazarus Group</div>
+        </div>
+      </div>
+      <p>
+        El payload final es <strong>DRATzarus</strong>, un RAT (Remote Access Trojan) desarrollado internamente por Lazarus Group. Sus características clave:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Característica</th><th>Detalle</th></tr></thead>
+          <tbody>
+            <tr><td>Método de ejecución</td><td>Native API (evita detección por hooking de API de alto nivel)</td></tr>
+            <tr><td>Anti-sandbox</td><td>Comprobaciones temporales (time-based checks)</td></tr>
+            <tr><td>Anti-debug</td><td><code>IsDebuggerPresent</code> Windows API</td></tr>
+            <tr><td>Relación</td><td>Comparte código con el malware MATA (otro framework de Lazarus)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="iocs"><div class="ico">🔬</div> Análisis de IOCs</h2>
+      <p>
+        La investigación de IOCs se realiza con <strong>VirusTotal</strong> para correlacionar hashes conocidos y extraer metadatos de los artefactos. Los artefactos analizados incluyen:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Artefacto</th><th>Tipo</th><th>Fuente de análisis</th></tr></thead>
+          <tbody>
+            <tr><td><code>IEXPLORE.exe</code></td><td>Ejecutable (disfrazado como Internet Explorer)</td><td>VirusTotal</td></tr>
+            <tr><td><code>BAE_HPC_SE.iso</code></td><td>Imagen ISO como vehículo de entrega</td><td>VirusTotal</td></tr>
+            <tr><td>Documento Word señuelo</td><td>Archivo .doc con macro VBA</td><td>VirusTotal + metadata2go</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>💡 Metadata del Documento</strong>
+        El análisis de metadatos del documento señuelo con herramientas como <strong>metadata2go.com</strong> reveló información sobre el autor original y las modificaciones. Este tipo de descuido operacional por parte del actor es valioso para la atribución.
+      </div>
+
+      <h2 id="mitre"><div class="ico">🎯</div> Mapeo MITRE ATT&CK</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Técnica</th><th>Táctica</th><th>Observación</th></tr></thead>
+          <tbody>
+            <tr><td><span class="mitre-tag">T1566.001</span></td><td>Spearphishing Attachment</td><td>Initial Access</td><td>Documento Word con macro</td></tr>
+            <tr><td><span class="mitre-tag">T1059.005</span></td><td>Visual Basic</td><td>Execution</td><td>Macro VBA en el documento señuelo</td></tr>
+            <tr><td><span class="mitre-tag">T1218.010</span></td><td>Signed Binary Proxy — Regsvr32</td><td>Defense Evasion / Execution</td><td>LOLBin para cargar DLLs</td></tr>
+            <tr><td><span class="mitre-tag">T1218.011</span></td><td>Signed Binary Proxy — Rundll32</td><td>Defense Evasion / Execution</td><td>LOLBin para ejecución de código</td></tr>
+            <tr><td><span class="mitre-tag">T1534</span></td><td>Internal Spearphishing</td><td>Lateral Movement</td><td>Phishing interno desde cuentas comprometidas</td></tr>
+            <tr><td><span class="mitre-tag">T1106</span></td><td>Native API</td><td>Execution</td><td>DRATzarus evita hooking de alto nivel</td></tr>
+            <tr><td><span class="mitre-tag">T1497</span></td><td>Virtualization/Sandbox Evasion</td><td>Defense Evasion</td><td>Time-based anti-sandbox checks</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="conclusions"><div class="ico">📊</div> Conclusiones</h2>
+      <p>
+        La Operación Dream Job es un ejemplo paradigmático de cómo un actor de amenaza con recursos estatales puede construir campañas de larga duración, evolutivas y de alta efectividad. La combinación de ingeniería social con temática de empleo, uso de LOLBins y un RAT propio con capacidades anti-análisis sitúa a Lazarus Group entre los actores más sofisticados del panorama de amenazas global.
+      </p>
+      <div class="callout callout-success">
+        <strong>✅ Valor del CTI</strong>
+        Este Sherlock demuestra la importancia del Cyber Threat Intelligence en la defensa proactiva. Conocer las TTPs, IOCs y patrones de comportamiento de actores como Lazarus permite a los equipos de defensa anticipar ataques antes de que lleguen a fase de ejecución.
+      </div>
+      <div class="callout callout-danger">
+        <strong>🔴 Indicadores de Compromiso Clave</strong>
+        Documentos Office con nombres de empresas de defensa + macros VBA + conexiones a dominios recién registrados con nombres de marketing + LOLBins en proceso tree inusual = patrón Lazarus/Dream Job con alta probabilidad.
+      </div>
+
+    </main>
+
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Detalles del Reto</div>
+        <div class="sidebar-card-body">
+          <div class="info-row"><span class="k">Dificultad</span><span class="v"><span class="badge badge-hard" style="font-size:10px">Hard</span></span></div>
+          <div class="info-row"><span class="k">Tipo</span><span class="v">Sherlock / CTI</span></div>
+          <div class="info-row"><span class="k">Threat Actor</span><span class="v">Lazarus Group</span></div>
+          <div class="info-row"><span class="k">Nexo</span><span class="v">Corea del Norte</span></div>
+          <div class="info-row"><span class="k">Primera obs.</span><span class="v">Sept. 2019</span></div>
+          <div class="info-row"><span class="k">RAT</span><span class="v">DRATzarus</span></div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Skills Demostradas</div>
+        <div class="sidebar-card-body">
+          <div class="score-bar"><div class="score-label"><span>CTI / APT Research</span><span style="color:var(--accent2)">95%</span></div><div class="score-track"><div class="score-fill" style="width:95%"></div></div></div>
+          <div class="score-bar"><div class="score-label"><span>MITRE ATT&amp;CK</span><span style="color:var(--accent2)">90%</span></div><div class="score-track"><div class="score-fill" style="width:90%"></div></div></div>
+          <div class="score-bar"><div class="score-label"><span>IOC Analysis</span><span style="color:var(--accent2)">88%</span></div><div class="score-track"><div class="score-fill" style="width:88%"></div></div></div>
+          <div class="score-bar"><div class="score-label"><span>Malware Analysis</span><span style="color:var(--accent2)">80%</span></div><div class="score-track"><div class="score-fill" style="width:80%"></div></div></div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Herramientas</div>
+        <div class="sidebar-card-body">
+          <div class="tool-item"><div class="tool-dot"></div>VirusTotal</div>
+          <div class="tool-item"><div class="tool-dot"></div>MITRE ATT&amp;CK Navigator</div>
+          <div class="tool-item"><div class="tool-dot"></div>metadata2go.com</div>
+          <div class="tool-item"><div class="tool-dot"></div>OSINT / Open Sources</div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">MITRE ATT&CK</div>
+        <div class="sidebar-card-body" style="display:flex;flex-wrap:wrap;gap:5px;padding:14px;">
+          <span class="mitre-tag">T1566.001</span>
+          <span class="mitre-tag">T1059.005</span>
+          <span class="mitre-tag">T1218.010</span>
+          <span class="mitre-tag">T1218.011</span>
+          <span class="mitre-tag">T1534</span>
+          <span class="mitre-tag">T1106</span>
+          <span class="mitre-tag">T1497</span>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Tabla de Contenidos</div>
+        <div class="sidebar-card-body" style="padding:12px 16px;">
+          <div class="toc-item"><span class="toc-num">01</span>Escenario</div>
+          <div class="toc-item"><span class="toc-num">02</span>Operación Dream Job</div>
+          <div class="toc-item"><span class="toc-num">03</span>Cadena de Infección</div>
+          <div class="toc-item"><span class="toc-num">04</span>Análisis de IOCs</div>
+          <div class="toc-item"><span class="toc-num">05</span>MITRE ATT&amp;CK</div>
+          <div class="toc-item"><span class="toc-num">06</span>Conclusiones</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="footer">
+    <div><span class="footer-author">Yoandy Ramirez Delgado</span> &nbsp;·&nbsp; Cybersecurity Analyst &amp; Penetration Tester</div>
+    <div>HTB Sherlocks · Dream Job-1 · CTI · 2026</div>
+  </footer>
+</div>
+</body>
+</html>
