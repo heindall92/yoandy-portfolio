@@ -54,6 +54,10 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Writeup — Interpreter (HTB)",
     file: "/reports/interpreter-htb.html",
   },
+  "cctv-htb": {
+    title: "Writeup — CCTV (HTB)",
+    file: "/reports/cctv-htb.html",
+  },
 };
 
 const Report = () => {
