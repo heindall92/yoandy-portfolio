@@ -372,7 +372,7 @@ const Index = () => {
               <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              SQLi /add_expense → xp_cmdshell → MSSQL impersonation → Evil-WinRM → BadSuccessor (CVE-2025-53779) → DCSync → Admin. Windows Server 2025 Active Directory DC.
+              Inyección SQL en el endpoint /add_expense para obtener ejecución de comandos vía xp_cmdshell, suplantación de identidad en MSSQL, acceso remoto con Evil-WinRM, explotación de BadSuccessor (CVE-2025-53779) para DCSync y escalada a Administrador del dominio. Windows Server 2025 AD DC.
             </p>
             <div className="flex flex-wrap gap-2 mb-3">
               {["HTB", "Windows", "Active Directory", "CVE-2025-53779"].map((tag) => (
@@ -397,7 +397,7 @@ const Index = () => {
               <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              ROT13 → invite code API → register → PUT is_admin=1 → cmd injection → SSH → CVE-2023-0386 OverlayFS SUID → Root. Ubuntu 22.04.
+              Decodificación ROT13 del código de invitación de la API, registro de usuario y escalada a administrador mediante PUT, inyección de comandos para obtener shell SSH, y escalada de privilegios a Root explotando CVE-2023-0386 (OverlayFS). Ubuntu 22.04.
             </p>
             <div className="flex flex-wrap gap-2 mb-3">
               {["HTB", "Linux", "API", "CVE-2023-0386"].map((tag) => (
@@ -422,7 +422,7 @@ const Index = () => {
               <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              CVE-2023-43208 Mirth Connect XStream RCE unauthenticated → shell → MySQL creds → eval() HL7 injection → sudo python3 NOPASSWD → chmod bash SUID → Root.
+              Ejecución remota de código sin autenticación en Mirth Connect mediante CVE-2023-43208 (XStream), obtención de credenciales MySQL, inyección HL7 vía eval(), y escalada a Root aprovechando sudo python3 sin contraseña para asignar SUID a bash.
             </p>
             <div className="flex flex-wrap gap-2 mb-3">
               {["HTB", "Linux", "CVE-2023-43208", "HL7"].map((tag) => (
