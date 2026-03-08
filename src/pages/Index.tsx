@@ -372,15 +372,15 @@ const Index = () => {
               <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              Máquina HackTheBox. Writeup en construcción.
+              SQLi /add_expense → xp_cmdshell → MSSQL impersonation → Evil-WinRM → BadSuccessor (CVE-2025-53779) → DCSync → Admin. Windows Server 2025 Active Directory DC.
             </p>
             <div className="flex flex-wrap gap-2 mb-3">
-              {["HTB", "Linux", "Enumeration"].map((tag) => (
+              {["HTB", "Windows", "Active Directory", "CVE-2025-53779"].map((tag) => (
                 <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
               ))}
             </div>
             <div className="flex items-center gap-3 font-mono text-xs">
-              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">EASY</span>
+              <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20">HARD</span>
               <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
             </div>
           </Link>
@@ -397,15 +397,15 @@ const Index = () => {
               <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              Máquina HackTheBox. Writeup en construcción.
+              ROT13 → invite code API → register → PUT is_admin=1 → cmd injection → SSH → CVE-2023-0386 OverlayFS SUID → Root. Ubuntu 22.04.
             </p>
             <div className="flex flex-wrap gap-2 mb-3">
-              {["HTB", "Web", "API"].map((tag) => (
+              {["HTB", "Linux", "API", "CVE-2023-0386"].map((tag) => (
                 <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
               ))}
             </div>
             <div className="flex items-center gap-3 font-mono text-xs">
-              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">EASY</span>
+              <span className="px-2 py-0.5 rounded bg-neon-yellow/10 text-neon-yellow border border-neon-yellow/20">MEDIUM</span>
               <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
             </div>
           </Link>
@@ -422,15 +422,15 @@ const Index = () => {
               <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              Máquina HackTheBox. Writeup en construcción.
+              CVE-2023-43208 Mirth Connect XStream RCE unauthenticated → shell → MySQL creds → eval() HL7 injection → sudo python3 NOPASSWD → chmod bash SUID → Root.
             </p>
             <div className="flex flex-wrap gap-2 mb-3">
-              {["HTB", "Windows", "Exploitation"].map((tag) => (
+              {["HTB", "Linux", "CVE-2023-43208", "HL7"].map((tag) => (
                 <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
               ))}
             </div>
             <div className="flex items-center gap-3 font-mono text-xs">
-              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">EASY</span>
+              <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20">HARD</span>
               <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
             </div>
           </Link>
