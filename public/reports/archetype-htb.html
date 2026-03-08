@@ -6,16 +6,16 @@
   <title>Archetype — HTB Writeup | YRD</title>
   <style>
     :root {
-      --bg: #050a05;
-      --card-bg: #0a1a0a;
-      --border: #1a3d1a;
-      --primary: #39d353;
-      --cyan: #64ffda;
+      --bg: #0a0e1a;
+      --card-bg: #111827;
+      --border: #1e2d4a;
+      --primary: #4ade80;
+      --cyan: #22d3ee;
       --text: #e2e8f0;
       --text-dim: #94a3b8;
-      --text-muted: #8b949e;
-      --red: #ff6b6b;
-      --yellow: #ffd93d;
+      --text-muted: #64748b;
+      --red: #f87171;
+      --yellow: #fbbf24;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { overflow-x: hidden; }
@@ -23,7 +23,7 @@
     canvas#matrix { position: fixed; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.13; pointer-events: none; z-index: 0; }
 
     /* NAVBAR */
-    nav { position: sticky; top: 0; z-index: 100; background: rgba(5,10,5,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(10,14,26,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
     .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
     .nav-logo svg { width: 32px; height: 32px; }
     .nav-logo span { font-size: 1.1rem; font-weight: 700; color: var(--primary); letter-spacing: 2px; }
@@ -44,9 +44,9 @@
     .hero-breadcrumb a { color: var(--primary); text-decoration: none; }
     .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
     .tag { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-    .tag-htb { background: rgba(57,211,83,0.15); color: var(--primary); border: 1px solid rgba(57,211,83,0.3); }
-    .tag-os { background: rgba(100,255,218,0.1); color: var(--cyan); border: 1px solid rgba(100,255,218,0.25); }
-    .tag-easy { background: rgba(57,211,83,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+    .tag-htb { background: rgba(74,222,128,0.15); color: var(--primary); border: 1px solid rgba(74,222,128,0.3); }
+    .tag-os { background: rgba(34,211,238,0.1); color: var(--cyan); border: 1px solid rgba(34,211,238,0.25); }
+    .tag-easy { background: rgba(74,222,128,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
     .tag-medium { background: rgba(255,217,61,0.1); color: var(--yellow); border: 1px solid rgba(255,217,61,0.3); }
     .tag-hard { background: rgba(255,107,107,0.1); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
     .hero h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.2; margin-bottom: 1rem; }
@@ -72,7 +72,7 @@
     .section p:last-child { margin-bottom: 0; }
 
     /* CODE BLOCKS */
-    pre { background: #020c02; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; overflow-x: auto; margin: 1rem 0; font-size: 0.82rem; line-height: 1.6; }
+    pre { background: #050810; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; overflow-x: auto; margin: 1rem 0; font-size: 0.82rem; line-height: 1.6; }
     code { font-family: 'Cascadia Code', 'Fira Code', 'Courier New', monospace; }
     .comment { color: #6a9955; }
     .cmd { color: var(--cyan); }
@@ -83,7 +83,7 @@
 
     /* FLAGS GRID */
     .flags-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
-    .flag-card { background: #020c02; border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; }
+    .flag-card { background: #050810; border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; }
     .flag-card .flag-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
     .flag-card .flag-hash { font-family: monospace; font-size: 0.8rem; color: var(--flag-val, #ff79c6); word-break: break-all; }
 
@@ -101,7 +101,7 @@
 
     /* MITRE TAGS */
     .mitre-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
-    .mitre-tag { background: rgba(57,211,83,0.08); border: 1px solid rgba(57,211,83,0.2); color: var(--text-dim); padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; font-family: monospace; }
+    .mitre-tag { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); color: var(--text-dim); padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; font-family: monospace; }
 
     /* SIDEBAR */
     .sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
@@ -125,12 +125,12 @@
 
     /* TOOLS */
     .tools-list { display: flex; flex-direction: column; gap: 0.6rem; }
-    .tool-item { display: flex; align-items: center; gap: 10px; padding: 0.6rem 0.75rem; background: #020c02; border: 1px solid var(--border); border-radius: 8px; }
+    .tool-item { display: flex; align-items: center; gap: 10px; padding: 0.6rem 0.75rem; background: #050810; border: 1px solid var(--border); border-radius: 8px; }
     .tool-dot { width: 6px; height: 6px; background: var(--primary); border-radius: 50%; }
     .tool-name { font-size: 0.82rem; color: var(--text-dim); font-family: monospace; }
 
     /* IP BADGE */
-    .ip-badge { display: inline-block; background: rgba(57,211,83,0.1); border: 1px solid rgba(57,211,83,0.3); color: var(--primary); padding: 3px 10px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; }
+    .ip-badge { display: inline-block; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--primary); padding: 3px 10px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; }
   </style>
 </head>
 <body>
@@ -414,9 +414,9 @@ while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){
   let cols = Math.floor(canvas.width / fontSize);
   let drops = Array(cols).fill(1);
   function drawMatrix() {
-    ctx.fillStyle = 'rgba(5,10,5,0.05)';
+    ctx.fillStyle = 'rgba(10,14,26,0.05)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#39d353';
+    ctx.fillStyle = '#4ade80';
     ctx.font = fontSize + 'px monospace';
     for (let i = 0; i < drops.length; i++) {
       const char = chars[Math.floor(Math.random() * chars.length)];
