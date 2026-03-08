@@ -42,6 +42,18 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Sherlock — Brutus (HTB)",
     file: "/reports/brutus-sherlock.html",
   },
+  "eighteen-htb": {
+    title: "Writeup — Eighteen (HTB)",
+    file: "/reports/eighteen-htb.html",
+  },
+  "twomillion-htb": {
+    title: "Writeup — TwoMillion (HTB)",
+    file: "/reports/twomillion-htb.html",
+  },
+  "interpreter-htb": {
+    title: "Writeup — Interpreter (HTB)",
+    file: "/reports/interpreter-htb.html",
+  },
 };
 
 const Report = () => {
