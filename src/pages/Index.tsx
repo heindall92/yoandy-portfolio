@@ -471,10 +471,10 @@ const Index = () => {
               <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              Explotación de servicio Wi-Fi con captura de handshake WPA2, cracking de contraseñas, enumeración interna y escalada de privilegios en sistema Linux para obtener root.
+              Máquina que simula un entorno corporativo WiFi complejo con múltiples SSIDs (WPA2-PSK y WPA2-Enterprise). Captura de handshakes WPA2, descifrado de tráfico HTTP para obtener cookies de sesión, explotación de aplicación web vulnerable en el router interno y ataque Evil Twin 802.1X para capturar hashes MSCHAPv2 y obtener root.
             </p>
             <div className="flex flex-wrap gap-2 mb-3">
-              {["HTB", "Linux", "Wi-Fi", "WPA2"].map((tag) => (
+              {["HTB", "Linux", "Wi-Fi", "WPA2", "Evil Twin", "802.1X"].map((tag) => (
                 <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
               ))}
             </div>
