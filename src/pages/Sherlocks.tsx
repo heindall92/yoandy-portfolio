@@ -34,6 +34,13 @@ const sherlocks = [
   },
 ];
 
+const diffStyles: Record<string, string> = {
+  "neon-magenta": "bg-neon-magenta/10 text-neon-magenta border border-neon-magenta/20",
+  "primary": "bg-primary/10 text-primary border border-primary/20",
+  "neon-yellow": "bg-neon-yellow/10 text-neon-yellow border border-neon-yellow/20",
+  "destructive": "bg-destructive/10 text-destructive border border-destructive/20",
+};
+
 const SherlockCard = ({ s }: { s: typeof sherlocks[0] }) => (
   <Link
     to={`/report/${s.slug}`}
@@ -54,7 +61,7 @@ const SherlockCard = ({ s }: { s: typeof sherlocks[0] }) => (
     </div>
     <div className="flex items-center gap-3 font-mono text-xs">
       <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">SHERLOCK</span>
-      <span className={`px-2 py-0.5 rounded bg-${s.diffColor}/10 text-${s.diffColor} border border-${s.diffColor}/20`}>{s.difficulty}</span>
+      <span className={`px-2 py-0.5 rounded ${diffStyles[s.diffColor]}`}>{s.difficulty}</span>
     </div>
   </Link>
 );

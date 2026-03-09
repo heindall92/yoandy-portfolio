@@ -64,6 +64,13 @@ const machines = [
   },
 ];
 
+const diffStyles: Record<string, string> = {
+  "neon-magenta": "bg-neon-magenta/10 text-neon-magenta border border-neon-magenta/20",
+  "primary": "bg-primary/10 text-primary border border-primary/20",
+  "neon-yellow": "bg-neon-yellow/10 text-neon-yellow border border-neon-yellow/20",
+  "destructive": "bg-destructive/10 text-destructive border border-destructive/20",
+};
+
 const MachineCard = ({ m }: { m: typeof machines[0] }) => (
   <Link
     to={`/report/${m.slug}`}
@@ -83,7 +90,7 @@ const MachineCard = ({ m }: { m: typeof machines[0] }) => (
       ))}
     </div>
     <div className="flex items-center gap-3 font-mono text-xs">
-      <span className={`px-2 py-0.5 rounded bg-${m.diffColor}/10 text-${m.diffColor} border border-${m.diffColor}/20`}>{m.difficulty}</span>
+      <span className={`px-2 py-0.5 rounded ${diffStyles[m.diffColor]}`}>{m.difficulty}</span>
       <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
     </div>
   </Link>
