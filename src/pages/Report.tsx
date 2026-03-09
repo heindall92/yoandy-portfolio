@@ -58,6 +58,10 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Writeup — CCTV (HTB)",
     file: "/reports/cctv-htb.html",
   },
+  "airtouch-htb": {
+    title: "Writeup — AirTouch (HTB)",
+    file: "/reports/airtouch-htb.html",
+  },
 };
 
 const Report = () => {

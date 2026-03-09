@@ -459,6 +459,30 @@ const Index = () => {
               <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
             </div>
           </Link>
+          <Link
+            to="/report/airtouch-htb"
+            className="group block p-6 rounded-lg bg-card neon-border neon-border-hover transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📡</span>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors">AirTouch</h3>
+              </div>
+              <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              Explotación de servicio Wi-Fi con captura de handshake WPA2, cracking de contraseñas, enumeración interna y escalada de privilegios en sistema Linux para obtener root.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {["HTB", "Linux", "Wi-Fi", "WPA2"].map((tag) => (
+                <span key={tag} className="px-2 py-0.5 rounded-full font-mono text-xs bg-muted text-secondary border border-secondary/20">{tag}</span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20">HARD</span>
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
+            </div>
+          </Link>
         </div>
 
         {/* ===== HTB SHERLOCKS ===== */}
