@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
 import Report from "./pages/Report";
+import Machines from "./pages/Machines";
+import Sherlocks from "./pages/Sherlocks";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
