@@ -380,7 +380,7 @@ const Index = () => {
               ))}
             </div>
             <div className="flex items-center gap-3 font-mono text-xs">
-              <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/20">HARD</span>
+              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">EASY</span>
               <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">ROOTED ✓</span>
             </div>
           </Link>
