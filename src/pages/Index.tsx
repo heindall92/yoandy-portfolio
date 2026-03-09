@@ -237,22 +237,26 @@ const Index = () => {
         {/* ===== PENTEST REPORTS / MÁQUINAS HTB ===== */}
         <h3 className="font-display text-xl font-bold text-secondary text-glow-cyan mt-12 mb-6">{">"} Máquinas HTB</h3>
         <div className="grid md:grid-cols-2 gap-6">
-          {machines.slice(0, 4).map((m) => <MachineCard key={m.slug} m={m} />)}
+          {machines.slice(0, 4).map((m, i) => <MachineCard key={m.slug} m={m} index={i} />)}
         </div>
-        <div className="mt-6 text-center">
-          <Link to="/machines" className="inline-flex items-center gap-2 px-6 py-3 rounded-md neon-border neon-border-hover bg-muted/50 font-mono text-sm text-muted-foreground hover:text-primary transition-all duration-300">
-            Ver todas las máquinas ({machines.length}) <ArrowRight size={16} />
+        <div className="mt-8 text-center">
+          <Link to="/machines" className="group inline-flex items-center gap-3 px-8 py-3.5 rounded-xl bg-card border border-border/50 font-mono text-sm text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_20px_hsl(120_100%_50%/0.15)] transition-all duration-500">
+            <span>Ver todas las máquinas</span>
+            <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">{machines.length}</span>
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
           </Link>
         </div>
 
         {/* ===== HTB SHERLOCKS ===== */}
         <h3 className="font-display text-xl font-bold text-secondary text-glow-cyan mt-12 mb-6">{">"} HTB Sherlocks</h3>
         <div className="grid md:grid-cols-2 gap-6">
-          {sherlocks.slice(0, 4).map((s) => <SherlockCard key={s.slug} s={s} />)}
+          {sherlocks.slice(0, 4).map((s, i) => <SherlockCard key={s.slug} s={s} index={i} />)}
         </div>
-        <div className="mt-6 text-center">
-          <Link to="/sherlocks" className="inline-flex items-center gap-2 px-6 py-3 rounded-md neon-border neon-border-hover bg-muted/50 font-mono text-sm text-muted-foreground hover:text-primary transition-all duration-300">
-            Ver todos los Sherlocks ({sherlocks.length}) <ArrowRight size={16} />
+        <div className="mt-8 text-center">
+          <Link to="/sherlocks" className="group inline-flex items-center gap-3 px-8 py-3.5 rounded-xl bg-card border border-border/50 font-mono text-sm text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_20px_hsl(120_100%_50%/0.15)] transition-all duration-500">
+            <span>Ver todos los Sherlocks</span>
+            <span className="px-2 py-0.5 rounded bg-neon-cyan/10 text-neon-cyan text-xs">{sherlocks.length}</span>
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
           </Link>
         </div>
       </Section>
