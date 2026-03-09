@@ -1,8 +1,10 @@
 import { } from "react";
 import { Link } from "react-router-dom";
-import { Github, Linkedin, ExternalLink, Shield, Terminal, Wrench, CheckCircle, BookOpen, MapPin, FileText } from "lucide-react";
+import { Github, Linkedin, ExternalLink, Shield, Terminal, Wrench, CheckCircle, BookOpen, MapPin, FileText, ArrowRight } from "lucide-react";
 import profileImg from "@/assets/profile.jpg";
 import TypingAnimation from "@/components/TypingAnimation";
+import { machines, MachineCard } from "./Machines";
+import { sherlocks, SherlockCard } from "./Sherlocks";
 
 const socialLinks = [
   { icon: Linkedin, href: "https://www.linkedin.com/in/yoandyrd92/", label: "LinkedIn" },
