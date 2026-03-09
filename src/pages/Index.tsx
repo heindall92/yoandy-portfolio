@@ -347,7 +347,7 @@ const Index = () => {
               <FileText size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              Log4Shell (CVE-2021-44228) → MongoDB → SSH. Explotación de UniFi Network con JNDI injection.
+              Log4Shell (CVE-2021-44228) en UniFi 6.4.54 vía inyección JNDI en el login. Shell inversa con RogueJNDI y manipulación de MongoDB para acceso root.
             </p>
             <div className="flex flex-wrap gap-2 mb-3">
               {["Log4Shell", "CVE-2021-44228", "MongoDB", "JNDI"].map((tag) => (
