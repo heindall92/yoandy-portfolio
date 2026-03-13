@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Report from "./pages/Report";
 import Machines from "./pages/Machines";
 import Sherlocks from "./pages/Sherlocks";
+import HackMyVM from "./pages/HackMyVM";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
