@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Report from "./pages/Report";
 import Machines from "./pages/Machines";
 import Sherlocks from "./pages/Sherlocks";
+import HackMyVM from "./pages/HackMyVM";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/machines" element={<Machines />} />
           <Route path="/sherlocks" element={<Sherlocks />} />
+          <Route path="/hackmyvm" element={<HackMyVM />} />
           <Route path="/report/:slug" element={<Report />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
