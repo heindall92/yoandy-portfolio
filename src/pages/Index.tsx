@@ -5,6 +5,7 @@ import profileImg from "@/assets/profile.jpg";
 import TypingAnimation from "@/components/TypingAnimation";
 import { machines, MachineCard } from "./Machines";
 import { sherlocks, SherlockCard } from "./Sherlocks";
+import { hmvMachines, HMVCard } from "./HackMyVM";
 
 const socialLinks = [
   { icon: Linkedin, href: "https://www.linkedin.com/in/yoandyrd92/", label: "LinkedIn" },

@@ -62,6 +62,14 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Writeup — AirTouch (HTB)",
     file: "/reports/airtouch-htb.html",
   },
+  "dc01-hmv": {
+    title: "Writeup — DC01 (HackMyVM)",
+    file: "/reports/dc01-hmv.html",
+  },
+  "tripladvisor-hmv": {
+    title: "Writeup — TriplAdvisor (HackMyVM)",
+    file: "/reports/tripladvisor-hmv.html",
+  },
 };
 
 const Report = () => {
