@@ -14,7 +14,7 @@ const hmvMachines = [
     slug: "tripladvisor-hmv", emoji: "✈️", name: "TriplAdvisor",
     desc: "Windows Server 2008 R2 con XAMPP y WordPress. LFI en el plugin Site Editor (CVE-2018-7422), RCE mediante Log Poisoning en Apache y escalada a SYSTEM con JuicyPotato explotando SeImpersonatePrivilege.",
     tags: ["WordPress", "LFI", "Log Poisoning", "JuicyPotato"],
-    difficulty: "EASY", diffColor: "primary",
+    difficulty: "EASY", diffColor: "neon-magenta",
     os: "Windows",
   },
 ];
