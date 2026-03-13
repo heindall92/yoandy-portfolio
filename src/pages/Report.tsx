@@ -66,6 +66,10 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Writeup — DC01 (HackMyVM)",
     file: "/reports/dc01-hmv.html",
   },
+  "dc01-v2-hmv": {
+    title: "Writeup — DC01 v2 (HackMyVM)",
+    file: "/reports/dc01-v2-hmv.html",
+  },
   "tripladvisor-hmv": {
     title: "Writeup — TriplAdvisor (HackMyVM)",
     file: "/reports/tripladvisor-hmv.html",
