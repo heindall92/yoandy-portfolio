@@ -260,6 +260,19 @@ const Index = () => {
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
           </Link>
         </div>
+
+        {/* ===== HACKMYVM ===== */}
+        <h3 className="font-display text-xl font-bold text-secondary text-glow-cyan mt-12 mb-6">{">"} HackMyVM</h3>
+        <div className="grid md:grid-cols-2 gap-6">
+          {hmvMachines.slice(0, 4).map((m, i) => <HMVCard key={m.slug} m={m} index={i} />)}
+        </div>
+        <div className="mt-8 text-center">
+          <Link to="/hackmyvm" className="group inline-flex items-center gap-3 px-8 py-3.5 rounded-xl bg-card border border-border/50 font-mono text-sm text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_20px_hsl(120_100%_50%/0.15)] transition-all duration-500">
+            <span>Ver todas las máquinas HackMyVM</span>
+            <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">{hmvMachines.length}</span>
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
+          </Link>
+        </div>
       </Section>
 
     </div>
