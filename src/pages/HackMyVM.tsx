@@ -11,6 +11,13 @@ const hmvMachines = [
     os: "Windows",
   },
   {
+    slug: "dc01-v2-hmv", emoji: "🏰", name: "DC01 — Pentest Report",
+    desc: "Segundo enfoque del DC01: informe completo estilo pentest con cadena de ataque detallada — RID brute-force de 1069 usuarios, password spray, Kerberoasting de file_svc, y Pass-the-Hash con la cuenta de máquina FileServer$ para comprometer el dominio como SYSTEM.",
+    tags: ["Active Directory", "Pentest Report", "Kerberoasting", "Pass the Hash"],
+    difficulty: "EASY", diffColor: "neon-magenta",
+    os: "Windows",
+  },
+  {
     slug: "tripladvisor-hmv", emoji: "✈️", name: "TriplAdvisor",
     desc: "Windows Server 2008 R2 con XAMPP y WordPress. LFI en el plugin Site Editor (CVE-2018-7422), RCE mediante Log Poisoning en Apache y escalada a SYSTEM con JuicyPotato explotando SeImpersonatePrivilege.",
     tags: ["WordPress", "LFI", "Log Poisoning", "JuicyPotato"],
