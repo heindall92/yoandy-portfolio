@@ -7,14 +7,14 @@ const hmvMachines = [
     slug: "dc01-hmv", emoji: "🏰", name: "DC01",
     desc: "Controlador de dominio Windows Server 2022. Enumeración de usuarios con RID brute-force, password spraying para acceso inicial, Kerberoasting para crackear cuentas de servicio, y Pass-the-Hash con privilegios de Enterprise Admin para obtener root.",
     tags: ["Active Directory", "Kerberoasting", "Pass the Hash", "SMB"],
-    difficulty: "EASY", diffColor: "primary",
+    difficulty: "EASY", diffColor: "neon-magenta",
     os: "Windows",
   },
   {
     slug: "tripladvisor-hmv", emoji: "✈️", name: "TriplAdvisor",
     desc: "Windows Server 2008 R2 con XAMPP y WordPress. LFI en el plugin Site Editor (CVE-2018-7422), RCE mediante Log Poisoning en Apache y escalada a SYSTEM con JuicyPotato explotando SeImpersonatePrivilege.",
     tags: ["WordPress", "LFI", "Log Poisoning", "JuicyPotato"],
-    difficulty: "EASY", diffColor: "primary",
+    difficulty: "EASY", diffColor: "neon-magenta",
     os: "Windows",
   },
 ];
