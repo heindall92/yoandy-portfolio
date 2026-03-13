@@ -5,17 +5,17 @@ import { motion } from "framer-motion";
 const hmvMachines = [
   {
     slug: "dc01-hmv", emoji: "🏰", name: "DC01",
-    desc: "Active Directory DC con password spraying, Kerberoasting de cuentas de servicio, backup de hashes NTLM y escalada a Enterprise Admin vía Pass-the-Hash con FileServer$.",
+    desc: "Controlador de dominio Windows Server 2022. Enumeración de usuarios con RID brute-force, password spraying para acceso inicial, Kerberoasting para crackear cuentas de servicio, y Pass-the-Hash con privilegios de Enterprise Admin para obtener root.",
     tags: ["Active Directory", "Kerberoasting", "Pass the Hash", "SMB"],
     difficulty: "EASY", diffColor: "primary",
     os: "Windows",
   },
   {
     slug: "tripladvisor-hmv", emoji: "✈️", name: "TriplAdvisor",
-    desc: "Máquina HackMyVM con enumeración web, explotación de vulnerabilidades y escalada de privilegios.",
-    tags: ["Web", "Enumeration", "Privesc", "Linux"],
+    desc: "Windows Server 2008 R2 con XAMPP y WordPress. LFI en el plugin Site Editor (CVE-2018-7422), RCE mediante Log Poisoning en Apache y escalada a SYSTEM con JuicyPotato explotando SeImpersonatePrivilege.",
+    tags: ["WordPress", "LFI", "Log Poisoning", "JuicyPotato"],
     difficulty: "EASY", diffColor: "primary",
-    os: "Linux",
+    os: "Windows",
   },
 ];
 
