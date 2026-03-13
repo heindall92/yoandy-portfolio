@@ -7,7 +7,7 @@ const hmvMachines = [
     slug: "dc01-hmv", emoji: "🏰", name: "DC01",
     desc: "Controlador de dominio Windows Server 2022. Enumeración de usuarios con RID brute-force, password spraying para acceso inicial, Kerberoasting para crackear cuentas de servicio, y Pass-the-Hash con privilegios de Enterprise Admin para obtener root.",
     tags: ["Active Directory", "Kerberoasting", "Pass the Hash", "SMB"],
-    difficulty: "EASY", diffColor: "primary",
+    difficulty: "EASY", diffColor: "neon-magenta",
     os: "Windows",
   },
   {
