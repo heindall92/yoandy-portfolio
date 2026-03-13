@@ -1,4 +1,4 @@
-import { } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Github, Linkedin, ExternalLink, Shield, Terminal, Wrench, CheckCircle, BookOpen, MapPin, FileText, ArrowRight } from "lucide-react";
 import profileImg from "@/assets/profile.jpg";
@@ -49,27 +49,58 @@ const Section = ({ id, children, className = "" }: { id: string; children: React
   </section>
 );
 
-const MatrixRain = () => (
-  <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden opacity-20">
-    {Array.from({ length: 30 }).map((_, i) => (
-      <div
-        key={i}
-        className="absolute top-0 text-primary font-mono text-xs leading-tight animate-matrix-fall"
-        style={{
-          left: `${(i / 30) * 100}%`,
-          animationDuration: `${8 + Math.random() * 12}s`,
-          animationDelay: `${-Math.random() * 20}s`,
-        }}
-      >
-        {Array.from({ length: 40 }).map((_, j) => (
-          <div key={j} className="opacity-60">
-            {"アイウエオカキクケコ0123456789ABCDEF"[Math.floor(Math.random() * 34)]}
-          </div>
-        ))}
-      </div>
-    ))}
-  </div>
-);
+const MatrixRain = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const chars = 'アイウエオカキクケコ0123456789ABCDEF<>{}[]';
+    const fontSize = 14;
+    let cols = Math.floor(canvas.width / fontSize);
+    let drops = Array(cols).fill(1);
+
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      cols = Math.floor(canvas.width / fontSize);
+      drops = Array(cols).fill(1);
+    };
+    window.addEventListener('resize', handleResize);
+
+    const interval = setInterval(() => {
+      ctx.fillStyle = 'rgba(10,14,26,0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#4ade80';
+      ctx.font = fontSize + 'px monospace';
+      for (let i = 0; i < drops.length; i++) {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    }, 35);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 z-0 pointer-events-none"
+      style={{ opacity: 0.15 }}
+    />
+  );
+};
 
 const Index = () => {
   return (
