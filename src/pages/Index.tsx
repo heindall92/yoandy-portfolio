@@ -1,4 +1,4 @@
-import { } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Github, Linkedin, ExternalLink, Shield, Terminal, Wrench, CheckCircle, BookOpen, MapPin, FileText, ArrowRight } from "lucide-react";
 import profileImg from "@/assets/profile.jpg";
