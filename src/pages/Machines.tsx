@@ -4,6 +4,41 @@ import { motion } from "framer-motion";
 
 const machines = [
   {
+    slug: "meow-htb", emoji: "🐱", name: "Meow",
+    desc: "Acceso Telnet sin autenticación al servidor. Enumeración básica y obtención de flag como root.",
+    tags: ["Telnet", "Enumeration", "Linux"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "fawn-htb", emoji: "🦌", name: "Fawn",
+    desc: "Login anónimo en servidor FTP para descargar la flag directamente. Reconocimiento con Nmap.",
+    tags: ["FTP", "Anonymous Login", "Nmap"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "dancing-htb", emoji: "💃", name: "Dancing",
+    desc: "Sesión nula en SMB para enumerar shares y obtener la flag desde un recurso compartido abierto.",
+    tags: ["SMB", "Null Session", "smbclient"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Windows",
+  },
+  {
+    slug: "redeemer-htb", emoji: "🔑", name: "Redeemer",
+    desc: "Acceso no autenticado a Redis. Enumeración de bases de datos y extracción de la flag almacenada.",
+    tags: ["Redis", "NoSQL", "Enumeration"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "appointment-htb", emoji: "📅", name: "Appointment",
+    desc: "SQL Injection en formulario de login para bypass de autenticación y obtención de la flag.",
+    tags: ["SQLi", "Login Bypass", "Web"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
     slug: "vaccine-htb", emoji: "💉", name: "Vaccine",
     desc: "FTP anónimo → SQLi → RCE → Root. Máquina Starting Point con escalada completa.",
     tags: ["SQLi", "FTP", "PostgreSQL", "GTFOBins"],

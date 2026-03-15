@@ -2,6 +2,26 @@ import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
 const reports: Record<string, { title: string; file: string }> = {
+  "meow-htb": {
+    title: "Writeup — Meow (HTB)",
+    file: "/reports/meow-htb.html",
+  },
+  "fawn-htb": {
+    title: "Writeup — Fawn (HTB)",
+    file: "/reports/fawn-htb.html",
+  },
+  "dancing-htb": {
+    title: "Writeup — Dancing (HTB)",
+    file: "/reports/dancing-htb.html",
+  },
+  "redeemer-htb": {
+    title: "Writeup — Redeemer (HTB)",
+    file: "/reports/redeemer-htb.html",
+  },
+  "appointment-htb": {
+    title: "Writeup — Appointment (HTB)",
+    file: "/reports/appointment-htb.html",
+  },
   "vaccine-htb": {
     title: "Writeup — Vaccine (HTB)",
     file: "/reports/vaccine-htb.html",
