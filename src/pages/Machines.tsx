@@ -109,6 +109,13 @@ const machines = [
     os: "Linux",
   },
   {
+    slug: "ignition-htb", emoji: "🔥", name: "Ignition",
+    desc: "Enumeración de vhosts y directory fuzzing con Gobuster contra servidor Nginx. Bypass de login con credenciales por defecto en panel Magento.",
+    tags: ["Web", "Gobuster", "Magento", "Default Creds"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
     slug: "eighteen-htb", emoji: "🔢", name: "Eighteen",
     desc: "Inyección SQL en el endpoint /add_expense para obtener ejecución de comandos vía xp_cmdshell, suplantación de identidad en MSSQL, acceso remoto con Evil-WinRM, explotación de BadSuccessor (CVE-2025-53779) para DCSync y escalada a Administrador del dominio. Windows Server 2025 AD DC.",
     tags: ["HTB", "Windows", "Active Directory", "CVE-2025-53779"],
