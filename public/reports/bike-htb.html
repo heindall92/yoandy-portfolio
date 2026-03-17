@@ -145,22 +145,20 @@ a:hover { text-decoration: underline; }
 .main { min-width: 0; padding-right: 36px; }
 
 /* ─── SIDEBAR ─── */
-.sidebar { position: sticky; top: 24px; }
+.sidebar { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 20px; }
 .sidebar-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 20px;
-  margin-bottom: 16px;
 }
-.sidebar-card h3 {
-  font-size: 12px;
+.sidebar-card h3, .sidebar-card h4 {
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
+  letter-spacing: 1px;
+  color: var(--accent);
   margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
+  font-weight: 700;
 }
 .info-row {
   display: flex;
