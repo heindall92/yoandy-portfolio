@@ -122,6 +122,10 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Writeup — TriplAdvisor (HackMyVM)",
     file: "/reports/tripladvisor-hmv.html",
   },
+  "devoops-hmv": {
+    title: "Writeup — Devoops (HackMyVM)",
+    file: "/reports/devoops-hmv.html",
+  },
 };
 
 const Report = () => {

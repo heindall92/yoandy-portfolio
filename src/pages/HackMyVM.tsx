@@ -24,6 +24,13 @@ const hmvMachines = [
     difficulty: "EASY", diffColor: "neon-magenta",
     os: "Windows",
   },
+  {
+    slug: "devoops-hmv", emoji: "💀", name: "Devoops",
+    desc: "Alpine Linux con Vite 6.2 + Express.js. Lectura arbitraria de ficheros (CVE-2025-30208), JWT forjado para RCE, clave SSH privada en historial Git de Gitea, y escalada a root con sudo arp (GTFOBins).",
+    tags: ["CVE-2025-30208", "JWT", "RCE", "GTFOBins", "Gitea"],
+    difficulty: "EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
 ];
 
 const diffStyles: Record<string, { badge: string; stripe: string; glow: string }> = {
