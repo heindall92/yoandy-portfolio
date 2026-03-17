@@ -74,6 +74,13 @@ const machines = [
     os: "Linux",
   },
   {
+    slug: "bike-htb", emoji: "🏍️", name: "Bike",
+    desc: "SSTI en Node.js/Handlebars. Inyección de plantillas del lado del servidor para ejecución de código remoto.",
+    tags: ["SSTI", "Node.js", "Handlebars", "Web"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
     slug: "vaccine-htb", emoji: "💉", name: "Vaccine",
     desc: "FTP anónimo → SQLi → RCE → Root. Máquina Starting Point con escalada completa.",
     tags: ["SQLi", "FTP", "PostgreSQL", "GTFOBins"],

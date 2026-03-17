@@ -62,6 +62,10 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Sherlock — Brutus (HTB)",
     file: "/reports/brutus-sherlock.html",
   },
+  "bike-htb": {
+    title: "Writeup — Bike (HTB)",
+    file: "/reports/bike-htb.html",
+  },
   "explosion-htb": {
     title: "Writeup — Explosion (HTB)",
     file: "/reports/explosion-htb.html",
