@@ -62,6 +62,26 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Sherlock — Brutus (HTB)",
     file: "/reports/brutus-sherlock.html",
   },
+  "explosion-htb": {
+    title: "Writeup — Explosion (HTB)",
+    file: "/reports/explosion-htb.html",
+  },
+  "preignition-htb": {
+    title: "Writeup — Preignition (HTB)",
+    file: "/reports/preignition-htb.html",
+  },
+  "mongod-htb": {
+    title: "Writeup — Mongod (HTB)",
+    file: "/reports/mongod-htb.html",
+  },
+  "synced-htb": {
+    title: "Writeup — Synced (HTB)",
+    file: "/reports/synced-htb.html",
+  },
+  "funnel-htb": {
+    title: "Writeup — Funnel (HTB)",
+    file: "/reports/funnel-htb.html",
+  },
   "eighteen-htb": {
     title: "Writeup — Eighteen (HTB)",
     file: "/reports/eighteen-htb.html",

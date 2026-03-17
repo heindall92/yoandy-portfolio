@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTB — Explosion | RDP + WinRM con credenciales vacías</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent:#4ade80;--bg:#0a0e1a;--card:#111827;--card2:#1a2540;--border:#1e2d4a;
+  --text:#e2e8f0;--text-muted:#64748b;--text-dim:#94a3b8;
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;--green:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.6;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.88em;color:var(--accent);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace;}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-size:1.4rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;}
+.hero{background:linear-gradient(135deg,#0a0e1a,#0d1a2b,#091a10);padding:4rem 2rem 3rem;position:relative;overflow:hidden;border-bottom:1px solid var(--border);}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 60% 40%,rgba(74,222,128,.06) 0%,transparent 60%);}
+.hero-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 1.5rem;}
+.watermark{position:absolute;right:3rem;bottom:.5rem;font-size:9rem;color:rgba(74,222,128,.04);font-family:'JetBrains Mono',monospace;font-weight:900;line-height:1;user-select:none;}
+.badge{display:inline-block;background:rgba(74,222,128,.1);color:var(--accent);border:1px solid rgba(74,222,128,.3);border-radius:100px;padding:.25rem 1rem;font-size:.75rem;font-weight:600;margin-bottom:1rem;}
+.hero h1{font-size:3rem;font-weight:900;color:#fff;margin-bottom:.25rem;}
+.hero .subtitle{font-size:1.1rem;color:var(--text-dim);margin-bottom:1.25rem;}
+.meta-chips{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+.chip{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:.3rem .75rem;font-size:.8rem;color:var(--text-dim);}
+.flag-display{font-family:'JetBrains Mono',monospace;background:rgba(74,222,128,.1);color:var(--accent);padding:.5rem 1.25rem;border-radius:8px;display:inline-block;font-size:.9rem;border:1px solid rgba(74,222,128,.2);}
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}}
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:'JetBrains Mono',monospace;}
+.why-box{background:rgba(96,165,250,.07);border-left:3px solid var(--blue);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--blue);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text-dim);}
+.cmd-annotated{background:#050810;border-radius:8px;padding:1rem 1.25rem;font-family:'JetBrains Mono',monospace;margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text-dim);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:#050810;border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--text-dim);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(74,222,128,.07);border-left:3px solid var(--accent);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text-dim);}
+.decision-box{background:rgba(251,146,60,.07);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text-dim);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text-dim);}
+.vuln-card{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.25);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.method-badge{display:inline-block;border-radius:100px;padding:.2rem .75rem;font-size:.72rem;font-weight:700;margin-bottom:.75rem;}
+.method-primary{background:rgba(74,222,128,.15);color:var(--green);border:1px solid rgba(74,222,128,.35);}
+.method-alt{background:rgba(96,165,250,.15);color:var(--blue);border:1px solid rgba(96,165,250,.35);}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--blue);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--blue);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text-dim);}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--blue);}
+.lesson-card li{font-size:.83rem;color:var(--text-dim);}
+.flag-box{background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(74,222,128,.02));border:1px solid rgba(74,222,128,.3);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;}
+.flag-value{font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--accent);background:rgba(74,222,128,.1);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(74,222,128,.2);}
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text-muted);}.meta-value{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:'JetBrains Mono',monospace;margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--accent);text-align:center;line-height:1;margin:.5rem 0;font-family:'JetBrains Mono',monospace;}
+.score-label{text-align:center;font-size:.75rem;color:var(--text-muted);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text-muted);line-height:1.4;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text-muted);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.divider{border:none;border-top:2px dashed var(--border);margin:1.5rem 0;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="badge">HTB · Starting Point · Very Easy · Windows</div>
+    <h1>Explosion</h1>
+    <p class="subtitle">RDP con credenciales vacías — Acceso como Administrator vía xfreerdp y evil-winrm</p>
+    <div class="meta-chips">
+      <span class="chip">🖥 10.129.6.217</span>
+      <span class="chip">🪟 Windows Server 2019</span>
+      <span class="chip">🔌 RDP 3389 · WinRM 5985</span>
+      <span class="chip">⏱ ~5 minutos</span>
+      <span class="chip">💻 3 comandos</span>
+    </div>
+    <div class="flag-display">FLAG: 951fa96d7830c451b536be5a6be008a0</div>
+  </div>
+  <div class="watermark">></div>
+</div>
+
+<div class="container">
+<main>
+
+<div class="section">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p>La máquina Explosion es un sistema <strong>Windows Server 2019</strong> que expone RDP (puerto 3389) y WinRM (puerto 5985). La misconfiguration central es que la cuenta <strong>Administrator no tiene contraseña configurada</strong> — o la contraseña es una cadena vacía. Esto permite acceso remoto completo sin credenciales. La flag se encuentra directamente en el Escritorio del Administrador.</p>
+    <p style="margin-top:.75rem;">La lección clave: en máquinas Windows HTB, probar siempre <strong>contraseña vacía</strong> con el usuario Administrator. Y cuando RDP falla con pass vacío, <strong>evil-winrm puede funcionar igualmente</strong>.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>¿Qué es RDP y por qué es un vector de ataque?</h2>
+  <p style="color:var(--text-dim);font-size:.92rem;margin-bottom:1rem;"><strong>RDP</strong> (Remote Desktop Protocol) es el protocolo de Microsoft para acceso remoto con interfaz gráfica. Puerto 3389 TCP. Permite controlar un Windows remotamente como si estuvieras frente al monitor. En entornos corporativos es ubicuo — y frecuentemente mal configurado.</p>
+  <div class="vuln-card">
+    <h3>⚠ Administrator sin contraseña = acceso total sin restricciones</h3>
+    <p style="font-size:.9rem;color:var(--text-dim);">Si la cuenta Administrator tiene contraseña vacía y RDP está habilitado, cualquier atacante en la red puede conectarse con acceso de nivel más alto posible en Windows. No hay exploit, no hay CVE — solo una misconfiguration básica que da las llaves del castillo.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Reconocimiento — Paso a Paso</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Reconocimiento</div>
+    <h3>Nmap fase rápida — Todos los puertos</h3>
+    <div class="why-box">
+      <strong>¿Por qué escanear todos los puertos en Windows?</strong>
+      <p>Windows expone docenas de servicios por defecto (RPC, NetBIOS, SMB, RDP, WinRM). Necesitamos el mapa completo para priorizar. RDP en 3389 = acceso gráfico completo. WinRM en 5985 = shell PowerShell. Cualquiera de los dos con creds vacías = game over.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p-</span> <span class="flag-opt">--open</span> <span class="flag-opt">-n</span> <span class="flag-opt">-T4</span> <span class="ip">10.129.6.217</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p-</code> → todos los 65535 puertos TCP</div>
+        <div class="cmd-note"><code>--open</code> → mostrar solo puertos abiertos (filtra closed/filtered)</div>
+        <div class="cmd-note"><code>-n</code> → sin resolución DNS (más rápido)</div>
+        <div class="cmd-note"><code>-T4</code> → velocidad agresiva, apropiado en lab HTB</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>PORT      STATE SERVICE
+135/tcp   open  msrpc
+139/tcp   open  netbios-ssn
+445/tcp   open  microsoft-ds
+3389/tcp  open  ms-wbt-server
+5985/tcp  open  wsman
+47001/tcp open  winrm
+49664/tcp open  unknown
+49665/tcp open  unknown
+49666/tcp open  unknown
+49667/tcp open  unknown
+49668/tcp open  unknown
+49669/tcp open  unknown</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué significa cada puerto?</strong>
+      <ul>
+        <li><code>135/tcp msrpc</code> → Microsoft RPC — comunicación interna Windows</li>
+        <li><code>139/445 SMB</code> → File sharing Windows — vector secundario</li>
+        <li><code>3389/tcp ms-wbt-server</code> → <strong>RDP — acceso gráfico remoto. Objetivo principal.</strong></li>
+        <li><code>5985/tcp wsman</code> y <code>47001/tcp winrm</code> → <strong>WinRM — shell PowerShell remota. Objetivo secundario.</strong></li>
+        <li><code>49664-49669</code> → puertos RPC dinámicos de Windows — ignorar</li>
+      </ul>
+    </div>
+    <div class="decision-box"><strong>Decisión tomada</strong><p>RDP (3389) y WinRM (5985) son los vectores. En Starting Point, siempre probar credenciales vacías/default primero. Fase profunda para confirmar OS y versión.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Reconocimiento</div>
+    <h3>Nmap fase profunda — Versiones y scripts</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p135,139,445,3389,5985</span> <span class="flag-opt">-sC</span> <span class="flag-opt">-sV</span> <span class="flag-opt">-n</span> <span class="ip">10.129.6.217</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p135,139,445,3389,5985</code> → solo puertos relevantes identificados en fase anterior</div>
+        <div class="cmd-note"><code>-sC</code> → scripts NSE por defecto: rdp-enum-encryption, smb-os-discovery</div>
+        <div class="cmd-note"><code>-sV</code> → versiones exactas de servicios</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>PORT     STATE SERVICE       VERSION
+135/tcp  open  msrpc         Microsoft Windows RPC
+139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+445/tcp  open  microsoft-ds?
+3389/tcp open  ms-wbt-server Microsoft Terminal Services
+| rdp-enum-encryption:
+|   Security layer
+|     CredSSP (NLA): SUCCESS
+5985/tcp open  http          Microsoft HTTPAPI httpd 2.0
+
+Host script results:
+| smb2-security-mode:
+|   3.1.1:
+|_    Message signing enabled but not required
+OS: Windows Server 2019 (10.0.17763)</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Análisis del output</strong>
+      <ul>
+        <li><code>Microsoft Terminal Services</code> → RDP confirmado y activo</li>
+        <li><code>CredSSP (NLA): SUCCESS</code> → Network Level Authentication habilitado — requiere credenciales antes de mostrar pantalla de login</li>
+        <li><code>Windows Server 2019 (10.0.17763)</code> → OS exacto confirmado</li>
+        <li><code>Message signing enabled but not required</code> → vulnerable a NTLM Relay como bonus</li>
+      </ul>
+    </div>
+    <div class="decision-box"><strong>Decisión tomada</strong><p>Windows Server 2019 con RDP activo. Probar <code>administrator:""</code> — credencial vacía es el patrón más común en Starting Point.</p></div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Explotación — Método 1: xfreerdp (acceso gráfico)</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3A — Explotación (Método Principal)</div>
+    <div class="method-badge method-primary">✅ MÉTODO PRINCIPAL — xfreerdp</div>
+    <h3>Conectar vía RDP con administrator sin contraseña</h3>
+    <div class="why-box">
+      <strong>¿Qué es xfreerdp?</strong>
+      <p><code>xfreerdp</code> es el cliente RDP de código abierto para Linux, parte del proyecto FreeRDP. Permite conectarse a escritorios Windows remotos desde Kali. Es la alternativa libre a "Remote Desktop Connection" de Windows. El flag <code>/d:htb</code> es crítico — especifica el dominio y permite la autenticación sin contraseña.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">xfreerdp</span>
+        <span class="flag-opt">/v:</span><span class="ip">10.129.6.217</span>
+        <span class="flag-opt">/u:</span><span class="param">administrator</span>
+        <span class="flag-opt">/p:</span><span class="param">""</span>
+        <span class="flag-opt">/cert:ignore</span>
+        <span class="flag-opt">/dynamic-resolution</span>
+        <span class="flag-opt">+clipboard</span>
+        <span class="flag-opt">/d:</span><span class="param">htb</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>xfreerdp</code> → cliente RDP para Linux (paquete freerdp2-x11)</div>
+        <div class="cmd-note"><code>/v:10.129.6.217</code> → (server) IP del objetivo</div>
+        <div class="cmd-note"><code>/u:administrator</code> → usuario a autenticar</div>
+        <div class="cmd-note"><code>/p:""</code> → contraseña VACÍA (cadena vacía entre comillas dobles)</div>
+        <div class="cmd-note"><code>/cert:ignore</code> → ignorar errores de certificado SSL/TLS (común en labs)</div>
+        <div class="cmd-note"><code>/dynamic-resolution</code> → ajustar resolución de pantalla automáticamente</div>
+        <div class="cmd-note"><code>+clipboard</code> → habilitar portapapeles compartido (copiar/pegar entre Kali y Windows)</div>
+        <div class="cmd-note"><code>/d:htb</code> → ⚠ CRÍTICO: especificar dominio "htb". Sin este flag, xfreerdp falla con "connection reset" aunque las credenciales sean correctas</div>
+      </div>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Por qué /d:htb es la clave?</strong>
+      <p>Sin <code>/d:htb</code>, xfreerdp intenta autenticarse como usuario local y el servidor rechaza la conexión (connection reset by peer). Al especificar el dominio, el servidor procesa la autenticación correctamente y acepta la contraseña vacía. Esta es la diferencia entre que funcione o no.</p>
+    </div>
+    <div class="decision-box"><strong>Resultado</strong><p>Se abre sesión RDP completa con escritorio gráfico de Windows Server 2019. La flag está en el Desktop del Administrator.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3B — Obtener Flag</div>
+    <h3>Flag en el Escritorio del Administrator</h3>
+    <div class="output-box">
+      <div class="output-label">Archivo: C:\Users\Administrator\Desktop\flag.txt</div>
+      <pre>951fa96d7830c451b536be5a6be008a0</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Cómo?</strong>
+      <p>Una vez con acceso RDP gráfico, la flag está visible directamente en el Desktop como archivo <code>flag.txt</code>. Doble click o abrir con Notepad. También puede copiarse al portapapeles de Kali gracias al flag <code>+clipboard</code>.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="section">
+  <h2>Explotación — Método 2: evil-winrm (shell de línea de comandos)</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3B (Alternativo) — Explotación vía WinRM</div>
+    <div class="method-badge method-alt">🔵 MÉTODO ALTERNATIVO — evil-winrm</div>
+    <h3>Shell remota PowerShell con administrator sin contraseña</h3>
+    <div class="why-box">
+      <strong>¿Qué es evil-winrm?</strong>
+      <p><code>evil-winrm</code> es una herramienta de pentesting que aprovecha el servicio WinRM (Windows Remote Management) para obtener una shell interactiva de PowerShell. Es el equivalente a SSH para Windows. Útil cuando RDP no está disponible o cuando necesitamos automatizar comandos.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">evil-winrm</span>
+        <span class="flag-opt">-i</span> <span class="ip">10.129.6.217</span>
+        <span class="flag-opt">-u</span> <span class="param">administrator</span>
+        <span class="flag-opt">-p</span> <span class="param">''</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>evil-winrm</code> → cliente WinRM para pentesting, genera shell PowerShell interactiva</div>
+        <div class="cmd-note"><code>-i 10.129.6.217</code> → IP del objetivo</div>
+        <div class="cmd-note"><code>-u administrator</code> → usuario</div>
+        <div class="cmd-note"><code>-p ''</code> → contraseña vacía (comillas simples = string vacío en bash)</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Sesión evil-winrm</div>
+      <pre>Evil-WinRM shell v3.x
+
+Info: Establishing connection to remote endpoint
+
+*Evil-WinRM* PS C:\Users\Administrator\Documents> type C:\Users\Administrator\Desktop\flag.txt
+951fa96d7830c451b536be5a6be008a0</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Cuándo usar evil-winrm vs xfreerdp?</strong>
+      <ul>
+        <li><strong>xfreerdp</strong> → cuando necesitas GUI, explorar archivos visualmente, o cuando no tienes automatización</li>
+        <li><strong>evil-winrm</strong> → cuando necesitas ejecutar comandos, subir/bajar archivos, pivotar, o cuando RDP falla</li>
+        <li><strong>Regla Ghost-Ops</strong>: Si xfreerdp falla sin <code>/d:htb</code>, probar evil-winrm. Si evil-winrm falla, revisar el dominio en xfreerdp.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Panel de Agentes Ghost-Ops</h2>
+  <div class="agent-panel">
+    <div class="agent-card rto">
+      <div class="agent-label">⚔ RTO — Red Team</div>
+      <p>Vector directo: RDP + WinRM ambos con administrator:empty. Dos vectores paralelos disponibles. RDP da GUI completa. WinRM da shell scriptable. En red real: dump del SAM/LSASS para extraer todos los hashes.</p>
+    </div>
+    <div class="agent-card bta">
+      <div class="agent-label">🛡 BTA — Blue Team</div>
+      <p>Nivel de ruido: ALTO. Login RDP genera Event ID 4624 (logon type 10) + 4648. WinRM genera 4624 (type 3) + logs en Microsoft-Windows-WinRM. Detectable con cualquier SIEM básico.</p>
+    </div>
+    <div class="agent-card bhm">
+      <div class="agent-label">🎭 BHM — Black Hat</div>
+      <p>Administrator sin pass = acceso total. En red real: usar como pivote para moverse lateralmente, dump de credenciales del dominio si está unido a AD, instalar C2 agent. Flag fue lo menos interesante.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Comparativa de Métodos</h2>
+  <table class="data-table">
+    <tr><th>Aspecto</th><th>xfreerdp</th><th>evil-winrm</th></tr>
+    <tr><td>Acceso</td><td>Escritorio gráfico completo</td><td>Shell PowerShell</td></tr>
+    <tr><td>Puerto</td><td>3389/tcp RDP</td><td>5985/tcp WinRM</td></tr>
+    <tr><td>Comando crítico</td><td><code>/d:htb</code> (dominio)</td><td><code>-p ''</code> (pass vacío)</td></tr>
+    <tr><td>Ruido en logs</td><td>Logon type 10 (RemoteInteractive)</td><td>Logon type 3 (Network)</td></tr>
+    <tr><td>Ideal para</td><td>Explorar GUI, Copy-Paste</td><td>Automatización, scripting</td></tr>
+    <tr><td>Falla si...</td><td>Falta /d:htb → connection reset</td><td>WinRM no acepte pass vacío</td></tr>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li>Siempre probar <code>administrator:""</code> en RDP y WinRM antes de cualquier brute force</li>
+        <li><code>/d:htb</code> en xfreerdp es clave para HTB — sin dominio, falla con pass vacío</li>
+        <li>Si RDP falla → probar WinRM con evil-winrm (mismo usuario/pass)</li>
+        <li>RDP (3389) + WinRM (5985) = dos puertas al mismo lugar</li>
+        <li>TTL=127 → Windows → pensar RDP, WinRM, SMB inmediatamente</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li>Nunca dejar Administrator sin contraseña — política de contraseñas mínima obligatoria</li>
+        <li>Deshabilitar RDP si no es necesario: <code>Set-ItemProperty -Path 'HKLM:\...\Terminal Server' -Name fDenyTSConnections -Value 1</code></li>
+        <li>Restringir WinRM por IP con GPO o firewall</li>
+        <li>Detectar: Event ID 4624 Logon Type 10 desde IPs externas</li>
+        <li>Usar NLA + contraseñas fuertes + MFA para RDP en producción</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción</th></tr>
+    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap para descubrir RDP y WinRM</td></tr>
+    <tr><td><code>T1021.001</code></td><td>Remote Services: RDP</td><td>xfreerdp con administrator:empty</td></tr>
+    <tr><td><code>T1021.006</code></td><td>Remote Services: WinRM</td><td>evil-winrm con administrator:empty</td></tr>
+    <tr><td><code>T1078.002</code></td><td>Valid Accounts: Domain Accounts</td><td>Uso de cuenta Administrator del dominio htb</td></tr>
+    <tr><td><code>T1552.001</code></td><td>Credentials In Files</td><td>Flag como archivo en Desktop</td></tr>
+  </table>
+</div>
+
+<div class="flag-box">
+  <div class="flag-label">Flag — Administrator Desktop</div>
+  <div class="flag-value">951fa96d7830c451b536be5a6be008a0</div>
+  <p style="color:var(--text-muted);font-size:.8rem;margin-top:.75rem;">Archivo: C:\Users\Administrator\Desktop\flag.txt</p>
+</div>
+
+</main>
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.6.217</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Win Server 2019</span></div>
+    <div class="meta-row"><span class="meta-label">Build</span><span class="meta-value">10.0.17763</span></div>
+    <div class="meta-row"><span class="meta-label">RDP</span><span class="meta-value">3389/tcp</span></div>
+    <div class="meta-row"><span class="meta-label">WinRM</span><span class="meta-value">5985/tcp</span></div>
+    <div class="meta-row"><span class="meta-label">Vector</span><span class="meta-value">admin:empty</span></div>
+    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~5 min</span></div>
+    <div class="meta-row"><span class="meta-label">Comandos</span><span class="meta-value">3</span></div>
+  </div>
+  <div class="sidebar-card">
+    <h4>Comandos Clave</h4>
+    <div style="background:#050810;border-radius:8px;padding:.75rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-dim);margin-bottom:.5rem;">
+      xfreerdp /v:IP /u:administrator /p:"" /cert:ignore /dynamic-resolution +clipboard /d:htb
+    </div>
+    <div style="background:#050810;border-radius:8px;padding:.75rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-dim);">
+      evil-winrm -i IP -u administrator -p ''
+    </div>
+  </div>
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1021.001</span>
+    <span class="mitre-tag">T1021.006</span>
+    <span class="mitre-tag">T1078.002</span>
+    <span class="mitre-tag">T1552.001</span>
+  </div>
+  <div class="sidebar-card">
+    <h4>Ghost-Ops Score</h4>
+    <div class="score-num">2/2</div>
+    <div class="score-label">vectores predichos ✅</div>
+    <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:.5rem;">RDP + WinRM con empty pass correctos</p>
+  </div>
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item"><span class="glosario-term">RDP</span><span class="glosario-def">Remote Desktop Protocol — acceso gráfico remoto a Windows. Puerto 3389.</span></div>
+    <div class="glosario-item"><span class="glosario-term">WinRM</span><span class="glosario-def">Windows Remote Management — shell PowerShell remota. Puerto 5985.</span></div>
+    <div class="glosario-item"><span class="glosario-term">xfreerdp</span><span class="glosario-def">Cliente RDP open-source para Linux. Flag /d:htb esencial en HTB.</span></div>
+    <div class="glosario-item"><span class="glosario-term">evil-winrm</span><span class="glosario-def">Herramienta de pentesting para WinRM. Genera shell PowerShell interactiva.</span></div>
+    <div class="glosario-item"><span class="glosario-term">NLA</span><span class="glosario-def">Network Level Authentication — autenticación antes de mostrar escritorio RDP.</span></div>
+    <div class="glosario-item"><span class="glosario-term">/d:htb</span><span class="glosario-def">Flag de dominio en xfreerdp. Necesario para auth con contraseña vacía en HTB.</span></div>
+  </div>
+</aside>
+</div>
+
+<footer style="background:var(--card);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text-muted);font-size:.82rem;">HTB Starting Point · Explosion · Very Easy · Windows Server 2019 · 2026-03-16</p>
+</footer>
+
+</body>
+</html>
