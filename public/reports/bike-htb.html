@@ -160,19 +160,15 @@ a:hover { text-decoration: underline; }
   margin-bottom: 14px;
   font-weight: 700;
 }
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 7px 0;
-  border-bottom: 1px solid rgba(30,45,74,0.5);
-  font-size: 13px;
+.info-row, .detail-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px;
 }
-.info-row:last-child { border-bottom: none; }
-.info-label { color: var(--text-muted); }
-.info-value { color: var(--text-dim); font-weight: 500; text-align: right; max-width: 60%; }
+.info-row:last-child, .detail-row:last-child { border-bottom: none; }
+.info-label, .detail-label { color: var(--text-muted); }
+.info-value, .detail-value { color: var(--text); font-weight: 600; text-align: right; max-width: 160px; }
 .info-value.mono { font-family: monospace; color: var(--orange); font-size: 12px; }
-.info-value.green { color: var(--green); }
+.info-value.green, .detail-value.green { color: var(--accent); }
 .info-value.red   { color: var(--red); }
 .info-value.yellow { color: var(--yellow); }
 
