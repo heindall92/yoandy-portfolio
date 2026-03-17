@@ -66,6 +66,10 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Writeup — Bike (HTB)",
     file: "/reports/bike-htb.html",
   },
+  "ignition-htb": {
+    title: "Writeup — Ignition (HTB)",
+    file: "/reports/ignition-htb.html",
+  },
   "explosion-htb": {
     title: "Writeup — Explosion (HTB)",
     file: "/reports/explosion-htb.html",
