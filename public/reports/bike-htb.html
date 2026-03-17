@@ -63,27 +63,20 @@ a:hover { text-decoration: underline; }
   color: rgba(74,222,128,0.04); pointer-events: none;
 }
 .hero-inner { max-width: 1200px; margin: 0 auto; }
-.hero-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 20px;
+.hero-tags, .hero-meta {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
 }
 .tag {
-  padding: 3px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  border: 1px solid transparent;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 4px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
 }
-.tag-platform { background: rgba(74,222,128,0.1); color: var(--accent); border-color: rgba(74,222,128,0.3); }
-.tag-easy     { background: rgba(74,222,128,0.1); color: var(--green);  border-color: rgba(74,222,128,0.3); }
-.tag-os       { background: rgba(167,139,250,0.1); color: var(--purple); border-color: rgba(167,139,250,0.3); }
-.tag-pwned    { background: rgba(74,222,128,0.15); color: var(--green);  border-color: var(--accent-dim); }
-.tag-web      { background: rgba(96,165,250,0.1); color: var(--blue);   border-color: rgba(96,165,250,0.3); }
-.tag-ssti     { background: rgba(248,113,113,0.1); color: var(--red);    border-color: rgba(248,113,113,0.3); }
+.tag-platform { background: rgba(74,222,128,0.12); color: var(--accent); border: 1px solid rgba(74,222,128,0.25); }
+.tag-easy, .tag-diff { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+.tag-os, .tag-category { background: rgba(96,165,250,0.1); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+.tag-pwned, .tag-staff { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+.tag-web      { background: rgba(96,165,250,0.1); color: var(--blue);   border: 1px solid rgba(96,165,250,0.2); }
+.tag-ssti     { background: rgba(248,113,113,0.1); color: var(--red);    border: 1px solid rgba(248,113,113,0.2); }
 
 .hero h1 {
   font-size: 52px;
