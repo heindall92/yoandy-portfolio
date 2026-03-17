@@ -58,16 +58,11 @@ a:hover { text-decoration: underline; }
 }
 .hero::after {
   content: '>';
-  position: absolute;
-  right: 48px; bottom: -30px;
-  font-size: 220px;
-  font-family: monospace;
-  color: var(--accent);
-  opacity: 0.04;
-  line-height: 1;
-  pointer-events: none;
-  user-select: none;
+  position: absolute; bottom: 20px; right: 40px;
+  font-size: 140px; font-family: monospace;
+  color: rgba(74,222,128,0.04); pointer-events: none;
 }
+.hero-inner { max-width: 1200px; margin: 0 auto; }
 .hero-tags {
   display: flex;
   flex-wrap: wrap;
