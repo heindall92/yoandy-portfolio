@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTB — Mongod | MongoDB sin autenticación</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent:#4ade80;--bg:#0a0e1a;--card:#111827;--card2:#1a2540;--border:#1e2d4a;
+  --text:#e2e8f0;--text-muted:#64748b;--text-dim:#94a3b8;
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;--green:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.6;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.88em;color:var(--accent);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace;}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-size:1.4rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;}
+.hero{background:linear-gradient(135deg,#0a0e1a,#0d1a2b,#091a10);padding:4rem 2rem 3rem;position:relative;overflow:hidden;border-bottom:1px solid var(--border);}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 60% 40%,rgba(74,222,128,.06) 0%,transparent 60%);}
+.hero-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 1.5rem;}
+.watermark{position:absolute;right:3rem;bottom:.5rem;font-size:9rem;color:rgba(74,222,128,.04);font-family:'JetBrains Mono',monospace;font-weight:900;line-height:1;user-select:none;}
+.badge{display:inline-block;background:rgba(74,222,128,.1);color:var(--accent);border:1px solid rgba(74,222,128,.3);border-radius:100px;padding:.25rem 1rem;font-size:.75rem;font-weight:600;margin-bottom:1rem;}
+.hero h1{font-size:3rem;font-weight:900;color:#fff;margin-bottom:.25rem;}
+.hero .subtitle{font-size:1.1rem;color:var(--text-dim);margin-bottom:1.25rem;}
+.meta-chips{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+.chip{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:.3rem .75rem;font-size:.8rem;color:var(--text-dim);}
+.flag-display{font-family:'JetBrains Mono',monospace;background:rgba(74,222,128,.1);color:var(--accent);padding:.5rem 1.25rem;border-radius:8px;display:inline-block;font-size:.9rem;border:1px solid rgba(74,222,128,.2);}
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}}
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:'JetBrains Mono',monospace;}
+.why-box{background:rgba(96,165,250,.07);border-left:3px solid var(--blue);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--blue);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p,.why-box li{font-size:.9rem;color:var(--text-dim);}
+.cmd-annotated{background:#050810;border-radius:8px;padding:1.25rem 1.5rem;font-family:'JetBrains Mono',monospace;margin:1rem 0;border:1px solid rgba(74,222,128,.25);}
+.cmd-line{font-size:1rem;line-height:2.2;}
+.cmd{color:var(--green);font-weight:700;}
+.flag-opt{color:var(--yellow);}
+.ip{color:var(--orange);}
+.param{color:var(--cyan);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text-dim);padding:.3rem .75rem;border-left:2px solid var(--border);}
+/* CAJA ESPECIAL PARA EL COMANDO FINAL */
+.flag-cmd-box{background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(74,222,128,.02));border:2px solid rgba(74,222,128,.4);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.flag-cmd-label{font-size:.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:'JetBrains Mono',monospace;}
+.flag-cmd-line{font-family:'JetBrains Mono',monospace;font-size:1.05rem;color:var(--text);line-height:2;background:#050810;padding:1rem 1.25rem;border-radius:8px;border:1px solid var(--border);margin-bottom:1rem;}
+.output-box{background:#050810;border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--text-dim);margin:1rem 0;line-height:1.8;}
+.output-label{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.hl-flag{color:var(--accent);font-weight:700;font-size:.95rem;}
+.interpret-box{background:rgba(74,222,128,.07);border-left:3px solid var(--accent);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text-dim);}
+.decision-box{background:rgba(251,146,60,.07);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text-dim);}
+.warn-box{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.25);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.warn-box h3{color:var(--red);margin-bottom:.75rem;}
+.warn-box p{font-size:.9rem;color:var(--text-dim);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text-dim);}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--blue);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--blue);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text-dim);}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--blue);}
+.lesson-card li{font-size:.83rem;color:var(--text-dim);}
+.flag-box{background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(74,222,128,.02));border:1px solid rgba(74,222,128,.3);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;}
+.flag-value{font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--accent);background:rgba(74,222,128,.1);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(74,222,128,.2);}
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text-muted);}.meta-value{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:'JetBrains Mono',monospace;margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--accent);text-align:center;line-height:1;margin:.5rem 0;font-family:'JetBrains Mono',monospace;}
+.score-label{text-align:center;font-size:.75rem;color:var(--text-muted);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text-muted);line-height:1.4;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text-muted);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.compat-table td:nth-child(2){font-family:'JetBrains Mono',monospace;font-size:.8rem;}
+.badge-red{background:rgba(248,113,113,.12);color:var(--red);border-radius:4px;padding:.15rem .5rem;font-size:.75rem;}
+.badge-green{background:rgba(74,222,128,.12);color:var(--green);border-radius:4px;padding:.15rem .5rem;font-size:.75rem;}
+.attack-flow{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin:1.5rem 0;}
+.flow-step{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:.6rem 1rem;font-size:.82rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace;}
+.flow-arrow{color:var(--accent);font-size:1.2rem;font-weight:700;}
+.flow-step.success{border-color:rgba(74,222,128,.4);color:var(--accent);}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="badge">HTB · Starting Point · Very Easy · Linux</div>
+    <h1>Mongod</h1>
+    <p class="subtitle">MongoDB 3.6.8 sin autenticación — Volcado directo con mongoexport</p>
+    <div class="meta-chips">
+      <span class="chip">🐧 10.129.6.232</span>
+      <span class="chip">🗄 MongoDB 3.6.8</span>
+      <span class="chip">🔌 Puerto 27017</span>
+      <span class="chip">⏱ ~3 minutos</span>
+      <span class="chip">💻 2 comandos</span>
+    </div>
+    <div class="flag-display">FLAG: 1b6e6fb359e7c40241b6d431427ba6ea</div>
+  </div>
+  <div class="watermark">></div>
+</div>
+
+<div class="container">
+<main>
+
+<div class="section">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p>Mongod expone <strong>MongoDB 3.6.8 en el puerto 27017 sin ningún tipo de autenticación</strong>. Cualquier cliente puede conectarse y leer todas las bases de datos. La base de datos <code>sensitive_information</code> contiene una colección <code>flag</code> con la flag en texto plano. Un solo comando — <code>mongoexport</code> — es suficiente para extraerla directamente a la terminal sin ninguna contraseña.</p>
+  </div>
+
+  <div class="attack-flow">
+    <div class="flow-step">nmap → 27017 MongoDB</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">nmap lista DBs (sin auth)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">mongoexport → flag</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step success">FLAG ✅</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>¿Qué es MongoDB y por qué es peligroso sin auth?</h2>
+  <p style="color:var(--text-dim);font-size:.92rem;margin-bottom:1rem;"><strong>MongoDB</strong> es una base de datos NoSQL orientada a documentos. En vez de tablas y filas usa colecciones y documentos JSON. Puerto por defecto: <strong>27017</strong>. Cuando se instala sin configurar autenticación, cualquier cliente en la red puede conectarse, leer, escribir y borrar cualquier dato.</p>
+  <div class="warn-box">
+    <h3>⚠ MongoDB por defecto NO tiene autenticación activada</h3>
+    <p>En versiones antiguas (incluyendo 3.6.8), la instalación por defecto no requiere usuario ni contraseña. Basta con conectarse a la IP y puerto para tener acceso completo a todos los datos. En 2017-2019 se publicaron miles de bases de datos MongoDB expuestas en internet con datos reales de usuarios.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Reconocimiento — Paso a Paso</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Reconocimiento</div>
+    <h3>Nmap — Dos hallazgos en un solo escaneo</h3>
+    <div class="why-box">
+      <strong>¿Por qué nmap ya revela el contenido de MongoDB?</strong>
+      <p>Nmap incluye el script NSE <code>mongodb-databases</code> que se activa automáticamente con <code>-sC</code> al detectar el puerto 27017. Este script se conecta al MongoDB como cliente anónimo y solicita la lista de bases de datos. Si no hay autenticación, MongoDB la entrega sin preguntar — y nmap la muestra en el output. En este caso ya vemos <code>sensitive_information</code> antes de lanzar ningún otro comando.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">nmap</span>
+        <span class="flag-opt">-p22,27017</span>
+        <span class="flag-opt">-sC</span>
+        <span class="flag-opt">-sV</span>
+        <span class="flag-opt">-n</span>
+        <span class="ip">10.129.6.232</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p22,27017</code> → puertos específicos descubiertos en fase 1 (SSH y MongoDB)</div>
+        <div class="cmd-note"><code>-sC</code> → scripts NSE por defecto — activa <strong>mongodb-databases</strong> automáticamente al ver puerto 27017</div>
+        <div class="cmd-note"><code>-sV</code> → versión exacta del servicio</div>
+        <div class="cmd-note"><code>-n</code> → sin DNS</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output clave</div>
+      <pre>PORT      STATE SERVICE VERSION
+22/tcp    open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.5
+27017/tcp open  mongodb MongoDB 3.6.8
+
+| mongodb-databases:
+|   databases
+|     0: name = admin
+|     1: name = config
+|     2: name = local
+|     3: <span style="color:var(--yellow);font-weight:700;">name = sensitive_information</span>
+|     4: name = users
+|_  ok = 1.0</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li><code>MongoDB 3.6.8</code> → versión antigua (2018). Sin auth por defecto.</li>
+        <li><code>mongodb-databases</code> script conectó <strong>sin autenticación</strong> y devolvió lista completa de DBs</li>
+        <li><code>sensitive_information</code> → nombre exacto de la DB objetivo. Contiene algo que no debería ser público.</li>
+        <li><code>users</code> → DB extra — puede contener credenciales para otras máquinas o servicios</li>
+        <li>No necesitamos explorar más — el objetivo está identificado: <code>sensitive_information</code></li>
+      </ul>
+    </div>
+    <div class="decision-box"><strong>Decisión tomada</strong><p>MongoDB sin auth confirmado. DB objetivo identificada: <code>sensitive_information</code>. Conectar directamente y volcar la colección <code>flag</code>.</p></div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Explotación — El Comando que Obtuvo la Flag</h2>
+
+  <div class="flag-cmd-box">
+    <div class="flag-cmd-label">⚡ Comando exacto que extrajo la flag</div>
+    <div class="flag-cmd-line">
+      <span class="cmd">mongoexport</span>
+      <span class="flag-opt"> --host </span><span class="ip">10.129.6.232</span>
+      <span class="flag-opt"> --port </span><span class="param">27017</span>
+      <span class="flag-opt"> --db </span><span class="param">sensitive_information</span>
+      <span class="flag-opt"> --collection </span><span class="param">flag</span>
+    </div>
+    <div class="output-box" style="margin:0;">
+      <div class="output-label">Output en terminal</div>
+      <pre>2026-03-16T09:42:57.137-0400  connected to: mongodb://10.129.6.232:27017/
+{"_id":{"$oid":"630e3dbcb82540ebbd1748c5"},"flag":"<span class="hl-flag">1b6e6fb359e7c40241b6d431427ba6ea</span>"}
+2026-03-16T09:42:57.484-0400  exported 1 record</pre>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Explotación</div>
+    <h3>¿Qué hace exactamente cada parte del comando?</h3>
+    <div class="why-box">
+      <strong>¿Por qué mongoexport y no mongo ni mongosh?</strong>
+      <ul>
+        <li><code>mongo</code> shell y <code>mongosh</code> modernos (v7+) usan el comando <code>hello</code> para el handshake inicial, introducido en MongoDB 5.0+. MongoDB 3.6.8 no lo entiende y cierra la conexión con error.</li>
+        <li><code>mongoexport</code> usa el protocolo de wire version 6 directamente, compatible con MongoDB 3.6.x sin problemas.</li>
+        <li>Regla Ghost-Ops: <strong>para MongoDB &lt;4.2 usar siempre mongoexport o mongodump</strong>, nunca el shell interactivo moderno.</li>
+      </ul>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">mongoexport</span>
+        <span class="flag-opt"> --host </span><span class="ip">10.129.6.232</span>
+        <span class="flag-opt"> --port </span><span class="param">27017</span>
+        <span class="flag-opt"> --db </span><span class="param">sensitive_information</span>
+        <span class="flag-opt"> --collection </span><span class="param">flag</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>mongoexport</code> → herramienta oficial de MongoDB para exportar colecciones a JSON/CSV. Compatible con versiones antiguas del servidor.</div>
+        <div class="cmd-note"><code>--host 10.129.6.232</code> → IP del servidor MongoDB objetivo</div>
+        <div class="cmd-note"><code>--port 27017</code> → puerto estándar de MongoDB (se puede omitir si es el default, pero es buena práctica incluirlo)</div>
+        <div class="cmd-note"><code>--db sensitive_information</code> → nombre de la base de datos a consultar — identificada previamente con nmap</div>
+        <div class="cmd-note"><code>--collection flag</code> → nombre de la colección dentro de la DB — contiene el documento con la flag</div>
+        <div class="cmd-note" style="border-left-color:var(--accent);color:var(--accent);">⚠ No se pasa --username ni --password → se conecta anónimamente. MongoDB sin auth acepta la conexión.</div>
+      </div>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué significa el output JSON?</strong>
+      <ul>
+        <li><code>"_id": {"$oid": "630e3..."}}</code> → identificador único del documento en MongoDB (ObjectId). No nos interesa.</li>
+        <li><code>"flag": "1b6e6fb359e7c40241b6d431427ba6ea"</code> → el campo <strong>flag</strong> del documento. Ese es el valor que necesitamos.</li>
+        <li><code>exported 1 record</code> → solo hay 1 documento en la colección flag — lo hemos volcado todo.</li>
+      </ul>
+    </div>
+    <div class="decision-box"><strong>Resultado</strong><p>Flag obtenida con 1 comando. Sin exploits, sin credenciales, sin bypass — solo conectarse a un servicio mal configurado y pedir los datos.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Bonus — Exploración completa</div>
+    <h3>Volcado total con mongodump</h3>
+    <div class="why-box">
+      <strong>¿Qué más hay en el servidor?</strong>
+      <p>En un pentest real, no nos limitamos a la flag. Volcamos todo para buscar credenciales, datos de usuarios, configuraciones internas. <code>mongodump</code> descarga todas las bases de datos en formato BSON.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">mongodump</span>
+        <span class="flag-opt"> --host </span><span class="ip">10.129.6.232</span>
+        <span class="flag-opt"> --port </span><span class="param">27017</span>
+        <span class="flag-opt"> --out </span><span class="param">/tmp/mongod_loot</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>mongodump</code> → descarga todas las DBs del servidor en formato BSON (binario MongoDB)</div>
+        <div class="cmd-note"><code>--out /tmp/mongod_loot</code> → directorio donde guardar el dump completo</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>writing sensitive_information.flag → flag.bson  (1 document)
+writing users.credentials → credentials.bson    (N documents)
+writing admin.system.users → ...
+done dumping sensitive_information.flag</pre>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Tabla de Compatibilidad — Clientes MongoDB</h2>
+  <table class="data-table compat-table">
+    <tr><th>Herramienta</th><th>Versión en Kali</th><th>Compatible con MongoDB 3.6?</th><th>Motivo</th></tr>
+    <tr>
+      <td><code>mongo</code> (shell)</td>
+      <td>7.0.14</td>
+      <td><span class="badge-red">❌ NO</span></td>
+      <td>Usa comando <code>hello</code> (solo MongoDB 5.0+)</td>
+    </tr>
+    <tr>
+      <td><code>mongosh</code></td>
+      <td>7.x</td>
+      <td><span class="badge-red">❌ NO</span></td>
+      <td>Igual — handshake moderno incompatible</td>
+    </tr>
+    <tr>
+      <td>pymongo</td>
+      <td>4.x</td>
+      <td><span class="badge-red">❌ NO</span></td>
+      <td>Requiere wire version 8+ (MongoDB 4.2+)</td>
+    </tr>
+    <tr>
+      <td><code>mongoexport</code></td>
+      <td>cualquiera</td>
+      <td><span class="badge-green">✅ SÍ</span></td>
+      <td>Protocolo de exportación compatible con versiones antiguas</td>
+    </tr>
+    <tr>
+      <td><code>mongodump</code></td>
+      <td>cualquiera</td>
+      <td><span class="badge-green">✅ SÍ</span></td>
+      <td>Protocolo de dump compatible con versiones antiguas</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Panel de Agentes Ghost-Ops</h2>
+  <div class="agent-panel">
+    <div class="agent-card rto">
+      <div class="agent-label">⚔ RTO — Red Team</div>
+      <p>Puerto 27017 = MongoDB. Sin auth = acceso total. mongoexport para versiones antiguas. En red real: volcar DB <code>users</code> para credenciales, pivoting a otros servicios. RCE posible en versiones vulnerables via <code>$where</code> JS injection.</p>
+    </div>
+    <div class="agent-card bta">
+      <div class="agent-label">🛡 BTA — Blue Team</div>
+      <p>Nivel de ruido: MUY BAJO. Una conexión TCP al 27017 = 1 entrada en el log. Sin IDS básico, pasa invisible. MongoDB no genera alertas de acceso anónimo por defecto. Detectable solo con firewall de red bloqueando 27017.</p>
+    </div>
+    <div class="agent-card bhm">
+      <div class="agent-label">🎭 BHM — Black Hat</div>
+      <p>Nmap ya lista las DBs antes de conectar — objetivo identificado sin tocar el servidor MongoDB directamente. "Mongod" = el nombre del proceso MongoDB → el nombre de la máquina es la pista del servicio. DB <code>users</code> puede tener creds para SSH.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li>Puerto 27017 → MongoDB → intentar siempre sin auth primero</li>
+        <li>Nmap <code>-sC</code> con mongodb-databases script ya lista las DBs sin conectarse manualmente</li>
+        <li><strong>Usar mongoexport/mongodump</strong> para MongoDB &lt;4.2 — mongo/mongosh modernos son incompatibles</li>
+        <li>DB llamada <code>sensitive_information</code> → objetivo evidente. Siempre buscar nombres descriptivos</li>
+        <li>Volcar también <code>users</code> → posibles credenciales para SSH u otros servicios</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li>Habilitar autenticación en MongoDB: <code>security.authorization: enabled</code> en mongod.conf</li>
+        <li>Bloquear puerto 27017 en firewall — solo acceso desde localhost o IPs internas</li>
+        <li>Actualizar MongoDB a versión reciente (7.x) con auth habilitada por defecto</li>
+        <li>Monitorizar conexiones entrantes al 27017 en SIEM</li>
+        <li>Usar bind_ip para limitar interfaces: <code>net.bindIp: 127.0.0.1</code></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción</th></tr>
+    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap descubre MongoDB en 27017</td></tr>
+    <tr><td><code>T1190</code></td><td>Exploit Public-Facing Application</td><td>MongoDB expuesto sin autenticación</td></tr>
+    <tr><td><code>T1078.001</code></td><td>Valid Accounts: Default Accounts</td><td>Acceso anónimo — sin credenciales</td></tr>
+    <tr><td><code>T1005</code></td><td>Data from Local System</td><td>mongoexport vuelca colección flag</td></tr>
+    <tr><td><code>T1213</code></td><td>Data from Information Repositories</td><td>Extracción de datos de base de datos</td></tr>
+  </table>
+</div>
+
+<div class="flag-box">
+  <div class="flag-label">Flag — sensitive_information.flag</div>
+  <div class="flag-value">1b6e6fb359e7c40241b6d431427ba6ea</div>
+  <p style="color:var(--text-muted);font-size:.8rem;margin-top:.75rem;">Comando: mongoexport --host 10.129.6.232 --port 27017 --db sensitive_information --collection flag</p>
+</div>
+
+</main>
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.6.232</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux Ubuntu</span></div>
+    <div class="meta-row"><span class="meta-label">DB</span><span class="meta-value">MongoDB 3.6.8</span></div>
+    <div class="meta-row"><span class="meta-label">Puerto</span><span class="meta-value">27017/tcp</span></div>
+    <div class="meta-row"><span class="meta-label">Auth</span><span class="meta-value" style="color:var(--red);">NINGUNA</span></div>
+    <div class="meta-row"><span class="meta-label">DB objetivo</span><span class="meta-value">sensitive_info</span></div>
+    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~3 min</span></div>
+    <div class="meta-row"><span class="meta-label">Comandos</span><span class="meta-value">2</span></div>
+  </div>
+  <div class="sidebar-card">
+    <h4>Comando que dio la Flag</h4>
+    <div style="background:#050810;border-radius:8px;padding:.75rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);border:1px solid rgba(74,222,128,.2);line-height:1.8;">
+      mongoexport<br>
+      --host 10.129.6.232<br>
+      --port 27017<br>
+      --db sensitive_information<br>
+      --collection flag
+    </div>
+  </div>
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1190</span>
+    <span class="mitre-tag">T1078.001</span>
+    <span class="mitre-tag">T1005</span>
+    <span class="mitre-tag">T1213</span>
+  </div>
+  <div class="sidebar-card">
+    <h4>Ghost-Ops Score</h4>
+    <div class="score-num">3/3</div>
+    <div class="score-label">predicciones correctas ✅</div>
+    <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:.5rem;">27017 → sin auth → sensitive_info exacto</p>
+  </div>
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item"><span class="glosario-term">MongoDB</span><span class="glosario-def">Base de datos NoSQL. Almacena documentos JSON. Puerto 27017.</span></div>
+    <div class="glosario-item"><span class="glosario-term">mongoexport</span><span class="glosario-def">Herramienta oficial MongoDB para exportar colecciones a JSON. Funciona con versiones antiguas.</span></div>
+    <div class="glosario-item"><span class="glosario-term">mongodump</span><span class="glosario-def">Vuelca toda la base de datos en formato BSON. Útil para loot completo.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Colección</span><span class="glosario-def">Equivalente a una tabla en SQL. Agrupa documentos del mismo tipo.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Wire Protocol</span><span class="glosario-def">Protocolo de comunicación entre cliente y servidor MongoDB. Versiones nuevas son incompatibles con servidores antiguos.</span></div>
+  </div>
+</aside>
+</div>
+
+<footer style="background:var(--card);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text-muted);font-size:.82rem;">HTB Starting Point · Mongod · Very Easy · Linux · MongoDB 3.6.8 · 2026-03-16</p>
+</footer>
+
+</body>
+</html>
