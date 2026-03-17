@@ -124,19 +124,21 @@ a:hover { text-decoration: underline; }
 .num-purple { color: var(--purple); }
 
 /* ─── LAYOUT GRID ─── */
-.layout {
+.container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+.layout, .grid {
   display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 0;
-  max-width: 1400px;
+  grid-template-columns: 1fr 320px;
+  gap: 32px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 32px 48px;
+  padding: 40px;
   align-items: start;
 }
 @media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; padding: 16px; }
+  .layout, .grid { grid-template-columns: 1fr; padding: 30px 20px; }
   .quick-stats { grid-template-columns: repeat(2,1fr); padding: 16px; }
-  .hero { padding: 40px 20px 40px; }
+  .hero { padding: 40px 20px; }
+  .hero h1 { font-size: 2rem; }
 }
 
 /* ─── MAIN ─── */
