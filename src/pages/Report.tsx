@@ -110,6 +110,10 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Writeup — AirTouch (HTB)",
     file: "/reports/airtouch-htb.html",
   },
+  "precious-htb": {
+    title: "Writeup — Precious (HTB)",
+    file: "/reports/precious-htb.html",
+  },
   "dc01-hmv": {
     title: "Writeup — DC01 (HackMyVM)",
     file: "/reports/dc01-hmv.html",

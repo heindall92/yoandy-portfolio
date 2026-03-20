@@ -109,6 +109,13 @@ const machines = [
     os: "Linux",
   },
   {
+    slug: "precious-htb", emoji: "💎", name: "Precious",
+    desc: "Conversión web con pdfkit vulnerable (CVE-2022-25765). Command injection vía URL para obtener shell, credenciales en fichero de configuración de Bundler y escalada a root mediante script Ruby con YAML.load (deserialización insegura).",
+    tags: ["CVE-2022-25765", "pdfkit", "YAML", "Ruby"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Linux",
+  },
+  {
     slug: "ignition-htb", emoji: "🔥", name: "Ignition",
     desc: "Enumeración de vhosts y directory fuzzing con Gobuster contra servidor Nginx. Bypass de login con credenciales por defecto en panel Magento.",
     tags: ["Web", "Gobuster", "Magento", "Default Creds"],
