@@ -32,40 +32,46 @@ a{color:var(--accent);text-decoration:none}
 
 /* HERO */
 .hero{
-  background:linear-gradient(135deg,#0a0e1a,#0d1a2b,#091a10);
+  background:linear-gradient(135deg,#0a0e1a 0%,#0d1a2b 40%,#091a10 100%);
   border-bottom:1px solid var(--border);
-  padding:64px 48px 48px;
+  padding:60px 40px 50px;
   position:relative;
   overflow:hidden;
 }
 .hero::before{
-  content:">";
-  position:absolute;right:48px;top:50%;transform:translateY(-50%);
-  font-size:280px;font-family:monospace;color:rgba(74,222,128,0.04);
-  font-weight:900;user-select:none;line-height:1;
-}
-.hero::after{
-  content:"";position:absolute;top:-60px;right:200px;
+  content:'';
+  position:absolute;top:-60px;right:-60px;
   width:400px;height:400px;
-  background:radial-gradient(circle,rgba(74,222,128,0.08) 0%,transparent 70%);
+  background:radial-gradient(circle,rgba(74,222,128,0.07) 0%,transparent 70%);
   pointer-events:none;
 }
-.tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
-.tag{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
-.tag-platform{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.25)}
-.tag-easy{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.25)}
+.hero::after{
+  content:'>';
+  position:absolute;bottom:20px;right:40px;
+  font-size:140px;font-family:monospace;
+  color:rgba(74,222,128,0.04);pointer-events:none;
+}
+.hero-inner{max-width:1200px;margin:0 auto}
+.hero-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.tag-platform{background:rgba(74,222,128,.12);color:var(--accent);border:1px solid rgba(74,222,128,.25)}
+.tag-category{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+.tag-diff-easy{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
 .tag-os{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+.tag-cve{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2)}
 .tag-pwned{background:rgba(74,222,128,.2);color:var(--green);border:1px solid var(--accent-dim)}
-.hero h1{font-size:48px;font-weight:800;letter-spacing:-1px;margin-bottom:8px;color:#fff}
+.hero h1{font-size:2.8rem;font-weight:800;letter-spacing:-.5px;margin-bottom:14px;line-height:1.1}
 .hero h1 span{color:var(--accent)}
-.hero-sub{color:var(--text-dim);font-size:16px;margin-bottom:32px}
-.hero-stats{display:flex;gap:32px;flex-wrap:wrap}
-.hero-stat label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:2px}
-.hero-stat span{font-size:14px;font-weight:600;color:var(--text-dim)}
-.hero-stat .val{color:var(--accent);font-family:monospace}
+.hero-sub{color:var(--text-dim);font-size:1.05rem;max-width:680px;margin-bottom:28px;line-height:1.6}
+.hero-stats{display:flex;gap:28px;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)}
+.stat-value{font-size:1.1rem;font-weight:700;color:var(--text)}
+.stat-value.green{color:var(--accent)}
+.stat-value.yellow{color:var(--yellow)}
 
 /* LAYOUT */
-.container{max-width:1300px;margin:0 auto;padding:32px 24px}
+.container{max-width:1200px;margin:0 auto;padding:40px}
 .quick-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
 .qs-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center}
 .qs-num{font-size:36px;font-weight:800;color:var(--accent);font-family:monospace;line-height:1}
@@ -206,23 +212,29 @@ footer strong{color:var(--accent)}
 <body>
 
 <!-- HERO -->
-<div class="hero">
-  <div class="tags">
-    <span class="tag tag-platform">Hack The Box</span>
-    <span class="tag tag-easy">Easy</span>
-    <span class="tag tag-os">Linux</span>
-    <span class="tag tag-pwned">Pwned</span>
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-meta">
+      <span class="tag tag-platform">HackTheBox</span>
+      <span class="tag tag-category">Pentesting</span>
+      <span class="tag tag-diff-easy">Easy</span>
+      <span class="tag tag-os">Linux</span>
+      <span class="tag tag-pwned">Pwned</span>
+    </div>
+    <h1><span>Precious</span> — pdfkit RCE &amp; YAML Deserialization</h1>
+    <p class="hero-sub">
+      CVE-2022-25765 permite inyección de comandos a través de pdfkit en una aplicación Ruby/Sinatra. Credenciales en archivos de configuración permiten movimiento lateral. Escalada a root mediante deserialización insegura de YAML con sudo.
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-label">Plataforma</span><span class="stat-value">HackTheBox</span></div>
+      <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Debian Linux</span></div>
+      <div class="stat"><span class="stat-label">Dificultad</span><span class="stat-value green">Easy</span></div>
+      <div class="stat"><span class="stat-label">IP Objetivo</span><span class="stat-value">10.129.228.98</span></div>
+      <div class="stat"><span class="stat-label">User Flag</span><span class="stat-value green">&#10003; Obtenida</span></div>
+      <div class="stat"><span class="stat-label">Root Flag</span><span class="stat-value green">&#10003; Obtenida</span></div>
+    </div>
   </div>
-  <h1><span>Precious</span></h1>
-  <div class="hero-sub">CVE-2022-25765 · pdfkit · Ruby YAML Deserialization · Privesc</div>
-  <div class="hero-stats">
-    <div class="hero-stat"><label>IP Objetivo</label><span class="val">10.129.228.98</span></div>
-    <div class="hero-stat"><label>OS</label><span>Debian Linux</span></div>
-    <div class="hero-stat"><label>Fecha</label><span>2026-03-20</span></div>
-    <div class="hero-stat"><label>CVEs</label><span class="val">CVE-2022-25765</span></div>
-    <div class="hero-stat"><label>Vectores</label><span>2 CVE reales</span></div>
-  </div>
-</div>
+</header>
 
 <div class="container">
 
