@@ -212,23 +212,29 @@ footer strong{color:var(--accent)}
 <body>
 
 <!-- HERO -->
-<div class="hero">
-  <div class="tags">
-    <span class="tag tag-platform">Hack The Box</span>
-    <span class="tag tag-easy">Easy</span>
-    <span class="tag tag-os">Linux</span>
-    <span class="tag tag-pwned">Pwned</span>
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-meta">
+      <span class="tag tag-platform">HackTheBox</span>
+      <span class="tag tag-category">Pentesting</span>
+      <span class="tag tag-diff-easy">Easy</span>
+      <span class="tag tag-os">Linux</span>
+      <span class="tag tag-pwned">Pwned</span>
+    </div>
+    <h1><span>Precious</span> — pdfkit RCE &amp; YAML Deserialization</h1>
+    <p class="hero-sub">
+      CVE-2022-25765 permite inyección de comandos a través de pdfkit en una aplicación Ruby/Sinatra. Credenciales en archivos de configuración permiten movimiento lateral. Escalada a root mediante deserialización insegura de YAML con sudo.
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-label">Plataforma</span><span class="stat-value">HackTheBox</span></div>
+      <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Debian Linux</span></div>
+      <div class="stat"><span class="stat-label">Dificultad</span><span class="stat-value green">Easy</span></div>
+      <div class="stat"><span class="stat-label">IP Objetivo</span><span class="stat-value">10.129.228.98</span></div>
+      <div class="stat"><span class="stat-label">User Flag</span><span class="stat-value green">&#10003; Obtenida</span></div>
+      <div class="stat"><span class="stat-label">Root Flag</span><span class="stat-value green">&#10003; Obtenida</span></div>
+    </div>
   </div>
-  <h1><span>Precious</span></h1>
-  <div class="hero-sub">CVE-2022-25765 · pdfkit · Ruby YAML Deserialization · Privesc</div>
-  <div class="hero-stats">
-    <div class="hero-stat"><label>IP Objetivo</label><span class="val">10.129.228.98</span></div>
-    <div class="hero-stat"><label>OS</label><span>Debian Linux</span></div>
-    <div class="hero-stat"><label>Fecha</label><span>2026-03-20</span></div>
-    <div class="hero-stat"><label>CVEs</label><span class="val">CVE-2022-25765</span></div>
-    <div class="hero-stat"><label>Vectores</label><span>2 CVE reales</span></div>
-  </div>
-</div>
+</header>
 
 <div class="container">
 
