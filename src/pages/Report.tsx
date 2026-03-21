@@ -26,6 +26,7 @@ const reports: Record<string, { title: string; file: string; section: string }> 
   "airtouch-htb": { title: "Writeup — AirTouch (HTB)", file: "/reports/airtouch-htb.html", section: "htb" },
   "steamcloud-htb": { title: "Writeup — SteamCloud (HTB)", file: "/reports/steamcloud-htb.html", section: "htb" },
   "precious-htb": { title: "Writeup — Precious (HTB)", file: "/reports/precious-htb.html", section: "htb" },
+  "devvortex-htb": { title: "Writeup — Devvortex (HTB)", file: "/reports/devvortex-htb.html", section: "htb" },
   "crownjewel1-sherlock": { title: "Sherlock — CrownJewel-1 (HTB)", file: "/reports/crownjewel1-sherlock.html", section: "sherlocks" },
   "dreamjob1-sherlock": { title: "Sherlock — Dream Job-1 (HTB)", file: "/reports/dreamjob1-sherlock.html", section: "sherlocks" },
   "dreamjob2-sherlock": { title: "Sherlock — Dream Job-2 (HTB)", file: "/reports/dreamjob2-sherlock.html", section: "sherlocks" },

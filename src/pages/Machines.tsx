@@ -171,6 +171,13 @@ const machines = [
     difficulty: "MEDIUM", diffColor: "neon-yellow",
     os: "Linux",
   },
+  {
+    slug: "devvortex-htb", emoji: "🌀", name: "Devvortex",
+    desc: "Enumeración de subdominios con ffuf para descubrir Joomla 4.2.6 vulnerable a CVE-2023-23752 (fuga de credenciales API). Acceso al panel con credenciales filtradas, inyección de webshell PHP en template Cassiopeia para reverse shell, extracción de hashes bcrypt de MySQL y escalada a root mediante apport-cli (CVE-2023-1326).",
+    tags: ["Joomla", "CVE-2023-23752", "CVE-2023-1326", "MySQL"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Linux",
+  },
 ];
 
 const diffStyles: Record<string, { badge: string; stripe: string; glow: string }> = {
