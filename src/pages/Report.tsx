@@ -110,6 +110,10 @@ const reports: Record<string, { title: string; file: string }> = {
     title: "Writeup — AirTouch (HTB)",
     file: "/reports/airtouch-htb.html",
   },
+  "steamcloud-htb": {
+    title: "Writeup — SteamCloud (HTB)",
+    file: "/reports/steamcloud-htb.html",
+  },
   "precious-htb": {
     title: "Writeup — Precious (HTB)",
     file: "/reports/precious-htb.html",

@@ -123,6 +123,13 @@ const machines = [
     os: "Linux",
   },
   {
+    slug: "steamcloud-htb", emoji: "☁️", name: "SteamCloud",
+    desc: "Kubernetes con kubelet API expuesto. Enumeración de pods, acceso a tokens de ServiceAccount, y escalada aprovechando permisos del cluster para montar el filesystem del nodo host.",
+    tags: ["Kubernetes", "kubelet", "Cloud", "Linux"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Linux",
+  },
+  {
     slug: "eighteen-htb", emoji: "🔢", name: "Eighteen",
     desc: "Inyección SQL en el endpoint /add_expense para obtener ejecución de comandos vía xp_cmdshell, suplantación de identidad en MSSQL, acceso remoto con Evil-WinRM, explotación de BadSuccessor (CVE-2025-53779) para DCSync y escalada a Administrador del dominio. Windows Server 2025 AD DC.",
     tags: ["HTB", "Windows", "Active Directory", "CVE-2025-53779"],
