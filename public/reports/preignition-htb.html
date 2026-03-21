@@ -1,251 +1,224 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Preignition — HTB Writeup | YRD</title>
-  <style>
-    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
-    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
-    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
-    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
-    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
-    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
-    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
-    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
-    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
-    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
-    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
-    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
-    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
-    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
-    .hero h1 span{color:var(--primary);}
-    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
-    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
-    .meta-item{display:flex;flex-direction:column;gap:4px;}
-    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
-    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
-    .meta-value.green{color:var(--primary);}
-    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
-    @media(max-width:900px){.main{grid-template-columns:1fr;}}
-    .content{display:flex;flex-direction:column;gap:2rem;}
-    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
-    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
-    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
-    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
-    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
-    .section p:last-child{margin-bottom:0;}
-    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
-    .section li{margin-bottom:0.3rem;}
-    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
-    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
-    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
-    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
-    .comment{color:#6a9955;}
-    .cmd{color:var(--cyan);}
-    .output{color:var(--text-dim);}
-    .highlight{color:var(--primary);font-weight:600;}
-    .cred{color:var(--yellow);font-weight:600;}
-    .flag-val{color:#ff79c6;}
-    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
-    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
-    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
-    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
-    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
-    .timeline{display:flex;flex-direction:column;gap:0;}
-    .timeline-item{display:flex;gap:1.25rem;}
-    .timeline-left{display:flex;flex-direction:column;align-items:center;}
-    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
-    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
-    .timeline-item:last-child .timeline-line{display:none;}
-    .timeline-content{padding-bottom:1.5rem;}
-    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
-    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
-    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
-    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
-    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
-    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
-    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
-    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
-    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
-    .detail-row:last-child{border-bottom:none;}
-    .detail-key{font-size:0.8rem;color:var(--text-muted);}
-    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
-    .detail-val.green{color:var(--primary);}
-    .detail-val.cyan{color:var(--cyan);}
-    .skill-item{margin-bottom:1rem;}
-    .skill-item:last-child{margin-bottom:0;}
-    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
-    .skill-name{font-size:0.82rem;color:var(--text-dim);}
-    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
-    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
-    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
-    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
-    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
-    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
-    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
-    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
-    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
-    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
-    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
-    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
-    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
-    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
-    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
-    .data-table td{color:var(--text-dim);}
-    a{color:var(--primary);text-decoration:none;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTB — Preignition | Panel Admin con Credenciales por Defecto</title>
+<style>
+:root {
+  --accent:#4ade80;--accent-dim:#16a34a;--accent-glow:rgba(74,222,128,0.15);
+  --bg:#0a0e1a;--bg2:#0f1629;--bg3:#141d35;
+  --card:#111827;--card2:#1a2540;--border:#1e2d4a;
+  --text:#e2e8f0;--text-muted:#64748b;--text-dim:#94a3b8;
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;--green:#4ade80;
+}
+*, *::before, *::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.7;font-size:15px;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.88em;color:var(--accent);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace;}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-size:1.4rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;}
+.hero{background:linear-gradient(135deg,#0a0e1a,#0d1a2b,#091a10);padding:4rem 2rem 3rem;position:relative;overflow:hidden;border-bottom:1px solid var(--border);}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 60% 40%,rgba(74,222,128,.06) 0%,transparent 60%);}
+.hero-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 1.5rem;}
+.watermark{position:absolute;right:3rem;bottom:.5rem;font-size:9rem;color:rgba(74,222,128,.04);font-family:'JetBrains Mono',monospace;font-weight:900;line-height:1;user-select:none;}
+.badge{display:inline-block;background:rgba(74,222,128,.1);color:var(--accent);border:1px solid rgba(74,222,128,.3);border-radius:100px;padding:.25rem 1rem;font-size:.75rem;font-weight:600;margin-bottom:1rem;}
+.hero h1{font-size:3rem;font-weight:900;color:#fff;margin-bottom:.25rem;}
+.hero .subtitle{font-size:1.1rem;color:var(--text-dim);margin-bottom:1.25rem;}
+.meta-chips{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+.chip{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:.3rem .75rem;font-size:.8rem;color:var(--text-dim);}
+.flag-display{font-family:'JetBrains Mono',monospace;background:rgba(74,222,128,.1);color:var(--accent);padding:.5rem 1.25rem;border-radius:8px;display:inline-block;font-size:.9rem;border:1px solid rgba(74,222,128,.2);}
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}}
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:'JetBrains Mono',monospace;}
+.why-box{background:rgba(96,165,250,.07);border-left:3px solid var(--blue);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--blue);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text-dim);}
+.cmd-annotated{background:#050810;border-radius:8px;padding:1rem 1.25rem;font-family:'JetBrains Mono',monospace;margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;flex-wrap:wrap;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.comment{color:var(--text-muted);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text-dim);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:#050810;border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--text-dim);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(74,222,128,.07);border-left:3px solid var(--accent);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text-dim);}
+.decision-box{background:rgba(251,146,60,.07);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text-dim);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text-dim);}
+.vuln-card{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.25);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--blue);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--blue);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text-dim);}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--blue);}
+.lesson-card li{font-size:.83rem;color:var(--text-dim);}
+.flag-box{background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(74,222,128,.02));border:1px solid rgba(74,222,128,.3);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;}
+.flag-value{font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--accent);background:rgba(74,222,128,.1);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(74,222,128,.2);}
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text-muted);}.meta-value{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:'JetBrains Mono',monospace;margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--accent);text-align:center;line-height:1;margin:.5rem 0;font-family:'JetBrains Mono',monospace;}
+.score-label{text-align:center;font-size:.75rem;color:var(--text-muted);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text-muted);line-height:1.4;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text-muted);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.creds-box{background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.25);border-radius:10px;padding:1.25rem;margin:1rem 0;}
+.creds-box h4{color:var(--yellow);font-size:.85rem;margin-bottom:.75rem;}
+.attack-flow{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin:1.5rem 0;}
+.flow-step{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:.6rem 1rem;font-size:.82rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace;}
+.flow-arrow{color:var(--accent);font-size:1.2rem;font-weight:700;}
+.flow-step.success{border-color:rgba(74,222,128,.4);color:var(--accent);}
+</style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
 
 <div class="hero">
-  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / Preignition</div>
-  <div class="tags">
-    <span class="tag tag-htb">HTB</span>
-    <span class="tag tag-os">LINUX</span>
-    <span class="tag tag-veryeasy">VERY EASY</span>
-    <span class="tag tag-htb">STARTING POINT</span>
+  <div class="hero-inner">
+    <div class="badge">HTB · Starting Point · Very Easy · Linux</div>
+    <h1>Preignition</h1>
+    <p class="subtitle">Directory Brute Force + Panel Admin con Credenciales por Defecto</p>
+    <div class="meta-chips">
+      <span class="chip">🐧 10.129.6.224</span>
+      <span class="chip">🌐 Linux · nginx 1.14.2</span>
+      <span class="chip">🔌 Puerto 80 · HTTP</span>
+      <span class="chip">⏱ ~3 minutos</span>
+      <span class="chip">💻 3 comandos</span>
+    </div>
+    <div class="flag-display">FLAG: 6483bee07c1c1d57f14e5b0717503c73</div>
   </div>
-  <h1>Preignition <span>Machine</span></h1>
-  <p class="hero-desc">Servidor Nginx con panel de administración oculto. Fuzzing de directorios con Gobuster, descubrimiento del panel y acceso con credenciales por defecto admin:admin.</p>
-  <div class="meta-row">
-    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
-    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">HTB Starting Point</span></div>
-    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">nmap / gobuster</span></div>
-    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
+  <div class="watermark">></div>
+</div>
+
+<div class="container">
+<main>
+
+<div class="section">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p>Preignition es un sistema <strong>Linux con nginx 1.14.2</strong> que expone únicamente el puerto 80 HTTP. La página principal muestra la pantalla de bienvenida por defecto de nginx — aparentemente vacía. Sin embargo, un <strong>brute force de directorios</strong> con gobuster revela <code>/admin.php</code>: un panel de administración PHP protegido por formulario de login. Las credenciales por defecto <code>admin:admin</code> otorgan acceso inmediato y exponen la flag en el dashboard.</p>
+  </div>
+
+  <div class="attack-flow">
+    <div class="flow-step">nmap → 80/tcp nginx</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">gobuster → /admin.php</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">POST admin:admin</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step success">FLAG ✅</div>
   </div>
 </div>
 
-<div class="main">
-  <div class="content">
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Resumen Ejecutivo</h2></div>
-      
-
-<div class="info-box">
-<p>Preignition es un sistema <strong>Linux con nginx 1.14.2</strong> que expone únicamente el puerto 80 HTTP. La página principal muestra la pantalla de bienvenida por defecto de nginx — aparentemente vacía. Sin embargo, un <strong>brute force de directorios</strong> con gobuster revela <code>/admin.php</code>: un panel de administración PHP protegido por formulario de login. Las credenciales por defecto <code>admin:admin</code> otorgan acceso inmediato y exponen la flag en el dashboard.</p>
+<div class="section">
+  <h2>¿Por qué la página por defecto de nginx oculta vectores?</h2>
+  <p style="color:var(--text-dim);font-size:.92rem;margin-bottom:1rem;">Cuando nginx muestra <em>"Welcome to nginx!"</em>, es tentador asumir que no hay nada más. Error crítico. <strong>La página principal no representa el contenido completo del servidor</strong> — solo el index del webroot. Pueden existir decenas de archivos y rutas sin enlazar que son invisibles hasta hacer brute force.</p>
+  <div class="vuln-card">
+    <h3>⚠ Dos vulnerabilidades encadenadas</h3>
+    <p style="font-size:.9rem;color:var(--text-dim);margin-bottom:.5rem;"><strong>1. Panel admin no vinculado pero accesible:</strong> <code>/admin.php</code> existe en el servidor pero no aparece en la página principal. Sin gobuster, nunca lo encontraríamos.</p>
+    <p style="font-size:.9rem;color:var(--text-dim);"><strong>2. Credenciales por defecto sin cambiar:</strong> El panel acepta <code>admin:admin</code> — la combinación más predecible posible. Instalación sin hardening post-deploy.</p>
+  </div>
 </div>
 
+<div class="section">
+  <h2>Reconocimiento — Paso a Paso</h2>
 
-<div class="attack-flow">
-<div class="flow-step">nmap → 80/tcp nginx</div>
-<div class="flow-arrow">→</div>
-<div class="flow-step">gobuster → /admin.php</div>
-<div class="flow-arrow">→</div>
-<div class="flow-step">POST admin:admin</div>
-<div class="flow-arrow">→</div>
-<div class="flow-step success">FLAG ✅</div>
-</div>
-
-
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Reconocimiento</div>
+    <h3>Nmap — Descubrir puertos y servicio web</h3>
+    <div class="why-box">
+      <strong>¿Por qué escanear todos los puertos primero?</strong>
+      <p>TTL=63 delata Linux (TTL inicial 64, menos 1 salto = 63). En Linux, los servicios web pueden estar en puertos no estándar: 8080, 8443, 3000, 5000. Si solo escaneamos los top 1000 podríamos perder servicios críticos. Aquí solo hay un puerto — pero confirmarlo es esencial antes de asumir.</p>
     </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>¿Por qué la página por defecto de nginx oculta vectores?</h2></div>
-      
-
-<p style="color:var(--text-dim);font-size:.92rem;margin-bottom:1rem;">Cuando nginx muestra <em>"Welcome to nginx!"</em>, es tentador asumir que no hay nada más. Error crítico. <strong>La página principal no representa el contenido completo del servidor</strong> — solo el index del webroot. Pueden existir decenas de archivos y rutas sin enlazar que son invisibles hasta hacer brute force.</p>
-
-
-<div class="vuln-card">
-<h3>⚠ Dos vulnerabilidades encadenadas</h3>
-<p style="font-size:.9rem;color:var(--text-dim);margin-bottom:.5rem;"><strong>1. Panel admin no vinculado pero accesible:</strong> <code>/admin.php</code> existe en el servidor pero no aparece en la página principal. Sin gobuster, nunca lo encontraríamos.</p>
-<p style="font-size:.9rem;color:var(--text-dim);"><strong>2. Credenciales por defecto sin cambiar:</strong> El panel acepta <code>admin:admin</code> — la combinación más predecible posible. Instalación sin hardening post-deploy.</p>
-</div>
-
-
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p-</span> <span class="flag-opt">--open</span> <span class="flag-opt">-n</span> <span class="flag-opt">-T4</span> <span class="ip">10.129.6.224</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p-</code> → todos los puertos 1-65535</div>
+        <div class="cmd-note"><code>--open</code> → solo puertos en estado OPEN</div>
+        <div class="cmd-note"><code>-n</code> → sin resolución DNS (ahorra tiempo)</div>
+        <div class="cmd-note"><code>-T4</code> → agresivo — válido en lab, no en producción real</div>
+      </div>
     </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>⚠ Dos vulnerabilidades encadenadas</h2></div>
-      
-
-<p style="font-size:.9rem;color:var(--text-dim);margin-bottom:.5rem;"><strong>1. Panel admin no vinculado pero accesible:</strong> <code>/admin.php</code> existe en el servidor pero no aparece en la página principal. Sin gobuster, nunca lo encontraríamos.</p>
-
-
-<p style="font-size:.9rem;color:var(--text-dim);"><strong>2. Credenciales por defecto sin cambiar:</strong> El panel acepta <code>admin:admin</code> — la combinación más predecible posible. Instalación sin hardening post-deploy.</p>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Reconocimiento — Paso a Paso</h2></div>
-      
-
-<div class="step-box">
-<div class="step-number">Paso 1 — Reconocimiento</div>
-<h3>Nmap — Descubrir puertos y servicio web</h3>
-<div class="why-box">
-<strong>¿Por qué escanear todos los puertos primero?</strong>
-<p>TTL=63 delata Linux (TTL inicial 64, menos 1 salto = 63). En Linux, los servicios web pueden estar en puertos no estándar: 8080, 8443, 3000, 5000. Si solo escaneamos los top 1000 podríamos perder servicios críticos. Aquí solo hay un puerto — pero confirmarlo es esencial antes de asumir.</p>
-</div>
-<div class="cmd-annotated">
-<div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p-</span> <span class="flag-opt">--open</span> <span class="flag-opt">-n</span> <span class="flag-opt">-T4</span> <span class="ip">10.129.6.224</span></div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>-p-</code> → todos los puertos 1-65535</div>
-<div class="cmd-note"><code>--open</code> → solo puertos en estado OPEN</div>
-<div class="cmd-note"><code>-n</code> → sin resolución DNS (ahorra tiempo)</div>
-<div class="cmd-note"><code>-T4</code> → agresivo — válido en lab, no en producción real</div>
-</div>
-</div>
-<div class="output-box">
-<div class="output-label">Output Fase 1 — Descubrimiento</div>
-<pre>PORT   STATE SERVICE REASON
+    <div class="output-box">
+      <div class="output-label">Output Fase 1 — Descubrimiento</div>
+      <pre>PORT   STATE SERVICE REASON
 80/tcp open  http    syn-ack ttl 63</pre>
-</div>
-<div class="output-box">
-<div class="output-label">Output Fase 2 — Detalle</div>
-<pre>PORT   STATE SERVICE VERSION
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output Fase 2 — Detalle</div>
+      <pre>PORT   STATE SERVICE VERSION
 80/tcp open  http    nginx 1.14.2
 |_http-title: Welcome to nginx!
 |_http-server-header: nginx/1.14.2
 | http-methods:
 |_  Supported Methods: GET HEAD</pre>
-</div>
-<div class="interpret-box">
-<strong>¿Qué nos dice este output?</strong>
-<ul>
-<li><code>ttl 63</code> → Linux confirmado (TTL 64 - 1 salto = 63)</li>
-<li><code>nginx 1.14.2</code> → servidor web Nginx. Versión 1.14.2 (Debian Stretch era) — puede tener CVEs pero empezamos por lo más simple</li>
-<li><code>http-title: Welcome to nginx!</code> → página de bienvenida por defecto. No hay contenido visible en raíz</li>
-<li><code>Supported Methods: GET HEAD</code> → servidor básico, sin PUT/POST en raíz (pero pueden existir en rutas específicas)</li>
-<li>Solo <strong>1 puerto</strong> → ese es EL vector. No hay SSH, no hay SMB. Todo el ataque va por HTTP.</li>
-</ul>
-</div>
-<div class="decision-box"><strong>Decisión tomada</strong><p>Un solo puerto HTTP. La página principal es el default de nginx → hay contenido oculto. Lanzar gobuster en paralelo con el nmap detallado para no perder tiempo.</p></div>
-</div>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li><code>ttl 63</code> → Linux confirmado (TTL 64 - 1 salto = 63)</li>
+        <li><code>nginx 1.14.2</code> → servidor web Nginx. Versión 1.14.2 (Debian Stretch era) — puede tener CVEs pero empezamos por lo más simple</li>
+        <li><code>http-title: Welcome to nginx!</code> → página de bienvenida por defecto. No hay contenido visible en raíz</li>
+        <li><code>Supported Methods: GET HEAD</code> → servidor básico, sin PUT/POST en raíz (pero pueden existir en rutas específicas)</li>
+        <li>Solo <strong>1 puerto</strong> → ese es EL vector. No hay SSH, no hay SMB. Todo el ataque va por HTTP.</li>
+      </ul>
+    </div>
+    <div class="decision-box"><strong>Decisión tomada</strong><p>Un solo puerto HTTP. La página principal es el default de nginx → hay contenido oculto. Lanzar gobuster en paralelo con el nmap detallado para no perder tiempo.</p></div>
+  </div>
 
-
-<div class="step-box">
-<div class="step-number">Paso 2 — Enumeración Web</div>
-<h3>Gobuster — Descubrir rutas y archivos ocultos</h3>
-<div class="why-box">
-<strong>¿Qué es gobuster y qué es directory brute forcing?</strong>
-<p><code>gobuster</code> es una herramienta de fuerza bruta para descubrimiento de contenido web. En modo <code>dir</code>, toma una wordlist con miles de nombres comunes (admin, login, dashboard, backup...) y los prueba uno por uno como rutas HTTP. El servidor responde con códigos de estado: <strong>200 = existe</strong>, 404 = no existe, 301/302 = redirección. Es como probar miles de puertas en un edificio para ver cuáles están abiertas.</p>
-</div>
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">gobuster</span> <span class="param">dir</span>
-<span class="flag-opt">-u</span> <span class="ip">http://10.129.6.224</span>
-<span class="flag-opt">-w</span> <span class="param">/usr/share/wordlists/dirb/common.txt</span>
-<span class="flag-opt">-x</span> <span class="param">php,html,txt</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>dir</code> → modo directory/file brute force</div>
-<div class="cmd-note"><code>-u http://10.129.6.224</code> → URL objetivo completa</div>
-<div class="cmd-note"><code>-w /usr/share/wordlists/dirb/common.txt</code> → wordlist con ~4600 palabras comunes (admin, login, backup, config...)</div>
-<div class="cmd-note"><code>-x php,html,txt</code> → probar también con extensiones — busca admin.php además de /admin</div>
-</div>
-</div>
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>===============================================================
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Enumeración Web</div>
+    <h3>Gobuster — Descubrir rutas y archivos ocultos</h3>
+    <div class="why-box">
+      <strong>¿Qué es gobuster y qué es directory brute forcing?</strong>
+      <p><code>gobuster</code> es una herramienta de fuerza bruta para descubrimiento de contenido web. En modo <code>dir</code>, toma una wordlist con miles de nombres comunes (admin, login, dashboard, backup...) y los prueba uno por uno como rutas HTTP. El servidor responde con códigos de estado: <strong>200 = existe</strong>, 404 = no existe, 301/302 = redirección. Es como probar miles de puertas en un edificio para ver cuáles están abiertas.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">gobuster</span> <span class="param">dir</span>
+        <span class="flag-opt">-u</span> <span class="ip">http://10.129.6.224</span>
+        <span class="flag-opt">-w</span> <span class="param">/usr/share/wordlists/dirb/common.txt</span>
+        <span class="flag-opt">-x</span> <span class="param">php,html,txt</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>dir</code> → modo directory/file brute force</div>
+        <div class="cmd-note"><code>-u http://10.129.6.224</code> → URL objetivo completa</div>
+        <div class="cmd-note"><code>-w /usr/share/wordlists/dirb/common.txt</code> → wordlist con ~4600 palabras comunes (admin, login, backup, config...)</div>
+        <div class="cmd-note"><code>-x php,html,txt</code> → probar también con extensiones — busca admin.php además de /admin</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>===============================================================
 Gobuster v3.x
 ===============================================================
 [+] Url:     http://10.129.6.224
@@ -257,235 +230,65 @@ Gobuster v3.x
 ===============================================================
 Finished
 ===============================================================</pre>
-</div>
-<div class="interpret-box">
-<strong>¿Qué significa este output?</strong>
-<ul>
-<li><code>/admin.php (Status: 200)</code> → el archivo <strong>existe y es accesible</strong> sin autenticación previa. Status 200 = OK, el servidor lo sirve.</li>
-<li><code>Size: 999</code> → 999 bytes. Tamaño pequeño = probablemente un formulario de login simple, no una aplicación compleja.</li>
-<li>La extensión <code>.php</code> confirma que el servidor ejecuta PHP — abre vectores de webshell si conseguimos upload.</li>
-</ul>
-</div>
-<div class="decision-box"><strong>Decisión tomada</strong><p>Panel admin en <code>/admin.php</code>. Tamaño 999 bytes → login form simple. Probar credenciales por defecto: <code>admin:admin</code> es la primera opción según patrón Ghost-Ops.</p></div>
-</div>
-
-
     </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Nmap — Descubrir puertos y servicio web</h2></div>
-      
-
-<div class="why-box">
-<strong>¿Por qué escanear todos los puertos primero?</strong>
-<p>TTL=63 delata Linux (TTL inicial 64, menos 1 salto = 63). En Linux, los servicios web pueden estar en puertos no estándar: 8080, 8443, 3000, 5000. Si solo escaneamos los top 1000 podríamos perder servicios críticos. Aquí solo hay un puerto — pero confirmarlo es esencial antes de asumir.</p>
-</div>
-
-
-<div class="cmd-annotated">
-<div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p-</span> <span class="flag-opt">--open</span> <span class="flag-opt">-n</span> <span class="flag-opt">-T4</span> <span class="ip">10.129.6.224</span></div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>-p-</code> → todos los puertos 1-65535</div>
-<div class="cmd-note"><code>--open</code> → solo puertos en estado OPEN</div>
-<div class="cmd-note"><code>-n</code> → sin resolución DNS (ahorra tiempo)</div>
-<div class="cmd-note"><code>-T4</code> → agresivo — válido en lab, no en producción real</div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output Fase 1 — Descubrimiento</div>
-<pre>PORT   STATE SERVICE REASON
-80/tcp open  http    syn-ack ttl 63</pre>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output Fase 2 — Detalle</div>
-<pre>PORT   STATE SERVICE VERSION
-80/tcp open  http    nginx 1.14.2
-|_http-title: Welcome to nginx!
-|_http-server-header: nginx/1.14.2
-| http-methods:
-|_  Supported Methods: GET HEAD</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué nos dice este output?</strong>
-<ul>
-<li><code>ttl 63</code> → Linux confirmado (TTL 64 - 1 salto = 63)</li>
-<li><code>nginx 1.14.2</code> → servidor web Nginx. Versión 1.14.2 (Debian Stretch era) — puede tener CVEs pero empezamos por lo más simple</li>
-<li><code>http-title: Welcome to nginx!</code> → página de bienvenida por defecto. No hay contenido visible en raíz</li>
-<li><code>Supported Methods: GET HEAD</code> → servidor básico, sin PUT/POST en raíz (pero pueden existir en rutas específicas)</li>
-<li>Solo <strong>1 puerto</strong> → ese es EL vector. No hay SSH, no hay SMB. Todo el ataque va por HTTP.</li>
-</ul>
-</div>
-
-
-<div class="decision-box"><strong>Decisión tomada</strong><p>Un solo puerto HTTP. La página principal es el default de nginx → hay contenido oculto. Lanzar gobuster en paralelo con el nmap detallado para no perder tiempo.</p></div>
-
-
+    <div class="interpret-box">
+      <strong>¿Qué significa este output?</strong>
+      <ul>
+        <li><code>/admin.php (Status: 200)</code> → el archivo <strong>existe y es accesible</strong> sin autenticación previa. Status 200 = OK, el servidor lo sirve.</li>
+        <li><code>Size: 999</code> → 999 bytes. Tamaño pequeño = probablemente un formulario de login simple, no una aplicación compleja.</li>
+        <li>La extensión <code>.php</code> confirma que el servidor ejecuta PHP — abre vectores de webshell si conseguimos upload.</li>
+      </ul>
     </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Gobuster — Descubrir rutas y archivos ocultos</h2></div>
-      
-
-<div class="why-box">
-<strong>¿Qué es gobuster y qué es directory brute forcing?</strong>
-<p><code>gobuster</code> es una herramienta de fuerza bruta para descubrimiento de contenido web. En modo <code>dir</code>, toma una wordlist con miles de nombres comunes (admin, login, dashboard, backup...) y los prueba uno por uno como rutas HTTP. El servidor responde con códigos de estado: <strong>200 = existe</strong>, 404 = no existe, 301/302 = redirección. Es como probar miles de puertas en un edificio para ver cuáles están abiertas.</p>
+    <div class="decision-box"><strong>Decisión tomada</strong><p>Panel admin en <code>/admin.php</code>. Tamaño 999 bytes → login form simple. Probar credenciales por defecto: <code>admin:admin</code> es la primera opción según patrón Ghost-Ops.</p></div>
+  </div>
 </div>
 
+<div class="section">
+  <h2>Explotación — Credenciales por Defecto</h2>
 
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">gobuster</span> <span class="param">dir</span>
-<span class="flag-opt">-u</span> <span class="ip">http://10.129.6.224</span>
-<span class="flag-opt">-w</span> <span class="param">/usr/share/wordlists/dirb/common.txt</span>
-<span class="flag-opt">-x</span> <span class="param">php,html,txt</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>dir</code> → modo directory/file brute force</div>
-<div class="cmd-note"><code>-u http://10.129.6.224</code> → URL objetivo completa</div>
-<div class="cmd-note"><code>-w /usr/share/wordlists/dirb/common.txt</code> → wordlist con ~4600 palabras comunes (admin, login, backup, config...)</div>
-<div class="cmd-note"><code>-x php,html,txt</code> → probar también con extensiones — busca admin.php además de /admin</div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>===============================================================
-Gobuster v3.x
-===============================================================
-[+] Url:     http://10.129.6.224
-[+] Wordlist: /usr/share/wordlists/dirb/common.txt
-===============================================================
-
-/admin.php  (Status: 200) [Size: 999]
-
-===============================================================
-Finished
-===============================================================</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué significa este output?</strong>
-<ul>
-<li><code>/admin.php (Status: 200)</code> → el archivo <strong>existe y es accesible</strong> sin autenticación previa. Status 200 = OK, el servidor lo sirve.</li>
-<li><code>Size: 999</code> → 999 bytes. Tamaño pequeño = probablemente un formulario de login simple, no una aplicación compleja.</li>
-<li>La extensión <code>.php</code> confirma que el servidor ejecuta PHP — abre vectores de webshell si conseguimos upload.</li>
-</ul>
-</div>
-
-
-<div class="decision-box"><strong>Decisión tomada</strong><p>Panel admin en <code>/admin.php</code>. Tamaño 999 bytes → login form simple. Probar credenciales por defecto: <code>admin:admin</code> es la primera opción según patrón Ghost-Ops.</p></div>
-
-
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Explotación</div>
+    <h3>POST admin:admin al panel de login</h3>
+    <div class="why-box">
+      <strong>¿Por qué empezar con admin:admin y no hacer brute force completo?</strong>
+      <p>En entornos HTB Starting Point (y en muchos entornos reales), la misconfiguration más común es dejar las credenciales de instalación sin cambiar. El orden de prueba Ghost-Ops es: <code>admin:admin → admin:password → admin:(vacío) → root:root → [nombre_maquina]:[nombre_maquina]</code>. Siempre probar el más simple antes de atacar con diccionario.</p>
     </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Explotación — Credenciales por Defecto</h2></div>
-      
-
-<div class="step-box">
-<div class="step-number">Paso 3 — Explotación</div>
-<h3>POST admin:admin al panel de login</h3>
-<div class="why-box">
-<strong>¿Por qué empezar con admin:admin y no hacer brute force completo?</strong>
-<p>En entornos HTB Starting Point (y en muchos entornos reales), la misconfiguration más común es dejar las credenciales de instalación sin cambiar. El orden de prueba Ghost-Ops es: <code>admin:admin → admin:password → admin:(vacío) → root:root → [nombre_maquina]:[nombre_maquina]</code>. Siempre probar el más simple antes de atacar con diccionario.</p>
-</div>
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="flag-opt">-X POST</span> <span class="ip">http://10.129.6.224/admin.php</span>
-<span class="flag-opt">-d</span> <span class="param">"username=admin&amp;password=admin"</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>curl</code> → cliente HTTP de línea de comandos — envía peticiones web y muestra respuesta</div>
-<div class="cmd-note"><code>-s</code> → (silent) sin barra de progreso ni mensajes extra</div>
-<div class="cmd-note"><code>-X POST</code> → método HTTP POST — el que usan los formularios de login</div>
-<div class="cmd-note"><code>http://10.129.6.224/admin.php</code> → URL del panel descubierto por gobuster</div>
-<div class="cmd-note"><code>-d "username=admin&amp;password=admin"</code> → (data) cuerpo del POST — simula rellenar el formulario con admin/admin</div>
-</div>
-</div>
-<div class="output-box">
-<div class="output-label">Output (fragmento relevante)</div>
-<pre>&lt;div class="dashboard"&gt;
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="flag-opt">-X POST</span> <span class="ip">http://10.129.6.224/admin.php</span>
+        <span class="flag-opt">-d</span> <span class="param">"username=admin&amp;password=admin"</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>curl</code> → cliente HTTP de línea de comandos — envía peticiones web y muestra respuesta</div>
+        <div class="cmd-note"><code>-s</code> → (silent) sin barra de progreso ni mensajes extra</div>
+        <div class="cmd-note"><code>-X POST</code> → método HTTP POST — el que usan los formularios de login</div>
+        <div class="cmd-note"><code>http://10.129.6.224/admin.php</code> → URL del panel descubierto por gobuster</div>
+        <div class="cmd-note"><code>-d "username=admin&password=admin"</code> → (data) cuerpo del POST — simula rellenar el formulario con admin/admin</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output (fragmento relevante)</div>
+      <pre>&lt;div class="dashboard"&gt;
   &lt;h2&gt;Welcome, admin!&lt;/h2&gt;
   &lt;p&gt;flag: <span style="color:var(--accent);font-weight:700;">6483bee07c1c1d57f14e5b0717503c73</span>&lt;/p&gt;
 &lt;/div&gt;</pre>
-</div>
-<div class="interpret-box">
-<strong>¿Qué ocurrió?</strong>
-<ul>
-<li>El servidor aceptó <code>admin:admin</code> y devolvió el dashboard directamente en la respuesta HTML</li>
-<li>La flag aparece en texto plano en el HTML del dashboard — no hace falta navegar por la interfaz</li>
-<li>Con <code>-L</code> (follow redirects) y <code>-c cookies.txt</code> podríamos mantener sesión para exploración adicional</li>
-</ul>
-</div>
-<div class="decision-box"><strong>Resultado</strong><p>Flag obtenida en el primer intento de credenciales. Tiempo total: ~3 minutos incluyendo nmap completo.</p></div>
-</div>
-
-
     </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>POST admin:admin al panel de login</h2></div>
-      
-
-<div class="why-box">
-<strong>¿Por qué empezar con admin:admin y no hacer brute force completo?</strong>
-<p>En entornos HTB Starting Point (y en muchos entornos reales), la misconfiguration más común es dejar las credenciales de instalación sin cambiar. El orden de prueba Ghost-Ops es: <code>admin:admin → admin:password → admin:(vacío) → root:root → [nombre_maquina]:[nombre_maquina]</code>. Siempre probar el más simple antes de atacar con diccionario.</p>
-</div>
-
-
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="flag-opt">-X POST</span> <span class="ip">http://10.129.6.224/admin.php</span>
-<span class="flag-opt">-d</span> <span class="param">"username=admin&amp;password=admin"</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>curl</code> → cliente HTTP de línea de comandos — envía peticiones web y muestra respuesta</div>
-<div class="cmd-note"><code>-s</code> → (silent) sin barra de progreso ni mensajes extra</div>
-<div class="cmd-note"><code>-X POST</code> → método HTTP POST — el que usan los formularios de login</div>
-<div class="cmd-note"><code>http://10.129.6.224/admin.php</code> → URL del panel descubierto por gobuster</div>
-<div class="cmd-note"><code>-d "username=admin&amp;password=admin"</code> → (data) cuerpo del POST — simula rellenar el formulario con admin/admin</div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output (fragmento relevante)</div>
-<pre>&lt;div class="dashboard"&gt;
-  &lt;h2&gt;Welcome, admin!&lt;/h2&gt;
-  &lt;p&gt;flag: <span style="color:var(--accent);font-weight:700;">6483bee07c1c1d57f14e5b0717503c73</span>&lt;/p&gt;
-&lt;/div&gt;</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué ocurrió?</strong>
-<ul>
-<li>El servidor aceptó <code>admin:admin</code> y devolvió el dashboard directamente en la respuesta HTML</li>
-<li>La flag aparece en texto plano en el HTML del dashboard — no hace falta navegar por la interfaz</li>
-<li>Con <code>-L</code> (follow redirects) y <code>-c cookies.txt</code> podríamos mantener sesión para exploración adicional</li>
-</ul>
-</div>
-
-
-<div class="decision-box"><strong>Resultado</strong><p>Flag obtenida en el primer intento de credenciales. Tiempo total: ~3 minutos incluyendo nmap completo.</p></div>
-
-
+    <div class="interpret-box">
+      <strong>¿Qué ocurrió?</strong>
+      <ul>
+        <li>El servidor aceptó <code>admin:admin</code> y devolvió el dashboard directamente en la respuesta HTML</li>
+        <li>La flag aparece en texto plano en el HTML del dashboard — no hace falta navegar por la interfaz</li>
+        <li>Con <code>-L</code> (follow redirects) y <code>-c cookies.txt</code> podríamos mantener sesión para exploración adicional</li>
+      </ul>
     </div>
+    <div class="decision-box"><strong>Resultado</strong><p>Flag obtenida en el primer intento de credenciales. Tiempo total: ~3 minutos incluyendo nmap completo.</p></div>
+  </div>
+</div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>¿Cómo funciona el ataque? — Diagrama</h2></div>
-      
-
-<div style="background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.5rem;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--text-dim);">
-<pre>
+<div class="section">
+  <h2>¿Cómo funciona el ataque? — Diagrama</h2>
+  <div style="background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.5rem;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--text-dim);">
+    <pre>
 [Kali]                              [Preignition 10.129.6.224]
   │                                          │
   ├─── GET / ──────────────────────────────► │
@@ -503,135 +306,138 @@ Finished
   │                                          │
   [FLAG: 6483bee07c1c1d57f14e5b0717503c73]
     </pre>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Panel de Agentes Ghost-Ops</h2></div>
-      
-
-<div class="agent-panel">
-<div class="agent-card rto">
-<div class="agent-label">⚔ RTO — Red Team</div>
-<p>Vector: HTTP único → gobuster con extensiones PHP → /admin.php → POST admin:admin. Mínimo 3 comandos. Si default creds fallan: hydra con rockyou. Si hay upload en dashboard: webshell PHP.</p>
-</div>
-<div class="agent-card bta">
-<div class="agent-label">🛡 BTA — Blue Team</div>
-<p>Nivel de ruido: MEDIO. Gobuster genera ~4600 peticiones GET en segundos — detectable por volumen en access.log. Login con admin:admin genera 1 evento en app log. WAF básico bloquearía gobuster por rate limiting.</p>
-</div>
-<div class="agent-card bhm">
-<div class="agent-label">🎭 BHM — Black Hat</div>
-<p>nginx default page = siempre hacer gobuster. "Preignition" = ignición previa = el panel admin es la llave que inicia todo. Si el dashboard tiene funcionalidades: buscar file upload, command execution, config export.</p>
-</div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Credenciales por Defecto — Orden de Prueba</h2></div>
-      
-
-<div class="creds-box">
-<h4>📋 Patrón Ghost-Ops validado (probar en este orden)</h4>
-<table class="data-table" style="margin:0;">
-<tr><th>#</th><th>Usuario</th><th>Contraseña</th><th>Éxito en</th></tr>
-<tr><td>1</td><td><code>admin</code></td><td><code>admin</code></td><td style="color:var(--accent);">Preignition ✅</td></tr>
-<tr><td>2</td><td><code>admin</code></td><td><code>password</code></td><td style="color:var(--text-muted);">—</td></tr>
-<tr><td>3</td><td><code>admin</code></td><td>(vacío)</td><td style="color:var(--text-muted);">—</td></tr>
-<tr><td>4</td><td><code>root</code></td><td><code>root</code></td><td style="color:var(--text-muted);">—</td></tr>
-<tr><td>5</td><td><code>administrator</code></td><td><code>administrator</code></td><td style="color:var(--text-muted);">—</td></tr>
-<tr><td>6</td><td>[nombre_maquina]</td><td>[nombre_maquina]</td><td style="color:var(--text-muted);">—</td></tr>
-</table>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Lecciones Aprendidas</h2></div>
-      
-
-<div class="lessons-grid">
-<div class="lesson-card attacker">
-<h4>⚔ Para el Atacante</h4>
-<ul>
-<li>TTL=63 → Linux → preparar herramientas web (gobuster, nikto, curl)</li>
-<li>Página default de nginx/apache NO significa servidor vacío — siempre hacer gobuster</li>
-<li>Incluir extensiones <code>-x php,html,txt</code> — admin.php es más común que /admin/</li>
-<li>Probar credenciales default ANTES de brute force — ahorra tiempo y ruido</li>
-<li>curl -X POST simula login sin necesitar browser — más rápido para CTF</li>
-</ul>
-</div>
-<div class="lesson-card defender">
-<h4>🛡 Para el Defensor</h4>
-<ul>
-<li>Cambiar credenciales por defecto INMEDIATAMENTE tras instalar cualquier aplicación</li>
-<li>Implementar rate limiting en el login (max 5 intentos por IP)</li>
-<li>Mover el panel admin a ruta no predecible: no <code>/admin.php</code></li>
-<li>Detectar: peticiones GET masivas en logs (gobuster = cientos por segundo)</li>
-<li>Añadir autenticación HTTP básica (htpasswd) como capa adicional</li>
-<li>Implementar CAPTCHA o 2FA en paneles administrativos</li>
-</ul>
-</div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>MITRE ATT&CK</h2></div>
-      
-
-<table class="data-table">
-<tr><th>ID</th><th>Técnica</th><th>Descripción</th></tr>
-<tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap para descubrir nginx en puerto 80</td></tr>
-<tr><td><code>T1595.003</code></td><td>Active Scanning: Wordlist Scanning</td><td>Gobuster para descubrir /admin.php</td></tr>
-<tr><td><code>T1078.001</code></td><td>Valid Accounts: Default Accounts</td><td>Login con admin:admin sin cambiar defaults</td></tr>
-<tr><td><code>T1110.001</code></td><td>Brute Force: Password Guessing</td><td>Prueba de credenciales por defecto predecibles</td></tr>
-<tr><td><code>T1083</code></td><td>File and Directory Discovery</td><td>Descubrimiento de rutas con wordlist</td></tr>
-</table>
-
-
-    </div>
-
   </div>
+</div>
 
-  <div class="sidebar">
-    <div class="sidebar-card">
-      <h3>Detalles del Reto</h3>
-      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">VERY EASY</span></div>
-      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Linux</span></div>
-      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.X.X</span></div>
-      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">Starting Point</span></div>
-      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">Default Credentials</span></div>
-      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
+<div class="section">
+  <h2>Panel de Agentes Ghost-Ops</h2>
+  <div class="agent-panel">
+    <div class="agent-card rto">
+      <div class="agent-label">⚔ RTO — Red Team</div>
+      <p>Vector: HTTP único → gobuster con extensiones PHP → /admin.php → POST admin:admin. Mínimo 3 comandos. Si default creds fallan: hydra con rockyou. Si hay upload en dashboard: webshell PHP.</p>
     </div>
-    <div class="sidebar-card">
-      <h3>Skills Demostradas</h3>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">Directory Fuzzing</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">Default Credentials</span><span class="skill-pct">88%</span></div><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
+    <div class="agent-card bta">
+      <div class="agent-label">🛡 BTA — Blue Team</div>
+      <p>Nivel de ruido: MEDIO. Gobuster genera ~4600 peticiones GET en segundos — detectable por volumen en access.log. Login con admin:admin genera 1 evento en app log. WAF básico bloquearía gobuster por rate limiting.</p>
     </div>
-    <div class="sidebar-card">
-      <h3>Herramientas</h3>
-      <div class="tools-list">
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nmap</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">gobuster</span></div>
-      </div>
+    <div class="agent-card bhm">
+      <div class="agent-label">🎭 BHM — Black Hat</div>
+      <p>nginx default page = siempre hacer gobuster. "Preignition" = ignición previa = el panel admin es la llave que inicia todo. Si el dashboard tiene funcionalidades: buscar file upload, command execution, config export.</p>
     </div>
   </div>
 </div>
 
-<script>
-  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
-  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
-  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
-  setInterval(drawMatrix,35);
-</script>
+<div class="section">
+  <h2>Credenciales por Defecto — Orden de Prueba</h2>
+  <div class="creds-box">
+    <h4>📋 Patrón Ghost-Ops validado (probar en este orden)</h4>
+    <table class="data-table" style="margin:0;">
+      <tr><th>#</th><th>Usuario</th><th>Contraseña</th><th>Éxito en</th></tr>
+      <tr><td>1</td><td><code>admin</code></td><td><code>admin</code></td><td style="color:var(--accent);">Preignition ✅</td></tr>
+      <tr><td>2</td><td><code>admin</code></td><td><code>password</code></td><td style="color:var(--text-muted);">—</td></tr>
+      <tr><td>3</td><td><code>admin</code></td><td>(vacío)</td><td style="color:var(--text-muted);">—</td></tr>
+      <tr><td>4</td><td><code>root</code></td><td><code>root</code></td><td style="color:var(--text-muted);">—</td></tr>
+      <tr><td>5</td><td><code>administrator</code></td><td><code>administrator</code></td><td style="color:var(--text-muted);">—</td></tr>
+      <tr><td>6</td><td>[nombre_maquina]</td><td>[nombre_maquina]</td><td style="color:var(--text-muted);">—</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li>TTL=63 → Linux → preparar herramientas web (gobuster, nikto, curl)</li>
+        <li>Página default de nginx/apache NO significa servidor vacío — siempre hacer gobuster</li>
+        <li>Incluir extensiones <code>-x php,html,txt</code> — admin.php es más común que /admin/</li>
+        <li>Probar credenciales default ANTES de brute force — ahorra tiempo y ruido</li>
+        <li>curl -X POST simula login sin necesitar browser — más rápido para CTF</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li>Cambiar credenciales por defecto INMEDIATAMENTE tras instalar cualquier aplicación</li>
+        <li>Implementar rate limiting en el login (max 5 intentos por IP)</li>
+        <li>Mover el panel admin a ruta no predecible: no <code>/admin.php</code></li>
+        <li>Detectar: peticiones GET masivas en logs (gobuster = cientos por segundo)</li>
+        <li>Añadir autenticación HTTP básica (htpasswd) como capa adicional</li>
+        <li>Implementar CAPTCHA o 2FA en paneles administrativos</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción</th></tr>
+    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap para descubrir nginx en puerto 80</td></tr>
+    <tr><td><code>T1595.003</code></td><td>Active Scanning: Wordlist Scanning</td><td>Gobuster para descubrir /admin.php</td></tr>
+    <tr><td><code>T1078.001</code></td><td>Valid Accounts: Default Accounts</td><td>Login con admin:admin sin cambiar defaults</td></tr>
+    <tr><td><code>T1110.001</code></td><td>Brute Force: Password Guessing</td><td>Prueba de credenciales por defecto predecibles</td></tr>
+    <tr><td><code>T1083</code></td><td>File and Directory Discovery</td><td>Descubrimiento de rutas con wordlist</td></tr>
+  </table>
+</div>
+
+<div class="flag-box">
+  <div class="flag-label">Flag — Dashboard Admin</div>
+  <div class="flag-value">6483bee07c1c1d57f14e5b0717503c73</div>
+  <p style="color:var(--text-muted);font-size:.8rem;margin-top:.75rem;">Ruta: http://10.129.6.224/admin.php → POST admin:admin</p>
+</div>
+
+</main>
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.6.224</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux</span></div>
+    <div class="meta-row"><span class="meta-label">Web</span><span class="meta-value">nginx 1.14.2</span></div>
+    <div class="meta-row"><span class="meta-label">Puerto</span><span class="meta-value">80/tcp HTTP</span></div>
+    <div class="meta-row"><span class="meta-label">Vector</span><span class="meta-value">/admin.php</span></div>
+    <div class="meta-row"><span class="meta-label">Creds</span><span class="meta-value">admin:admin</span></div>
+    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~3 min</span></div>
+    <div class="meta-row"><span class="meta-label">Comandos</span><span class="meta-value">3</span></div>
+  </div>
+  <div class="sidebar-card">
+    <h4>Herramientas</h4>
+    <div style="font-size:.8rem;color:var(--text-dim);display:flex;flex-direction:column;gap:.4rem;">
+      <span>🔍 nmap — reconocimiento</span>
+      <span>💥 gobuster — dir brute force</span>
+      <span>🌐 curl — POST login</span>
+    </div>
+  </div>
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1595.003</span>
+    <span class="mitre-tag">T1078.001</span>
+    <span class="mitre-tag">T1110.001</span>
+    <span class="mitre-tag">T1083</span>
+  </div>
+  <div class="sidebar-card">
+    <h4>Ghost-Ops Score</h4>
+    <div class="score-num">3/3</div>
+    <div class="score-label">predicciones correctas ✅</div>
+    <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:.5rem;">/admin.php + admin:admin exacto</p>
+  </div>
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item"><span class="glosario-term">nginx</span><span class="glosario-def">Servidor web open-source de alto rendimiento. Puerto 80 HTTP por defecto.</span></div>
+    <div class="glosario-item"><span class="glosario-term">gobuster</span><span class="glosario-def">Herramienta de brute force para rutas web. Prueba palabras de una lista como URLs.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Status 200</span><span class="glosario-def">Código HTTP que significa "OK" — el recurso existe y el servidor lo devuelve.</span></div>
+    <div class="glosario-item"><span class="glosario-term">POST</span><span class="glosario-def">Método HTTP para enviar datos al servidor. Lo usan los formularios de login.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Default Credentials</span><span class="glosario-def">Credenciales de fábrica no cambiadas. admin:admin es la más común del mundo.</span></div>
+    <div class="glosario-item"><span class="glosario-term">TTL 63</span><span class="glosario-def">Time To Live = 63 → Linux (TTL inicial 64, minus 1 hop). Windows usa 127/128.</span></div>
+  </div>
+</aside>
+</div>
+
+<footer style="background:var(--card);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text-muted);font-size:.82rem;">HTB Starting Point · Preignition · Very Easy · Linux · nginx 1.14.2 · 2026-03-16</p>
+</footer>
+
 </body>
 </html>

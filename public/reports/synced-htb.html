@@ -1,625 +1,466 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Synced — HTB Writeup | YRD</title>
-  <style>
-    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
-    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
-    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
-    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
-    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
-    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
-    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
-    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
-    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
-    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
-    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
-    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
-    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
-    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
-    .hero h1 span{color:var(--primary);}
-    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
-    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
-    .meta-item{display:flex;flex-direction:column;gap:4px;}
-    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
-    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
-    .meta-value.green{color:var(--primary);}
-    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
-    @media(max-width:900px){.main{grid-template-columns:1fr;}}
-    .content{display:flex;flex-direction:column;gap:2rem;}
-    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
-    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
-    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
-    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
-    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
-    .section p:last-child{margin-bottom:0;}
-    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
-    .section li{margin-bottom:0.3rem;}
-    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
-    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
-    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
-    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
-    .comment{color:#6a9955;}
-    .cmd{color:var(--cyan);}
-    .output{color:var(--text-dim);}
-    .highlight{color:var(--primary);font-weight:600;}
-    .cred{color:var(--yellow);font-weight:600;}
-    .flag-val{color:#ff79c6;}
-    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
-    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
-    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
-    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
-    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
-    .timeline{display:flex;flex-direction:column;gap:0;}
-    .timeline-item{display:flex;gap:1.25rem;}
-    .timeline-left{display:flex;flex-direction:column;align-items:center;}
-    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
-    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
-    .timeline-item:last-child .timeline-line{display:none;}
-    .timeline-content{padding-bottom:1.5rem;}
-    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
-    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
-    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
-    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
-    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
-    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
-    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
-    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
-    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
-    .detail-row:last-child{border-bottom:none;}
-    .detail-key{font-size:0.8rem;color:var(--text-muted);}
-    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
-    .detail-val.green{color:var(--primary);}
-    .detail-val.cyan{color:var(--cyan);}
-    .skill-item{margin-bottom:1rem;}
-    .skill-item:last-child{margin-bottom:0;}
-    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
-    .skill-name{font-size:0.82rem;color:var(--text-dim);}
-    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
-    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
-    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
-    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
-    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
-    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
-    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
-    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
-    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
-    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
-    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
-    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
-    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
-    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
-    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
-    .data-table td{color:var(--text-dim);}
-    a{color:var(--primary);text-decoration:none;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTB — Synced | rsync Anonymous Share</title>
+<style>
+:root {
+  --accent:#4ade80;--accent-dim:#16a34a;--accent-glow:rgba(74,222,128,0.15);
+  --bg:#0a0e1a;--bg2:#0f1629;--bg3:#141d35;
+  --card:#111827;--card2:#1a2540;--border:#1e2d4a;
+  --text:#e2e8f0;--text-muted:#64748b;--text-dim:#94a3b8;
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;--green:#4ade80;
+}
+*, *::before, *::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.7;font-size:15px;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.88em;color:var(--accent);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace;}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-size:1.4rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;}
+.hero{background:linear-gradient(135deg,#0a0e1a,#0d1a2b,#091a10);padding:4rem 2rem 3rem;position:relative;overflow:hidden;border-bottom:1px solid var(--border);}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 60% 40%,rgba(74,222,128,.06) 0%,transparent 60%);}
+.hero-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 1.5rem;}
+.watermark{position:absolute;right:3rem;bottom:.5rem;font-size:9rem;color:rgba(74,222,128,.04);font-family:'JetBrains Mono',monospace;font-weight:900;line-height:1;user-select:none;}
+.badge{display:inline-block;background:rgba(74,222,128,.1);color:var(--accent);border:1px solid rgba(74,222,128,.3);border-radius:100px;padding:.25rem 1rem;font-size:.75rem;font-weight:600;margin-bottom:1rem;}
+.hero h1{font-size:3rem;font-weight:900;color:#fff;margin-bottom:.25rem;}
+.hero .subtitle{font-size:1.1rem;color:var(--text-dim);margin-bottom:1.25rem;}
+.meta-chips{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+.chip{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:.3rem .75rem;font-size:.8rem;color:var(--text-dim);}
+.flag-display{font-family:'JetBrains Mono',monospace;background:rgba(74,222,128,.1);color:var(--accent);padding:.5rem 1.25rem;border-radius:8px;display:inline-block;font-size:.9rem;border:1px solid rgba(74,222,128,.2);}
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}}
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:'JetBrains Mono',monospace;}
+.why-box{background:rgba(96,165,250,.07);border-left:3px solid var(--blue);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--blue);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text-dim);}
+.cmd-annotated{background:#050810;border-radius:8px;padding:1.25rem 1.5rem;font-family:'JetBrains Mono',monospace;margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2.2;}
+.cmd{color:var(--green);font-weight:700;}
+.flag-opt{color:var(--yellow);}
+.ip{color:var(--orange);}
+.param{color:var(--cyan);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text-dim);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:#050810;border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--text-dim);margin:1rem 0;line-height:1.8;}
+.output-label{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.hl-flag{color:var(--accent);font-weight:700;font-size:.95rem;}
+.hl-module{color:var(--yellow);font-weight:700;}
+.hl-file{color:var(--cyan);font-weight:700;}
+.interpret-box{background:rgba(74,222,128,.07);border-left:3px solid var(--accent);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text-dim);}
+.decision-box{background:rgba(251,146,60,.07);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text-dim);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text-dim);}
+.warn-box{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.25);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.warn-box h3{color:var(--red);margin-bottom:.75rem;}
+.warn-box p{font-size:.9rem;color:var(--text-dim);}
+/* RESUMEN DE COMANDOS EFECTIVOS */
+.cmds-summary{background:var(--card);border:2px solid rgba(74,222,128,.3);border-radius:14px;padding:1.75rem;margin:2rem 0;}
+.cmds-summary-title{font-size:.72rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:1.25rem;font-family:'JetBrains Mono',monospace;}
+.cmd-effective{display:flex;gap:1rem;align-items:flex-start;padding:.9rem 0;border-bottom:1px solid var(--border);}
+.cmd-effective:last-child{border-bottom:none;}
+.cmd-num{background:rgba(74,222,128,.15);color:var(--accent);border-radius:6px;padding:.2rem .55rem;font-size:.75rem;font-weight:700;font-family:'JetBrains Mono',monospace;flex-shrink:0;margin-top:.15rem;}
+.cmd-effective-body{flex:1;}
+.cmd-effective-line{font-family:'JetBrains Mono',monospace;font-size:.88rem;color:var(--text);background:#050810;padding:.6rem .9rem;border-radius:6px;margin-bottom:.35rem;}
+.cmd-effective-desc{font-size:.8rem;color:var(--text-muted);}
+.cmd-effective-output{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text-dim);background:#050810;border-left:2px solid var(--accent);padding:.5rem .75rem;border-radius:0 6px 6px 0;margin-top:.35rem;}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--blue);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--blue);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text-dim);}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--blue);}
+.lesson-card li{font-size:.83rem;color:var(--text-dim);}
+.flag-box{background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(74,222,128,.02));border:1px solid rgba(74,222,128,.3);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;}
+.flag-value{font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--accent);background:rgba(74,222,128,.1);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(74,222,128,.2);}
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text-muted);}.meta-value{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:'JetBrains Mono',monospace;margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--accent);text-align:center;line-height:1;margin:.5rem 0;font-family:'JetBrains Mono',monospace;}
+.score-label{text-align:center;font-size:.75rem;color:var(--text-muted);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text-muted);line-height:1.4;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text-muted);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.attack-flow{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin:1.5rem 0;}
+.flow-step{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:.6rem 1rem;font-size:.82rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace;}
+.flow-arrow{color:var(--accent);font-size:1.2rem;font-weight:700;}
+.flow-step.success{border-color:rgba(74,222,128,.4);color:var(--accent);}
+</style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
 
 <div class="hero">
-  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / Synced</div>
-  <div class="tags">
-    <span class="tag tag-htb">HTB</span>
-    <span class="tag tag-os">LINUX</span>
-    <span class="tag tag-veryeasy">VERY EASY</span>
-    <span class="tag tag-htb">STARTING POINT</span>
+  <div class="hero-inner">
+    <div class="badge">HTB · Starting Point · Very Easy · Linux</div>
+    <h1>Synced</h1>
+    <p class="subtitle">rsync Anonymous Share — Listado y descarga directa sin credenciales</p>
+    <div class="meta-chips">
+      <span class="chip">🐧 10.129.6.240</span>
+      <span class="chip">🔄 rsync protocol v31</span>
+      <span class="chip">🔌 Puerto 873</span>
+      <span class="chip">⏱ ~3 minutos</span>
+      <span class="chip">💻 4 comandos</span>
+    </div>
+    <div class="flag-display">FLAG: 72eaf5344ebb84908ae543a719830519</div>
   </div>
-  <h1>Synced <span>Machine</span></h1>
-  <p class="hero-desc">Servicio rsync con acceso anónimo habilitado. Enumeración de shares disponibles y descarga directa de la flag desde el recurso compartido.</p>
-  <div class="meta-row">
-    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
-    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">HTB Starting Point</span></div>
-    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">nmap / rsync</span></div>
-    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
+  <div class="watermark">></div>
+</div>
+
+<div class="container">
+<main>
+
+<!-- RESUMEN DE COMANDOS EFECTIVOS — PRIMERO -->
+<div class="section">
+  <h2>Comandos Efectivos — Secuencia Completa</h2>
+  <p style="color:var(--text-dim);font-size:.9rem;margin-bottom:1.25rem;">Estos son los 4 comandos que se ejecutaron y funcionaron. Cada uno con su output real.</p>
+
+  <div class="cmds-summary">
+    <div class="cmds-summary-title">⚡ Secuencia de ataque — 4 comandos, ~3 minutos</div>
+
+    <div class="cmd-effective">
+      <div class="cmd-num">01</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">nmap -p- --open -n -T4 10.129.6.240</div>
+        <div class="cmd-effective-desc">Descubrir todos los puertos abiertos en el objetivo</div>
+        <div class="cmd-effective-output">873/tcp open  rsync   syn-ack ttl 63</div>
+      </div>
+    </div>
+
+    <div class="cmd-effective">
+      <div class="cmd-num">02</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">rsync rsync://10.129.6.240/</div>
+        <div class="cmd-effective-desc">Listar módulos disponibles en el servidor rsync (sin credenciales)</div>
+        <div class="cmd-effective-output">public          Anonymous Share</div>
+      </div>
+    </div>
+
+    <div class="cmd-effective">
+      <div class="cmd-num">03</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">rsync rsync://10.129.6.240/public/</div>
+        <div class="cmd-effective-desc">Ver contenido del módulo public</div>
+        <div class="cmd-effective-output">drwxr-xr-x   4,096 2022/10/24 18:02:23 .<br>-rw-r--r--      33 2022/10/24 17:32:03 flag.txt</div>
+      </div>
+    </div>
+
+    <div class="cmd-effective">
+      <div class="cmd-num">04</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">rsync rsync://10.129.6.240/public/flag.txt /tmp/flag.txt && cat /tmp/flag.txt</div>
+        <div class="cmd-effective-desc">Descargar flag.txt y mostrar contenido</div>
+        <div class="cmd-effective-output" style="color:var(--accent);font-weight:700;">72eaf5344ebb84908ae543a719830519</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<div class="main">
-  <div class="content">
+<div class="section">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p>Synced expone <strong>rsync en el puerto 873 sin autenticación</strong>. rsync es una herramienta de sincronización de archivos. Cuando se configura con un módulo de acceso anónimo (<em>anonymous share</em>), cualquiera puede listar y descargar los archivos que contiene — sin usuario ni contraseña. La flag estaba directamente en el módulo <code>public</code> como archivo <code>flag.txt</code>.</p>
+  </div>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Comandos Efectivos — Secuencia Completa</h2></div>
-      
-
-<p style="color:var(--text-dim);font-size:.9rem;margin-bottom:1.25rem;">Estos son los 4 comandos que se ejecutaron y funcionaron. Cada uno con su output real.</p>
-
-
-<div class="cmds-summary">
-<div class="cmds-summary-title">⚡ Secuencia de ataque — 4 comandos, ~3 minutos</div>
-<div class="cmd-effective">
-<div class="cmd-num">01</div>
-<div class="cmd-effective-body">
-<div class="cmd-effective-line">nmap -p- --open -n -T4 10.129.6.240</div>
-<div class="cmd-effective-desc">Descubrir todos los puertos abiertos en el objetivo</div>
-<div class="cmd-effective-output">873/tcp open  rsync   syn-ack ttl 63</div>
-</div>
-</div>
-<div class="cmd-effective">
-<div class="cmd-num">02</div>
-<div class="cmd-effective-body">
-<div class="cmd-effective-line">rsync rsync://10.129.6.240/</div>
-<div class="cmd-effective-desc">Listar módulos disponibles en el servidor rsync (sin credenciales)</div>
-<div class="cmd-effective-output">public          Anonymous Share</div>
-</div>
-</div>
-<div class="cmd-effective">
-<div class="cmd-num">03</div>
-<div class="cmd-effective-body">
-<div class="cmd-effective-line">rsync rsync://10.129.6.240/public/</div>
-<div class="cmd-effective-desc">Ver contenido del módulo public</div>
-<div class="cmd-effective-output">drwxr-xr-x   4,096 2022/10/24 18:02:23 .<br/>-rw-r--r--      33 2022/10/24 17:32:03 flag.txt</div>
-</div>
-</div>
-<div class="cmd-effective">
-<div class="cmd-num">04</div>
-<div class="cmd-effective-body">
-<div class="cmd-effective-line">rsync rsync://10.129.6.240/public/flag.txt /tmp/flag.txt &amp;&amp; cat /tmp/flag.txt</div>
-<div class="cmd-effective-desc">Descargar flag.txt y mostrar contenido</div>
-<div class="cmd-effective-output" style="color:var(--accent);font-weight:700;">72eaf5344ebb84908ae543a719830519</div>
-</div>
-</div>
+  <div class="attack-flow">
+    <div class="flow-step">873/tcp rsync</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">rsync:// → módulo public</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">flag.txt visible</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step success">rsync download → FLAG ✅</div>
+  </div>
 </div>
 
+<div class="section">
+  <h2>¿Qué es rsync y por qué es un vector de ataque?</h2>
+  <p style="color:var(--text-dim);font-size:.92rem;margin-bottom:1rem;"><strong>rsync</strong> es una herramienta de sincronización de archivos muy usada en Linux para backups, deploys y transferencias. Puerto 873. Su protocolo permite transferir solo los bloques que han cambiado — eficiente para sincronizar servidores.</p>
+  <div class="warn-box">
+    <h3>⚠ rsync con módulos anónimos = acceso total a los archivos compartidos</h3>
+    <p>Cuando el administrador configura un módulo sin requerir autenticación (<code>auth users</code> vacío), cualquier cliente puede conectarse y descargar — o incluso subir — archivos. En backups mal configurados esto puede exponer dumps de bases de datos, claves SSH, archivos de configuración con contraseñas y más.</p>
+  </div>
+</div>
 
+<div class="section">
+  <h2>Paso a Paso — Detallado</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Reconocimiento</div>
+    <h3>nmap — Descubrir el puerto rsync</h3>
+    <div class="why-box">
+      <strong>¿Por qué escanear todos los puertos?</strong>
+      <p>rsync usa el puerto 873, que no está en el top 1000 de nmap por defecto. Si escaneamos solo los puertos comunes, lo perdemos. Con <code>-p-</code> garantizamos que no se nos escapa nada.</p>
     </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Resumen Ejecutivo</h2></div>
-      
-
-<div class="info-box">
-<p>Synced expone <strong>rsync en el puerto 873 sin autenticación</strong>. rsync es una herramienta de sincronización de archivos. Cuando se configura con un módulo de acceso anónimo (<em>anonymous share</em>), cualquiera puede listar y descargar los archivos que contiene — sin usuario ni contraseña. La flag estaba directamente en el módulo <code>public</code> como archivo <code>flag.txt</code>.</p>
-</div>
-
-
-<div class="attack-flow">
-<div class="flow-step">873/tcp rsync</div>
-<div class="flow-arrow">→</div>
-<div class="flow-step">rsync:// → módulo public</div>
-<div class="flow-arrow">→</div>
-<div class="flow-step">flag.txt visible</div>
-<div class="flow-arrow">→</div>
-<div class="flow-step success">rsync download → FLAG ✅</div>
-</div>
-
-
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">nmap</span>
+        <span class="flag-opt"> -p-</span>
+        <span class="flag-opt"> --open</span>
+        <span class="flag-opt"> -n</span>
+        <span class="flag-opt"> -T4</span>
+        <span class="ip"> 10.129.6.240</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p-</code> → todos los 65535 puertos TCP</div>
+        <div class="cmd-note"><code>--open</code> → solo puertos abiertos</div>
+        <div class="cmd-note"><code>-n</code> → sin resolución DNS</div>
+        <div class="cmd-note"><code>-T4</code> → velocidad agresiva</div>
+      </div>
     </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>¿Qué es rsync y por qué es un vector de ataque?</h2></div>
-      
-
-<p style="color:var(--text-dim);font-size:.92rem;margin-bottom:1rem;"><strong>rsync</strong> es una herramienta de sincronización de archivos muy usada en Linux para backups, deploys y transferencias. Puerto 873. Su protocolo permite transferir solo los bloques que han cambiado — eficiente para sincronizar servidores.</p>
-
-
-<div class="warn-box">
-<h3>⚠ rsync con módulos anónimos = acceso total a los archivos compartidos</h3>
-<p>Cuando el administrador configura un módulo sin requerir autenticación (<code>auth users</code> vacío), cualquier cliente puede conectarse y descargar — o incluso subir — archivos. En backups mal configurados esto puede exponer dumps de bases de datos, claves SSH, archivos de configuración con contraseñas y más.</p>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>⚠ rsync con módulos anónimos = acceso total a los archivos compartidos</h2></div>
-      
-
-<p>Cuando el administrador configura un módulo sin requerir autenticación (<code>auth users</code> vacío), cualquier cliente puede conectarse y descargar — o incluso subir — archivos. En backups mal configurados esto puede exponer dumps de bases de datos, claves SSH, archivos de configuración con contraseñas y más.</p>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Paso a Paso — Detallado</h2></div>
-      
-
-<div class="step-box">
-<div class="step-number">Paso 1 — Reconocimiento</div>
-<h3>nmap — Descubrir el puerto rsync</h3>
-<div class="why-box">
-<strong>¿Por qué escanear todos los puertos?</strong>
-<p>rsync usa el puerto 873, que no está en el top 1000 de nmap por defecto. Si escaneamos solo los puertos comunes, lo perdemos. Con <code>-p-</code> garantizamos que no se nos escapa nada.</p>
-</div>
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">nmap</span>
-<span class="flag-opt"> -p-</span>
-<span class="flag-opt"> --open</span>
-<span class="flag-opt"> -n</span>
-<span class="flag-opt"> -T4</span>
-<span class="ip"> 10.129.6.240</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>-p-</code> → todos los 65535 puertos TCP</div>
-<div class="cmd-note"><code>--open</code> → solo puertos abiertos</div>
-<div class="cmd-note"><code>-n</code> → sin resolución DNS</div>
-<div class="cmd-note"><code>-T4</code> → velocidad agresiva</div>
-</div>
-</div>
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>PORT    STATE SERVICE REASON
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>PORT    STATE SERVICE REASON
 <span class="hl-module">873/tcp open  rsync   syn-ack ttl 63</span>
 (protocol version 31)</pre>
-</div>
-<div class="interpret-box">
-<strong>¿Qué nos dice?</strong>
-<ul>
-<li><code>ttl 63</code> → Linux (TTL 64 - 1 salto)</li>
-<li><code>873/tcp rsync</code> → rsync activo. Un solo puerto = todo el ataque pasa por aquí</li>
-<li><code>protocol version 31</code> → versión del protocolo rsync — compatible con el cliente estándar de Kali</li>
-</ul>
-</div>
-<div class="decision-box"><strong>Decisión</strong><p>Puerto 873 rsync. Listar módulos disponibles sin autenticación.</p></div>
-</div>
-
-
-<div class="step-box">
-<div class="step-number">Paso 2 — Enumeración</div>
-<h3>rsync rsync://IP/ — Listar módulos</h3>
-<div class="why-box">
-<strong>¿Qué es un módulo rsync?</strong>
-<p>rsync organiza el acceso en "módulos" — directorios predefinidos con nombre, descripción y permisos. Es similar a los shares de SMB o los módulos de FTP. Listándolos sin credenciales sabemos qué está disponible públicamente.</p>
-</div>
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">rsync</span>
-<span class="param"> rsync://10.129.6.240/</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>rsync</code> → herramienta de sincronización de archivos de Linux</div>
-<div class="cmd-note"><code>rsync://10.129.6.240/</code> → URL del servidor rsync. La barra final sin módulo = listar todos los módulos disponibles</div>
-<div class="cmd-note" style="border-left-color:var(--accent);color:var(--accent);">⚠ Sin usuario ni contraseña → intento anónimo. Si hay módulos públicos, los muestra.</div>
-</div>
-</div>
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre><span class="hl-module">public</span>         	Anonymous Share</pre>
-</div>
-<div class="interpret-box">
-<strong>¿Qué significa?</strong>
-<ul>
-<li><code>public</code> → nombre del módulo rsync accesible anónimamente</li>
-<li><code>Anonymous Share</code> → descripción — confirma acceso sin credenciales</li>
-<li>Solo hay un módulo → ese es EL objetivo</li>
-</ul>
-</div>
-<div class="decision-box"><strong>Decisión</strong><p>Módulo <code>public</code> accesible. Listar su contenido.</p></div>
-</div>
-
-
-<div class="step-box">
-<div class="step-number">Paso 3 — Enumeración</div>
-<h3>rsync rsync://IP/public/ — Ver archivos del módulo</h3>
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">rsync</span>
-<span class="param"> rsync://10.129.6.240/public/</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>rsync://10.129.6.240/public/</code> → URL con módulo específico + barra final = listar contenido del módulo como <code>ls -la</code></div>
-</div>
-</div>
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>drwxr-xr-x          4,096 2022/10/24 18:02:23 .
-<span class="hl-file">-rw-r--r--             33 2022/10/24 17:32:03 flag.txt</span></pre>
-</div>
-<div class="interpret-box">
-<strong>¿Qué vemos?</strong>
-<ul>
-<li><code>flag.txt</code> → el archivo objetivo. 33 bytes = exactamente el tamaño de un hash MD5 + salto de línea</li>
-<li>Permisos <code>-rw-r--r--</code> → readable por cualquiera</li>
-</ul>
-</div>
-<div class="decision-box"><strong>Decisión</strong><p>flag.txt visible y legible. Descargar con rsync.</p></div>
-</div>
-
-
-<div class="step-box">
-<div class="step-number">Paso 4 — Explotación</div>
-<h3>rsync download + cat — Obtener la flag</h3>
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">rsync</span>
-<span class="param"> rsync://10.129.6.240/public/flag.txt</span>
-<span class="param"> /tmp/flag.txt</span>
-<span class="flag-opt"> &amp;&amp; cat</span>
-<span class="param"> /tmp/flag.txt</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>rsync://10.129.6.240/public/flag.txt</code> → origen: archivo específico en el módulo remoto</div>
-<div class="cmd-note"><code>/tmp/flag.txt</code> → destino local donde guardar el archivo descargado</div>
-<div class="cmd-note"><code>&amp;&amp; cat /tmp/flag.txt</code> → si la descarga fue exitosa (exit code 0), mostrar el contenido en pantalla</div>
-</div>
-</div>
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre><span class="hl-flag">72eaf5344ebb84908ae543a719830519</span></pre>
-</div>
-<div class="interpret-box">
-<strong>Resultado</strong>
-<p>rsync descargó <code>flag.txt</code> del servidor remoto al directorio local <code>/tmp/</code>. El archivo contiene el hash MD5 de la flag. Sin credenciales, sin exploits, sin bypass — conexión directa a un servicio mal configurado.</p>
-</div>
-</div>
-
-
     </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>nmap — Descubrir el puerto rsync</h2></div>
-      
-
-<div class="why-box">
-<strong>¿Por qué escanear todos los puertos?</strong>
-<p>rsync usa el puerto 873, que no está en el top 1000 de nmap por defecto. Si escaneamos solo los puertos comunes, lo perdemos. Con <code>-p-</code> garantizamos que no se nos escapa nada.</p>
-</div>
-
-
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">nmap</span>
-<span class="flag-opt"> -p-</span>
-<span class="flag-opt"> --open</span>
-<span class="flag-opt"> -n</span>
-<span class="flag-opt"> -T4</span>
-<span class="ip"> 10.129.6.240</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>-p-</code> → todos los 65535 puertos TCP</div>
-<div class="cmd-note"><code>--open</code> → solo puertos abiertos</div>
-<div class="cmd-note"><code>-n</code> → sin resolución DNS</div>
-<div class="cmd-note"><code>-T4</code> → velocidad agresiva</div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>PORT    STATE SERVICE REASON
-<span class="hl-module">873/tcp open  rsync   syn-ack ttl 63</span>
-(protocol version 31)</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué nos dice?</strong>
-<ul>
-<li><code>ttl 63</code> → Linux (TTL 64 - 1 salto)</li>
-<li><code>873/tcp rsync</code> → rsync activo. Un solo puerto = todo el ataque pasa por aquí</li>
-<li><code>protocol version 31</code> → versión del protocolo rsync — compatible con el cliente estándar de Kali</li>
-</ul>
-</div>
-
-
-<div class="decision-box"><strong>Decisión</strong><p>Puerto 873 rsync. Listar módulos disponibles sin autenticación.</p></div>
-
-
+    <div class="interpret-box">
+      <strong>¿Qué nos dice?</strong>
+      <ul>
+        <li><code>ttl 63</code> → Linux (TTL 64 - 1 salto)</li>
+        <li><code>873/tcp rsync</code> → rsync activo. Un solo puerto = todo el ataque pasa por aquí</li>
+        <li><code>protocol version 31</code> → versión del protocolo rsync — compatible con el cliente estándar de Kali</li>
+      </ul>
     </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>rsync rsync://IP/ — Listar módulos</h2></div>
-      
-
-<div class="why-box">
-<strong>¿Qué es un módulo rsync?</strong>
-<p>rsync organiza el acceso en "módulos" — directorios predefinidos con nombre, descripción y permisos. Es similar a los shares de SMB o los módulos de FTP. Listándolos sin credenciales sabemos qué está disponible públicamente.</p>
-</div>
-
-
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">rsync</span>
-<span class="param"> rsync://10.129.6.240/</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>rsync</code> → herramienta de sincronización de archivos de Linux</div>
-<div class="cmd-note"><code>rsync://10.129.6.240/</code> → URL del servidor rsync. La barra final sin módulo = listar todos los módulos disponibles</div>
-<div class="cmd-note" style="border-left-color:var(--accent);color:var(--accent);">⚠ Sin usuario ni contraseña → intento anónimo. Si hay módulos públicos, los muestra.</div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre><span class="hl-module">public</span>         	Anonymous Share</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué significa?</strong>
-<ul>
-<li><code>public</code> → nombre del módulo rsync accesible anónimamente</li>
-<li><code>Anonymous Share</code> → descripción — confirma acceso sin credenciales</li>
-<li>Solo hay un módulo → ese es EL objetivo</li>
-</ul>
-</div>
-
-
-<div class="decision-box"><strong>Decisión</strong><p>Módulo <code>public</code> accesible. Listar su contenido.</p></div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>rsync rsync://IP/public/ — Ver archivos del módulo</h2></div>
-      
-
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">rsync</span>
-<span class="param"> rsync://10.129.6.240/public/</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>rsync://10.129.6.240/public/</code> → URL con módulo específico + barra final = listar contenido del módulo como <code>ls -la</code></div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>drwxr-xr-x          4,096 2022/10/24 18:02:23 .
-<span class="hl-file">-rw-r--r--             33 2022/10/24 17:32:03 flag.txt</span></pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué vemos?</strong>
-<ul>
-<li><code>flag.txt</code> → el archivo objetivo. 33 bytes = exactamente el tamaño de un hash MD5 + salto de línea</li>
-<li>Permisos <code>-rw-r--r--</code> → readable por cualquiera</li>
-</ul>
-</div>
-
-
-<div class="decision-box"><strong>Decisión</strong><p>flag.txt visible y legible. Descargar con rsync.</p></div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>rsync download + cat — Obtener la flag</h2></div>
-      
-
-<div class="cmd-annotated">
-<div class="cmd-line">
-<span class="cmd">rsync</span>
-<span class="param"> rsync://10.129.6.240/public/flag.txt</span>
-<span class="param"> /tmp/flag.txt</span>
-<span class="flag-opt"> &amp;&amp; cat</span>
-<span class="param"> /tmp/flag.txt</span>
-</div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>rsync://10.129.6.240/public/flag.txt</code> → origen: archivo específico en el módulo remoto</div>
-<div class="cmd-note"><code>/tmp/flag.txt</code> → destino local donde guardar el archivo descargado</div>
-<div class="cmd-note"><code>&amp;&amp; cat /tmp/flag.txt</code> → si la descarga fue exitosa (exit code 0), mostrar el contenido en pantalla</div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre><span class="hl-flag">72eaf5344ebb84908ae543a719830519</span></pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>Resultado</strong>
-<p>rsync descargó <code>flag.txt</code> del servidor remoto al directorio local <code>/tmp/</code>. El archivo contiene el hash MD5 de la flag. Sin credenciales, sin exploits, sin bypass — conexión directa a un servicio mal configurado.</p>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Panel de Agentes Ghost-Ops</h2></div>
-      
-
-<div class="agent-panel">
-<div class="agent-card rto">
-<div class="agent-label">⚔ RTO — Red Team</div>
-<p>Puerto 873 = rsync. Listar módulos primero. Si hay módulos con write access: subir SSH authorized_keys → acceso root. En backups: buscar .conf, id_rsa, .env, database dumps. Descargar todo con <code>rsync -av rsync://IP/public/ /tmp/loot/</code></p>
-</div>
-<div class="agent-card bta">
-<div class="agent-label">🛡 BTA — Blue Team</div>
-<p>Nivel de ruido: MUY BAJO. rsync genera 1 conexión TCP limpia al 873. Sin logs de auth fallida. Sin alertas IDS por defecto. Solo detectable con firewall bloqueando 873 desde IPs externas o monitoreo de acceso en rsyncd.log.</p>
-</div>
-<div class="agent-card bhm">
-<div class="agent-label">🎭 BHM — Black Hat</div>
-<p>"Synced" = rsync es la pista en el nombre. Si el módulo tiene permisos de escritura: subir webshell si hay webroot, o SSH key para acceso persistente. Siempre probar <code>rsync --list-only rsync://IP/modulo/ --recursive</code> para ver subdirectorios.</p>
-</div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Lecciones Aprendidas</h2></div>
-      
-
-<div class="lessons-grid">
-<div class="lesson-card attacker">
-<h4>⚔ Para el Atacante</h4>
-<ul>
-<li>Puerto 873 = rsync → listar módulos con <code>rsync rsync://IP/</code></li>
-<li>Nombre de la máquina es la pista del servicio: "Synced" = rsync</li>
-<li>rsync anónimo = descargar con <code>rsync rsync://IP/modulo/archivo /local</code></li>
-<li>Para write access: <code>rsync /local/file rsync://IP/modulo/</code> → subir SSH keys</li>
-<li>Descarga recursiva completa: <code>rsync -av rsync://IP/modulo/ /tmp/loot/</code></li>
-</ul>
-</div>
-<div class="lesson-card defender">
-<h4>🛡 Para el Defensor</h4>
-<ul>
-<li>Requerir autenticación: <code>auth users = usuario</code> en rsyncd.conf</li>
-<li>Limitar IPs: <code>hosts allow = 192.168.1.0/24</code></li>
-<li>Nunca exponer rsync en interfaces públicas sin firewall</li>
-<li>Deshabilitar módulos si no son necesarios: comentar en rsyncd.conf</li>
-<li>Detectar: conexiones entrantes al 873 en firewall logs</li>
-</ul>
-</div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>MITRE ATT&CK</h2></div>
-      
-
-<table class="data-table">
-<tr><th>ID</th><th>Técnica</th><th>Descripción</th></tr>
-<tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap descubre rsync en 873</td></tr>
-<tr><td><code>T1135</code></td><td>Network Share Discovery</td><td>Listado de módulos rsync anónimos</td></tr>
-<tr><td><code>T1078.001</code></td><td>Valid Accounts: Default Accounts</td><td>Acceso anónimo sin credenciales</td></tr>
-<tr><td><code>T1039</code></td><td>Data from Network Shared Drive</td><td>Descarga de flag.txt vía rsync</td></tr>
-</table>
-
-
-    </div>
-
+    <div class="decision-box"><strong>Decisión</strong><p>Puerto 873 rsync. Listar módulos disponibles sin autenticación.</p></div>
   </div>
 
-  <div class="sidebar">
-    <div class="sidebar-card">
-      <h3>Detalles del Reto</h3>
-      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">VERY EASY</span></div>
-      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Linux</span></div>
-      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.X.X</span></div>
-      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">Starting Point</span></div>
-      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">rsync Anonymous</span></div>
-      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Enumeración</div>
+    <h3>rsync rsync://IP/ — Listar módulos</h3>
+    <div class="why-box">
+      <strong>¿Qué es un módulo rsync?</strong>
+      <p>rsync organiza el acceso en "módulos" — directorios predefinidos con nombre, descripción y permisos. Es similar a los shares de SMB o los módulos de FTP. Listándolos sin credenciales sabemos qué está disponible públicamente.</p>
     </div>
-    <div class="sidebar-card">
-      <h3>Skills Demostradas</h3>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">rsync Enumeration</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">Anonymous Access</span><span class="skill-pct">85%</span></div><div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div></div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">rsync</span>
+        <span class="param"> rsync://10.129.6.240/</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>rsync</code> → herramienta de sincronización de archivos de Linux</div>
+        <div class="cmd-note"><code>rsync://10.129.6.240/</code> → URL del servidor rsync. La barra final sin módulo = listar todos los módulos disponibles</div>
+        <div class="cmd-note" style="border-left-color:var(--accent);color:var(--accent);">⚠ Sin usuario ni contraseña → intento anónimo. Si hay módulos públicos, los muestra.</div>
+      </div>
     </div>
-    <div class="sidebar-card">
-      <h3>Herramientas</h3>
-      <div class="tools-list">
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nmap</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">rsync</span></div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre><span class="hl-module">public</span>         	Anonymous Share</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué significa?</strong>
+      <ul>
+        <li><code>public</code> → nombre del módulo rsync accesible anónimamente</li>
+        <li><code>Anonymous Share</code> → descripción — confirma acceso sin credenciales</li>
+        <li>Solo hay un módulo → ese es EL objetivo</li>
+      </ul>
+    </div>
+    <div class="decision-box"><strong>Decisión</strong><p>Módulo <code>public</code> accesible. Listar su contenido.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Enumeración</div>
+    <h3>rsync rsync://IP/public/ — Ver archivos del módulo</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">rsync</span>
+        <span class="param"> rsync://10.129.6.240/public/</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>rsync://10.129.6.240/public/</code> → URL con módulo específico + barra final = listar contenido del módulo como <code>ls -la</code></div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>drwxr-xr-x          4,096 2022/10/24 18:02:23 .
+<span class="hl-file">-rw-r--r--             33 2022/10/24 17:32:03 flag.txt</span></pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué vemos?</strong>
+      <ul>
+        <li><code>flag.txt</code> → el archivo objetivo. 33 bytes = exactamente el tamaño de un hash MD5 + salto de línea</li>
+        <li>Permisos <code>-rw-r--r--</code> → readable por cualquiera</li>
+      </ul>
+    </div>
+    <div class="decision-box"><strong>Decisión</strong><p>flag.txt visible y legible. Descargar con rsync.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 4 — Explotación</div>
+    <h3>rsync download + cat — Obtener la flag</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">rsync</span>
+        <span class="param"> rsync://10.129.6.240/public/flag.txt</span>
+        <span class="param"> /tmp/flag.txt</span>
+        <span class="flag-opt"> &amp;&amp; cat</span>
+        <span class="param"> /tmp/flag.txt</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>rsync://10.129.6.240/public/flag.txt</code> → origen: archivo específico en el módulo remoto</div>
+        <div class="cmd-note"><code>/tmp/flag.txt</code> → destino local donde guardar el archivo descargado</div>
+        <div class="cmd-note"><code>&amp;&amp; cat /tmp/flag.txt</code> → si la descarga fue exitosa (exit code 0), mostrar el contenido en pantalla</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre><span class="hl-flag">72eaf5344ebb84908ae543a719830519</span></pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Resultado</strong>
+      <p>rsync descargó <code>flag.txt</code> del servidor remoto al directorio local <code>/tmp/</code>. El archivo contiene el hash MD5 de la flag. Sin credenciales, sin exploits, sin bypass — conexión directa a un servicio mal configurado.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Panel de Agentes Ghost-Ops</h2>
+  <div class="agent-panel">
+    <div class="agent-card rto">
+      <div class="agent-label">⚔ RTO — Red Team</div>
+      <p>Puerto 873 = rsync. Listar módulos primero. Si hay módulos con write access: subir SSH authorized_keys → acceso root. En backups: buscar .conf, id_rsa, .env, database dumps. Descargar todo con <code>rsync -av rsync://IP/public/ /tmp/loot/</code></p>
+    </div>
+    <div class="agent-card bta">
+      <div class="agent-label">🛡 BTA — Blue Team</div>
+      <p>Nivel de ruido: MUY BAJO. rsync genera 1 conexión TCP limpia al 873. Sin logs de auth fallida. Sin alertas IDS por defecto. Solo detectable con firewall bloqueando 873 desde IPs externas o monitoreo de acceso en rsyncd.log.</p>
+    </div>
+    <div class="agent-card bhm">
+      <div class="agent-label">🎭 BHM — Black Hat</div>
+      <p>"Synced" = rsync es la pista en el nombre. Si el módulo tiene permisos de escritura: subir webshell si hay webroot, o SSH key para acceso persistente. Siempre probar <code>rsync --list-only rsync://IP/modulo/ --recursive</code> para ver subdirectorios.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li>Puerto 873 = rsync → listar módulos con <code>rsync rsync://IP/</code></li>
+        <li>Nombre de la máquina es la pista del servicio: "Synced" = rsync</li>
+        <li>rsync anónimo = descargar con <code>rsync rsync://IP/modulo/archivo /local</code></li>
+        <li>Para write access: <code>rsync /local/file rsync://IP/modulo/</code> → subir SSH keys</li>
+        <li>Descarga recursiva completa: <code>rsync -av rsync://IP/modulo/ /tmp/loot/</code></li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li>Requerir autenticación: <code>auth users = usuario</code> en rsyncd.conf</li>
+        <li>Limitar IPs: <code>hosts allow = 192.168.1.0/24</code></li>
+        <li>Nunca exponer rsync en interfaces públicas sin firewall</li>
+        <li>Deshabilitar módulos si no son necesarios: comentar en rsyncd.conf</li>
+        <li>Detectar: conexiones entrantes al 873 en firewall logs</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción</th></tr>
+    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap descubre rsync en 873</td></tr>
+    <tr><td><code>T1135</code></td><td>Network Share Discovery</td><td>Listado de módulos rsync anónimos</td></tr>
+    <tr><td><code>T1078.001</code></td><td>Valid Accounts: Default Accounts</td><td>Acceso anónimo sin credenciales</td></tr>
+    <tr><td><code>T1039</code></td><td>Data from Network Shared Drive</td><td>Descarga de flag.txt vía rsync</td></tr>
+  </table>
+</div>
+
+<div class="flag-box">
+  <div class="flag-label">Flag — public/flag.txt</div>
+  <div class="flag-value">72eaf5344ebb84908ae543a719830519</div>
+  <p style="color:var(--text-muted);font-size:.8rem;margin-top:.75rem;">rsync rsync://10.129.6.240/public/flag.txt /tmp/flag.txt</p>
+</div>
+
+</main>
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.6.240</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux</span></div>
+    <div class="meta-row"><span class="meta-label">Servicio</span><span class="meta-value">rsync v31</span></div>
+    <div class="meta-row"><span class="meta-label">Puerto</span><span class="meta-value">873/tcp</span></div>
+    <div class="meta-row"><span class="meta-label">Módulo</span><span class="meta-value">public</span></div>
+    <div class="meta-row"><span class="meta-label">Auth</span><span class="meta-value" style="color:var(--red);">NINGUNA</span></div>
+    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~3 min</span></div>
+    <div class="meta-row"><span class="meta-label">Comandos</span><span class="meta-value">4</span></div>
+  </div>
+  <div class="sidebar-card">
+    <h4>Los 4 Comandos</h4>
+    <div style="display:flex;flex-direction:column;gap:.5rem;">
+      <div style="background:#050810;border-radius:6px;padding:.6rem .75rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--text-dim);border-left:2px solid var(--accent);">
+        <span style="color:var(--text-muted);"># 1 recon</span><br>
+        nmap -p- --open -n -T4 IP
+      </div>
+      <div style="background:#050810;border-radius:6px;padding:.6rem .75rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--text-dim);border-left:2px solid var(--accent);">
+        <span style="color:var(--text-muted);"># 2 listar módulos</span><br>
+        rsync rsync://IP/
+      </div>
+      <div style="background:#050810;border-radius:6px;padding:.6rem .75rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--text-dim);border-left:2px solid var(--accent);">
+        <span style="color:var(--text-muted);"># 3 ver archivos</span><br>
+        rsync rsync://IP/public/
+      </div>
+      <div style="background:#050810;border-radius:6px;padding:.6rem .75rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--accent);border-left:2px solid var(--accent);font-weight:700;">
+        <span style="color:var(--text-muted);"># 4 FLAG</span><br>
+        rsync rsync://IP/public/flag.txt /tmp/f && cat /tmp/f
       </div>
     </div>
   </div>
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1135</span>
+    <span class="mitre-tag">T1078.001</span>
+    <span class="mitre-tag">T1039</span>
+  </div>
+  <div class="sidebar-card">
+    <h4>Ghost-Ops Score</h4>
+    <div class="score-num">3/3</div>
+    <div class="score-label">predicciones correctas ✅</div>
+    <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:.5rem;">873 rsync → public → flag exacto</p>
+  </div>
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item"><span class="glosario-term">rsync</span><span class="glosario-def">Herramienta de sincronización de archivos Linux. Puerto 873. Protocolo eficiente para transferir solo cambios.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Módulo rsync</span><span class="glosario-def">Directorio compartido en un servidor rsync. Equivale a un share SMB o un módulo FTP.</span></div>
+    <div class="glosario-item"><span class="glosario-term">rsync://</span><span class="glosario-def">URL scheme para conectar a un daemon rsync. rsync://IP/ lista módulos. rsync://IP/modulo/ lista archivos.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Anonymous Share</span><span class="glosario-def">Módulo sin autenticación requerida. Cualquier cliente puede conectarse y descargar.</span></div>
+  </div>
+</aside>
 </div>
 
-<script>
-  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
-  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
-  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
-  setInterval(drawMatrix,35);
-</script>
+<footer style="background:var(--card);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text-muted);font-size:.82rem;">HTB Starting Point · Synced · Very Easy · Linux · rsync 873 · 2026-03-16</p>
+</footer>
+
 </body>
 </html>

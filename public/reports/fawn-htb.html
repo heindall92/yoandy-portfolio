@@ -1,732 +1,445 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fawn — HTB Writeup | YRD</title>
-  <style>
-    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
-    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
-    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
-    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
-    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
-    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
-    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
-    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
-    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
-    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
-    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
-    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
-    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
-    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
-    .hero h1 span{color:var(--primary);}
-    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
-    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
-    .meta-item{display:flex;flex-direction:column;gap:4px;}
-    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
-    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
-    .meta-value.green{color:var(--primary);}
-    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
-    @media(max-width:900px){.main{grid-template-columns:1fr;}}
-    .content{display:flex;flex-direction:column;gap:2rem;}
-    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
-    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
-    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
-    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
-    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
-    .section p:last-child{margin-bottom:0;}
-    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
-    .section li{margin-bottom:0.3rem;}
-    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
-    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
-    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
-    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
-    .comment{color:#6a9955;}
-    .cmd{color:var(--cyan);}
-    .output{color:var(--text-dim);}
-    .highlight{color:var(--primary);font-weight:600;}
-    .cred{color:var(--yellow);font-weight:600;}
-    .flag-val{color:#ff79c6;}
-    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
-    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
-    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
-    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
-    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
-    .timeline{display:flex;flex-direction:column;gap:0;}
-    .timeline-item{display:flex;gap:1.25rem;}
-    .timeline-left{display:flex;flex-direction:column;align-items:center;}
-    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
-    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
-    .timeline-item:last-child .timeline-line{display:none;}
-    .timeline-content{padding-bottom:1.5rem;}
-    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
-    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
-    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
-    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
-    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
-    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
-    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
-    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
-    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
-    .detail-row:last-child{border-bottom:none;}
-    .detail-key{font-size:0.8rem;color:var(--text-muted);}
-    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
-    .detail-val.green{color:var(--primary);}
-    .detail-val.cyan{color:var(--cyan);}
-    .skill-item{margin-bottom:1rem;}
-    .skill-item:last-child{margin-bottom:0;}
-    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
-    .skill-name{font-size:0.82rem;color:var(--text-dim);}
-    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
-    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
-    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
-    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
-    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
-    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
-    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
-    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
-    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
-    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
-    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
-    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
-    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
-    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
-    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
-    .data-table td{color:var(--text-dim);}
-    a{color:var(--primary);text-decoration:none;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTB — Fawn | FTP Anonymous Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #4ade80; --accent-dim: #16a34a; --accent-glow: rgba(74,222,128,0.15);
+  --bg: #0a0e1a; --bg2: #0f1629; --bg3: #141d35;
+  --card: #111827; --card2: #1a2540; --border: #1e2d4a;
+  --text: #e2e8f0; --text-muted: #64748b; --text-dim: #94a3b8;
+  --red: #f87171; --yellow: #fbbf24; --blue: #60a5fa;
+  --purple: #a78bfa; --orange: #fb923c; --cyan: #22d3ee; --green: #4ade80;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; }
+code { background: var(--card2); padding: 0.15rem 0.4rem; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 0.88em; color: var(--accent); }
+pre { margin: 0; white-space: pre-wrap; word-break: break-all; font-family: 'JetBrains Mono', monospace; }
+ul { padding-left: 1.5rem; } li { margin: 0.35rem 0; }
+h2 { font-size: 1.4rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1.25rem; }
+h3 { font-size: 1.05rem; color: var(--text); margin-bottom: 0.75rem; }
+.hero { background: linear-gradient(135deg, #0a0e1a, #0d1a2b, #091a10); padding: 4rem 2rem 3rem; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+.hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 60% 40%, rgba(74,222,128,0.06) 0%, transparent 60%); }
+.hero-inner { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+.watermark { position: absolute; right: 3rem; bottom: 0.5rem; font-size: 9rem; color: rgba(74,222,128,0.04); font-family: 'JetBrains Mono', monospace; font-weight: 900; line-height: 1; user-select: none; }
+.badge { display: inline-block; background: rgba(74,222,128,0.1); color: var(--accent); border: 1px solid rgba(74,222,128,0.3); border-radius: 100px; padding: 0.25rem 1rem; font-size: 0.75rem; font-weight: 600; margin-bottom: 1rem; }
+.hero h1 { font-size: 3rem; font-weight: 900; color: #fff; margin-bottom: 0.25rem; }
+.hero .subtitle { font-size: 1.1rem; color: var(--text-dim); margin-bottom: 1.25rem; }
+.meta-chips { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.chip { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.75rem; font-size: 0.8rem; color: var(--text-dim); }
+.flag-display { font-family: 'JetBrains Mono', monospace; background: rgba(74,222,128,0.1); color: var(--accent); padding: 0.5rem 1.25rem; border-radius: 8px; display: inline-block; font-size: 0.9rem; border: 1px solid rgba(74,222,128,0.2); }
+.container { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+@media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+.section { margin: 2.5rem 0; }
+.step-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+.step-box:hover { border-color: rgba(74,222,128,0.2); }
+.step-number { font-size: 0.7rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 0.4rem; font-family: 'JetBrains Mono', monospace; }
+.why-box { background: rgba(96,165,250,0.07); border-left: 3px solid var(--blue); padding: 0.9rem 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0; }
+.why-box strong { color: var(--blue); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem; }
+.why-box p { font-size: 0.9rem; color: var(--text-dim); }
+.cmd-annotated { background: #050810; border-radius: 8px; padding: 1rem 1.25rem; font-family: 'JetBrains Mono', monospace; margin: 1rem 0; border: 1px solid var(--border); }
+.cmd-annotated .cmd-line { font-size: 1rem; line-height: 2; }
+.cmd { color: var(--green); font-weight: 700; }
+.flag-opt { color: var(--yellow); }
+.ip { color: var(--orange); }
+.param { color: var(--cyan); }
+.str-c { color: var(--green); }
+.cmd-notes { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.3rem; }
+.cmd-note { font-size: 0.8rem; color: var(--text-dim); padding: 0.3rem 0.75rem; border-left: 2px solid var(--border); }
+.output-box { background: #050810; border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--text-dim); margin: 1rem 0; overflow-x: auto; line-height: 1.6; }
+.output-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; }
+.interpret-box { background: rgba(74,222,128,0.07); border-left: 3px solid var(--accent); padding: 0.9rem 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0; }
+.interpret-box strong { color: var(--accent); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem; }
+.interpret-box p, .interpret-box li { font-size: 0.88rem; color: var(--text-dim); }
+.decision-box { background: rgba(251,146,60,0.07); border-left: 3px solid var(--orange); padding: 0.9rem 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0; }
+.decision-box strong { color: var(--orange); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem; }
+.decision-box p { font-size: 0.88rem; color: var(--text-dim); }
+.vuln-card { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.25); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+.vuln-card h3 { color: var(--red); margin-bottom: 0.75rem; }
+.info-box { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin: 1.25rem 0; }
+/* NSE BONUS */
+.nse-bonus { background: linear-gradient(135deg, rgba(251,191,36,0.06), rgba(251,191,36,0.02)); border: 1px solid rgba(251,191,36,0.3); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+.nse-bonus h3 { color: var(--yellow); margin-bottom: 0.75rem; }
+/* FTP SESSION */
+.ftp-session { background: #050810; border-radius: 12px; padding: 1.25rem; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
+.ftp-cmd { color: var(--cyan); }
+.ftp-resp { color: var(--text-muted); }
+.ftp-success { color: var(--accent); }
+.ftp-flag { color: var(--yellow); font-weight: 700; }
+/* FTP CODES TABLE */
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 1rem 0; }
+.data-table th { background: var(--card2); color: var(--text-muted); padding: 0.6rem 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; }
+.data-table td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table .highlight { color: var(--accent); font-weight: 600; }
+.lessons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+.lesson-card { background: var(--card2); border-radius: 10px; padding: 1.25rem; border: 1px solid var(--border); }
+.lesson-card h4 { font-size: 0.85rem; margin-bottom: 0.75rem; }
+.lesson-card.attacker h4 { color: var(--orange); }
+.lesson-card.defender h4 { color: var(--blue); }
+.lesson-card li { font-size: 0.83rem; color: var(--text-dim); }
+.flag-box { background: linear-gradient(135deg, rgba(74,222,128,0.08), rgba(74,222,128,0.02)); border: 1px solid rgba(74,222,128,0.3); border-radius: 14px; padding: 2rem; text-align: center; margin: 2.5rem 0; }
+.flag-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 0.75rem; }
+.flag-value { font-family: 'JetBrains Mono', monospace; font-size: 1.15rem; color: var(--accent); background: rgba(74,222,128,0.1); padding: 0.6rem 1.5rem; border-radius: 8px; display: inline-block; border: 1px solid rgba(74,222,128,0.2); letter-spacing: 0.1em; }
+.sidebar { position: sticky; top: 2rem; height: fit-content; }
+.sidebar-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+.sidebar-card h4 { margin: 0 0 0.9rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); }
+.meta-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.83rem; padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
+.meta-row:last-child { border-bottom: none; }
+.meta-label { color: var(--text-muted); }
+.meta-value { color: var(--text); font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+.mitre-tag { display: inline-block; background: rgba(167,139,250,0.1); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); border-radius: 4px; padding: 0.2rem 0.5rem; font-size: 0.72rem; font-family: 'JetBrains Mono', monospace; margin: 0.2rem 0.15rem; }
+.score-num { font-size: 2.8rem; font-weight: 900; color: var(--accent); text-align: center; line-height: 1; margin: 0.5rem 0; font-family: 'JetBrains Mono', monospace; }
+.score-label { text-align: center; font-size: 0.75rem; color: var(--text-muted); }
+.glosario-item { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+.glosario-item:last-child { border-bottom: none; }
+.glosario-term { color: var(--cyan); font-weight: 600; font-family: 'JetBrains Mono', monospace; display: block; margin-bottom: 0.15rem; }
+.glosario-def { color: var(--text-muted); line-height: 1.4; }
+</style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
 
 <div class="hero">
-  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / Fawn</div>
-  <div class="tags">
-    <span class="tag tag-htb">HTB</span>
-    <span class="tag tag-os">LINUX</span>
-    <span class="tag tag-veryeasy">VERY EASY</span>
-    <span class="tag tag-htb">STARTING POINT</span>
+  <div class="hero-inner">
+    <div class="badge">HTB · Starting Point · Very Easy · Linux</div>
+    <h1>Fawn</h1>
+    <p class="subtitle">FTP Anonymous Login — vsftpd 3.0.3</p>
+    <div class="meta-chips">
+      <span class="chip">🖥 10.129.18.193</span>
+      <span class="chip">🐧 Linux Unix</span>
+      <span class="chip">🔌 Puerto 21 · FTP</span>
+      <span class="chip">⏱ ~3 minutos</span>
+      <span class="chip">💻 3 comandos</span>
+    </div>
+    <div class="flag-display">FLAG: 035db21c881520061c53e0536e44f815</div>
   </div>
-  <h1>Fawn <span>Machine</span></h1>
-  <p class="hero-desc">Servidor FTP con login anónimo habilitado. Enumeración con Nmap, acceso anónimo al servicio FTP y descarga directa de la flag desde el recurso compartido.</p>
-  <div class="meta-row">
-    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
-    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">HTB Starting Point</span></div>
-    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">nmap / ftp</span></div>
-    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
+  <div class="watermark">></div>
+</div>
+
+<div class="container">
+<main>
+
+<div class="section">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p>La máquina Fawn expone <strong>vsftpd 3.0.3 en el puerto 21</strong> con acceso anónimo habilitado. Esto permite que cualquier persona se conecte sin credenciales reales y descargue archivos del servidor. La flag estaba accesible directamente en el directorio raíz del FTP. Hecho notable: el script NSE <code>ftp-anon</code> de Nmap reveló la flag <strong>antes de que nos conectáramos manualmente</strong>, demostrando que leer el output completo de <code>nmap -sC</code> puede ahorrarnos pasos adicionales.</p>
   </div>
 </div>
 
-<div class="main">
-  <div class="content">
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Resumen Ejecutivo</h2></div>
-      
-
-<div class="info-box">
-<p>La máquina Fawn expone <strong>vsftpd 3.0.3 en el puerto 21</strong> con acceso anónimo habilitado. Esto permite que cualquier persona se conecte sin credenciales reales y descargue archivos del servidor. La flag estaba accesible directamente en el directorio raíz del FTP. Hecho notable: el script NSE <code>ftp-anon</code> de Nmap reveló la flag <strong>antes de que nos conectáramos manualmente</strong>, demostrando que leer el output completo de <code>nmap -sC</code> puede ahorrarnos pasos adicionales.</p>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>¿Qué es FTP y por qué el acceso anónimo es peligroso?</h2></div>
-      
-
-<p style="color:var(--text-dim);font-size:0.92rem;margin-bottom:1rem;"><strong>FTP</strong> (File Transfer Protocol) es un protocolo de red para transferir archivos. Creado en <strong>1971</strong>, es uno de los protocolos de Internet más antiguos aún en uso. El acceso anónimo permite conectarse con el usuario <code>anonymous</code> y cualquier contraseña — diseñado para distribución pública de archivos.</p>
-
-
-<div class="vuln-card">
-<h3>⚠ ¿Cuándo es peligroso?</h3>
-<ul style="font-size:0.9rem;color:var(--text-dim);">
-<li><strong>Archivos sensibles expuestos:</strong> Si los permisos no están bien configurados, archivos privados quedan accesibles a cualquier persona.</li>
-<li><strong>Texto plano:</strong> FTP no cifra el tráfico — contraseñas y archivos viajan en claro, visibles con Wireshark.</li>
-<li><strong>Sin autenticación real:</strong> El servidor acepta cualquier contraseña para el usuario anonymous.</li>
-</ul>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>⚠ ¿Cuándo es peligroso?</h2></div>
-      
-
-<ul style="font-size:0.9rem;color:var(--text-dim);">
-<li><strong>Archivos sensibles expuestos:</strong> Si los permisos no están bien configurados, archivos privados quedan accesibles a cualquier persona.</li>
-<li><strong>Texto plano:</strong> FTP no cifra el tráfico — contraseñas y archivos viajan en claro, visibles con Wireshark.</li>
-<li><strong>Sin autenticación real:</strong> El servidor acepta cualquier contraseña para el usuario anonymous.</li>
-</ul>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Reconocimiento — Paso a Paso</h2></div>
-      
-
-<div class="step-box">
-<div class="step-number">Paso 1 — Reconocimiento</div>
-<h3>Verificar conectividad con ping</h3>
-<div class="why-box">
-<strong>¿Por qué este comando?</strong>
-<p>Confirmar que la máquina está activa y obtener una primera pista del OS mediante el TTL, antes de lanzar herramientas más pesadas.</p>
-</div>
-<div class="cmd-annotated">
-<div class="cmd-line"><span class="cmd">ping</span> <span class="flag-opt">-c2</span> <span class="ip">10.129.18.193</span></div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>ping</code> → herramienta ICMP de diagnóstico de red</div>
-<div class="cmd-note"><code>-c2</code> → enviar 2 paquetes y detenerse. Sin este flag corre indefinidamente.</div>
-<div class="cmd-note"><code>10.129.18.193</code> → IP del objetivo en la VPN de HTB</div>
-</div>
-</div>
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>64 bytes from 10.129.18.193: icmp_seq=1 ttl=63 time=43.1 ms
-64 bytes from 10.129.18.193: icmp_seq=2 ttl=63 time=43.4 ms
-2 packets transmitted, 2 received, 0% packet loss</pre>
-</div>
-<div class="interpret-box">
-<strong>¿Qué nos dice este output?</strong>
-<ul>
-<li><code>ttl=63</code> → Linux confirmado (TTL inicial 64, menos 1 salto de red = 63)</li>
-<li><code>0% packet loss</code> → conectividad perfecta con la VPN de HTB</li>
-</ul>
-</div>
-<div class="decision-box">
-<strong>Decisión tomada</strong>
-<p>Máquina Linux activa. Iniciamos descubrimiento de puertos con nmap.</p>
-</div>
-</div>
-
-
-<div class="step-box">
-<div class="step-number">Paso 2 — Reconocimiento</div>
-<h3>Descubrir puertos abiertos — Nmap fase rápida</h3>
-<div class="why-box">
-<strong>¿Por qué este comando?</strong>
-<p>Mapear todos los servicios expuestos. Escaneamos los 65535 puertos para no perdernos ningún servicio en puertos no estándar.</p>
-</div>
-<div class="cmd-annotated">
-<div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p-</span> <span class="flag-opt">--open</span> <span class="flag-opt">-n</span> <span class="flag-opt">-T4</span> <span class="flag-opt">-sS</span> <span class="ip">10.129.18.193</span></div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>-p-</code> → todos los 65535 puertos TCP</div>
-<div class="cmd-note"><code>--open</code> → solo puertos abiertos (los cerrados/filtrados no son vectores inmediatos)</div>
-<div class="cmd-note"><code>-n</code> → sin resolución DNS (más rápido)</div>
-<div class="cmd-note"><code>-T4</code> → velocidad agresiva (escala T0-T5)</div>
-<div class="cmd-note"><code>-sS</code> → SYN scan: envía SYN sin completar el handshake (más sigiloso)</div>
-</div>
-</div>
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>PORT   STATE SERVICE
-21/tcp open  ftp</pre>
-</div>
-<div class="interpret-box">
-<strong>¿Qué nos dice este output?</strong>
-<ul>
-<li>1 solo puerto abierto: <code>21/tcp</code> → FTP (File Transfer Protocol)</li>
-<li>Superficie de ataque mínima: un único servicio = un único vector</li>
-</ul>
-</div>
-<div class="decision-box">
-<strong>Decisión tomada</strong>
-<p>FTP en puerto 21. El árbol de decisión Ghost-Ops indica: ejecutar nmap -sC para que el script <code>ftp-anon</code> detecte automáticamente el acceso anónimo.</p>
-</div>
-</div>
-
-
-<div class="step-box">
-<div class="step-number">Paso 3 — Reconocimiento (EL MOMENTO REVELADOR)</div>
-<h3>Enumerar FTP con scripts NSE — Nmap ya encuentra la flag</h3>
-<div class="why-box">
-<strong>¿Por qué esta fase es especialmente importante en Fawn?</strong>
-<p>El script NSE <code>ftp-anon</code> se conecta automáticamente como usuario <code>anonymous</code> y lista el directorio. En esta máquina, <strong>nmap reveló flag.txt ANTES de que nos conectáramos manualmente</strong>. Este es el principio central de Ghost-Ops: leer siempre el output completo de nmap -sC antes de ejecutar comandos adicionales.</p>
-</div>
-<div class="cmd-annotated">
-<div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p21</span> <span class="flag-opt">-sC</span> <span class="flag-opt">-sV</span> <span class="flag-opt">-n</span> <span class="ip">10.129.18.193</span></div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>-p21</code> → solo el puerto 21. No re-escanear todos los 65535.</div>
-<div class="cmd-note"><code>-sC</code> → scripts NSE por defecto. Para FTP incluye: <strong>ftp-anon</strong> (intenta login anónimo y lista directorio), <strong>ftp-syst</strong> (info del OS vía FTP), <strong>ftp-bounce</strong> (verifica si es proxy FTP).</div>
-<div class="cmd-note"><code>-sV</code> → detectar versión exacta del servicio FTP</div>
-<div class="cmd-note"><code>-n</code> → sin resolución DNS</div>
-</div>
-</div>
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>PORT   STATE SERVICE VERSION
-21/tcp open  ftp     vsftpd 3.0.3
-| ftp-anon: Anonymous FTP login allowed (FTP code 230)
-|_-rw-r--r--    1 0        0              32 Jun 04  2021 flag.txt
-| ftp-syst:
-|   FTP server status:
-|      Connected to ::ffff:10.10.14.72
-|      Logged in as ftp
-|      TYPE: ASCII
-|      Control connection is plain text
-|_     vsFTPd 3.0.7 - secure, fast, stable
-
-Service Info: OS: Unix</pre>
-</div>
-<div class="interpret-box">
-<strong>¿Qué nos dice cada línea?</strong>
-<ul>
-<li><code>vsftpd 3.0.3</code> → Very Secure FTP Daemon, servidor FTP muy común en Linux</li>
-<li><code>ftp-anon: Anonymous FTP login allowed (FTP code 230)</code> → <strong>LOGIN ANÓNIMO CONFIRMADO</strong>. Código 230 = "User logged in, proceed" (RFC 959). El script se conectó como anonymous y el servidor lo aceptó.</li>
-<li><code>-rw-r--r-- 1 0 0 32 Jun 04 2021 flag.txt</code> → <strong>¡La flag está aquí!</strong> Tamaño 32 bytes = longitud exacta de un hash MD5. Permisos de lectura para todos.</li>
-<li><code>plain text</code> → FTP sin cifrado confirmado. Todo el tráfico es legible en la red.</li>
-</ul>
-</div>
-<div class="decision-box">
-<strong>Decisión tomada</strong>
-<p>El script NSE confirmó anonymous login Y localizó flag.txt. El ataque está esencialmente resuelto — solo falta conectarnos y descargar el archivo.</p>
-</div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Verificar conectividad con ping</h2></div>
-      
-
-<div class="why-box">
-<strong>¿Por qué este comando?</strong>
-<p>Confirmar que la máquina está activa y obtener una primera pista del OS mediante el TTL, antes de lanzar herramientas más pesadas.</p>
-</div>
-
-
-<div class="cmd-annotated">
-<div class="cmd-line"><span class="cmd">ping</span> <span class="flag-opt">-c2</span> <span class="ip">10.129.18.193</span></div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>ping</code> → herramienta ICMP de diagnóstico de red</div>
-<div class="cmd-note"><code>-c2</code> → enviar 2 paquetes y detenerse. Sin este flag corre indefinidamente.</div>
-<div class="cmd-note"><code>10.129.18.193</code> → IP del objetivo en la VPN de HTB</div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>64 bytes from 10.129.18.193: icmp_seq=1 ttl=63 time=43.1 ms
-64 bytes from 10.129.18.193: icmp_seq=2 ttl=63 time=43.4 ms
-2 packets transmitted, 2 received, 0% packet loss</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué nos dice este output?</strong>
-<ul>
-<li><code>ttl=63</code> → Linux confirmado (TTL inicial 64, menos 1 salto de red = 63)</li>
-<li><code>0% packet loss</code> → conectividad perfecta con la VPN de HTB</li>
-</ul>
-</div>
-
-
-<div class="decision-box">
-<strong>Decisión tomada</strong>
-<p>Máquina Linux activa. Iniciamos descubrimiento de puertos con nmap.</p>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Descubrir puertos abiertos — Nmap fase rápida</h2></div>
-      
-
-<div class="why-box">
-<strong>¿Por qué este comando?</strong>
-<p>Mapear todos los servicios expuestos. Escaneamos los 65535 puertos para no perdernos ningún servicio en puertos no estándar.</p>
-</div>
-
-
-<div class="cmd-annotated">
-<div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p-</span> <span class="flag-opt">--open</span> <span class="flag-opt">-n</span> <span class="flag-opt">-T4</span> <span class="flag-opt">-sS</span> <span class="ip">10.129.18.193</span></div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>-p-</code> → todos los 65535 puertos TCP</div>
-<div class="cmd-note"><code>--open</code> → solo puertos abiertos (los cerrados/filtrados no son vectores inmediatos)</div>
-<div class="cmd-note"><code>-n</code> → sin resolución DNS (más rápido)</div>
-<div class="cmd-note"><code>-T4</code> → velocidad agresiva (escala T0-T5)</div>
-<div class="cmd-note"><code>-sS</code> → SYN scan: envía SYN sin completar el handshake (más sigiloso)</div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>PORT   STATE SERVICE
-21/tcp open  ftp</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué nos dice este output?</strong>
-<ul>
-<li>1 solo puerto abierto: <code>21/tcp</code> → FTP (File Transfer Protocol)</li>
-<li>Superficie de ataque mínima: un único servicio = un único vector</li>
-</ul>
-</div>
-
-
-<div class="decision-box">
-<strong>Decisión tomada</strong>
-<p>FTP en puerto 21. El árbol de decisión Ghost-Ops indica: ejecutar nmap -sC para que el script <code>ftp-anon</code> detecte automáticamente el acceso anónimo.</p>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Enumerar FTP con scripts NSE — Nmap ya encuentra la flag</h2></div>
-      
-
-<div class="why-box">
-<strong>¿Por qué esta fase es especialmente importante en Fawn?</strong>
-<p>El script NSE <code>ftp-anon</code> se conecta automáticamente como usuario <code>anonymous</code> y lista el directorio. En esta máquina, <strong>nmap reveló flag.txt ANTES de que nos conectáramos manualmente</strong>. Este es el principio central de Ghost-Ops: leer siempre el output completo de nmap -sC antes de ejecutar comandos adicionales.</p>
-</div>
-
-
-<div class="cmd-annotated">
-<div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p21</span> <span class="flag-opt">-sC</span> <span class="flag-opt">-sV</span> <span class="flag-opt">-n</span> <span class="ip">10.129.18.193</span></div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>-p21</code> → solo el puerto 21. No re-escanear todos los 65535.</div>
-<div class="cmd-note"><code>-sC</code> → scripts NSE por defecto. Para FTP incluye: <strong>ftp-anon</strong> (intenta login anónimo y lista directorio), <strong>ftp-syst</strong> (info del OS vía FTP), <strong>ftp-bounce</strong> (verifica si es proxy FTP).</div>
-<div class="cmd-note"><code>-sV</code> → detectar versión exacta del servicio FTP</div>
-<div class="cmd-note"><code>-n</code> → sin resolución DNS</div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>PORT   STATE SERVICE VERSION
-21/tcp open  ftp     vsftpd 3.0.3
-| ftp-anon: Anonymous FTP login allowed (FTP code 230)
-|_-rw-r--r--    1 0        0              32 Jun 04  2021 flag.txt
-| ftp-syst:
-|   FTP server status:
-|      Connected to ::ffff:10.10.14.72
-|      Logged in as ftp
-|      TYPE: ASCII
-|      Control connection is plain text
-|_     vsFTPd 3.0.7 - secure, fast, stable
-
-Service Info: OS: Unix</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué nos dice cada línea?</strong>
-<ul>
-<li><code>vsftpd 3.0.3</code> → Very Secure FTP Daemon, servidor FTP muy común en Linux</li>
-<li><code>ftp-anon: Anonymous FTP login allowed (FTP code 230)</code> → <strong>LOGIN ANÓNIMO CONFIRMADO</strong>. Código 230 = "User logged in, proceed" (RFC 959). El script se conectó como anonymous y el servidor lo aceptó.</li>
-<li><code>-rw-r--r-- 1 0 0 32 Jun 04 2021 flag.txt</code> → <strong>¡La flag está aquí!</strong> Tamaño 32 bytes = longitud exacta de un hash MD5. Permisos de lectura para todos.</li>
-<li><code>plain text</code> → FTP sin cifrado confirmado. Todo el tráfico es legible en la red.</li>
-</ul>
-</div>
-
-
-<div class="decision-box">
-<strong>Decisión tomada</strong>
-<p>El script NSE confirmó anonymous login Y localizó flag.txt. El ataque está esencialmente resuelto — solo falta conectarnos y descargar el archivo.</p>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>⭐ Bonus: Lo que Nmap ya sabía antes de que nos conectáramos</h2></div>
-      
-
-<p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:0.75rem;">Esta máquina ilustra un principio fundamental de Ghost-Ops: <strong>los scripts NSE de Nmap pueden hacer el trabajo de reconocimiento completo</strong>. El script <code>ftp-anon</code>:</p>
-
-
-<ol style="color:var(--text-dim);font-size:0.88rem;padding-left:1.5rem;">
-<li>Se conecta automáticamente al servidor FTP con <code>USER anonymous</code></li>
-<li>Verifica si el servidor responde con código 230 (login OK)</li>
-<li>Ejecuta <code>LIST</code> para listar el directorio raíz</li>
-<li>Reporta todo en la salida de nmap — incluyendo <code>flag.txt</code></li>
-</ol>
-
-
-<p style="color:var(--yellow);font-size:0.85rem;margin-top:0.75rem;font-weight:600;">Regla Ghost-Ops: Leer SIEMPRE el output completo de nmap -sC antes de ejecutar comandos adicionales.</p>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Explotación — Paso a Paso</h2></div>
-      
-
-<div class="step-box">
-<div class="step-number">Paso 4 — Explotación</div>
-<h3>Sesión FTP completa — login anonymous y descarga de flag</h3>
-<div class="why-box">
-<strong>¿Por qué conectarnos si nmap ya reveló la flag?</strong>
-<p>Nmap nos confirmó que flag.txt existe y es accesible, pero necesitamos descargar el archivo para leerlo. El cliente <code>ftp</code> nos permite hacer exactamente eso con una sesión interactiva. Usamos <code>-n</code> para control manual del login.</p>
-</div>
-<div class="cmd-annotated">
-<div class="cmd-line"><span class="cmd">ftp</span> <span class="flag-opt">-n</span> <span class="ip">10.129.18.193</span></div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>ftp</code> → cliente FTP de línea de comandos estándar de Linux</div>
-<div class="cmd-note"><code>-n</code> → no hacer auto-login usando <code>~/.netrc</code> (archivo con credenciales guardadas). Con -n tomamos control manual.</div>
-<div class="cmd-note"><code>10.129.18.193</code> → IP del servidor FTP objetivo</div>
-</div>
-</div>
-<div class="ftp-session">
-<div class="output-label">Sesión FTP completa</div>
-<br/>
-<span style="color:var(--text-muted);">Connected to 10.129.18.193.</span><br/>
-<span style="color:var(--text-muted);">220 (vsFTPd 3.0.3)</span><br/>
-<br/>
-<span class="ftp-cmd">ftp&gt; quote USER anonymous</span><br/>
-<span class="ftp-resp">331 Please specify the password.</span><br/>
-<br/>
-<span class="ftp-cmd">ftp&gt; quote PASS anonymous</span><br/>
-<span class="ftp-success">230 Login successful.</span><br/>
-<br/>
-<span class="ftp-cmd">ftp&gt; ls</span><br/>
-<span class="ftp-flag">-rw-r--r--    1 0        0              32 Jun 04  2021 flag.txt</span><br/>
-<br/>
-<span class="ftp-cmd">ftp&gt; get flag.txt</span><br/>
-<span class="ftp-success">226 Transfer complete. 32 bytes received.</span><br/>
-<br/>
-<span class="ftp-cmd">ftp&gt; bye</span><br/>
-<span class="ftp-resp">221 Goodbye.</span>
-</div>
-<div class="interpret-box">
-<strong>¿Qué hace cada comando dentro de la sesión FTP?</strong>
-<table class="data-table">
-<tr><th>Comando</th><th>¿Qué hace?</th><th>¿Por qué?</th></tr>
-<tr><td><code>quote USER anonymous</code></td><td>Envía el comando FTP USER directamente al servidor</td><td>Iniciar autenticación con usuario anonymous</td></tr>
-<tr><td><code>quote PASS anonymous</code></td><td>Envía la contraseña — el servidor acepta cualquier valor</td><td>Completar la autenticación sin contraseña real</td></tr>
-<tr><td><code>ls</code></td><td>Lista el contenido del directorio actual en el servidor</td><td>Ver qué archivos están disponibles</td></tr>
-<tr><td><code>get flag.txt</code></td><td>Descarga flag.txt del servidor al directorio local</td><td>Obtener la flag</td></tr>
-<tr><td><code>bye</code></td><td>Envía QUIT al servidor y cierra la sesión limpiamente</td><td>Buena práctica: cerrar la conexión correctamente</td></tr>
-</table>
-</div>
-<div class="info-box">
-<p><strong>Códigos de respuesta FTP:</strong> <code>230</code> = Login exitoso | <code>331</code> = Username OK, espera password | <code>226</code> = Transferencia completa | <code>221</code> = Sesión cerrada</p>
-</div>
-<div class="decision-box">
-<strong>Decisión tomada</strong>
-<p>Archivo descargado exitosamente (32 bytes). Leemos la flag con <code>cat flag.txt</code>.</p>
-</div>
-</div>
-
-
-<div class="step-box">
-<div class="step-number">Paso 5 — Flag</div>
-<h3>Leer la flag con cat</h3>
-<div class="cmd-annotated">
-<div class="cmd-line"><span class="cmd">cat</span> <span class="param">flag.txt</span></div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>cat</code> → (concatenate) lee y muestra el contenido de un archivo en la terminal. La forma más directa de leer un archivo de texto en Linux.</div>
-<div class="cmd-note"><code>flag.txt</code> → archivo descargado del servidor FTP en el paso anterior</div>
-</div>
-</div>
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>035db21c881520061c53e0536e44f815</pre>
-</div>
-<div class="interpret-box">
-<strong>¿Qué nos dice este output?</strong>
-<ul>
-<li>La flag es un hash MD5 de 32 caracteres hexadecimales — formato estándar de flags en HTB</li>
-<li>Coincide con el tamaño de 32 bytes que nos informó nmap en el listado del directorio</li>
-</ul>
-</div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Sesión FTP completa — login anonymous y descarga de flag</h2></div>
-      
-
-<div class="why-box">
-<strong>¿Por qué conectarnos si nmap ya reveló la flag?</strong>
-<p>Nmap nos confirmó que flag.txt existe y es accesible, pero necesitamos descargar el archivo para leerlo. El cliente <code>ftp</code> nos permite hacer exactamente eso con una sesión interactiva. Usamos <code>-n</code> para control manual del login.</p>
-</div>
-
-
-<div class="cmd-annotated">
-<div class="cmd-line"><span class="cmd">ftp</span> <span class="flag-opt">-n</span> <span class="ip">10.129.18.193</span></div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>ftp</code> → cliente FTP de línea de comandos estándar de Linux</div>
-<div class="cmd-note"><code>-n</code> → no hacer auto-login usando <code>~/.netrc</code> (archivo con credenciales guardadas). Con -n tomamos control manual.</div>
-<div class="cmd-note"><code>10.129.18.193</code> → IP del servidor FTP objetivo</div>
-</div>
-</div>
-
-
-<div class="ftp-session">
-<div class="output-label">Sesión FTP completa</div>
-<br/>
-<span style="color:var(--text-muted);">Connected to 10.129.18.193.</span><br/>
-<span style="color:var(--text-muted);">220 (vsFTPd 3.0.3)</span><br/>
-<br/>
-<span class="ftp-cmd">ftp&gt; quote USER anonymous</span><br/>
-<span class="ftp-resp">331 Please specify the password.</span><br/>
-<br/>
-<span class="ftp-cmd">ftp&gt; quote PASS anonymous</span><br/>
-<span class="ftp-success">230 Login successful.</span><br/>
-<br/>
-<span class="ftp-cmd">ftp&gt; ls</span><br/>
-<span class="ftp-flag">-rw-r--r--    1 0        0              32 Jun 04  2021 flag.txt</span><br/>
-<br/>
-<span class="ftp-cmd">ftp&gt; get flag.txt</span><br/>
-<span class="ftp-success">226 Transfer complete. 32 bytes received.</span><br/>
-<br/>
-<span class="ftp-cmd">ftp&gt; bye</span><br/>
-<span class="ftp-resp">221 Goodbye.</span>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué hace cada comando dentro de la sesión FTP?</strong>
-<table class="data-table">
-<tr><th>Comando</th><th>¿Qué hace?</th><th>¿Por qué?</th></tr>
-<tr><td><code>quote USER anonymous</code></td><td>Envía el comando FTP USER directamente al servidor</td><td>Iniciar autenticación con usuario anonymous</td></tr>
-<tr><td><code>quote PASS anonymous</code></td><td>Envía la contraseña — el servidor acepta cualquier valor</td><td>Completar la autenticación sin contraseña real</td></tr>
-<tr><td><code>ls</code></td><td>Lista el contenido del directorio actual en el servidor</td><td>Ver qué archivos están disponibles</td></tr>
-<tr><td><code>get flag.txt</code></td><td>Descarga flag.txt del servidor al directorio local</td><td>Obtener la flag</td></tr>
-<tr><td><code>bye</code></td><td>Envía QUIT al servidor y cierra la sesión limpiamente</td><td>Buena práctica: cerrar la conexión correctamente</td></tr>
-</table>
-</div>
-
-
-<div class="info-box">
-<p><strong>Códigos de respuesta FTP:</strong> <code>230</code> = Login exitoso | <code>331</code> = Username OK, espera password | <code>226</code> = Transferencia completa | <code>221</code> = Sesión cerrada</p>
-</div>
-
-
-<div class="decision-box">
-<strong>Decisión tomada</strong>
-<p>Archivo descargado exitosamente (32 bytes). Leemos la flag con <code>cat flag.txt</code>.</p>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Leer la flag con cat</h2></div>
-      
-
-<div class="cmd-annotated">
-<div class="cmd-line"><span class="cmd">cat</span> <span class="param">flag.txt</span></div>
-<div class="cmd-notes">
-<div class="cmd-note"><code>cat</code> → (concatenate) lee y muestra el contenido de un archivo en la terminal. La forma más directa de leer un archivo de texto en Linux.</div>
-<div class="cmd-note"><code>flag.txt</code> → archivo descargado del servidor FTP en el paso anterior</div>
-</div>
-</div>
-
-
-<div class="output-box">
-<div class="output-label">Output</div>
-<pre>035db21c881520061c53e0536e44f815</pre>
-</div>
-
-
-<div class="interpret-box">
-<strong>¿Qué nos dice este output?</strong>
-<ul>
-<li>La flag es un hash MD5 de 32 caracteres hexadecimales — formato estándar de flags en HTB</li>
-<li>Coincide con el tamaño de 32 bytes que nos informó nmap en el listado del directorio</li>
-</ul>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Lecciones Aprendidas</h2></div>
-      
-
-<div class="lessons-grid">
-<div class="lesson-card attacker">
-<h4>⚔ Para el Atacante</h4>
-<ul>
-<li>Puerto 21 abierto → siempre ejecutar <code>nmap -sC</code> primero</li>
-<li><code>ftp-anon</code> detecta acceso anónimo automáticamente</li>
-<li>Si ftp-anon dice YES, el ataque está prácticamente resuelto</li>
-<li>Orden: nmap -sC → ftp -n → get → bye</li>
-<li>Siempre explorar subdirectorios en FTP (no solo raíz)</li>
-</ul>
-</div>
-<div class="lesson-card defender">
-<h4>🛡 Para el Defensor</h4>
-<ul>
-<li>Deshabilitar FTP anónimo: <code>anonymous_enable=NO</code></li>
-<li>Usar SFTP (FTP sobre SSH) — cifrado y seguro</li>
-<li>Si anonymous es necesario, solo lectura, sin archivos sensibles</li>
-<li>Revisar logs: <code>/var/log/vsftpd.log</code></li>
-<li>Firewall: restringir puerto 21 a IPs específicas</li>
-</ul>
-</div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>MITRE ATT&CK</h2></div>
-      
-
-<table class="data-table">
-<tr><th>ID</th><th>Técnica</th><th>Descripción en este ataque</th></tr>
-<tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap descubriendo FTP en puerto 21</td></tr>
-<tr><td><code>T1190</code></td><td>Exploit Public-Facing App</td><td>Acceso a FTP expuesto sin autenticación</td></tr>
-<tr><td><code>T1078.001</code></td><td>Valid Accounts: Default</td><td>Login con credenciales anonymous (default FTP)</td></tr>
-<tr><td><code>T1039</code></td><td>Data from Network Shared Drive</td><td>Descarga de flag.txt del servidor FTP</td></tr>
-</table>
-
-
-    </div>
-
+<div class="section">
+  <h2>¿Qué es FTP y por qué el acceso anónimo es peligroso?</h2>
+  <p style="color:var(--text-dim);font-size:0.92rem;margin-bottom:1rem;"><strong>FTP</strong> (File Transfer Protocol) es un protocolo de red para transferir archivos. Creado en <strong>1971</strong>, es uno de los protocolos de Internet más antiguos aún en uso. El acceso anónimo permite conectarse con el usuario <code>anonymous</code> y cualquier contraseña — diseñado para distribución pública de archivos.</p>
+  <div class="vuln-card">
+    <h3>⚠ ¿Cuándo es peligroso?</h3>
+    <ul style="font-size:0.9rem;color:var(--text-dim);">
+      <li><strong>Archivos sensibles expuestos:</strong> Si los permisos no están bien configurados, archivos privados quedan accesibles a cualquier persona.</li>
+      <li><strong>Texto plano:</strong> FTP no cifra el tráfico — contraseñas y archivos viajan en claro, visibles con Wireshark.</li>
+      <li><strong>Sin autenticación real:</strong> El servidor acepta cualquier contraseña para el usuario anonymous.</li>
+    </ul>
   </div>
+</div>
 
-  <div class="sidebar">
-    <div class="sidebar-card">
-      <h3>Detalles del Reto</h3>
-      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">VERY EASY</span></div>
-      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Linux</span></div>
-      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.X.X</span></div>
-      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">Starting Point</span></div>
-      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">FTP Anonymous</span></div>
-      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
+<div class="section">
+  <h2>Reconocimiento — Paso a Paso</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Reconocimiento</div>
+    <h3>Verificar conectividad con ping</h3>
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>Confirmar que la máquina está activa y obtener una primera pista del OS mediante el TTL, antes de lanzar herramientas más pesadas.</p>
     </div>
-    <div class="sidebar-card">
-      <h3>Skills Demostradas</h3>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">FTP Enumeration</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">Anonymous Login</span><span class="skill-pct">85%</span></div><div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div></div>
-    </div>
-    <div class="sidebar-card">
-      <h3>Herramientas</h3>
-      <div class="tools-list">
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nmap</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">ftp</span></div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">ping</span> <span class="flag-opt">-c2</span> <span class="ip">10.129.18.193</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>ping</code> → herramienta ICMP de diagnóstico de red</div>
+        <div class="cmd-note"><code>-c2</code> → enviar 2 paquetes y detenerse. Sin este flag corre indefinidamente.</div>
+        <div class="cmd-note"><code>10.129.18.193</code> → IP del objetivo en la VPN de HTB</div>
       </div>
     </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>64 bytes from 10.129.18.193: icmp_seq=1 ttl=63 time=43.1 ms
+64 bytes from 10.129.18.193: icmp_seq=2 ttl=63 time=43.4 ms
+2 packets transmitted, 2 received, 0% packet loss</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li><code>ttl=63</code> → Linux confirmado (TTL inicial 64, menos 1 salto de red = 63)</li>
+        <li><code>0% packet loss</code> → conectividad perfecta con la VPN de HTB</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Máquina Linux activa. Iniciamos descubrimiento de puertos con nmap.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Reconocimiento</div>
+    <h3>Descubrir puertos abiertos — Nmap fase rápida</h3>
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>Mapear todos los servicios expuestos. Escaneamos los 65535 puertos para no perdernos ningún servicio en puertos no estándar.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p-</span> <span class="flag-opt">--open</span> <span class="flag-opt">-n</span> <span class="flag-opt">-T4</span> <span class="flag-opt">-sS</span> <span class="ip">10.129.18.193</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p-</code> → todos los 65535 puertos TCP</div>
+        <div class="cmd-note"><code>--open</code> → solo puertos abiertos (los cerrados/filtrados no son vectores inmediatos)</div>
+        <div class="cmd-note"><code>-n</code> → sin resolución DNS (más rápido)</div>
+        <div class="cmd-note"><code>-T4</code> → velocidad agresiva (escala T0-T5)</div>
+        <div class="cmd-note"><code>-sS</code> → SYN scan: envía SYN sin completar el handshake (más sigiloso)</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>PORT   STATE SERVICE
+21/tcp open  ftp</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>1 solo puerto abierto: <code>21/tcp</code> → FTP (File Transfer Protocol)</li>
+        <li>Superficie de ataque mínima: un único servicio = un único vector</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>FTP en puerto 21. El árbol de decisión Ghost-Ops indica: ejecutar nmap -sC para que el script <code>ftp-anon</code> detecte automáticamente el acceso anónimo.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Reconocimiento (EL MOMENTO REVELADOR)</div>
+    <h3>Enumerar FTP con scripts NSE — Nmap ya encuentra la flag</h3>
+    <div class="why-box">
+      <strong>¿Por qué esta fase es especialmente importante en Fawn?</strong>
+      <p>El script NSE <code>ftp-anon</code> se conecta automáticamente como usuario <code>anonymous</code> y lista el directorio. En esta máquina, <strong>nmap reveló flag.txt ANTES de que nos conectáramos manualmente</strong>. Este es el principio central de Ghost-Ops: leer siempre el output completo de nmap -sC antes de ejecutar comandos adicionales.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p21</span> <span class="flag-opt">-sC</span> <span class="flag-opt">-sV</span> <span class="flag-opt">-n</span> <span class="ip">10.129.18.193</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p21</code> → solo el puerto 21. No re-escanear todos los 65535.</div>
+        <div class="cmd-note"><code>-sC</code> → scripts NSE por defecto. Para FTP incluye: <strong>ftp-anon</strong> (intenta login anónimo y lista directorio), <strong>ftp-syst</strong> (info del OS vía FTP), <strong>ftp-bounce</strong> (verifica si es proxy FTP).</div>
+        <div class="cmd-note"><code>-sV</code> → detectar versión exacta del servicio FTP</div>
+        <div class="cmd-note"><code>-n</code> → sin resolución DNS</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.3
+| ftp-anon: Anonymous FTP login allowed (FTP code 230)
+|_-rw-r--r--    1 0        0              32 Jun 04  2021 flag.txt
+| ftp-syst:
+|   FTP server status:
+|      Connected to ::ffff:10.10.14.72
+|      Logged in as ftp
+|      TYPE: ASCII
+|      Control connection is plain text
+|_     vsFTPd 3.0.7 - secure, fast, stable
+
+Service Info: OS: Unix</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice cada línea?</strong>
+      <ul>
+        <li><code>vsftpd 3.0.3</code> → Very Secure FTP Daemon, servidor FTP muy común en Linux</li>
+        <li><code>ftp-anon: Anonymous FTP login allowed (FTP code 230)</code> → <strong>LOGIN ANÓNIMO CONFIRMADO</strong>. Código 230 = "User logged in, proceed" (RFC 959). El script se conectó como anonymous y el servidor lo aceptó.</li>
+        <li><code>-rw-r--r-- 1 0 0 32 Jun 04 2021 flag.txt</code> → <strong>¡La flag está aquí!</strong> Tamaño 32 bytes = longitud exacta de un hash MD5. Permisos de lectura para todos.</li>
+        <li><code>plain text</code> → FTP sin cifrado confirmado. Todo el tráfico es legible en la red.</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>El script NSE confirmó anonymous login Y localizó flag.txt. El ataque está esencialmente resuelto — solo falta conectarnos y descargar el archivo.</p>
+    </div>
   </div>
 </div>
 
-<script>
-  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
-  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
-  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
-  setInterval(drawMatrix,35);
-</script>
+<!-- NSE BONUS -->
+<div class="nse-bonus">
+  <h3>⭐ Bonus: Lo que Nmap ya sabía antes de que nos conectáramos</h3>
+  <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:0.75rem;">Esta máquina ilustra un principio fundamental de Ghost-Ops: <strong>los scripts NSE de Nmap pueden hacer el trabajo de reconocimiento completo</strong>. El script <code>ftp-anon</code>:</p>
+  <ol style="color:var(--text-dim);font-size:0.88rem;padding-left:1.5rem;">
+    <li>Se conecta automáticamente al servidor FTP con <code>USER anonymous</code></li>
+    <li>Verifica si el servidor responde con código 230 (login OK)</li>
+    <li>Ejecuta <code>LIST</code> para listar el directorio raíz</li>
+    <li>Reporta todo en la salida de nmap — incluyendo <code>flag.txt</code></li>
+  </ol>
+  <p style="color:var(--yellow);font-size:0.85rem;margin-top:0.75rem;font-weight:600;">Regla Ghost-Ops: Leer SIEMPRE el output completo de nmap -sC antes de ejecutar comandos adicionales.</p>
+</div>
+
+<div class="section">
+  <h2>Explotación — Paso a Paso</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 4 — Explotación</div>
+    <h3>Sesión FTP completa — login anonymous y descarga de flag</h3>
+    <div class="why-box">
+      <strong>¿Por qué conectarnos si nmap ya reveló la flag?</strong>
+      <p>Nmap nos confirmó que flag.txt existe y es accesible, pero necesitamos descargar el archivo para leerlo. El cliente <code>ftp</code> nos permite hacer exactamente eso con una sesión interactiva. Usamos <code>-n</code> para control manual del login.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">ftp</span> <span class="flag-opt">-n</span> <span class="ip">10.129.18.193</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>ftp</code> → cliente FTP de línea de comandos estándar de Linux</div>
+        <div class="cmd-note"><code>-n</code> → no hacer auto-login usando <code>~/.netrc</code> (archivo con credenciales guardadas). Con -n tomamos control manual.</div>
+        <div class="cmd-note"><code>10.129.18.193</code> → IP del servidor FTP objetivo</div>
+      </div>
+    </div>
+
+    <div class="ftp-session">
+      <div class="output-label">Sesión FTP completa</div>
+      <br>
+      <span style="color:var(--text-muted);">Connected to 10.129.18.193.</span><br>
+      <span style="color:var(--text-muted);">220 (vsFTPd 3.0.3)</span><br>
+      <br>
+      <span class="ftp-cmd">ftp&gt; quote USER anonymous</span><br>
+      <span class="ftp-resp">331 Please specify the password.</span><br>
+      <br>
+      <span class="ftp-cmd">ftp&gt; quote PASS anonymous</span><br>
+      <span class="ftp-success">230 Login successful.</span><br>
+      <br>
+      <span class="ftp-cmd">ftp&gt; ls</span><br>
+      <span class="ftp-flag">-rw-r--r--    1 0        0              32 Jun 04  2021 flag.txt</span><br>
+      <br>
+      <span class="ftp-cmd">ftp&gt; get flag.txt</span><br>
+      <span class="ftp-success">226 Transfer complete. 32 bytes received.</span><br>
+      <br>
+      <span class="ftp-cmd">ftp&gt; bye</span><br>
+      <span class="ftp-resp">221 Goodbye.</span>
+    </div>
+
+    <div class="interpret-box">
+      <strong>¿Qué hace cada comando dentro de la sesión FTP?</strong>
+      <table class="data-table">
+        <tr><th>Comando</th><th>¿Qué hace?</th><th>¿Por qué?</th></tr>
+        <tr><td><code>quote USER anonymous</code></td><td>Envía el comando FTP USER directamente al servidor</td><td>Iniciar autenticación con usuario anonymous</td></tr>
+        <tr><td><code>quote PASS anonymous</code></td><td>Envía la contraseña — el servidor acepta cualquier valor</td><td>Completar la autenticación sin contraseña real</td></tr>
+        <tr><td><code>ls</code></td><td>Lista el contenido del directorio actual en el servidor</td><td>Ver qué archivos están disponibles</td></tr>
+        <tr><td><code>get flag.txt</code></td><td>Descarga flag.txt del servidor al directorio local</td><td>Obtener la flag</td></tr>
+        <tr><td><code>bye</code></td><td>Envía QUIT al servidor y cierra la sesión limpiamente</td><td>Buena práctica: cerrar la conexión correctamente</td></tr>
+      </table>
+    </div>
+
+    <div class="info-box">
+      <p><strong>Códigos de respuesta FTP:</strong> <code>230</code> = Login exitoso | <code>331</code> = Username OK, espera password | <code>226</code> = Transferencia completa | <code>221</code> = Sesión cerrada</p>
+    </div>
+
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Archivo descargado exitosamente (32 bytes). Leemos la flag con <code>cat flag.txt</code>.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 5 — Flag</div>
+    <h3>Leer la flag con cat</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">cat</span> <span class="param">flag.txt</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>cat</code> → (concatenate) lee y muestra el contenido de un archivo en la terminal. La forma más directa de leer un archivo de texto en Linux.</div>
+        <div class="cmd-note"><code>flag.txt</code> → archivo descargado del servidor FTP en el paso anterior</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>035db21c881520061c53e0536e44f815</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>La flag es un hash MD5 de 32 caracteres hexadecimales — formato estándar de flags en HTB</li>
+        <li>Coincide con el tamaño de 32 bytes que nos informó nmap en el listado del directorio</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li>Puerto 21 abierto → siempre ejecutar <code>nmap -sC</code> primero</li>
+        <li><code>ftp-anon</code> detecta acceso anónimo automáticamente</li>
+        <li>Si ftp-anon dice YES, el ataque está prácticamente resuelto</li>
+        <li>Orden: nmap -sC → ftp -n → get → bye</li>
+        <li>Siempre explorar subdirectorios en FTP (no solo raíz)</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li>Deshabilitar FTP anónimo: <code>anonymous_enable=NO</code></li>
+        <li>Usar SFTP (FTP sobre SSH) — cifrado y seguro</li>
+        <li>Si anonymous es necesario, solo lectura, sin archivos sensibles</li>
+        <li>Revisar logs: <code>/var/log/vsftpd.log</code></li>
+        <li>Firewall: restringir puerto 21 a IPs específicas</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción en este ataque</th></tr>
+    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap descubriendo FTP en puerto 21</td></tr>
+    <tr><td><code>T1190</code></td><td>Exploit Public-Facing App</td><td>Acceso a FTP expuesto sin autenticación</td></tr>
+    <tr><td><code>T1078.001</code></td><td>Valid Accounts: Default</td><td>Login con credenciales anonymous (default FTP)</td></tr>
+    <tr><td><code>T1039</code></td><td>Data from Network Shared Drive</td><td>Descarga de flag.txt del servidor FTP</td></tr>
+  </table>
+</div>
+
+<div class="flag-box">
+  <div class="flag-label">Flag</div>
+  <div class="flag-value">035db21c881520061c53e0536e44f815</div>
+  <p style="color:var(--text-muted);font-size:0.8rem;margin-top:0.75rem;">Archivo: ftp://10.129.18.193/flag.txt</p>
+</div>
+
+</main>
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.18.193</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux Unix</span></div>
+    <div class="meta-row"><span class="meta-label">Puerto</span><span class="meta-value">21/tcp</span></div>
+    <div class="meta-row"><span class="meta-label">Servicio</span><span class="meta-value">vsftpd 3.0.3</span></div>
+    <div class="meta-row"><span class="meta-label">Vector</span><span class="meta-value">anonymous</span></div>
+    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~3 min</span></div>
+    <div class="meta-row"><span class="meta-label">Comandos</span><span class="meta-value">3</span></div>
+  </div>
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1190</span>
+    <span class="mitre-tag">T1078.001</span>
+    <span class="mitre-tag">T1039</span>
+  </div>
+  <div class="sidebar-card">
+    <h4>Ghost-Ops Score</h4>
+    <div class="score-num">3/3</div>
+    <div class="score-label">predicciones correctas ✅</div>
+    <p style="font-size:0.75rem;color:var(--text-muted);text-align:center;margin-top:0.5rem;">Nmap -sC reveló flag.txt antes de conectarnos</p>
+  </div>
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item"><span class="glosario-term">FTP</span><span class="glosario-def">File Transfer Protocol — transferencia de archivos, puerto 21, sin cifrado</span></div>
+    <div class="glosario-item"><span class="glosario-term">vsftpd</span><span class="glosario-def">Very Secure FTP Daemon — servidor FTP open source para Linux</span></div>
+    <div class="glosario-item"><span class="glosario-term">ftp-anon</span><span class="glosario-def">Script NSE que detecta acceso anónimo FTP automáticamente</span></div>
+    <div class="glosario-item"><span class="glosario-term">Código 230</span><span class="glosario-def">"User logged in, proceed" — login FTP exitoso</span></div>
+    <div class="glosario-item"><span class="glosario-term">SFTP</span><span class="glosario-def">FTP sobre SSH — versión cifrada y segura de FTP</span></div>
+    <div class="glosario-item"><span class="glosario-term">NSE</span><span class="glosario-def">Nmap Scripting Engine — scripts Lua para automatizar reconocimiento</span></div>
+  </div>
+</aside>
+</div>
 </body>
 </html>

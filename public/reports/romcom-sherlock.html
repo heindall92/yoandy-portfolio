@@ -1,453 +1,651 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RomCom — Sherlock Writeup | YRD</title>
-  <style>
-    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
-    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
-    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
-    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
-    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
-    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
-    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
-    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
-    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
-    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
-    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
-    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
-    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
-    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
-    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
-    .hero h1 span{color:var(--primary);}
-    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
-    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
-    .meta-item{display:flex;flex-direction:column;gap:4px;}
-    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
-    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
-    .meta-value.green{color:var(--primary);}
-    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
-    @media(max-width:900px){.main{grid-template-columns:1fr;}}
-    .content{display:flex;flex-direction:column;gap:2rem;}
-    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
-    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
-    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
-    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
-    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
-    .section p:last-child{margin-bottom:0;}
-    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
-    .section li{margin-bottom:0.3rem;}
-    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
-    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
-    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
-    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
-    .comment{color:#6a9955;}
-    .cmd{color:var(--cyan);}
-    .output{color:var(--text-dim);}
-    .highlight{color:var(--primary);font-weight:600;}
-    .cred{color:var(--yellow);font-weight:600;}
-    .flag-val{color:#ff79c6;}
-    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
-    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
-    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
-    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
-    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
-    .timeline{display:flex;flex-direction:column;gap:0;}
-    .timeline-item{display:flex;gap:1.25rem;}
-    .timeline-left{display:flex;flex-direction:column;align-items:center;}
-    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
-    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
-    .timeline-item:last-child .timeline-line{display:none;}
-    .timeline-content{padding-bottom:1.5rem;}
-    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
-    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
-    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
-    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
-    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
-    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
-    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
-    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
-    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
-    .detail-row:last-child{border-bottom:none;}
-    .detail-key{font-size:0.8rem;color:var(--text-muted);}
-    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
-    .detail-val.green{color:var(--primary);}
-    .detail-val.cyan{color:var(--cyan);}
-    .skill-item{margin-bottom:1rem;}
-    .skill-item:last-child{margin-bottom:0;}
-    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
-    .skill-name{font-size:0.82rem;color:var(--text-dim);}
-    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
-    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
-    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
-    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
-    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
-    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
-    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
-    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
-    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
-    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
-    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
-    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
-    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
-    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
-    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
-    .data-table td{color:var(--text-dim);}
-    a{color:var(--primary);text-decoration:none;}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RomCom — HTB Sherlock Writeup | Yoandy Ramirez</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #0f1629;
+    --bg3: #141d35;
+    --border: #1e2d4a;
+    --accent: #4ade80;
+    --accent2: #16a34a;
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --cyan: #22d3ee;
+    --orange: #fb923c;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --code-bg: #050810;
+    --font-mono: 'Courier New', 'Cascadia Code', monospace;
+    --font-sans: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0f1a3a 50%, #0a1628 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 0 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(79,158,255,.08) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -40px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(0,212,170,.06) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  .breadcrumb {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    margin-bottom: 20px;
+    letter-spacing: .5px;
+  }
+  .breadcrumb span { color: var(--accent2); }
+
+  .hero-badges {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 18px;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+  }
+  .badge-platform  { background: rgba(79,158,255,.12); color: var(--accent); border: 1px solid rgba(79,158,255,.25); }
+  .badge-category  { background: rgba(0,212,170,.12); color: var(--accent2); border: 1px solid rgba(0,212,170,.25); }
+  .badge-hard      { background: rgba(255,77,109,.12); color: var(--red); border: 1px solid rgba(255,77,109,.25); }
+  .badge-medium    { background: rgba(255,209,102,.12); color: var(--yellow); border: 1px solid rgba(255,209,102,.25); }
+  .badge-easy      { background: rgba(0,212,170,.12); color: var(--accent2); border: 1px solid rgba(0,212,170,.25); }
+
+  .hero h1 {
+    font-size: clamp(26px, 5vw, 44px);
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.15;
+    margin-bottom: 10px;
+    letter-spacing: -.5px;
+  }
+  .hero h1 span { color: var(--accent); }
+
+  .hero-subtitle {
+    font-size: 16px;
+    color: var(--text-muted);
+    max-width: 640px;
+    margin-bottom: 28px;
+  }
+
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+  .hero-meta-item { display: flex; align-items: center; gap: 6px; }
+  .hero-meta-item .label { color: var(--text-muted); }
+  .hero-meta-item .value { color: var(--text); font-weight: 600; }
+
+  /* ── MAIN LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 32px;
+    padding: 40px 0 80px;
+    align-items: start;
+  }
+  @media (max-width: 720px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { order: -1; }
+  }
+
+  /* ── CONTENT ── */
+  .content h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #e6edf3;
+    margin: 40px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .content h2:first-child { margin-top: 0; }
+  .content h2 .ico {
+    width: 26px; height: 26px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .content h3 {
+    font-size: 16px; font-weight: 700;
+    color: #c9d1d9;
+    margin: 24px 0 10px;
+  }
+
+  .content p { margin-bottom: 14px; color: var(--text); }
+
+  .content a { color: var(--accent); text-decoration: none; }
+  .content a:hover { text-decoration: underline; }
+
+  /* code */
+  code {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    color: var(--accent2);
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    margin: 16px 0;
+    position: relative;
+  }
+  pre code {
+    background: none; border: none; padding: 0;
+    font-size: 13px; color: #a8daff;
+    line-height: 1.6;
+  }
+  .pre-label {
+    position: absolute; top: 10px; right: 14px;
+    font-size: 10px; font-family: var(--font-mono);
+    color: var(--text-muted); letter-spacing: .5px;
+  }
+
+  /* callout */
+  .callout {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 20px 0;
+    border-left: 3px solid;
+    font-size: 14px;
+  }
+  .callout-info    { background: rgba(79,158,255,.07); border-color: var(--accent); }
+  .callout-warning { background: rgba(255,209,102,.07); border-color: var(--yellow); }
+  .callout-danger  { background: rgba(255,77,109,.07); border-color: var(--red); }
+  .callout-success { background: rgba(0,212,170,.07); border-color: var(--accent2); }
+  .callout strong  { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .callout-info strong    { color: var(--accent); }
+  .callout-warning strong { color: var(--yellow); }
+  .callout-danger strong  { color: var(--red); }
+  .callout-success strong { color: var(--accent2); }
+
+  /* table */
+  .table-wrap { overflow-x: auto; margin: 20px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: var(--bg3); border-bottom: 2px solid var(--border); }
+  th { padding: 10px 14px; text-align: left; font-weight: 700; color: #e6edf3;
+       font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  td code { font-size: 12px; }
+
+  /* timeline */
+  .timeline { margin: 24px 0; position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 8px; top: 6px; bottom: 6px;
+    width: 2px; background: var(--border);
+  }
+  .tl-item { position: relative; margin-bottom: 20px; }
+  .tl-dot {
+    position: absolute; left: -20px; top: 5px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg);
+    box-shadow: 0 0 8px rgba(79,158,255,.5);
+  }
+  .tl-dot.red  { background: var(--red);    box-shadow: 0 0 8px rgba(255,77,109,.5); }
+  .tl-dot.green{ background: var(--accent2);box-shadow: 0 0 8px rgba(0,212,170,.5); }
+  .tl-dot.yellow{ background: var(--yellow); box-shadow: 0 0 8px rgba(255,209,102,.5); }
+  .tl-time { font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 3px; }
+  .tl-title { font-weight: 700; color: #e6edf3; font-size: 14px; }
+  .tl-desc { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+  /* MITRE badge */
+  .mitre-tag {
+    display: inline-block;
+    background: rgba(79,158,255,.1);
+    border: 1px solid rgba(79,158,255,.25);
+    color: var(--accent);
+    font-size: 11px; font-family: var(--font-mono);
+    padding: 3px 9px; border-radius: 4px;
+    margin: 2px;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar { position: sticky; top: 20px; }
+  .sidebar-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .sidebar-card-header {
+    padding: 12px 16px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .8px;
+    color: var(--text-muted);
+  }
+  .sidebar-card-body { padding: 16px; }
+
+  .info-row {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    gap: 10px;
+  }
+  .info-row:last-child { border: none; }
+  .info-row .k { color: var(--text-muted); flex-shrink: 0; }
+  .info-row .v { color: var(--text); font-weight: 600; text-align: right; word-break: break-all; }
+
+  .tool-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .tool-item:last-child { border: none; }
+  .tool-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
+
+  .toc-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(30,45,80,.6);
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color .15s;
+  }
+  .toc-item:last-child { border: none; }
+  .toc-item:hover { color: var(--accent); }
+  .toc-num { font-family: var(--font-mono); font-size: 10px; color: var(--accent); flex-shrink: 0; }
+
+  /* score */
+  .score-bar { margin: 6px 0; }
+  .score-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .score-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .score-fill  { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+
+  /* footer */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .footer-author { font-weight: 700; color: var(--text); }
+
+  /* section highlight */
+  .phase-header {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 24px 0 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .phase-num {
+    background: var(--accent);
+    color: #000;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; flex-shrink: 0;
+  }
+  .phase-title { font-weight: 700; color: #e6edf3; font-size: 15px; }
+  .phase-desc { font-size: 12px; color: var(--text-muted); }
+
+  .highlight-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+</style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
 
-<div class="hero">
-  <div class="hero-breadcrumb"><a href="#">Sherlocks</a> / <a href="#">DFIR</a> / RomCom</div>
-  <div class="tags">
-    <span class="tag tag-sherlock">SHERLOCK</span>
-    <span class="tag tag-os">WINDOWS</span>
-    <span class="tag tag-hard">HARD</span>
-    <span class="tag tag-sherlock">DFIR CHALLENGE</span>
+<!-- ═══════════════ HERO ═══════════════ -->
+<header class="hero">
+  <div class="container">
+    <p class="breadcrumb">HTB Sherlocks &nbsp;/&nbsp; <span>Digital Forensics</span> &nbsp;/&nbsp; RomCom</p>
+    <div class="hero-badges">
+      <span class="badge badge-platform">HackTheBox</span>
+      <span class="badge badge-category">DFIR</span>
+      <span class="badge badge-medium">Medium</span>
+    </div>
+    <h1>RomCom <span>Sherlock</span></h1>
+    <p class="hero-subtitle">
+      Análisis forense de un ataque real del grupo RomCom utilizando la vulnerabilidad CVE-2025-8088 en WinRAR. Investigación de artefactos NTFS para reconstruir la cadena de infección completa.
+    </p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><span class="label">Autor:</span><span class="value">Yoandy Ramirez Delgado</span></div>
+      <div class="hero-meta-item"><span class="label">Plataforma:</span><span class="value">HackTheBox Sherlocks</span></div>
+      <div class="hero-meta-item"><span class="label">Categoría:</span><span class="value">Digital Forensics &amp; Incident Response</span></div>
+      <div class="hero-meta-item"><span class="label">CVE:</span><span class="value">CVE-2025-8088</span></div>
+    </div>
   </div>
-  <h1>RomCom <span>Machine</span></h1>
-  <p class="hero-desc">Análisis del grupo APT RomCom. Investigación de malware personalizado, infraestructura C2, técnicas de evasión y reconstrucción de la cadena de ataque completa.</p>
-  <div class="meta-row">
-    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
-    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">Sherlock DFIR Challenge</span></div>
-    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">IDA Pro / Wireshark</span></div>
-    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
-  </div>
-</div>
+</header>
 
-<div class="main">
-  <div class="content">
+<!-- ═══════════════ BODY ═══════════════ -->
+<div class="container">
+  <div class="layout">
 
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>📋Escenario</h2></div>
-      
+    <!-- ── MAIN CONTENT ── -->
+    <main class="content">
 
-<p>
+      <h2 id="scenario"><div class="ico">📋</div> Escenario</h2>
+      <p>
         El equipo de seguridad ha recibido una alerta sobre actividad sospechosa en el endpoint de una analista llamada Susan. Se sospecha que el grupo de amenaza persistente avanzada <strong>RomCom</strong> ha comprometido el sistema a través de un archivo RAR malicioso. Como analista DFIR, se proporcionan artefactos de disco en formato VHDX para investigar el incidente de forma forense y reconstruir la cronología del ataque.
       </p>
 
-
-<div class="callout callout-warning">
-<strong>⚠ Threat Actor</strong>
+      <div class="callout callout-warning">
+        <strong>⚠ Threat Actor</strong>
         RomCom es un grupo APT de origen ruso conocido por combinar ransomware con espionaje, dirigido especialmente contra organizaciones gubernamentales, sanitarias y de defensa. Sus TTPs incluyen el uso de exploits zero-day en software ampliamente usado.
       </div>
 
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>🔧Entorno y Preparación</h2></div>
-      
-
-<p>
+      <h2 id="setup"><div class="ico">🔧</div> Entorno y Preparación</h2>
+      <p>
         El artefacto proporcionado es una imagen de disco virtual en formato <strong>VHDX</strong> (Virtual Hard Disk Extended), un formato de Microsoft que preserva la integridad del sistema de archivos NTFS original. El análisis se realiza sin modificar la evidencia original.
       </p>
 
+      <div class="phase-header">
+        <div class="phase-num">1</div>
+        <div>
+          <div class="phase-title">Verificación de Integridad</div>
+          <div class="phase-desc">Validación SHA256 antes de cualquier análisis</div>
+        </div>
+      </div>
+      <p>Antes de comenzar el análisis, se verifica la integridad del archivo con su hash SHA256 para asegurar que la evidencia no ha sido alterada durante la cadena de custodia.</p>
+      <pre><code class="language-bash">Get-FileHash .\romcom.vhdx -Algorithm SHA256</code><span class="pre-label">PowerShell</span></pre>
 
-<div class="phase-header">
-<div class="phase-num">1</div>
-<div>
-<div class="phase-title">Verificación de Integridad</div>
-<div class="phase-desc">Validación SHA256 antes de cualquier análisis</div>
-</div>
-</div>
-
-
-<p>Antes de comenzar el análisis, se verifica la integridad del archivo con su hash SHA256 para asegurar que la evidencia no ha sido alterada durante la cadena de custodia.</p>
-
-
-<pre><code class="language-bash">Get-FileHash .\romcom.vhdx -Algorithm SHA256</code><span class="pre-label">PowerShell</span></pre>
-
-
-<div class="phase-header">
-<div class="phase-num">2</div>
-<div>
-<div class="phase-title">Montaje del VHDX</div>
-<div class="phase-desc">Acceso a los artefactos del sistema de archivos</div>
-</div>
-</div>
-
-
-<p>
+      <div class="phase-header">
+        <div class="phase-num">2</div>
+        <div>
+          <div class="phase-title">Montaje del VHDX</div>
+          <div class="phase-desc">Acceso a los artefactos del sistema de archivos</div>
+        </div>
+      </div>
+      <p>
         El VHDX se monta en modo solo lectura para acceder al sistema de archivos NTFS. Los artefactos clave de NTFS que se extraen para el análisis son:
       </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Artefacto</th><th>Descripción</th><th>Información forense</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>$MFT</code></td><td>Master File Table</td><td>Registro de todos los archivos: nombres, timestamps, tamaños, atributos</td></tr>
+            <tr><td><code>$J ($UsnJrnl)</code></td><td>USN Change Journal</td><td>Historial de cambios del sistema de archivos en tiempo real</td></tr>
+          </tbody>
+        </table>
+      </div>
 
-
-<div class="table-wrap">
-<table>
-<thead>
-<tr><th>Artefacto</th><th>Descripción</th><th>Información forense</th></tr>
-</thead>
-<tbody>
-<tr><td><code>$MFT</code></td><td>Master File Table</td><td>Registro de todos los archivos: nombres, timestamps, tamaños, atributos</td></tr>
-<tr><td><code>$J ($UsnJrnl)</code></td><td>USN Change Journal</td><td>Historial de cambios del sistema de archivos en tiempo real</td></tr>
-</tbody>
-</table>
-</div>
-
-
-<div class="phase-header">
-<div class="phase-num">3</div>
-<div>
-<div class="phase-title">Parsing con Eric Zimmerman Tools</div>
-<div class="phase-desc">MFTECmd + Timeline Explorer</div>
-</div>
-</div>
-
-
-<p>
+      <div class="phase-header">
+        <div class="phase-num">3</div>
+        <div>
+          <div class="phase-title">Parsing con Eric Zimmerman Tools</div>
+          <div class="phase-desc">MFTECmd + Timeline Explorer</div>
+        </div>
+      </div>
+      <p>
         Se utilizan las <strong>Eric Zimmerman Tools</strong>, el conjunto de herramientas forenses más robusto disponible para análisis NTFS en Windows. <code>MFTECmd</code> parsea el <code>$MFT</code> y genera un CSV que luego se carga en <strong>Timeline Explorer</strong> para análisis visual.
       </p>
+      <pre><code class="language-bash">MFTECmd.exe -f "D:\$MFT" --csv "C:\analysis" --csvf mft_output.csv</code><span class="pre-label">CMD</span></pre>
 
+      <h2 id="investigation"><div class="ico">🔍</div> Investigación</h2>
 
-<pre><code class="language-bash">MFTECmd.exe -f "D:\$MFT" --csv "C:\analysis" --csvf mft_output.csv</code><span class="pre-label">CMD</span></pre>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>🔍Investigación</h2></div>
-      
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Vector de Infección — CVE-2025-8088</h2></div>
-      
-
-<p>
+      <h3>Vector de Infección — CVE-2025-8088</h3>
+      <p>
         El punto de entrada del ataque es un archivo RAR cuidadosamente nombrado para generar confianza en el objetivo. Al analizar la tabla maestra de archivos, se identifica el primer artefacto relevante: un archivo comprimido que explota la vulnerabilidad <strong>CVE-2025-8088</strong>, un <em>path traversal</em> en WinRAR que permite colocar archivos en directorios arbitrarios del sistema al extraer el archivo comprimido.
       </p>
 
+      <div class="highlight-box">
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:8px;">ARTEFACTO INICIAL</div>
+        <code>Pathology-Department-Research-Records.rar</code>
+        <div style="margin-top:8px;font-size:13px;color:var(--text-muted);">Nombre diseñado para parecer legítimo en contexto sanitario/investigación</div>
+      </div>
 
-<div class="highlight-box">
-<div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:8px;">ARTEFACTO INICIAL</div>
-<code>Pathology-Department-Research-Records.rar</code>
-<div style="margin-top:8px;font-size:13px;color:var(--text-muted);">Nombre diseñado para parecer legítimo en contexto sanitario/investigación</div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Análisis de Timestamps en el $MFT</h2></div>
-      
-
-<p>
+      <h3>Análisis de Timestamps en el $MFT</h3>
+      <p>
         Mediante el análisis cronológico en Timeline Explorer, se reconstruye la secuencia de eventos con precisión de segundos:
       </p>
 
-
-<div class="timeline">
-<div class="tl-item">
-<div class="tl-dot yellow"></div>
-<div class="tl-time">2025-09-02   08:13:50 UTC</div>
-<div class="tl-title">Creación del archivo RAR malicioso</div>
-<div class="tl-desc">El archivo <code>Pathology-Department-Research-Records.rar</code> aparece en el sistema de archivos.</div>
-</div>
-<div class="tl-item">
-<div class="tl-dot red"></div>
-<div class="tl-time">2025-09-02   08:14:04 UTC</div>
-<div class="tl-title">Apertura y extracción del RAR</div>
-<div class="tl-desc">Susan abre el archivo. WinRAR procesa el contenido y explota CVE-2025-8088. Transcurren solo <strong>14 segundos</strong> desde la creación hasta la apertura.</div>
-</div>
-<div class="tl-item">
-<div class="tl-dot red"></div>
-<div class="tl-time">Extracción inmediata</div>
-<div class="tl-title">Despliegue del backdoor</div>
-<div class="tl-desc">El path traversal coloca el ejecutable malicioso fuera del directorio de extracción esperado.</div>
-</div>
-<div class="tl-item">
-<div class="tl-dot red"></div>
-<div class="tl-time">Post-extracción</div>
-<div class="tl-title">Establecimiento de persistencia</div>
-<div class="tl-desc">Se crea un archivo LNK en la carpeta Startup para asegurar la ejecución en cada inicio del sistema.</div>
-</div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Técnica de Engaño — Decoy Document</h2></div>
-      
-
-<p>
-        Para evitar levantar sospechas en el objetivo, el RAR malicioso incluye un archivo señuelo legítimo que se abre automáticamente. Esto es una técnica de ingeniería social clásica de los grupos APT: el usuario ve un documento real y no percibe ninguna anomalía.
-      </p>
-
-
-<div class="highlight-box">
-<div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:8px;">DOCUMENTO SEÑUELO</div>
-<code>Genotyping_Results_B57_Positive.pdf</code>
-<div style="margin-top:8px;font-size:13px;color:var(--text-muted);">Documento PDF de apariencia médica. Mientras Susan lee el PDF, el backdoor ya está instalado.</div>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>Backdoor y Persistencia</h2></div>
-      
-
-<p>
-        El análisis del $MFT revela la ubicación exacta del componente malicioso desplegado por CVE-2025-8088:
-      </p>
-
-
-<pre><code>C:\Users\Susan\AppData\Local\ApbxHelper.exe</code><span class="pre-label">BACKDOOR PATH</span></pre>
-
-
-<p>
-        El directorio <code>AppData\Local</code> es una ubicación habitual para malware en Windows, ya que no requiere privilegios elevados para escribir en él y pasa desapercibido ante usuarios no técnicos.
-      </p>
-
-
-<p>
-        El mecanismo de persistencia utilizado es un <strong>archivo LNK</strong> colocado en la carpeta de inicio del sistema (<code>Startup</code>). Esto garantiza que el backdoor se ejecute automáticamente cada vez que Susan inicia sesión.
-      </p>
-
-
-<pre><code>C:\Users\Susan\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\</code><span class="pre-label">RUTA DE PERSISTENCIA</span></pre>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>🎯Mapeo MITRE ATT&CK</h2></div>
-      
-
-<div class="table-wrap">
-<table>
-<thead>
-<tr><th>ID</th><th>Técnica</th><th>Táctica</th><th>Evidencia</th></tr>
-</thead>
-<tbody>
-<tr>
-<td><span class="mitre-tag">T1566.001</span></td>
-<td>Spearphishing Attachment</td>
-<td>Initial Access</td>
-<td>RAR malicioso enviado como señuelo médico</td>
-</tr>
-<tr>
-<td><span class="mitre-tag">T1203</span></td>
-<td>Exploitation for Client Execution</td>
-<td>Execution</td>
-<td>CVE-2025-8088 en WinRAR</td>
-</tr>
-<tr>
-<td><span class="mitre-tag">T1547.009</span></td>
-<td>Shortcut Modification</td>
-<td>Persistence / Privilege Escalation</td>
-<td>LNK en carpeta Startup para ejecución automática</td>
-</tr>
-<tr>
-<td><span class="mitre-tag">T1036.005</span></td>
-<td>Match Legitimate Name or Location</td>
-<td>Defense Evasion</td>
-<td><code>ApbxHelper.exe</code> en AppData\Local</td>
-</tr>
-<tr>
-<td><span class="mitre-tag">T1027</span></td>
-<td>Obfuscated Files or Information</td>
-<td>Defense Evasion</td>
-<td>Documento señuelo para ocultar la infección</td>
-</tr>
-</tbody>
-</table>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>🛠Herramientas Utilizadas</h2></div>
-      
-
-<div class="table-wrap">
-<table>
-<thead>
-<tr><th>Herramienta</th><th>Uso</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>MFTECmd</strong> (Eric Zimmerman)</td><td>Parseo del <code>$MFT</code> a CSV para análisis de timestamps</td></tr>
-<tr><td><strong>Timeline Explorer</strong></td><td>Visualización cronológica de artefactos NTFS</td></tr>
-<tr><td><strong>Get-FileHash</strong> (PowerShell)</td><td>Verificación SHA256 de la imagen VHDX</td></tr>
-<tr><td><strong>qemu-nbd / Disk Management</strong></td><td>Montaje del VHDX para acceso read-only</td></tr>
-</tbody>
-</table>
-</div>
-
-
-    </div>
-
-    <div class="section">
-      <div class="section-header"><div class="section-icon"></div><h2>📊Conclusiones</h2></div>
-      
-
-<p>
-        El caso RomCom demuestra la efectividad de los ataques dirigidos que combinan exploits de software legítimo (WinRAR) con técnicas de ingeniería social sofisticadas. El análisis forense de artefactos NTFS permitió reconstruir con precisión de segundos la cadena de infección completa.
-      </p>
-
-
-<div class="callout callout-success">
-<strong>✅ Lecciones Aprendidas</strong>
-        El $MFT y el USN Journal son artefactos críticos para la forensia de Windows. Incluso cuando el atacante intenta limpiar sus huellas, estos artefactos preservan evidencia temporal que permite la reconstrucción del ataque. La aplicación de parches de software de terceros como WinRAR es tan importante como actualizar el sistema operativo.
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot yellow"></div>
+          <div class="tl-time">2025-09-02 &nbsp; 08:13:50 UTC</div>
+          <div class="tl-title">Creación del archivo RAR malicioso</div>
+          <div class="tl-desc">El archivo <code>Pathology-Department-Research-Records.rar</code> aparece en el sistema de archivos.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot red"></div>
+          <div class="tl-time">2025-09-02 &nbsp; 08:14:04 UTC</div>
+          <div class="tl-title">Apertura y extracción del RAR</div>
+          <div class="tl-desc">Susan abre el archivo. WinRAR procesa el contenido y explota CVE-2025-8088. Transcurren solo <strong>14 segundos</strong> desde la creación hasta la apertura.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot red"></div>
+          <div class="tl-time">Extracción inmediata</div>
+          <div class="tl-title">Despliegue del backdoor</div>
+          <div class="tl-desc">El path traversal coloca el ejecutable malicioso fuera del directorio de extracción esperado.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot red"></div>
+          <div class="tl-time">Post-extracción</div>
+          <div class="tl-title">Establecimiento de persistencia</div>
+          <div class="tl-desc">Se crea un archivo LNK en la carpeta Startup para asegurar la ejecución en cada inicio del sistema.</div>
+        </div>
       </div>
 
+      <h3>Técnica de Engaño — Decoy Document</h3>
+      <p>
+        Para evitar levantar sospechas en el objetivo, el RAR malicioso incluye un archivo señuelo legítimo que se abre automáticamente. Esto es una técnica de ingeniería social clásica de los grupos APT: el usuario ve un documento real y no percibe ninguna anomalía.
+      </p>
+      <div class="highlight-box">
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:8px;">DOCUMENTO SEÑUELO</div>
+        <code>Genotyping_Results_B57_Positive.pdf</code>
+        <div style="margin-top:8px;font-size:13px;color:var(--text-muted);">Documento PDF de apariencia médica. Mientras Susan lee el PDF, el backdoor ya está instalado.</div>
+      </div>
 
-<div class="callout callout-danger">
-<strong>🔴 Indicadores de Compromiso (IOC)</strong>
+      <h3>Backdoor y Persistencia</h3>
+      <p>
+        El análisis del $MFT revela la ubicación exacta del componente malicioso desplegado por CVE-2025-8088:
+      </p>
+      <pre><code>C:\Users\Susan\AppData\Local\ApbxHelper.exe</code><span class="pre-label">BACKDOOR PATH</span></pre>
+      <p>
+        El directorio <code>AppData\Local</code> es una ubicación habitual para malware en Windows, ya que no requiere privilegios elevados para escribir en él y pasa desapercibido ante usuarios no técnicos.
+      </p>
+      <p>
+        El mecanismo de persistencia utilizado es un <strong>archivo LNK</strong> colocado en la carpeta de inicio del sistema (<code>Startup</code>). Esto garantiza que el backdoor se ejecute automáticamente cada vez que Susan inicia sesión.
+      </p>
+      <pre><code>C:\Users\Susan\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\</code><span class="pre-label">RUTA DE PERSISTENCIA</span></pre>
+
+      <h2 id="mitre"><div class="ico">🎯</div> Mapeo MITRE ATT&CK</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Técnica</th><th>Táctica</th><th>Evidencia</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="mitre-tag">T1566.001</span></td>
+              <td>Spearphishing Attachment</td>
+              <td>Initial Access</td>
+              <td>RAR malicioso enviado como señuelo médico</td>
+            </tr>
+            <tr>
+              <td><span class="mitre-tag">T1203</span></td>
+              <td>Exploitation for Client Execution</td>
+              <td>Execution</td>
+              <td>CVE-2025-8088 en WinRAR</td>
+            </tr>
+            <tr>
+              <td><span class="mitre-tag">T1547.009</span></td>
+              <td>Shortcut Modification</td>
+              <td>Persistence / Privilege Escalation</td>
+              <td>LNK en carpeta Startup para ejecución automática</td>
+            </tr>
+            <tr>
+              <td><span class="mitre-tag">T1036.005</span></td>
+              <td>Match Legitimate Name or Location</td>
+              <td>Defense Evasion</td>
+              <td><code>ApbxHelper.exe</code> en AppData\Local</td>
+            </tr>
+            <tr>
+              <td><span class="mitre-tag">T1027</span></td>
+              <td>Obfuscated Files or Information</td>
+              <td>Defense Evasion</td>
+              <td>Documento señuelo para ocultar la infección</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="tools"><div class="ico">🛠</div> Herramientas Utilizadas</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Herramienta</th><th>Uso</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>MFTECmd</strong> (Eric Zimmerman)</td><td>Parseo del <code>$MFT</code> a CSV para análisis de timestamps</td></tr>
+            <tr><td><strong>Timeline Explorer</strong></td><td>Visualización cronológica de artefactos NTFS</td></tr>
+            <tr><td><strong>Get-FileHash</strong> (PowerShell)</td><td>Verificación SHA256 de la imagen VHDX</td></tr>
+            <tr><td><strong>qemu-nbd / Disk Management</strong></td><td>Montaje del VHDX para acceso read-only</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="conclusions"><div class="ico">📊</div> Conclusiones</h2>
+      <p>
+        El caso RomCom demuestra la efectividad de los ataques dirigidos que combinan exploits de software legítimo (WinRAR) con técnicas de ingeniería social sofisticadas. El análisis forense de artefactos NTFS permitió reconstruir con precisión de segundos la cadena de infección completa.
+      </p>
+      <div class="callout callout-success">
+        <strong>✅ Lecciones Aprendidas</strong>
+        El $MFT y el USN Journal son artefactos críticos para la forensia de Windows. Incluso cuando el atacante intenta limpiar sus huellas, estos artefactos preservan evidencia temporal que permite la reconstrucción del ataque. La aplicación de parches de software de terceros como WinRAR es tan importante como actualizar el sistema operativo.
+      </div>
+      <div class="callout callout-danger">
+        <strong>🔴 Indicadores de Compromiso (IOC)</strong>
         Archivo RAR con nombre de temática médica/investigación + documento PDF señuelo + ejecutable en AppData\Local + LNK en Startup son una combinación característica de este grupo de amenaza.
       </div>
 
+    </main>
 
-    </div>
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
 
-  </div>
-
-  <div class="sidebar">
-    <div class="sidebar-card">
-      <h3>Detalles del Reto</h3>
-      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">HARD</span></div>
-      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Windows</span></div>
-      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">—</span></div>
-      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">DFIR Challenge</span></div>
-      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">Custom Malware, C2</span></div>
-      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
-    </div>
-    <div class="sidebar-card">
-      <h3>Skills Demostradas</h3>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">APT Analysis</span><span class="skill-pct">95%</span></div><div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">C2 Investigation</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
-      <div class="skill-item"><div class="skill-header"><span class="skill-name">Malware Reverse Engineering</span><span class="skill-pct">88%</span></div><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
-    </div>
-    <div class="sidebar-card">
-      <h3>Herramientas</h3>
-      <div class="tools-list">
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">IDA Pro</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">Wireshark</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">YARA</span></div>
-        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">VirusTotal</span></div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Detalles del Reto</div>
+        <div class="sidebar-card-body">
+          <div class="info-row"><span class="k">Dificultad</span><span class="v"><span class="badge badge-medium" style="font-size:10px">Medium</span></span></div>
+          <div class="info-row"><span class="k">Tipo</span><span class="v">Sherlock / DFIR</span></div>
+          <div class="info-row"><span class="k">CVE</span><span class="v">CVE-2025-8088</span></div>
+          <div class="info-row"><span class="k">OS</span><span class="v">Windows</span></div>
+          <div class="info-row"><span class="k">Artefactos</span><span class="v">VHDX, $MFT, $J</span></div>
+          <div class="info-row"><span class="k">Threat Actor</span><span class="v">RomCom APT</span></div>
+        </div>
       </div>
-    </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Skills Demostradas</div>
+        <div class="sidebar-card-body">
+          <div class="score-bar"><div class="score-label"><span>Forensia NTFS</span><span style="color:var(--accent2)">95%</span></div><div class="score-track"><div class="score-fill" style="width:95%"></div></div></div>
+          <div class="score-bar"><div class="score-label"><span>Análisis APT</span><span style="color:var(--accent2)">90%</span></div><div class="score-track"><div class="score-fill" style="width:90%"></div></div></div>
+          <div class="score-bar"><div class="score-label"><span>MITRE ATT&amp;CK</span><span style="color:var(--accent2)">85%</span></div><div class="score-track"><div class="score-fill" style="width:85%"></div></div></div>
+          <div class="score-bar"><div class="score-label"><span>CVE Analysis</span><span style="color:var(--accent2)">80%</span></div><div class="score-track"><div class="score-fill" style="width:80%"></div></div></div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Herramientas</div>
+        <div class="sidebar-card-body">
+          <div class="tool-item"><div class="tool-dot"></div>MFTECmd</div>
+          <div class="tool-item"><div class="tool-dot"></div>Timeline Explorer</div>
+          <div class="tool-item"><div class="tool-dot"></div>PowerShell</div>
+          <div class="tool-item"><div class="tool-dot"></div>qemu-nbd</div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">MITRE ATT&CK</div>
+        <div class="sidebar-card-body" style="display:flex;flex-wrap:wrap;gap:5px;padding:14px;">
+          <span class="mitre-tag">T1566.001</span>
+          <span class="mitre-tag">T1203</span>
+          <span class="mitre-tag">T1547.009</span>
+          <span class="mitre-tag">T1036.005</span>
+          <span class="mitre-tag">T1027</span>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Tabla de Contenidos</div>
+        <div class="sidebar-card-body" style="padding:12px 16px;">
+          <div class="toc-item"><span class="toc-num">01</span>Escenario</div>
+          <div class="toc-item"><span class="toc-num">02</span>Entorno y Preparación</div>
+          <div class="toc-item"><span class="toc-num">03</span>Investigación</div>
+          <div class="toc-item"><span class="toc-num">04</span>MITRE ATT&amp;CK</div>
+          <div class="toc-item"><span class="toc-num">05</span>Herramientas</div>
+          <div class="toc-item"><span class="toc-num">06</span>Conclusiones</div>
+        </div>
+      </div>
+
+    </aside>
   </div>
+
+  <footer class="footer">
+    <div><span class="footer-author">Yoandy Ramirez Delgado</span> &nbsp;·&nbsp; Cybersecurity Analyst &amp; Penetration Tester</div>
+    <div>HTB Sherlocks · RomCom · DFIR · 2026</div>
+  </footer>
 </div>
 
-<script>
-  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
-  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
-  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
-  setInterval(drawMatrix,35);
-</script>
 </body>
 </html>
