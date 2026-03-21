@@ -1,387 +1,432 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dream Job-2 — HTB Sherlock Writeup | Yoandy Ramirez</title>
-<style>
-  :root {
-    --bg: #0a0e1a;
-    --bg2: #0f1629;
-    --bg3: #141d35;
-    --border: #1e2d4a;
-    --accent: #4ade80;
-    --accent2: #16a34a;
-    --green: #4ade80;
-    --red: #f87171;
-    --blue: #60a5fa;
-    --purple: #a78bfa;
-    --cyan: #22d3ee;
-    --orange: #fb923c;
-    --yellow: #fbbf24;
-    --text: #e2e8f0;
-    --text-muted: #64748b;
-    --code-bg: #050810;
-    --font-mono: 'Courier New', monospace;
-    --font-sans: 'Segoe UI', system-ui, sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; }
-
-  .hero {
-    background: linear-gradient(135deg, #0a0e1a 0%, #1a100a 50%, #0f0e0a 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 60px 0 40px;
-    position: relative; overflow: hidden;
-  }
-  .hero::before { content: ''; position: absolute; top: -80px; right: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(251,146,60,.08) 0%, transparent 70%); border-radius: 50%; }
-  .hero::after  { content: ''; position: absolute; bottom: -60px; left: -40px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(251,191,36,.06) 0%, transparent 70%); border-radius: 50%; }
-  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
-  .breadcrumb { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); margin-bottom: 20px; letter-spacing: .5px; }
-  .breadcrumb span { color: var(--accent2); }
-  .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; }
-  .badge-platform { background: rgba(251,146,60,.12); color: var(--accent); border: 1px solid rgba(251,146,60,.25); }
-  .badge-category { background: rgba(251,191,36,.12); color: var(--accent2); border: 1px solid rgba(251,191,36,.25); }
-  .badge-hard     { background: rgba(255,77,109,.12); color: var(--red); border: 1px solid rgba(255,77,109,.25); }
-  .hero h1 { font-size: clamp(26px, 5vw, 44px); font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 10px; letter-spacing: -.5px; }
-  .hero h1 span { color: var(--accent); }
-  .hero-subtitle { font-size: 16px; color: var(--text-muted); max-width: 640px; margin-bottom: 28px; }
-  .hero-meta { display: flex; flex-wrap: wrap; gap: 20px; font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); border-top: 1px solid var(--border); padding-top: 20px; }
-  .hero-meta-item .label { color: var(--text-muted); }
-  .hero-meta-item .value { color: var(--text); font-weight: 600; }
-  .layout { display: grid; grid-template-columns: 1fr 280px; gap: 32px; padding: 40px 0 80px; align-items: start; }
-  @media (max-width: 720px) { .layout { grid-template-columns: 1fr; } .sidebar { order: -1; } }
-  .content h2 { font-size: 22px; font-weight: 700; color: #e6edf3; margin: 40px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 10px; }
-  .content h2:first-child { margin-top: 0; }
-  .content h2 .ico { width: 26px; height: 26px; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
-  .content h3 { font-size: 16px; font-weight: 700; color: #c9d1d9; margin: 24px 0 10px; }
-  .content p { margin-bottom: 14px; }
-  code { font-family: var(--font-mono); font-size: 13px; background: var(--code-bg); border: 1px solid var(--border); color: #fbbf24; padding: 2px 7px; border-radius: 4px; }
-  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; overflow-x: auto; margin: 16px 0; position: relative; }
-  pre code { background: none; border: none; padding: 0; font-size: 13px; color: #fde68a; line-height: 1.6; }
-  .pre-label { position: absolute; top: 10px; right: 14px; font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); letter-spacing: .5px; }
-  .callout { border-radius: 8px; padding: 14px 18px; margin: 20px 0; border-left: 3px solid; font-size: 14px; }
-  .callout-info    { background: rgba(251,146,60,.07); border-color: var(--accent); }
-  .callout-warning { background: rgba(251,191,36,.07); border-color: var(--accent2); }
-  .callout-danger  { background: rgba(255,77,109,.07); border-color: var(--red); }
-  .callout-success { background: rgba(74,222,128,.07); border-color: var(--green); }
-  .callout strong  { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
-  .callout-info strong    { color: var(--accent); }
-  .callout-warning strong { color: var(--accent2); }
-  .callout-danger strong  { color: var(--red); }
-  .callout-success strong { color: var(--green); }
-  .table-wrap { overflow-x: auto; margin: 20px 0; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead tr { background: var(--bg3); border-bottom: 2px solid var(--border); }
-  th { padding: 10px 14px; text-align: left; font-weight: 700; color: #e6edf3; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
-  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
-  tr:hover td { background: rgba(255,255,255,.02); }
-  .mitre-tag { display: inline-block; background: rgba(251,146,60,.1); border: 1px solid rgba(251,146,60,.25); color: var(--accent); font-size: 11px; font-family: var(--font-mono); padding: 3px 9px; border-radius: 4px; margin: 2px; }
-  .sidebar { position: sticky; top: 20px; }
-  .sidebar-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
-  .sidebar-card-header { padding: 12px 16px; background: var(--bg3); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text-muted); }
-  .sidebar-card-body { padding: 16px; }
-  .info-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 10px; }
-  .info-row:last-child { border: none; }
-  .info-row .k { color: var(--text-muted); flex-shrink: 0; }
-  .info-row .v { color: var(--text); font-weight: 600; text-align: right; word-break: break-all; }
-  .tool-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .tool-item:last-child { border: none; }
-  .tool-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
-  .score-bar { margin: 6px 0; }
-  .score-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
-  .score-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .score-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent2), var(--accent)); }
-  .toc-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(30,45,80,.6); font-size: 13px; color: var(--text-muted); }
-  .toc-item:last-child { border: none; }
-  .toc-num { font-family: var(--font-mono); font-size: 10px; color: var(--accent); flex-shrink: 0; }
-  .footer { border-top: 1px solid var(--border); padding: 24px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--text-muted); }
-  .footer-author { font-weight: 700; color: var(--text); }
-  .phase-header { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin: 24px 0 16px; display: flex; align-items: center; gap: 12px; }
-  .phase-num { background: var(--accent); color: #000; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
-  .phase-title { font-weight: 700; color: #e6edf3; font-size: 15px; }
-  .phase-desc { font-size: 12px; color: var(--text-muted); }
-  .highlight-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
-  .malware-tree { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; font-family: var(--font-mono); font-size: 13px; margin: 16px 0; }
-  .mt-node { color: #fbbf24; margin: 4px 0; }
-  .mt-node .arrow { color: var(--text-muted); }
-  .mt-sub { color: #a78bfa; margin: 4px 0 4px 20px; }
-  .mt-sub2 { color: #4f9eff; margin: 4px 0 4px 40px; }
-  .task-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
-  @media (max-width: 600px) { .task-grid { grid-template-columns: 1fr; } }
-  .task-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
-  .task-card-num { font-family: var(--font-mono); font-size: 10px; color: var(--accent); margin-bottom: 5px; }
-  .task-card-title { font-size: 13px; font-weight: 700; color: #e6edf3; margin-bottom: 6px; }
-  .task-card-detail { font-size: 12px; color: var(--text-muted); }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dream Job-2 — Sherlock Writeup | YRD</title>
+  <style>
+    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
+    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
+    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
+    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
+    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
+    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
+    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
+    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
+    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
+    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
+    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
+    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
+    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
+    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
+    .hero h1 span{color:var(--primary);}
+    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
+    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
+    .meta-item{display:flex;flex-direction:column;gap:4px;}
+    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
+    .meta-value.green{color:var(--primary);}
+    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
+    @media(max-width:900px){.main{grid-template-columns:1fr;}}
+    .content{display:flex;flex-direction:column;gap:2rem;}
+    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
+    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
+    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
+    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
+    .section p:last-child{margin-bottom:0;}
+    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
+    .section li{margin-bottom:0.3rem;}
+    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
+    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
+    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
+    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
+    .comment{color:#6a9955;}
+    .cmd{color:var(--cyan);}
+    .output{color:var(--text-dim);}
+    .highlight{color:var(--primary);font-weight:600;}
+    .cred{color:var(--yellow);font-weight:600;}
+    .flag-val{color:#ff79c6;}
+    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
+    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
+    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
+    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
+    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
+    .timeline{display:flex;flex-direction:column;gap:0;}
+    .timeline-item{display:flex;gap:1.25rem;}
+    .timeline-left{display:flex;flex-direction:column;align-items:center;}
+    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
+    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
+    .timeline-item:last-child .timeline-line{display:none;}
+    .timeline-content{padding-bottom:1.5rem;}
+    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
+    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
+    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
+    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
+    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
+    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
+    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-key{font-size:0.8rem;color:var(--text-muted);}
+    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
+    .detail-val.green{color:var(--primary);}
+    .detail-val.cyan{color:var(--cyan);}
+    .skill-item{margin-bottom:1rem;}
+    .skill-item:last-child{margin-bottom:0;}
+    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
+    .skill-name{font-size:0.82rem;color:var(--text-dim);}
+    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
+    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
+    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
+    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
+    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
+    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
+    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
+    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
+    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
+    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
+    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
+    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
+    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
+    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
+    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
+    .data-table td{color:var(--text-dim);}
+    a{color:var(--primary);text-decoration:none;}
+  </style>
 </head>
 <body>
+<canvas id="matrix"></canvas>
 
-<header class="hero">
-  <div class="container">
-    <p class="breadcrumb">HTB Sherlocks &nbsp;/&nbsp; <span>Malware Analysis</span> &nbsp;/&nbsp; Dream Job-2</p>
-    <div class="hero-badges">
-      <span class="badge badge-platform">HackTheBox</span>
-      <span class="badge badge-category">Malware Analysis</span>
-      <span class="badge badge-hard">Hard</span>
-    </div>
-    <h1>Dream Job-2 <span>Sherlock</span></h1>
-    <p class="hero-subtitle">
-      Análisis estático y de inteligencia del malware DRATzarus — el RAT de Lazarus Group. Investigación de técnicas anti-análisis, relaciones con el ecosistema MATA y disección del vector de entrega ISO con ejecutable UPX-packed.
-    </p>
-    <div class="hero-meta">
-      <div class="hero-meta-item"><span class="label">Autor:</span><span class="value">Yoandy Ramirez Delgado</span></div>
-      <div class="hero-meta-item"><span class="label">Tipo:</span><span class="value">Malware Analysis / CTI</span></div>
-      <div class="hero-meta-item"><span class="label">Malware:</span><span class="value">DRATzarus + Torisma</span></div>
-      <div class="hero-meta-item"><span class="label">Threat Actor:</span><span class="value">Lazarus Group (APT38)</span></div>
-    </div>
+<div class="hero">
+  <div class="hero-breadcrumb"><a href="#">Sherlocks</a> / <a href="#">DFIR</a> / Dream Job-2</div>
+  <div class="tags">
+    <span class="tag tag-sherlock">SHERLOCK</span>
+    <span class="tag tag-os">WINDOWS</span>
+    <span class="tag tag-hard">HARD</span>
+    <span class="tag tag-sherlock">DFIR CHALLENGE</span>
   </div>
-</header>
+  <h1>Dream Job-2 <span>Machine</span></h1>
+  <p class="hero-desc">Continuación del análisis forense de la campaña Dream Job. Investigación avanzada de artefactos de persistencia, movimiento lateral y exfiltración de datos.</p>
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
+    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">Sherlock DFIR Challenge</span></div>
+    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">Volatility / Autoruns</span></div>
+    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
+  </div>
+</div>
 
-<div class="container">
-  <div class="layout">
-    <main class="content">
+<div class="main">
+  <div class="content">
 
-      <h2 id="scenario"><div class="ico">📋</div> Escenario</h2>
-      <p>
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>📋Escenario</h2></div>
+      
+
+<p>
         Continuando la investigación de la Operación Dream Job iniciada en el primer Sherlock, este capítulo profundiza en el análisis técnico del arsenal de malware de Lazarus Group. El foco se centra en <strong>DRATzarus</strong>, el RAT usado en la campaña, y en <strong>Torisma</strong>, otro implante del mismo actor, con el objetivo de entender sus capacidades, relaciones y técnicas de evasión.
       </p>
-      <div class="callout callout-warning">
-        <strong>⚠ Contexto</strong>
+
+
+<div class="callout callout-warning">
+<strong>⚠ Contexto</strong>
         Este Sherlock es una continuación de Dream Job-1. El conocimiento sobre la Operación Dream Job y las TTPs de Lazarus Group del writeup anterior es prerrequisito para el análisis en profundidad que se realiza aquí.
       </div>
 
-      <h2 id="drat"><div class="ico">🦠</div> DRATzarus — Análisis del RAT</h2>
 
-      <h3>Relación con el Ecosistema MATA</h3>
-      <p>
-        La primera pregunta crítica en análisis de malware es: ¿qué conocemos ya de este artefacto? MITRE ATT&CK (<a href="https://attack.mitre.org/software/S0694/" target="_blank">S0694</a>) documenta que <strong>DRATzarus comparte similitudes con MATA</strong>, el framework modular de Lazarus Group.
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>🦠DRATzarus — Análisis del RAT</h2></div>
+      
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Relación con el Ecosistema MATA</h2></div>
+      
+
+<p>
+        La primera pregunta crítica en análisis de malware es: ¿qué conocemos ya de este artefacto? MITRE ATT&amp;CK (<a href="https://attack.mitre.org/software/S0694/" target="_blank">S0694</a>) documenta que <strong>DRATzarus comparte similitudes con MATA</strong>, el framework modular de Lazarus Group.
       </p>
-      <div class="malware-tree">
-        <div class="mt-node">Lazarus Group Malware Ecosystem</div>
-        <div class="mt-sub"><span class="arrow">├── </span>MATA Framework (modular, multi-platform)</div>
-        <div class="mt-sub2"><span class="arrow">└── </span>DRATzarus (RAT derivado, similitudes en código)</div>
-        <div class="mt-sub"><span class="arrow">├── </span>Torisma (implante de reconocimiento)</div>
-        <div class="mt-sub"><span class="arrow">└── </span>Otros: BLINDINGCAN, COPPERHEDGE...</div>
-      </div>
-      <p>
+
+
+<div class="malware-tree">
+<div class="mt-node">Lazarus Group Malware Ecosystem</div>
+<div class="mt-sub"><span class="arrow">├── </span>MATA Framework (modular, multi-platform)</div>
+<div class="mt-sub2"><span class="arrow">└── </span>DRATzarus (RAT derivado, similitudes en código)</div>
+<div class="mt-sub"><span class="arrow">├── </span>Torisma (implante de reconocimiento)</div>
+<div class="mt-sub"><span class="arrow">└── </span>Otros: BLINDINGCAN, COPPERHEDGE...</div>
+</div>
+
+
+<p>
         Esta relación no es cosmética: compartir código base con MATA implica que DRATzarus hereda capacidades de persistencia, evasión y comunicación C2 maduras y probadas en campañas anteriores.
       </p>
 
-      <div class="phase-header">
-        <div class="phase-num">1</div>
-        <div>
-          <div class="phase-title">Técnicas Anti-Análisis</div>
-          <div class="phase-desc">Evasión de entornos de debugging y sandbox</div>
-        </div>
-      </div>
-      <h3>Anti-Debug: IsDebuggerPresent</h3>
-      <p>
+
+<div class="phase-header">
+<div class="phase-num">1</div>
+<div>
+<div class="phase-title">Técnicas Anti-Análisis</div>
+<div class="phase-desc">Evasión de entornos de debugging y sandbox</div>
+</div>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Anti-Debug: IsDebuggerPresent</h2></div>
+      
+
+<p>
         DRATzarus implementa una comprobación anti-debug básica pero efectiva usando la función de la API de Windows:
       </p>
-      <pre><code>BOOL WINAPI IsDebuggerPresent(void);</code><span class="pre-label">Windows API</span></pre>
-      <p>
+
+
+<pre><code>BOOL WINAPI IsDebuggerPresent(void);</code><span class="pre-label">Windows API</span></pre>
+
+
+<p>
         Esta función devuelve <code>TRUE</code> si el proceso está siendo depurado. DRATzarus la llama durante la inicialización: si detecta un debugger, puede terminar su ejecución, dormir durante largos períodos o exhibir comportamiento benigno para engañar al analista.
       </p>
-      <div class="callout callout-info">
-        <strong>💡 Bypass de IsDebuggerPresent</strong>
+
+
+<div class="callout callout-info">
+<strong>💡 Bypass de IsDebuggerPresent</strong>
         Los analistas de malware suelen parchear esta llamada a 0 en memoria, o usar debuggers con plugins como ScyllaHide que engañan al malware haciéndole creer que no está siendo depurado.
       </div>
 
-      <h2 id="torisma"><div class="ico">🔭</div> Torisma — Implante de Reconocimiento</h2>
-      <p>
-        <strong>Torisma</strong> (<a href="https://attack.mitre.org/software/S0678/" target="_blank">MITRE S0678</a>) es otro implante del arsenal Lazarus, usado habitualmente como herramienta de reconocimiento y segunda etapa tras el compromiso inicial. Su análisis revela técnicas de ofuscación sofisticadas:
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>🔭Torisma — Implante de Reconocimiento</h2></div>
+      
+
+<p>
+<strong>Torisma</strong> (<a href="https://attack.mitre.org/software/S0678/" target="_blank">MITRE S0678</a>) es otro implante del arsenal Lazarus, usado habitualmente como herramienta de reconocimiento y segunda etapa tras el compromiso inicial. Su análisis revela técnicas de ofuscación sofisticadas:
       </p>
 
-      <div class="task-grid">
-        <div class="task-card">
-          <div class="task-card-num">CIFRADO C2</div>
-          <div class="task-card-title">XOR + VEST-32</div>
-          <div class="task-card-detail">Las comunicaciones con el servidor de Command &amp; Control están cifradas con una combinación de XOR y el cifrado por bloques VEST-32, dificultando el análisis de tráfico de red.</div>
-        </div>
-        <div class="task-card">
-          <div class="task-card-num">COMPRESIÓN</div>
-          <div class="task-card-title">LZ4 Compression</div>
-          <div class="task-card-detail">El payload de Torisma está comprimido con LZ4, un algoritmo de compresión de alta velocidad. Esto reduce el tamaño del binario y dificulta la detección por firmas de antivirus.</div>
-        </div>
-      </div>
 
-      <h2 id="iso"><div class="ico">💿</div> Vector de Entrega — Imagen ISO</h2>
-      <p>
+<div class="task-grid">
+<div class="task-card">
+<div class="task-card-num">CIFRADO C2</div>
+<div class="task-card-title">XOR + VEST-32</div>
+<div class="task-card-detail">Las comunicaciones con el servidor de Command &amp; Control están cifradas con una combinación de XOR y el cifrado por bloques VEST-32, dificultando el análisis de tráfico de red.</div>
+</div>
+<div class="task-card">
+<div class="task-card-num">COMPRESIÓN</div>
+<div class="task-card-title">LZ4 Compression</div>
+<div class="task-card-detail">El payload de Torisma está comprimido con LZ4, un algoritmo de compresión de alta velocidad. Esto reduce el tamaño del binario y dificulta la detección por firmas de antivirus.</div>
+</div>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>💿Vector de Entrega — Imagen ISO</h2></div>
+      
+
+<p>
         La cadena de infección de Dream Job-2 utiliza una imagen ISO como vehículo de entrega. Este enfoque se volvió popular entre actores APT porque Windows 10/11 monta automáticamente los ISOs al hacer doble clic, y muchos controles de seguridad de email no inspeccionan su contenido.
       </p>
 
-      <div class="phase-header">
-        <div class="phase-num">2</div>
-        <div>
-          <div class="phase-title">Análisis del ISO en VirusTotal</div>
-          <div class="phase-desc">Identificación del ejecutable embebido</div>
-        </div>
-      </div>
-      <p>
+
+<div class="phase-header">
+<div class="phase-num">2</div>
+<div>
+<div class="phase-title">Análisis del ISO en VirusTotal</div>
+<div class="phase-desc">Identificación del ejecutable embebido</div>
+</div>
+</div>
+
+
+<p>
         El análisis del archivo ISO en VirusTotal permite identificar su contenido sin necesidad de ejecutarlo, obteniendo el hash del ejecutable embebido y su comportamiento documentado:
       </p>
 
-      <div class="highlight-box">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div>
-            <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-bottom:6px;">NOMBRE EN ISO</div>
-            <code>InternalViewer.exe</code>
-          </div>
-          <div>
-            <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-bottom:6px;">NOMBRE ORIGINAL</div>
-            <code>SumatraPDF.exe</code>
-          </div>
-        </div>
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--text-muted);">
+
+<div class="highlight-box">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+<div>
+<div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-bottom:6px;">NOMBRE EN ISO</div>
+<code>InternalViewer.exe</code>
+</div>
+<div>
+<div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-bottom:6px;">NOMBRE ORIGINAL</div>
+<code>SumatraPDF.exe</code>
+</div>
+</div>
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--text-muted);">
           El ejecutable fue renombrado desde su nombre original <code>SumatraPDF.exe</code> (un lector de PDF legítimo) a <code>InternalViewer.exe</code> para parecer una herramienta corporativa interna. Primera vez visto en la naturaleza: <strong>2020-08-13 08:44:50 UTC</strong>.
         </div>
-      </div>
+</div>
 
-      <div class="phase-header">
-        <div class="phase-num">3</div>
-        <div>
-          <div class="phase-title">UPX Packing</div>
-          <div class="phase-desc">Ofuscación mediante empaquetado</div>
-        </div>
-      </div>
-      <p>
+
+<div class="phase-header">
+<div class="phase-num">3</div>
+<div>
+<div class="phase-title">UPX Packing</div>
+<div class="phase-desc">Ofuscación mediante empaquetado</div>
+</div>
+</div>
+
+
+<p>
         El ejecutable está empaquetado con <strong>UPX (Ultimate Packer for eXecutables)</strong>, uno de los packers más utilizados tanto por malware como por software legítimo. UPX comprime el binario original y lo descomprime en memoria durante la ejecución, lo que tiene dos efectos:
       </p>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Efecto</th><th>Impacto en el análisis</th></tr></thead>
-          <tbody>
-            <tr><td>El tamaño del ejecutable se reduce significativamente</td><td>Menor tiempo de transferencia, menos sospechoso</td></tr>
-            <tr><td>Las firmas de antivirus no coinciden directamente</td><td>Evasión de detección basada en firmas estáticas</td></tr>
-            <tr><td>El código real solo es visible en memoria (dinámico)</td><td>Requiere análisis dinámico o dumping de memoria</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <pre><code>upx -d InternalViewer.exe -o InternalViewer_unpacked.exe</code><span class="pre-label">UPX — Desempaquetar</span></pre>
 
-      <h2 id="doc"><div class="ico">📄</div> Metadatos del Documento Señuelo</h2>
-      <p>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Efecto</th><th>Impacto en el análisis</th></tr></thead>
+<tbody>
+<tr><td>El tamaño del ejecutable se reduce significativamente</td><td>Menor tiempo de transferencia, menos sospechoso</td></tr>
+<tr><td>Las firmas de antivirus no coinciden directamente</td><td>Evasión de detección basada en firmas estáticas</td></tr>
+<tr><td>El código real solo es visible en memoria (dinámico)</td><td>Requiere análisis dinámico o dumping de memoria</td></tr>
+</tbody>
+</table>
+</div>
+
+
+<pre><code>upx -d InternalViewer.exe -o InternalViewer_unpacked.exe</code><span class="pre-label">UPX — Desempaquetar</span></pre>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>📄Metadatos del Documento Señuelo</h2></div>
+      
+
+<p>
         El análisis de metadatos del documento de Word (<code>Salary_Lockheed_Martin_job_opportunities_confidential.doc</code>) con herramientas como <strong>metadata2go.com</strong> expone datos valiosos que el actor descuidó eliminar antes de distribuir el artefacto:
       </p>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Campo de Metadata</th><th>Valor Encontrado</th><th>Significado</th></tr></thead>
-          <tbody>
-            <tr><td>Autor original</td><td><code>Mickey</code></td><td>Nombre de usuario del creador del documento en el sistema de origen</td></tr>
-            <tr><td>Última modificación</td><td><code>Challenger</code></td><td>Usuario que realizó la última edición antes de distribuirlo</td></tr>
-            <tr><td>URL en macro VBA</td><td>Dominio C2 de Lazarus</td><td>Servidor de descarga del payload de segunda etapa</td></tr>
-          </tbody>
-        </table>
-      </div>
 
-      <h3>Directorio Sospechoso — Análisis de Plantilla</h3>
-      <p>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Campo de Metadata</th><th>Valor Encontrado</th><th>Significado</th></tr></thead>
+<tbody>
+<tr><td>Autor original</td><td><code>Mickey</code></td><td>Nombre de usuario del creador del documento en el sistema de origen</td></tr>
+<tr><td>Última modificación</td><td><code>Challenger</code></td><td>Usuario que realizó la última edición antes de distribuirlo</td></tr>
+<tr><td>URL en macro VBA</td><td>Dominio C2 de Lazarus</td><td>Servidor de descarga del payload de segunda etapa</td></tr>
+</tbody>
+</table>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Directorio Sospechoso — Análisis de Plantilla</h2></div>
+      
+
+<p>
         El análisis del archivo de plantilla <code>17.dotm</code> (asociado al documento señuelo) revela actividad de reconocimiento en el sistema de la víctima:
       </p>
-      <pre><code>\AppData\Local\Microsoft\Notice</code><span class="pre-label">DIRECTORIO SOSPECHOSO</span></pre>
-      <p>
+
+
+<pre><code>\AppData\Local\Microsoft\Notice</code><span class="pre-label">DIRECTORIO SOSPECHOSO</span></pre>
+
+
+<p>
         Este directorio no es estándar en una instalación normal de Windows Office. El malware lo crea para almacenar datos y busca el archivo <code>wsuser.db</code> en su interior, probablemente como mecanismo de persistencia o recolección de datos.
       </p>
 
-      <h2 id="mitre"><div class="ico">🎯</div> Mapeo MITRE ATT&CK</h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>ID</th><th>Técnica</th><th>Táctica</th><th>Observación</th></tr></thead>
-          <tbody>
-            <tr><td><span class="mitre-tag">T1027.002</span></td><td>Software Packing</td><td>Defense Evasion</td><td>UPX en SumatraPDF/InternalViewer</td></tr>
-            <tr><td><span class="mitre-tag">T1036.005</span></td><td>Match Legitimate Name</td><td>Defense Evasion</td><td>Renombrar SumatraPDF → InternalViewer</td></tr>
-            <tr><td><span class="mitre-tag">T1027.013</span></td><td>Encrypted/Encoded File</td><td>Defense Evasion</td><td>C2 cifrado con XOR+VEST-32 en Torisma</td></tr>
-            <tr><td><span class="mitre-tag">T1497.003</span></td><td>Time Based Evasion</td><td>Defense Evasion</td><td>Comprobaciones temporales anti-sandbox</td></tr>
-            <tr><td><span class="mitre-tag">T1106</span></td><td>Native API</td><td>Execution</td><td>DRATzarus usa API nativa para evasión</td></tr>
-            <tr><td><span class="mitre-tag">T1564.001</span></td><td>Hidden Files and Directories</td><td>Defense Evasion</td><td>Carpeta sospechosa en AppData\Local\Microsoft</td></tr>
-            <tr><td><span class="mitre-tag">T1566.001</span></td><td>Spearphishing Attachment</td><td>Initial Access</td><td>ISO como vehículo de entrega</td></tr>
-          </tbody>
-        </table>
-      </div>
 
-      <h2 id="conclusions"><div class="ico">📊</div> Conclusiones</h2>
-      <p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>🎯Mapeo MITRE ATT&CK</h2></div>
+      
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>ID</th><th>Técnica</th><th>Táctica</th><th>Observación</th></tr></thead>
+<tbody>
+<tr><td><span class="mitre-tag">T1027.002</span></td><td>Software Packing</td><td>Defense Evasion</td><td>UPX en SumatraPDF/InternalViewer</td></tr>
+<tr><td><span class="mitre-tag">T1036.005</span></td><td>Match Legitimate Name</td><td>Defense Evasion</td><td>Renombrar SumatraPDF → InternalViewer</td></tr>
+<tr><td><span class="mitre-tag">T1027.013</span></td><td>Encrypted/Encoded File</td><td>Defense Evasion</td><td>C2 cifrado con XOR+VEST-32 en Torisma</td></tr>
+<tr><td><span class="mitre-tag">T1497.003</span></td><td>Time Based Evasion</td><td>Defense Evasion</td><td>Comprobaciones temporales anti-sandbox</td></tr>
+<tr><td><span class="mitre-tag">T1106</span></td><td>Native API</td><td>Execution</td><td>DRATzarus usa API nativa para evasión</td></tr>
+<tr><td><span class="mitre-tag">T1564.001</span></td><td>Hidden Files and Directories</td><td>Defense Evasion</td><td>Carpeta sospechosa en AppData\Local\Microsoft</td></tr>
+<tr><td><span class="mitre-tag">T1566.001</span></td><td>Spearphishing Attachment</td><td>Initial Access</td><td>ISO como vehículo de entrega</td></tr>
+</tbody>
+</table>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>📊Conclusiones</h2></div>
+      
+
+<p>
         Dream Job-2 demuestra la madurez técnica del arsenal de Lazarus Group. La combinación de un RAT derivado de un framework maduro (MATA), técnicas anti-análisis múltiples, uso de ISO como vector y ejecutables UPX-packed rebautizados configura una cadena de ataque que maximiza las probabilidades de evasión en cada etapa.
       </p>
-      <div class="callout callout-success">
-        <strong>✅ Lecciones de Malware Analysis</strong>
+
+
+<div class="callout callout-success">
+<strong>✅ Lecciones de Malware Analysis</strong>
         El análisis estático con VirusTotal y la revisión de metadatos pueden revelar información crítica de atribución sin necesidad de ejecutar el malware. Las herramientas de unpacking como UPX -d son esenciales para la reversión de ejecutables empaquetados antes del análisis profundo.
       </div>
-      <div class="callout callout-danger">
-        <strong>🔴 Detección y Respuesta</strong>
+
+
+<div class="callout callout-danger">
+<strong>🔴 Detección y Respuesta</strong>
         Monitorizar creación de directorios no estándar en AppData, ejecutables que llaman a IsDebuggerPresent, y presencia de UPX en ejecutables de nombre genérico son señales de alerta temprana para este tipo de campaña.
       </div>
 
-    </main>
 
-    <aside class="sidebar">
-      <div class="sidebar-card">
-        <div class="sidebar-card-header">Detalles del Reto</div>
-        <div class="sidebar-card-body">
-          <div class="info-row"><span class="k">Dificultad</span><span class="v"><span class="badge badge-hard" style="font-size:10px">Hard</span></span></div>
-          <div class="info-row"><span class="k">Tipo</span><span class="v">Sherlock / Malware</span></div>
-          <div class="info-row"><span class="k">Malware</span><span class="v">DRATzarus</span></div>
-          <div class="info-row"><span class="k">Packer</span><span class="v">UPX</span></div>
-          <div class="info-row"><span class="k">C2 Cifrado</span><span class="v">XOR + VEST-32</span></div>
-          <div class="info-row"><span class="k">Anti-debug</span><span class="v">IsDebuggerPresent</span></div>
-        </div>
-      </div>
+    </div>
 
-      <div class="sidebar-card">
-        <div class="sidebar-card-header">Skills Demostradas</div>
-        <div class="sidebar-card-body">
-          <div class="score-bar"><div class="score-label"><span>Malware Analysis</span><span style="color:var(--accent)">95%</span></div><div class="score-track"><div class="score-fill" style="width:95%"></div></div></div>
-          <div class="score-bar"><div class="score-label"><span>VirusTotal OSINT</span><span style="color:var(--accent)">90%</span></div><div class="score-track"><div class="score-fill" style="width:90%"></div></div></div>
-          <div class="score-bar"><div class="score-label"><span>Anti-Analysis Tech.</span><span style="color:var(--accent)">88%</span></div><div class="score-track"><div class="score-fill" style="width:88%"></div></div></div>
-          <div class="score-bar"><div class="score-label"><span>Metadata Forensics</span><span style="color:var(--accent)">85%</span></div><div class="score-track"><div class="score-fill" style="width:85%"></div></div></div>
-        </div>
-      </div>
-
-      <div class="sidebar-card">
-        <div class="sidebar-card-header">Herramientas</div>
-        <div class="sidebar-card-body">
-          <div class="tool-item"><div class="tool-dot"></div>VirusTotal</div>
-          <div class="tool-item"><div class="tool-dot"></div>metadata2go.com</div>
-          <div class="tool-item"><div class="tool-dot"></div>UPX (unpacker)</div>
-          <div class="tool-item"><div class="tool-dot"></div>MITRE ATT&amp;CK S0694</div>
-          <div class="tool-item"><div class="tool-dot"></div>MITRE ATT&amp;CK S0678</div>
-        </div>
-      </div>
-
-      <div class="sidebar-card">
-        <div class="sidebar-card-header">MITRE ATT&CK</div>
-        <div class="sidebar-card-body" style="display:flex;flex-wrap:wrap;gap:5px;padding:14px;">
-          <span class="mitre-tag">T1027.002</span>
-          <span class="mitre-tag">T1036.005</span>
-          <span class="mitre-tag">T1027.013</span>
-          <span class="mitre-tag">T1497.003</span>
-          <span class="mitre-tag">T1106</span>
-          <span class="mitre-tag">T1564.001</span>
-          <span class="mitre-tag">T1566.001</span>
-        </div>
-      </div>
-
-      <div class="sidebar-card">
-        <div class="sidebar-card-header">Tabla de Contenidos</div>
-        <div class="sidebar-card-body" style="padding:12px 16px;">
-          <div class="toc-item"><span class="toc-num">01</span>Escenario</div>
-          <div class="toc-item"><span class="toc-num">02</span>DRATzarus — RAT Analysis</div>
-          <div class="toc-item"><span class="toc-num">03</span>Torisma — Implante</div>
-          <div class="toc-item"><span class="toc-num">04</span>Vector de Entrega ISO</div>
-          <div class="toc-item"><span class="toc-num">05</span>Metadatos del Documento</div>
-          <div class="toc-item"><span class="toc-num">06</span>MITRE ATT&amp;CK</div>
-          <div class="toc-item"><span class="toc-num">07</span>Conclusiones</div>
-        </div>
-      </div>
-    </aside>
   </div>
 
-  <footer class="footer">
-    <div><span class="footer-author">Yoandy Ramirez Delgado</span> &nbsp;·&nbsp; Cybersecurity Analyst &amp; Penetration Tester</div>
-    <div>HTB Sherlocks · Dream Job-2 · Malware Analysis · 2026</div>
-  </footer>
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <h3>Detalles del Reto</h3>
+      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">HARD</span></div>
+      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Windows</span></div>
+      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">—</span></div>
+      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">DFIR Challenge</span></div>
+      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">APT Persistence</span></div>
+      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Skills Demostradas</h3>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">Memory Forensics</span><span class="skill-pct">95%</span></div><div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">Persistence Analysis</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">Threat Hunting</span><span class="skill-pct">88%</span></div><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Herramientas</h3>
+      <div class="tools-list">
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">Volatility</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">Autoruns</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">RegRipper</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">Timeline Explorer</span></div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
+  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
+  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
+  setInterval(drawMatrix,35);
+</script>
 </body>
 </html>

