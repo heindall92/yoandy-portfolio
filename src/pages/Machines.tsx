@@ -124,8 +124,8 @@ const machines = [
   },
   {
     slug: "steamcloud-htb", emoji: "☁️", name: "SteamCloud",
-    desc: "Kubernetes con kubelet API expuesto. Enumeración de pods, acceso a tokens de ServiceAccount, y escalada aprovechando permisos del cluster para montar el filesystem del nodo host.",
-    tags: ["Kubernetes", "kubelet", "Cloud", "Linux"],
+    desc: "Kubelet API sin autenticación en puerto 10250. RCE en pods, extracción de ServiceAccount token, creación de pod privilegiado con hostPath mount y escape al filesystem del host como root.",
+    tags: ["Kubernetes", "Kubelet", "Container Escape", "RBAC"],
     difficulty: "EASY", diffColor: "primary",
     os: "Linux",
   },
