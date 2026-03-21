@@ -12,26 +12,59 @@ const navItems = [
   { href: "#projects", label: "Projects" },
 ];
 
-type SearchResult = { slug: string; name: string; emoji: string; category: string };
+type SearchResult = {
+  slug: string;
+  name: string;
+  emoji: string;
+  platform: string;
+  difficulty: string;
+};
 
 const allItems: SearchResult[] = [
-  ...machines.map((m) => ({ slug: m.slug, name: m.name, emoji: m.emoji, category: "HTB" })),
-  ...sherlocks.map((s) => ({ slug: s.slug, name: s.name, emoji: s.emoji, category: "Sherlock" })),
-  ...hmvMachines.map((m) => ({ slug: m.slug, name: m.name, emoji: m.emoji, category: "HackMyVM" })),
+  ...machines.map((m) => ({ slug: m.slug, name: m.name, emoji: m.emoji, platform: "HTB", difficulty: m.difficulty })),
+  ...sherlocks.map((s) => ({ slug: s.slug, name: s.name, emoji: s.emoji, platform: "Sherlock", difficulty: s.difficulty })),
+  ...hmvMachines.map((m) => ({ slug: m.slug, name: m.name, emoji: m.emoji, platform: "HackMyVM", difficulty: m.difficulty })),
 ];
+
+const platforms = ["HTB", "Sherlock", "HackMyVM"] as const;
+const difficulties = ["VERY EASY", "EASY", "MEDIUM", "HARD"] as const;
+
+const diffChipColors: Record<string, string> = {
+  "VERY EASY": "bg-neon-magenta/15 text-neon-magenta border-neon-magenta/30",
+  "EASY": "bg-primary/15 text-primary border-primary/30",
+  "MEDIUM": "bg-neon-yellow/15 text-neon-yellow border-neon-yellow/30",
+  "HARD": "bg-destructive/15 text-destructive border-destructive/30",
+};
+
+const platformChipColors: Record<string, string> = {
+  "HTB": "bg-primary/15 text-primary border-primary/30",
+  "Sherlock": "bg-neon-cyan/15 text-neon-cyan border-neon-cyan/30",
+  "HackMyVM": "bg-neon-magenta/15 text-neon-magenta border-neon-magenta/30",
+};
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
   const location = useLocation();
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const results = query.length > 0
-    ? allItems.filter((item) => item.name.toLowerCase().includes(query.toLowerCase()))
-    : [];
+  const toggleFilter = (arr: string[], val: string, setter: React.Dispatch<React.SetStateAction<string[]>>) => {
+    setter(arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val]);
+  };
+
+  const results = allItems.filter((item) => {
+    const matchesQuery = query.length === 0 || item.name.toLowerCase().includes(query.toLowerCase());
+    const matchesPlatform = selectedPlatforms.length === 0 || selectedPlatforms.includes(item.platform);
+    const matchesDifficulty = selectedDifficulties.length === 0 || selectedDifficulties.includes(item.difficulty);
+    return matchesQuery && matchesPlatform && matchesDifficulty;
+  });
+
+  const hasFilters = query.length > 0 || selectedPlatforms.length > 0 || selectedDifficulties.length > 0;
 
   const scrollTo = (e: React.MouseEvent, href: string) => {
     e.preventDefault();
@@ -47,6 +80,8 @@ const Navbar = () => {
   const goToReport = (slug: string) => {
     setSearchOpen(false);
     setQuery("");
+    setSelectedPlatforms([]);
+    setSelectedDifficulties([]);
     navigate(`/report/${slug}`);
   };
 
@@ -97,7 +132,6 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Search trigger */}
           <div ref={searchRef} className="relative">
             <button
               onClick={() => setSearchOpen(!searchOpen)}
@@ -111,9 +145,10 @@ const Navbar = () => {
             </button>
 
             {searchOpen && (
-              <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl shadow-primary/5 overflow-hidden z-50">
+              <div className="absolute right-0 top-full mt-2 w-96 rounded-xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl shadow-primary/5 overflow-hidden z-50">
+                {/* Search input */}
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30">
-                  <Search size={16} className="text-muted-foreground/60" />
+                  <Search size={16} className="text-muted-foreground/60 shrink-0" />
                   <input
                     ref={inputRef}
                     value={query}
@@ -128,28 +163,78 @@ const Navbar = () => {
                   )}
                 </div>
 
+                {/* Filter chips */}
+                <div className="px-4 py-2.5 border-b border-border/20 space-y-2">
+                  {/* Platform filters */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-wider mr-1">Plataforma</span>
+                    {platforms.map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => toggleFilter(selectedPlatforms, p, setSelectedPlatforms)}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-mono border transition-all duration-200 ${
+                          selectedPlatforms.includes(p)
+                            ? platformChipColors[p] + " opacity-100"
+                            : "bg-muted/20 text-muted-foreground/50 border-border/30 hover:border-border/60"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Difficulty filters */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-wider mr-1">Dificultad</span>
+                    {difficulties.map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => toggleFilter(selectedDifficulties, d, setSelectedDifficulties)}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-mono border transition-all duration-200 ${
+                          selectedDifficulties.includes(d)
+                            ? diffChipColors[d] + " opacity-100"
+                            : "bg-muted/20 text-muted-foreground/50 border-border/30 hover:border-border/60"
+                        }`}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Results */}
                 <div className="max-h-64 overflow-y-auto">
-                  {query.length === 0 && (
-                    <p className="px-4 py-6 text-center text-xs text-muted-foreground/50 font-mono">Escribe para buscar...</p>
+                  {!hasFilters && (
+                    <p className="px-4 py-6 text-center text-xs text-muted-foreground/50 font-mono">Escribe o filtra para buscar...</p>
                   )}
-                  {query.length > 0 && results.length === 0 && (
+                  {hasFilters && results.length === 0 && (
                     <p className="px-4 py-6 text-center text-xs text-muted-foreground/50 font-mono">Sin resultados</p>
                   )}
-                  {results.map((r) => (
-                    <button
-                      key={r.slug}
-                      onClick={() => goToReport(r.slug)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/5 transition-colors text-left"
-                    >
-                      <span className="text-lg">{r.emoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <span className="text-sm font-mono text-foreground block truncate">{r.name}</span>
+                  {hasFilters && results.length > 0 && (
+                    <>
+                      <div className="px-4 pt-2 pb-1">
+                        <span className="text-[10px] font-mono text-muted-foreground/40">{results.length} resultado{results.length !== 1 ? "s" : ""}</span>
                       </div>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-muted/50 text-muted-foreground/60 border border-border/30 shrink-0">
-                        {r.category}
-                      </span>
-                    </button>
-                  ))}
+                      {results.map((r) => (
+                        <button
+                          key={r.slug}
+                          onClick={() => goToReport(r.slug)}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/5 transition-colors text-left"
+                        >
+                          <span className="text-lg">{r.emoji}</span>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm font-mono text-foreground block truncate">{r.name}</span>
+                          </div>
+                          <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border shrink-0 ${diffChipColors[r.difficulty] || "bg-muted/50 text-muted-foreground/60 border-border/30"}`}>
+                            {r.difficulty}
+                          </span>
+                          <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border shrink-0 ${platformChipColors[r.platform] || "bg-muted/50 text-muted-foreground/60 border-border/30"}`}>
+                            {r.platform}
+                          </span>
+                        </button>
+                      ))}
+                    </>
+                  )}
                 </div>
               </div>
             )}
