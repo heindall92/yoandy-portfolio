@@ -1,457 +1,475 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CrownJewel-1 — HTB Sherlock Writeup | Yoandy Ramirez</title>
-<style>
-  :root {
-    --bg: #0a0e1a;
-    --bg2: #0f1629;
-    --bg3: #141d35;
-    --border: #1e2d4a;
-    --accent: #4ade80;
-    --accent2: #16a34a;
-    --green: #4ade80;
-    --red: #f87171;
-    --yellow: #fbbf24;
-    --purple: #a78bfa;
-    --blue: #60a5fa;
-    --cyan: #22d3ee;
-    --orange: #fb923c;
-    --text: #e2e8f0;
-    --text-muted: #64748b;
-    --code-bg: #050810;
-    --font-mono: 'Courier New', monospace;
-    --font-sans: 'Segoe UI', system-ui, sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.7; }
-
-  .hero {
-    background: linear-gradient(135deg, #0a0e1a 0%, #0a1a1a 50%, #040a0f 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 60px 0 40px;
-    position: relative; overflow: hidden;
-  }
-  .hero::before { content: ''; position: absolute; top: -80px; right: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(34,211,238,.08) 0%, transparent 70%); border-radius: 50%; }
-  .hero::after  { content: ''; position: absolute; bottom: -60px; left: -40px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(56,189,248,.06) 0%, transparent 70%); border-radius: 50%; }
-  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
-  .breadcrumb { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); margin-bottom: 20px; letter-spacing: .5px; }
-  .breadcrumb span { color: var(--accent); }
-  .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; }
-  .badge-platform { background: rgba(34,211,238,.12); color: var(--accent); border: 1px solid rgba(34,211,238,.25); }
-  .badge-category { background: rgba(56,189,248,.12); color: var(--accent2); border: 1px solid rgba(56,189,248,.25); }
-  .badge-hard     { background: rgba(255,77,109,.12); color: var(--red); border: 1px solid rgba(255,77,109,.25); }
-  .badge-medium   { background: rgba(255,209,102,.12); color: var(--yellow); border: 1px solid rgba(255,209,102,.25); }
-  .hero h1 { font-size: clamp(26px, 5vw, 44px); font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 10px; letter-spacing: -.5px; }
-  .hero h1 span { color: var(--accent); }
-  .hero-subtitle { font-size: 16px; color: var(--text-muted); max-width: 640px; margin-bottom: 28px; }
-  .hero-meta { display: flex; flex-wrap: wrap; gap: 20px; font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); border-top: 1px solid var(--border); padding-top: 20px; }
-  .hero-meta-item { display: flex; align-items: center; gap: 6px; }
-  .hero-meta-item .label { color: var(--text-muted); }
-  .hero-meta-item .value { color: var(--text); font-weight: 600; }
-  .layout { display: grid; grid-template-columns: 1fr 280px; gap: 32px; padding: 40px 0 80px; align-items: start; }
-  @media (max-width: 720px) { .layout { grid-template-columns: 1fr; } .sidebar { order: -1; } }
-  .content h2 { font-size: 22px; font-weight: 700; color: #e6edf3; margin: 40px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 10px; }
-  .content h2:first-child { margin-top: 0; }
-  .content h2 .ico { width: 26px; height: 26px; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
-  .content h3 { font-size: 16px; font-weight: 700; color: #c9d1d9; margin: 24px 0 10px; }
-  .content p { margin-bottom: 14px; }
-  code { font-family: var(--font-mono); font-size: 13px; background: var(--code-bg); border: 1px solid var(--border); color: #22d3ee; padding: 2px 7px; border-radius: 4px; }
-  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; overflow-x: auto; margin: 16px 0; position: relative; }
-  pre code { background: none; border: none; padding: 0; font-size: 13px; color: #67e8f9; line-height: 1.6; }
-  .pre-label { position: absolute; top: 10px; right: 14px; font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); letter-spacing: .5px; }
-  .callout { border-radius: 8px; padding: 14px 18px; margin: 20px 0; border-left: 3px solid; font-size: 14px; }
-  .callout-info    { background: rgba(34,211,238,.07); border-color: var(--accent); }
-  .callout-warning { background: rgba(255,209,102,.07); border-color: var(--yellow); }
-  .callout-danger  { background: rgba(255,77,109,.07); border-color: var(--red); }
-  .callout-success { background: rgba(74,222,128,.07); border-color: var(--green); }
-  .callout strong  { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
-  .callout-info strong    { color: var(--accent); }
-  .callout-warning strong { color: var(--yellow); }
-  .callout-danger strong  { color: var(--red); }
-  .callout-success strong { color: var(--green); }
-  .table-wrap { overflow-x: auto; margin: 20px 0; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead tr { background: var(--bg3); border-bottom: 2px solid var(--border); }
-  th { padding: 10px 14px; text-align: left; font-weight: 700; color: #e6edf3; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
-  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
-  tr:hover td { background: rgba(255,255,255,.02); }
-  .mitre-tag { display: inline-block; background: rgba(34,211,238,.1); border: 1px solid rgba(34,211,238,.25); color: var(--accent); font-size: 11px; font-family: var(--font-mono); padding: 3px 9px; border-radius: 4px; margin: 2px; }
-  .sidebar { position: sticky; top: 20px; }
-  .sidebar-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
-  .sidebar-card-header { padding: 12px 16px; background: var(--bg3); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text-muted); }
-  .sidebar-card-body { padding: 16px; }
-  .info-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 10px; }
-  .info-row:last-child { border: none; }
-  .info-row .k { color: var(--text-muted); flex-shrink: 0; }
-  .info-row .v { color: var(--text); font-weight: 600; text-align: right; word-break: break-all; }
-  .tool-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .tool-item:last-child { border: none; }
-  .tool-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
-  .score-bar { margin: 6px 0; }
-  .score-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
-  .score-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .score-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
-  .toc-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(30,45,80,.6); font-size: 13px; color: var(--text-muted); }
-  .toc-item:last-child { border: none; }
-  .toc-num { font-family: var(--font-mono); font-size: 10px; color: var(--accent); flex-shrink: 0; }
-  .footer { border-top: 1px solid var(--border); padding: 24px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--text-muted); }
-  .footer-author { font-weight: 700; color: var(--text); }
-  .phase-header { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin: 24px 0 16px; display: flex; align-items: center; gap: 12px; }
-  .phase-num { background: var(--accent); color: #000; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
-  .phase-title { font-weight: 700; color: #e6edf3; font-size: 15px; }
-  .phase-desc { font-size: 12px; color: var(--text-muted); }
-  .highlight-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
-  .timeline { margin: 24px 0; position: relative; padding-left: 24px; }
-  .timeline::before { content: ''; position: absolute; left: 8px; top: 6px; bottom: 6px; width: 2px; background: var(--border); }
-  .tl-item { position: relative; margin-bottom: 20px; }
-  .tl-dot { position: absolute; left: -20px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); box-shadow: 0 0 8px rgba(34,211,238,.5); }
-  .tl-dot.red   { background: var(--red);    box-shadow: 0 0 8px rgba(255,77,109,.5); }
-  .tl-dot.green { background: var(--green);  box-shadow: 0 0 8px rgba(74,222,128,.5); }
-  .tl-dot.yellow{ background: var(--yellow); box-shadow: 0 0 8px rgba(255,209,102,.5); }
-  .tl-time  { font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 3px; }
-  .tl-title { font-weight: 700; color: #e6edf3; font-size: 14px; }
-  .tl-desc  { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-  .artifact-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin: 12px 0; position: relative; overflow: hidden; }
-  .artifact-card::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px; background: var(--accent); }
-  .artifact-type { font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .5px; color: var(--accent); margin-bottom: 6px; }
-  .artifact-name { font-size: 15px; font-weight: 700; color: #e6edf3; margin-bottom: 6px; }
-  .artifact-desc { font-size: 13px; color: var(--text-muted); }
-  .query-block { background: var(--code-bg); border: 1px solid rgba(34,211,238,.2); border-radius: 8px; padding: 16px 20px; margin: 12px 0; }
-  .query-label { font-size: 10px; font-family: var(--font-mono); color: var(--accent); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-  .query-label::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
-  .query-code { font-family: var(--font-mono); font-size: 12px; color: #67e8f9; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
-  .event-id-badge { display: inline-block; background: rgba(34,211,238,.1); border: 1px solid rgba(34,211,238,.3); color: var(--accent); font-size: 11px; font-family: var(--font-mono); padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
-  .golden-ticket-box { background: linear-gradient(135deg, rgba(34,211,238,.05) 0%, rgba(255,209,102,.05) 100%); border: 1px solid rgba(255,209,102,.2); border-radius: 10px; padding: 20px; margin: 20px 0; }
-  .gt-title { font-size: 18px; font-weight: 800; color: #ffd166; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
-  .gt-body { font-size: 14px; color: var(--text); }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CrownJewel-1 — Sherlock Writeup | YRD</title>
+  <style>
+    :root { --bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--orange:#fb923c; }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+    canvas#matrix{position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.13;pointer-events:none;z-index:0;}
+    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
+    .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
+    .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
+    .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
+    .tag{padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+    .tag-htb{background:rgba(74,222,128,0.15);color:var(--primary);border:1px solid rgba(74,222,128,0.3);}
+    .tag-hmv{background:rgba(217,70,239,0.15);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
+    .tag-sherlock{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3);}
+    .tag-os{background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.25);}
+    .tag-easy{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
+    .tag-veryeasy{background:rgba(217,70,239,0.1);color:#d946ef;border:1px solid rgba(217,70,239,0.3);}
+    .tag-medium{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3);}
+    .tag-hard{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
+    .hero h1{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:1rem;}
+    .hero h1 span{color:var(--primary);}
+    .hero-desc{font-size:1.05rem;color:var(--text-dim);line-height:1.7;max-width:700px;margin-bottom:1.5rem;}
+    .meta-row{display:flex;flex-wrap:wrap;gap:2rem;}
+    .meta-item{display:flex;flex-direction:column;gap:4px;}
+    .meta-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+    .meta-value{font-size:0.9rem;color:var(--text);font-weight:600;}
+    .meta-value.green{color:var(--primary);}
+    .main{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 280px;gap:1.5rem;}
+    @media(max-width:900px){.main{grid-template-columns:1fr;}}
+    .content{display:flex;flex-direction:column;gap:2rem;}
+    .section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
+    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+    .section-icon{width:8px;height:8px;background:var(--primary);border-radius:50%;box-shadow:0 0 8px var(--primary);}
+    .section h2{font-size:1.1rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:2px;}
+    .section p{color:var(--text-dim);line-height:1.8;margin-bottom:0.75rem;}
+    .section p:last-child{margin-bottom:0;}
+    .section ul,.section ol{color:var(--text-dim);line-height:1.8;margin:0.5rem 0 0.75rem 1.5rem;}
+    .section li{margin-bottom:0.3rem;}
+    pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:2.5rem 1.25rem 1.25rem;overflow-x:auto;margin:1rem 0;font-size:0.82rem;line-height:1.6;position:relative;}
+    pre::before{content:'terminal';position:absolute;top:0;left:0;right:0;padding:8px 14px 8px 70px;background:#141d35;border-bottom:1px solid var(--border);border-radius:8px 8px 0 0;font-size:12px;color:var(--text-muted);font-family:'Segoe UI',system-ui,sans-serif;}
+    pre::after{content:'';position:absolute;top:10px;left:14px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 0 #febc2e,40px 0 0 #28c840;}
+    code{font-family:'Cascadia Code','Fira Code','Courier New',monospace;}
+    .comment{color:#6a9955;}
+    .cmd{color:var(--cyan);}
+    .output{color:var(--text-dim);}
+    .highlight{color:var(--primary);font-weight:600;}
+    .cred{color:var(--yellow);font-weight:600;}
+    .flag-val{color:#ff79c6;}
+    .ip-badge{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--primary);padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.8rem;}
+    .flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
+    .flag-card{background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
+    .flag-card .flag-label{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;}
+    .flag-card .flag-hash{font-family:monospace;font-size:0.8rem;color:#ff79c6;word-break:break-all;}
+    .timeline{display:flex;flex-direction:column;gap:0;}
+    .timeline-item{display:flex;gap:1.25rem;}
+    .timeline-left{display:flex;flex-direction:column;align-items:center;}
+    .timeline-dot{width:12px;height:12px;background:var(--primary);border-radius:50%;box-shadow:0 0 10px var(--primary);flex-shrink:0;margin-top:4px;}
+    .timeline-line{width:2px;background:var(--border);flex:1;min-height:30px;}
+    .timeline-item:last-child .timeline-line{display:none;}
+    .timeline-content{padding-bottom:1.5rem;}
+    .timeline-step{font-size:0.7rem;color:var(--primary);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+    .timeline-title{font-size:0.95rem;color:var(--text);font-weight:600;margin:2px 0;}
+    .timeline-desc{font-size:0.82rem;color:var(--text-dim);line-height:1.6;}
+    .mitre-grid{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem;}
+    .mitre-tag{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:var(--text-dim);padding:5px 12px;border-radius:6px;font-size:0.78rem;font-family:monospace;}
+    .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
+    .sidebar-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+    .sidebar-card h3{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:1.25rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
+    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid rgba(26,61,26,0.5);}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-key{font-size:0.8rem;color:var(--text-muted);}
+    .detail-val{font-size:0.82rem;color:var(--text);font-weight:600;text-align:right;}
+    .detail-val.green{color:var(--primary);}
+    .detail-val.cyan{color:var(--cyan);}
+    .skill-item{margin-bottom:1rem;}
+    .skill-item:last-child{margin-bottom:0;}
+    .skill-header{display:flex;justify-content:space-between;margin-bottom:5px;}
+    .skill-name{font-size:0.82rem;color:var(--text-dim);}
+    .skill-pct{font-size:0.8rem;color:var(--primary);font-weight:600;}
+    .skill-bar{height:4px;background:var(--border);border-radius:2px;}
+    .skill-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:2px;}
+    .tools-list{display:flex;flex-direction:column;gap:0.6rem;}
+    .tool-item{display:flex;align-items:center;gap:10px;padding:0.6rem 0.75rem;background:#050810;border:1px solid var(--border);border-radius:8px;}
+    .tool-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;}
+    .tool-name{font-size:0.82rem;color:var(--text-dim);font-family:monospace;}
+    .callout{border-radius:8px;padding:1rem 1.25rem;margin:1rem 0;border-left:3px solid;}
+    .callout-info{background:rgba(34,211,238,0.05);border-color:var(--cyan);color:var(--text-dim);}
+    .callout-danger{background:rgba(248,113,113,0.05);border-color:var(--red);color:var(--text-dim);}
+    .callout-tip{background:rgba(74,222,128,0.05);border-color:var(--primary);color:var(--text-dim);}
+    .callout-warn{background:rgba(251,191,36,0.05);border-color:var(--yellow);color:var(--text-dim);}
+    .data-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;}
+    .data-table th,.data-table td{padding:0.6rem 0.8rem;border:1px solid var(--border);text-align:left;}
+    .data-table th{background:#141d35;color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
+    .data-table td{color:var(--text-dim);}
+    a{color:var(--primary);text-decoration:none;}
+  </style>
 </head>
 <body>
+<canvas id="matrix"></canvas>
 
-<header class="hero">
-  <div class="container">
-    <p class="breadcrumb">HTB Sherlocks &nbsp;/&nbsp; <span>DFIR / Active Directory</span> &nbsp;/&nbsp; CrownJewel-1</p>
-    <div class="hero-badges">
-      <span class="badge badge-platform">HackTheBox</span>
-      <span class="badge badge-category">Active Directory</span>
-      <span class="badge badge-medium">Medium</span>
-    </div>
-    <h1>CrownJewel-1 <span>Sherlock</span></h1>
-    <p class="hero-subtitle">
-      Detección y análisis forense de una operación de volcado de NTDS.dit mediante abuso de vssadmin. Investigación del compromiso de un Domain Controller atacado por Scattered Spider con técnicas de Golden Ticket.
-    </p>
-    <div class="hero-meta">
-      <div class="hero-meta-item"><span class="label">Autor:</span><span class="value">Yoandy Ramirez Delgado</span></div>
-      <div class="hero-meta-item"><span class="label">Tipo:</span><span class="value">DFIR / Active Directory</span></div>
-      <div class="hero-meta-item"><span class="label">Threat Actor:</span><span class="value">Scattered Spider</span></div>
-      <div class="hero-meta-item"><span class="label">Objetivo:</span><span class="value">Domain Controller (DC01)</span></div>
-    </div>
+<div class="hero">
+  <div class="hero-breadcrumb"><a href="#">Sherlocks</a> / <a href="#">DFIR</a> / CrownJewel-1</div>
+  <div class="tags">
+    <span class="tag tag-sherlock">SHERLOCK</span>
+    <span class="tag tag-os">WINDOWS</span>
+    <span class="tag tag-medium">MEDIUM</span>
+    <span class="tag tag-sherlock">DFIR CHALLENGE</span>
   </div>
-</header>
+  <h1>CrownJewel-1 <span>Machine</span></h1>
+  <p class="hero-desc">Análisis forense de Active Directory. Investigación de ataques contra AD CS (Certificate Services) y extracción de credenciales mediante certificados comprometidos.</p>
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Autor</span><span class="meta-value green">Yoandy Ramírez Delgado</span></div>
+    <div class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">Sherlock DFIR Challenge</span></div>
+    <div class="meta-item"><span class="meta-label">Herramienta Clave</span><span class="meta-value">EventViewer / PowerShell</span></div>
+    <div class="meta-item"><span class="meta-label">Objetivo</span><span class="meta-value">root</span></div>
+  </div>
+</div>
 
-<div class="container">
-  <div class="layout">
-    <main class="content">
+<div class="main">
+  <div class="content">
 
-      <h2 id="scenario"><div class="ico">📋</div> Escenario</h2>
-      <p>
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>📋Escenario</h2></div>
+      
+
+<p>
         El Domain Controller de la organización Forela está bajo ataque. La cuenta del administrador de dominio está potencialmente comprometida y se sospecha que el atacante ha volcado la base de datos <strong>NTDS.dit</strong>. El equipo de respuesta ha recibido una alerta de uso de <code>vssadmin</code> en el DC, lo cual es inusual. Los artefactos proporcionados son la Master File Table (<code>$MFT</code>) y tres archivos de logs de eventos de Windows (<code>.evtx</code>).
       </p>
 
-      <div class="golden-ticket-box">
-        <div class="gt-title">🏆 ¿Qué es NTDS.dit?</div>
-        <div class="gt-body">
+
+<div class="golden-ticket-box">
+<div class="gt-title">🏆 ¿Qué es NTDS.dit?</div>
+<div class="gt-body">
           NTDS.dit es la base de datos central de <strong>Active Directory</strong>. Reside en los Domain Controllers de Windows y contiene todos los datos de identidad del dominio: cuentas de usuario, grupos, políticas y — lo más crítico — <strong>los hashes de contraseña de todas las cuentas del dominio</strong>, incluida la cuenta <code>krbtgt</code>. El hash krbtgt es la clave raíz de Kerberos: quien lo posea puede fabricar Tickets de Concesión de Tickets (TGT) válidos para cualquier cuenta, un ataque conocido como <strong>Golden Ticket</strong>. De ahí el nombre: CrownJewel.
         </div>
-      </div>
+</div>
 
-      <div class="callout callout-danger">
-        <strong>🔴 Scattered Spider — Threat Actor</strong>
+
+<div class="callout callout-danger">
+<strong>🔴 Scattered Spider — Threat Actor</strong>
         Scattered Spider (UNC3944) es un grupo de ciberdelincuentes activo desde 2022, conocido por ataques de ingeniería social sofisticados para obtener acceso inicial mediante el agotamiento de agentes de soporte técnico (MFA fatigue). Una vez dentro, escalan privilegios en Active Directory para acceder a NTDS.dit.
       </div>
 
-      <h2 id="artifacts"><div class="ico">📦</div> Artefactos y Herramientas</h2>
-      <p>
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>📦Artefactos y Herramientas</h2></div>
+      
+
+<p>
         El análisis se realiza desde Linux con artefactos de Windows. Las herramientas elegidas permiten parsear y filtrar los datos forenses de forma eficiente:
       </p>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Artefacto</th><th>Formato</th><th>Información</th></tr></thead>
-          <tbody>
-            <tr><td><code>$MFT</code></td><td>Binary → JSONL via Chainsaw</td><td>Todos los archivos del sistema: nombres, rutas, timestamps, tamaños</td></tr>
-            <tr><td><code>System.evtx</code></td><td>EVTX → JSONL via Chainsaw</td><td>Eventos del sistema: servicios, cambios de estado, drivers</td></tr>
-            <tr><td><code>Security.evtx</code></td><td>EVTX → JSONL via Chainsaw</td><td>Eventos de seguridad: autenticaciones, cambios de grupos, auditorías</td></tr>
-            <tr><td><code>NTFS Operational</code></td><td>EVTX → JSONL via Chainsaw</td><td>Eventos del driver NTFS: montaje de volúmenes, VolumeCorrelationId</td></tr>
-          </tbody>
-        </table>
-      </div>
 
-      <h3>Preparación — Chainsaw + jq</h3>
-      <p>
-        <strong>Chainsaw</strong> es una herramienta de análisis forense de Windows diseñada para ejecutarse en Linux. Su función <code>dump</code> convierte los archivos EVTX y MFT a formato JSONL, permitiendo filtrado flexible con <strong>jq</strong>:
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Artefacto</th><th>Formato</th><th>Información</th></tr></thead>
+<tbody>
+<tr><td><code>$MFT</code></td><td>Binary → JSONL via Chainsaw</td><td>Todos los archivos del sistema: nombres, rutas, timestamps, tamaños</td></tr>
+<tr><td><code>System.evtx</code></td><td>EVTX → JSONL via Chainsaw</td><td>Eventos del sistema: servicios, cambios de estado, drivers</td></tr>
+<tr><td><code>Security.evtx</code></td><td>EVTX → JSONL via Chainsaw</td><td>Eventos de seguridad: autenticaciones, cambios de grupos, auditorías</td></tr>
+<tr><td><code>NTFS Operational</code></td><td>EVTX → JSONL via Chainsaw</td><td>Eventos del driver NTFS: montaje de volúmenes, VolumeCorrelationId</td></tr>
+</tbody>
+</table>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Preparación — Chainsaw + jq</h2></div>
+      
+
+<p>
+<strong>Chainsaw</strong> es una herramienta de análisis forense de Windows diseñada para ejecutarse en Linux. Su función <code>dump</code> convierte los archivos EVTX y MFT a formato JSONL, permitiendo filtrado flexible con <strong>jq</strong>:
       </p>
-      <pre><code class="language-bash">chainsaw dump --jsonl -o events.jsonl Artifacts/*.evtx
+
+
+<pre><code class="language-bash">chainsaw dump --jsonl -o events.jsonl Artifacts/*.evtx
 chainsaw dump --jsonl -o mft.jsonl Artifacts/C/\$MFT</code><span class="pre-label">Bash — Preparación</span></pre>
 
-      <h2 id="attack"><div class="ico">⚔️</div> Reconstrucción del Ataque</h2>
 
-      <div class="phase-header">
-        <div class="phase-num">1</div>
-        <div>
-          <div class="phase-title">Inicio de VSS — Timestamp de Activación</div>
-          <div class="phase-desc">Event ID 7036 — Service Control Manager</div>
-        </div>
-      </div>
-      <p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>⚔️Reconstrucción del Ataque</h2></div>
+      
+
+<div class="phase-header">
+<div class="phase-num">1</div>
+<div>
+<div class="phase-title">Inicio de VSS — Timestamp de Activación</div>
+<div class="phase-desc">Event ID 7036 — Service Control Manager</div>
+</div>
+</div>
+
+
+<p>
         El primer paso es identificar cuándo se inició el servicio de Volume Shadow Copy. El <span class="event-id-badge">EventID 7036</span> es generado por el Service Control Manager cada vez que un servicio cambia de estado. Filtrando por este ID y buscando el servicio de VSS:
       </p>
-      <div class="query-block">
-        <div class="query-label">jq — Filtro EventID 7036 + VSS</div>
-        <div class="query-code">cat events.jsonl | jq '.Event | select(.System.EventID == 7036) | select(.EventData.param1 == "Volume Shadow Copy")'</div>
-      </div>
-      <p>
+
+
+<div class="query-block">
+<div class="query-label">jq — Filtro EventID 7036 + VSS</div>
+<div class="query-code">cat events.jsonl | jq '.Event | select(.System.EventID == 7036) | select(.EventData.param1 == "Volume Shadow Copy")'</div>
+</div>
+
+
+<p>
         El resultado revela el timestamp exacto en que el servicio de VSS entró en estado de ejecución, marcando el inicio del ataque.
       </p>
 
-      <div class="phase-header">
-        <div class="phase-num">2</div>
-        <div>
-          <div class="phase-title">Enumeración de Grupos — VSSVC.exe</div>
-          <div class="phase-desc">Event ID 4799 — Group Membership Enumeration</div>
-        </div>
-      </div>
-      <p>
+
+<div class="phase-header">
+<div class="phase-num">2</div>
+<div>
+<div class="phase-title">Enumeración de Grupos — VSSVC.exe</div>
+<div class="phase-desc">Event ID 4799 — Group Membership Enumeration</div>
+</div>
+</div>
+
+
+<p>
         Al crear una shadow copy, el proceso VSS (<code>VSSVC.exe</code>) valida privilegios consultando grupos de usuarios. El <span class="event-id-badge">EventID 4799</span> registra estas consultas de enumeración de grupos. Esto permite identificar qué grupos consultó VSSVC y qué cuenta de máquina realizó la acción:
       </p>
-      <div class="query-block">
-        <div class="query-label">jq — Grupos consultados por VSSVC.exe</div>
-        <div class="query-code">cat events.jsonl | jq '.Event | select(.System.EventID == 4799) | select(.EventData.CallerProcessName == "C:\\Windows\\System32\\VSSVC.exe") | .EventData.TargetUserName' | sort -u</div>
-      </div>
 
-      <div class="highlight-box">
-        <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:8px;">CUENTA DE MÁQUINA</div>
-        <code>DC01$</code>
-        <div style="margin-top:8px;font-size:13px;color:var(--text-muted);">La cuenta <code>DC01$</code> (la cuenta de equipo del Domain Controller) es la que realiza la enumeración. Esto confirma que la operación está ocurriendo en el DC objetivo.</div>
-      </div>
 
-      <div class="phase-header">
-        <div class="phase-num">3</div>
-        <div>
-          <div class="phase-title">Identificación del GUID de Volumen</div>
-          <div class="phase-desc">NTFS Operational Log — VolumeCorrelationId</div>
-        </div>
-      </div>
-      <p>
+<div class="query-block">
+<div class="query-label">jq — Grupos consultados por VSSVC.exe</div>
+<div class="query-code">cat events.jsonl | jq '.Event | select(.System.EventID == 4799) | select(.EventData.CallerProcessName == "C:\\Windows\\System32\\VSSVC.exe") | .EventData.TargetUserName' | sort -u</div>
+</div>
+
+
+<div class="highlight-box">
+<div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:8px;">CUENTA DE MÁQUINA</div>
+<code>DC01$</code>
+<div style="margin-top:8px;font-size:13px;color:var(--text-muted);">La cuenta <code>DC01$</code> (la cuenta de equipo del Domain Controller) es la que realiza la enumeración. Esto confirma que la operación está ocurriendo en el DC objetivo.</div>
+</div>
+
+
+<div class="phase-header">
+<div class="phase-num">3</div>
+<div>
+<div class="phase-title">Identificación del GUID de Volumen</div>
+<div class="phase-desc">NTFS Operational Log — VolumeCorrelationId</div>
+</div>
+</div>
+
+
+<p>
         Cuando VSS monta la shadow copy como unidad virtual, el driver NTFS registra el GUID del volumen en el log operacional <code>Microsoft-Windows-Ntfs/Operational</code>. Este GUID es fundamental para correlacionar eventos relacionados con la shadow copy específica:
       </p>
-      <div class="query-block">
-        <div class="query-label">jq — Extraer GUID del volumen shadow</div>
-        <div class="query-code">cat events.jsonl | jq -c '.Event | select(.System.Channel == "Microsoft-Windows-Ntfs/Operational")' | grep -i "shadow" | jq '.EventData.VolumeCorrelationId'</div>
-      </div>
 
-      <div class="phase-header">
-        <div class="phase-num">4</div>
-        <div>
-          <div class="phase-title">Localización de NTDS.dit en el MFT</div>
-          <div class="phase-desc">Ruta completa del archivo volcado</div>
-        </div>
-      </div>
-      <p>
+
+<div class="query-block">
+<div class="query-label">jq — Extraer GUID del volumen shadow</div>
+<div class="query-code">cat events.jsonl | jq -c '.Event | select(.System.Channel == "Microsoft-Windows-Ntfs/Operational")' | grep -i "shadow" | jq '.EventData.VolumeCorrelationId'</div>
+</div>
+
+
+<div class="phase-header">
+<div class="phase-num">4</div>
+<div>
+<div class="phase-title">Localización de NTDS.dit en el MFT</div>
+<div class="phase-desc">Ruta completa del archivo volcado</div>
+</div>
+</div>
+
+
+<p>
         La Master File Table registra todos los archivos creados en el sistema. Filtrando por el nombre <code>ntds.dit</code>, se identifica la ubicación donde el atacante volcó la base de datos de Active Directory:
       </p>
-      <div class="query-block">
-        <div class="query-label">jq — Buscar ntds.dit en el MFT</div>
-        <div class="query-code">cat mft.jsonl | jq -c | grep -i "ntds.dit" | jq .FullPath</div>
-      </div>
-      <div class="highlight-box">
-        <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:8px;">RUTA DEL VOLCADO (NTDS.dit)</div>
-        <code>C:\Users\Administrator\Documents\backup_sync_Dc\Ntds.dit</code>
-        <div style="margin-top:8px;font-size:13px;color:var(--text-muted);">El atacante nombró la carpeta <code>backup_sync_Dc</code> para simular una operación de backup legítima. Una táctica clásica de camuflaje.</div>
-      </div>
 
-      <div class="phase-header">
-        <div class="phase-num">5</div>
-        <div>
-          <div class="phase-title">Volcado del SYSTEM Hive</div>
-          <div class="phase-desc">Artefacto adicional en la misma carpeta</div>
-        </div>
-      </div>
-      <p>
+
+<div class="query-block">
+<div class="query-label">jq — Buscar ntds.dit en el MFT</div>
+<div class="query-code">cat mft.jsonl | jq -c | grep -i "ntds.dit" | jq .FullPath</div>
+</div>
+
+
+<div class="highlight-box">
+<div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:8px;">RUTA DEL VOLCADO (NTDS.dit)</div>
+<code>C:\Users\Administrator\Documents\backup_sync_Dc\Ntds.dit</code>
+<div style="margin-top:8px;font-size:13px;color:var(--text-muted);">El atacante nombró la carpeta <code>backup_sync_Dc</code> para simular una operación de backup legítima. Una táctica clásica de camuflaje.</div>
+</div>
+
+
+<div class="phase-header">
+<div class="phase-num">5</div>
+<div>
+<div class="phase-title">Volcado del SYSTEM Hive</div>
+<div class="phase-desc">Artefacto adicional en la misma carpeta</div>
+</div>
+</div>
+
+
+<p>
         NTDS.dit por sí solo no es suficiente para descifrar los hashes: el atacante también necesita el subárbol de registro <strong>SYSTEM</strong>, que contiene el SYSKEY (la clave de cifrado de los hashes almacenados en la base de datos AD). Filtrando por la carpeta del volcado en el MFT:
       </p>
-      <div class="query-block">
-        <div class="query-label">jq — Todos los archivos en la carpeta del volcado</div>
-        <div class="query-code">cat mft.jsonl | jq '. | select(.FullPath | contains("Users/Administrator/Documents/backup_sync_dc/"))'</div>
-      </div>
-      <p>
+
+
+<div class="query-block">
+<div class="query-label">jq — Todos los archivos en la carpeta del volcado</div>
+<div class="query-code">cat mft.jsonl | jq '. | select(.FullPath | contains("Users/Administrator/Documents/backup_sync_dc/"))'</div>
+</div>
+
+
+<p>
         Junto a <code>Ntds.dit</code>, se encuentra el hive de registro <code>SYSTEM</code> volcado. Con ambos archivos, el atacante puede extraer todos los hashes del dominio usando herramientas como <strong>secretsdump.py</strong> de Impacket y proceder al ataque de Golden Ticket.
       </p>
 
-      <h2 id="timeline"><div class="ico">⏱</div> Línea de Tiempo del Ataque</h2>
-      <div class="timeline">
-        <div class="tl-item">
-          <div class="tl-dot yellow"></div>
-          <div class="tl-time">Initial Access</div>
-          <div class="tl-title">Ingeniería social → Acceso inicial</div>
-          <div class="tl-desc">Scattered Spider obtiene credenciales mediante vishing o MFA fatigue, comprometiendo la cuenta del administrador.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot yellow"></div>
-          <div class="tl-time">Privilege Escalation</div>
-          <div class="tl-title">Escalada a Domain Admin</div>
-          <div class="tl-desc">El atacante eleva sus privilegios dentro de Active Directory hasta obtener derechos de Domain Administrator.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot red"></div>
-          <div class="tl-time">EventID 7036 — VSS running</div>
-          <div class="tl-title">Servicio VSS activado</div>
-          <div class="tl-desc">El atacante lanza <code>vssadmin create shadow /for=C:</code> para crear una shadow copy del volumen del sistema.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot red"></div>
-          <div class="tl-time">EventID 4799 — Group enum</div>
-          <div class="tl-title">Enumeración de grupos</div>
-          <div class="tl-desc"><code>VSSVC.exe</code> valida privilegios consultando grupos de usuarios bajo la cuenta <code>DC01$</code>.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot red"></div>
-          <div class="tl-time">NTFS Operational — Volume GUID</div>
-          <div class="tl-title">Shadow copy montada</div>
-          <div class="tl-desc">La copia sombra se monta como unidad virtual con GUID asignado. El atacante puede copiar archivos bloqueados.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot red"></div>
-          <div class="tl-time">MFT — ntds.dit creado</div>
-          <div class="tl-title">Volcado de NTDS.dit + SYSTEM</div>
-          <div class="tl-desc">Ambos archivos se copian a <code>backup_sync_Dc</code>, listos para exfiltración.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot green"></div>
-          <div class="tl-time">Respuesta</div>
-          <div class="tl-title">Detección y contención</div>
-          <div class="tl-desc">El equipo DFIR recibe la alerta y comienza la investigación forense. El atacante debe ser expulsado antes de que exfiltre o use los hashes.</div>
-        </div>
-      </div>
 
-      <h2 id="mitre"><div class="ico">🎯</div> Mapeo MITRE ATT&CK</h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>ID</th><th>Técnica</th><th>Táctica</th><th>Evidencia</th></tr></thead>
-          <tbody>
-            <tr><td><span class="mitre-tag">T1003.003</span></td><td>OS Credential Dumping: NTDS</td><td>Credential Access</td><td>vssadmin → copia NTDS.dit</td></tr>
-            <tr><td><span class="mitre-tag">T1003.002</span></td><td>Security Account Manager</td><td>Credential Access</td><td>SYSTEM hive volcado junto a NTDS.dit</td></tr>
-            <tr><td><span class="mitre-tag">T1490</span></td><td>Inhibit System Recovery</td><td>Impact</td><td>Manipulación del servicio VSS</td></tr>
-            <tr><td><span class="mitre-tag">T1078.002</span></td><td>Valid Accounts: Domain Accounts</td><td>Defense Evasion / Persistence</td><td>Uso de credenciales del administrador del dominio</td></tr>
-            <tr><td><span class="mitre-tag">T1558.001</span></td><td>Golden Ticket</td><td>Credential Access</td><td>Hash krbtgt de NTDS.dit permite Golden Ticket</td></tr>
-            <tr><td><span class="mitre-tag">T1036.005</span></td><td>Match Legitimate Name</td><td>Defense Evasion</td><td>Carpeta <code>backup_sync_Dc</code> simula backup legítimo</td></tr>
-          </tbody>
-        </table>
-      </div>
+    </div>
 
-      <h2 id="defense"><div class="ico">🛡</div> Detección y Hardening</h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Vector</th><th>Detección</th><th>Mitigación</th></tr></thead>
-          <tbody>
-            <tr><td>vssadmin en DC</td><td>Alerta en EventID 7036 para VSS en DCs</td><td>Bloquear vssadmin para usuarios no-SYSTEM en DCs</td></tr>
-            <tr><td>Acceso a NTDS.dit</td><td>Monitorizar acceso a C:\Windows\NTDS\</td><td>FIM (File Integrity Monitoring) en carpeta NTDS</td></tr>
-            <tr><td>Cuentas de dominio comprometidas</td><td>Alertas de inicio de sesión inusual, MFA</td><td>Privileged Access Workstations (PAW) + MFA resistente a phishing</td></tr>
-            <tr><td>Golden Ticket</td><td>Tickets con vida útil &gt;10h o sin acceso inicial</td><td>Rotación periódica del hash krbtgt (cada 6 meses)</td></tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>⏱Línea de Tiempo del Ataque</h2></div>
+      
 
-      <h2 id="conclusions"><div class="ico">📊</div> Conclusiones</h2>
-      <p>
+<div class="timeline">
+<div class="tl-item">
+<div class="tl-dot yellow"></div>
+<div class="tl-time">Initial Access</div>
+<div class="tl-title">Ingeniería social → Acceso inicial</div>
+<div class="tl-desc">Scattered Spider obtiene credenciales mediante vishing o MFA fatigue, comprometiendo la cuenta del administrador.</div>
+</div>
+<div class="tl-item">
+<div class="tl-dot yellow"></div>
+<div class="tl-time">Privilege Escalation</div>
+<div class="tl-title">Escalada a Domain Admin</div>
+<div class="tl-desc">El atacante eleva sus privilegios dentro de Active Directory hasta obtener derechos de Domain Administrator.</div>
+</div>
+<div class="tl-item">
+<div class="tl-dot red"></div>
+<div class="tl-time">EventID 7036 — VSS running</div>
+<div class="tl-title">Servicio VSS activado</div>
+<div class="tl-desc">El atacante lanza <code>vssadmin create shadow /for=C:</code> para crear una shadow copy del volumen del sistema.</div>
+</div>
+<div class="tl-item">
+<div class="tl-dot red"></div>
+<div class="tl-time">EventID 4799 — Group enum</div>
+<div class="tl-title">Enumeración de grupos</div>
+<div class="tl-desc"><code>VSSVC.exe</code> valida privilegios consultando grupos de usuarios bajo la cuenta <code>DC01$</code>.</div>
+</div>
+<div class="tl-item">
+<div class="tl-dot red"></div>
+<div class="tl-time">NTFS Operational — Volume GUID</div>
+<div class="tl-title">Shadow copy montada</div>
+<div class="tl-desc">La copia sombra se monta como unidad virtual con GUID asignado. El atacante puede copiar archivos bloqueados.</div>
+</div>
+<div class="tl-item">
+<div class="tl-dot red"></div>
+<div class="tl-time">MFT — ntds.dit creado</div>
+<div class="tl-title">Volcado de NTDS.dit + SYSTEM</div>
+<div class="tl-desc">Ambos archivos se copian a <code>backup_sync_Dc</code>, listos para exfiltración.</div>
+</div>
+<div class="tl-item">
+<div class="tl-dot green"></div>
+<div class="tl-time">Respuesta</div>
+<div class="tl-title">Detección y contención</div>
+<div class="tl-desc">El equipo DFIR recibe la alerta y comienza la investigación forense. El atacante debe ser expulsado antes de que exfiltre o use los hashes.</div>
+</div>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>🎯Mapeo MITRE ATT&CK</h2></div>
+      
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>ID</th><th>Técnica</th><th>Táctica</th><th>Evidencia</th></tr></thead>
+<tbody>
+<tr><td><span class="mitre-tag">T1003.003</span></td><td>OS Credential Dumping: NTDS</td><td>Credential Access</td><td>vssadmin → copia NTDS.dit</td></tr>
+<tr><td><span class="mitre-tag">T1003.002</span></td><td>Security Account Manager</td><td>Credential Access</td><td>SYSTEM hive volcado junto a NTDS.dit</td></tr>
+<tr><td><span class="mitre-tag">T1490</span></td><td>Inhibit System Recovery</td><td>Impact</td><td>Manipulación del servicio VSS</td></tr>
+<tr><td><span class="mitre-tag">T1078.002</span></td><td>Valid Accounts: Domain Accounts</td><td>Defense Evasion / Persistence</td><td>Uso de credenciales del administrador del dominio</td></tr>
+<tr><td><span class="mitre-tag">T1558.001</span></td><td>Golden Ticket</td><td>Credential Access</td><td>Hash krbtgt de NTDS.dit permite Golden Ticket</td></tr>
+<tr><td><span class="mitre-tag">T1036.005</span></td><td>Match Legitimate Name</td><td>Defense Evasion</td><td>Carpeta <code>backup_sync_Dc</code> simula backup legítimo</td></tr>
+</tbody>
+</table>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>🛡Detección y Hardening</h2></div>
+      
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Vector</th><th>Detección</th><th>Mitigación</th></tr></thead>
+<tbody>
+<tr><td>vssadmin en DC</td><td>Alerta en EventID 7036 para VSS en DCs</td><td>Bloquear vssadmin para usuarios no-SYSTEM en DCs</td></tr>
+<tr><td>Acceso a NTDS.dit</td><td>Monitorizar acceso a C:\Windows\NTDS\</td><td>FIM (File Integrity Monitoring) en carpeta NTDS</td></tr>
+<tr><td>Cuentas de dominio comprometidas</td><td>Alertas de inicio de sesión inusual, MFA</td><td>Privileged Access Workstations (PAW) + MFA resistente a phishing</td></tr>
+<tr><td>Golden Ticket</td><td>Tickets con vida útil &gt;10h o sin acceso inicial</td><td>Rotación periódica del hash krbtgt (cada 6 meses)</td></tr>
+</tbody>
+</table>
+</div>
+
+
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>📊Conclusiones</h2></div>
+      
+
+<p>
         CrownJewel-1 ilustra perfectamente el riesgo de comprometer un Domain Controller en un entorno Windows. El acceso a NTDS.dit equivale al control total del dominio: el atacante puede impersonar cualquier usuario, incluyendo los administradores, durante meses sin necesidad de las contraseñas originales.
       </p>
-      <div class="callout callout-success">
-        <strong>✅ Lecciones de Active Directory Forensics</strong>
+
+
+<div class="callout callout-success">
+<strong>✅ Lecciones de Active Directory Forensics</strong>
         El análisis forense de un ataque de volcado de NTDS.dit requiere correlacionar tres fuentes de evidencia: logs de eventos del sistema (VSS), logs de seguridad (enumeración de grupos) y el MFT (archivos creados). Chainsaw + jq proporcionan un workflow eficiente para este análisis desde Linux.
       </div>
-      <div class="callout callout-danger">
-        <strong>🔴 El Riesgo del Golden Ticket</strong>
+
+
+<div class="callout callout-danger">
+<strong>🔴 El Riesgo del Golden Ticket</strong>
         Una vez que el atacante tiene el hash krbtgt, la solución no es simplemente cambiar contraseñas: el hash krbtgt debe rotarse dos veces (para invalidar tickets existentes), y todas las cuentas privilegiadas deben considerarse comprometidas hasta que se realice un reset completo.
       </div>
 
-    </main>
 
-    <aside class="sidebar">
-      <div class="sidebar-card">
-        <div class="sidebar-card-header">Detalles del Reto</div>
-        <div class="sidebar-card-body">
-          <div class="info-row"><span class="k">Dificultad</span><span class="v"><span class="badge badge-medium" style="font-size:10px">Medium</span></span></div>
-          <div class="info-row"><span class="k">Tipo</span><span class="v">Sherlock / DFIR / AD</span></div>
-          <div class="info-row"><span class="k">Threat Actor</span><span class="v">Scattered Spider</span></div>
-          <div class="info-row"><span class="k">Objetivo</span><span class="v">NTDS.dit (DC01)</span></div>
-          <div class="info-row"><span class="k">Artefactos</span><span class="v">$MFT, System/Security EVTX</span></div>
-          <div class="info-row"><span class="k">LOLBIN</span><span class="v">vssadmin.exe</span></div>
-        </div>
-      </div>
+    </div>
 
-      <div class="sidebar-card">
-        <div class="sidebar-card-header">Skills Demostradas</div>
-        <div class="sidebar-card-body">
-          <div class="score-bar"><div class="score-label"><span>AD Forensics</span><span style="color:var(--accent)">95%</span></div><div class="score-track"><div class="score-fill" style="width:95%"></div></div></div>
-          <div class="score-bar"><div class="score-label"><span>Event Log Analysis</span><span style="color:var(--accent)">92%</span></div><div class="score-track"><div class="score-fill" style="width:92%"></div></div></div>
-          <div class="score-bar"><div class="score-label"><span>MFT Analysis</span><span style="color:var(--accent)">88%</span></div><div class="score-track"><div class="score-fill" style="width:88%"></div></div></div>
-          <div class="score-bar"><div class="score-label"><span>Kerberos / AD Security</span><span style="color:var(--accent)">85%</span></div><div class="score-track"><div class="score-fill" style="width:85%"></div></div></div>
-        </div>
-      </div>
-
-      <div class="sidebar-card">
-        <div class="sidebar-card-header">Herramientas</div>
-        <div class="sidebar-card-body">
-          <div class="tool-item"><div class="tool-dot"></div>Chainsaw</div>
-          <div class="tool-item"><div class="tool-dot"></div>jq (JSON processor)</div>
-          <div class="tool-item"><div class="tool-dot"></div>Python (hex → decimal)</div>
-          <div class="tool-item"><div class="tool-dot"></div>grep</div>
-        </div>
-      </div>
-
-      <div class="sidebar-card">
-        <div class="sidebar-card-header">Event IDs Clave</div>
-        <div class="sidebar-card-body">
-          <div class="info-row"><span class="k"><span class="event-id-badge">7036</span></span><span class="v">Estado del servicio VSS</span></div>
-          <div class="info-row"><span class="k"><span class="event-id-badge">4799</span></span><span class="v">Enumeración de grupos</span></div>
-        </div>
-      </div>
-
-      <div class="sidebar-card">
-        <div class="sidebar-card-header">MITRE ATT&CK</div>
-        <div class="sidebar-card-body" style="display:flex;flex-wrap:wrap;gap:5px;padding:14px;">
-          <span class="mitre-tag">T1003.003</span>
-          <span class="mitre-tag">T1003.002</span>
-          <span class="mitre-tag">T1490</span>
-          <span class="mitre-tag">T1078.002</span>
-          <span class="mitre-tag">T1558.001</span>
-          <span class="mitre-tag">T1036.005</span>
-        </div>
-      </div>
-
-      <div class="sidebar-card">
-        <div class="sidebar-card-header">Tabla de Contenidos</div>
-        <div class="sidebar-card-body" style="padding:12px 16px;">
-          <div class="toc-item"><span class="toc-num">01</span>Escenario</div>
-          <div class="toc-item"><span class="toc-num">02</span>Artefactos y Herramientas</div>
-          <div class="toc-item"><span class="toc-num">03</span>Reconstrucción del Ataque</div>
-          <div class="toc-item"><span class="toc-num">04</span>Línea de Tiempo</div>
-          <div class="toc-item"><span class="toc-num">05</span>MITRE ATT&amp;CK</div>
-          <div class="toc-item"><span class="toc-num">06</span>Detección y Hardening</div>
-          <div class="toc-item"><span class="toc-num">07</span>Conclusiones</div>
-        </div>
-      </div>
-    </aside>
   </div>
 
-  <footer class="footer">
-    <div><span class="footer-author">Yoandy Ramirez Delgado</span> &nbsp;·&nbsp; Cybersecurity Analyst &amp; Penetration Tester</div>
-    <div>HTB Sherlocks · CrownJewel-1 · Active Directory DFIR · 2026</div>
-  </footer>
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <h3>Detalles del Reto</h3>
+      <div class="detail-row"><span class="detail-key">Dificultad</span><span class="detail-val green">MEDIUM</span></div>
+      <div class="detail-row"><span class="detail-key">Sistema Operativo</span><span class="detail-val">Windows</span></div>
+      <div class="detail-row"><span class="detail-key">IP Target</span><span class="detail-val cyan">—</span></div>
+      <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">DFIR Challenge</span></div>
+      <div class="detail-row"><span class="detail-key">Vectores</span><span class="detail-val">AD CS Attack</span></div>
+      <div class="detail-row"><span class="detail-key">CVE</span><span class="detail-val">—</span></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Skills Demostradas</h3>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">AD Forensics</span><span class="skill-pct">95%</span></div><div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">AD CS Analysis</span><span class="skill-pct">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+      <div class="skill-item"><div class="skill-header"><span class="skill-name">Certificate Abuse</span><span class="skill-pct">88%</span></div><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Herramientas</h3>
+      <div class="tools-list">
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">EventViewer</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">PowerShell</span></div>
+        <div class="tool-item"><div class="tool-dot"></div><span class="tool-name">Certutil</span></div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
+  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
+  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
+  setInterval(drawMatrix,35);
+</script>
 </body>
 </html>
