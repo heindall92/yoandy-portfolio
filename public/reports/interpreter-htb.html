@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Interpreter — HTB Writeup | YRD</title>
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Interpreter — HTB Writeup | Yoandy Ramirez Delgado</title>
 <style>
 :root{--bg:#0a0e1a;--card-bg:#111827;--border:#1e2d4a;--primary:#4ade80;--cyan:#22d3ee;--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--red:#f87171;--yellow:#fbbf24;}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -16,7 +16,10 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,14,26,0.95);border-bott
 .back-bar-inner a{color:var(--text-muted);text-decoration:none;transition:color .2s;}
 .back-bar-inner a:hover{color:var(--primary);}
 .sep{color:var(--border);}
-.hero{max-width:1200px;margin:0 auto;padding:3rem 2rem 2rem;position:relative;z-index:10;}
+.hero{
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1a2b 40%, #091a10 100%);padding: 60px 40px 50px;position:relative;z-index:10;}
+  .hero-inner { max-width: 1200px; margin: 0 auto; }
+
 .tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.2rem;}
 .tag{padding:.3rem .8rem;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
 .tag-htb{background:rgba(74,222,128,.12);color:var(--primary);border:1px solid rgba(74,222,128,.3);}
@@ -83,11 +86,10 @@ code{font-family:'Courier New',monospace;font-size:.85rem;color:var(--cyan);back
 @media(max-width:900px){.main{grid-template-columns:1fr;}}
 </style></head>
 <body>
-<canvas id="matrix"></canvas>
-
-
 <div class="hero">
-  <div class="tags">
+  
+  <div class="hero-inner">
+<div class="tags">
     <span class="tag tag-htb">HackTheBox</span>
     <span class="tag tag-os">Linux</span>
     <span class="tag tag-hard">Hard</span>
@@ -356,13 +358,5 @@ bash-5.1# cat /root/root.txt
     </div>
   </div>
 </div>
-<script>
-  const canvas=document.getElementById('matrix');const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-  const chars='アイウエオ0123456789ABCDEF<>{}[]';const fontSize=14;
-  let cols=Math.floor(canvas.width/fontSize);let drops=Array(cols).fill(1);
-  function drawMatrix(){ctx.fillStyle='rgba(10,14,26,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#4ade80';ctx.font=fontSize+'px monospace';for(let i=0;i<drops.length;i++){const char=chars[Math.floor(Math.random()*chars.length)];ctx.fillText(char,i*fontSize,drops[i]*fontSize);if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;}}
-  setInterval(drawMatrix,35);
-</script>
+
 </body></html>
