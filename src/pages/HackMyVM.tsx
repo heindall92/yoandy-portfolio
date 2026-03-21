@@ -143,8 +143,8 @@ export { hmvMachines, HMVCard };
 const HackMyVM = () => (
   <div className="min-h-screen pt-24 pb-16 relative z-10">
     <div className="container mx-auto px-4 max-w-5xl">
-      <Link to="/hackmyvm" className="inline-flex items-center gap-2 font-mono text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
-        <ArrowLeft size={16} /> Volver a HackMyVM
+      <Link to="/#projects" className="inline-flex items-center gap-2 font-mono text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
+        <ArrowLeft size={16} /> Volver
       </Link>
       <motion.h2
         initial={{ opacity: 0, x: -20 }}
