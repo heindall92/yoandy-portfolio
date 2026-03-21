@@ -123,6 +123,13 @@ const machines = [
     os: "Linux",
   },
   {
+    slug: "steamcloud-htb", emoji: "☁️", name: "SteamCloud",
+    desc: "Kubernetes con kubelet API expuesto. Enumeración de pods, acceso a tokens de ServiceAccount, y escalada aprovechando permisos del cluster para montar el filesystem del nodo host.",
+    tags: ["Kubernetes", "kubelet", "Cloud", "Linux"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Linux",
+  },
+  {
     slug: "eighteen-htb", emoji: "🔢", name: "Eighteen",
     desc: "Inyección SQL en el endpoint /add_expense para obtener ejecución de comandos vía xp_cmdshell, suplantación de identidad en MSSQL, acceso remoto con Evil-WinRM, explotación de BadSuccessor (CVE-2025-53779) para DCSync y escalada a Administrador del dominio. Windows Server 2025 AD DC.",
     tags: ["HTB", "Windows", "Active Directory", "CVE-2025-53779"],
@@ -280,8 +287,8 @@ export { machines, MachineCard };
 const Machines = () => (
   <div className="min-h-screen pt-24 pb-16 relative z-10">
     <div className="container mx-auto px-4 max-w-5xl">
-      <Link to="/#projects" className="inline-flex items-center gap-2 font-mono text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
-        <ArrowLeft size={16} /> Volver
+      <Link to="/machines" className="inline-flex items-center gap-2 font-mono text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
+        <ArrowLeft size={16} /> Volver a Máquinas HTB
       </Link>
       <motion.h2
         initial={{ opacity: 0, x: -20 }}
