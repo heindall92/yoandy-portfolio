@@ -152,8 +152,8 @@ const machines = [
   },
   {
     slug: "pterodactyl-htb", emoji: "🦕", name: "Pterodactyl",
-    desc: "Máquina Medium con panel Pterodactyl. Enumeración, explotación web y escalada de privilegios.",
-    tags: ["Web", "Pterodactyl", "Privesc", "Linux"],
+    desc: "Explotación de dos CVEs en Pterodactyl Panel. Path Traversal (CVE-2025-49132) para leer configuraciones con credenciales MySQL, cracking de hashes bcrypt con John, y escalada a root mediante race condition en udisks2 con imagen XFS y SUID bash.",
+    tags: ["CVE-2025-49132", "Pterodactyl", "udisks2", "bcrypt"],
     difficulty: "MEDIUM", diffColor: "neon-yellow",
     os: "Linux",
   },

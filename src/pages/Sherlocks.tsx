@@ -5,26 +5,26 @@ import { motion } from "framer-motion";
 const sherlocks = [
   {
     slug: "crownjewel1-sherlock", emoji: "👑", name: "CrownJewel-1",
-    desc: "Análisis forense de Active Directory. Investigación de ataques contra AD CS y extracción de credenciales.",
-    tags: ["Active Directory", "AD CS", "DFIR", "Forensics"],
+    desc: "Detección y análisis forense de volcado de NTDS.dit mediante abuso de vssadmin. Investigación del compromiso de un Domain Controller atacado por Scattered Spider con técnicas de Golden Ticket.",
+    tags: ["Active Directory", "NTDS.dit", "vssadmin", "Golden Ticket"],
     difficulty: "MEDIUM", diffColor: "neon-yellow",
   },
   {
     slug: "dreamjob1-sherlock", emoji: "💼", name: "Dream Job-1",
-    desc: "Investigación de campaña de spear-phishing con análisis de documentos maliciosos y técnicas de ingeniería social.",
-    tags: ["Phishing", "Malware Analysis", "DFIR", "Social Engineering"],
+    desc: "Investigación CTI sobre la Operación Dream Job del Grupo Lazarus (APT38). Análisis de TTPs, IOCs y campañas de spearphishing dirigidas a la industria de defensa y aeroespacial.",
+    tags: ["Lazarus", "APT38", "Spearphishing", "CTI"],
     difficulty: "HARD", diffColor: "destructive",
   },
   {
     slug: "dreamjob2-sherlock", emoji: "💼", name: "Dream Job-2",
-    desc: "Continuación del análisis forense de la campaña Dream Job. Investigación avanzada de artefactos y persistencia.",
-    tags: ["Persistence", "Forensics", "DFIR", "Threat Hunting"],
+    desc: "Análisis estático y de inteligencia del malware DRATzarus — el RAT de Lazarus Group. Investigación de técnicas anti-análisis, relaciones con el ecosistema MATA y disección del vector de entrega ISO con ejecutable UPX-packed.",
+    tags: ["DRATzarus", "Malware Analysis", "MATA", "UPX"],
     difficulty: "HARD", diffColor: "destructive",
   },
   {
     slug: "romcom-sherlock", emoji: "🎭", name: "RomCom",
-    desc: "Análisis del grupo APT RomCom. Investigación de malware, C2 y técnicas de evasión utilizadas.",
-    tags: ["APT", "Malware", "C2", "Threat Intel", "DFIR"],
+    desc: "Análisis forense de un ataque real del grupo RomCom utilizando CVE-2025-8088 en WinRAR. Investigación de artefactos NTFS para reconstruir la cadena de infección completa.",
+    tags: ["RomCom", "CVE-2025-8088", "WinRAR", "NTFS Forensics"],
     difficulty: "HARD", diffColor: "destructive",
   },
   {
