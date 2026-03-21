@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Archetype — HTB Writeup | YRD</title>
+  <title>Archetype — HTB Writeup | Yoandy Ramirez Delgado</title>
   <style>
     :root {
       --bg: #0a0e1a;
@@ -39,7 +39,10 @@
     .breadcrumb span { color: var(--text-dim); }
 
     /* HERO */
-    .hero { position: relative; z-index: 10; padding: 3rem 2rem 2rem; max-width: 1200px; margin: 0 auto; }
+    .hero {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1a2b 40%, #091a10 100%); position: relative; z-index: 10; padding: 60px 40px 50px; }
+  .hero-inner { max-width: 1200px; margin: 0 auto; }
+
     .hero-breadcrumb { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; }
     .hero-breadcrumb a { color: var(--primary); text-decoration: none; }
     .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
@@ -136,14 +139,11 @@
   </style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
-
-
-
-
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-breadcrumb">
+  
+  <div class="hero-inner">
+<div class="hero-breadcrumb">
     <a href="#">HTB Máquinas</a> / <a href="#">Windows</a> / Archetype
   </div>
   <div class="tags">

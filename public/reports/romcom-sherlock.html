@@ -44,6 +44,8 @@
     position: relative;
     overflow: hidden;
   }
+  .hero-inner { max-width: 1200px; margin: 0 auto; }
+
   .hero::before {
     content: '';
     position: absolute;
@@ -355,7 +357,9 @@
 
 <!-- ═══════════════ HERO ═══════════════ -->
 <header class="hero">
-  <div class="container">
+  
+  <div class="hero-inner">
+<div class="container">
     <p class="breadcrumb">HTB Sherlocks &nbsp;/&nbsp; <span>Digital Forensics</span> &nbsp;/&nbsp; RomCom</p>
     <div class="hero-badges">
       <span class="badge badge-platform">HackTheBox</span>
@@ -372,6 +376,8 @@
       <div class="hero-meta-item"><span class="label">Categoría:</span><span class="value">Digital Forensics &amp; Incident Response</span></div>
       <div class="hero-meta-item"><span class="label">CVE:</span><span class="value">CVE-2025-8088</span></div>
     </div>
+  </div>
+
   </div>
 </header>
 

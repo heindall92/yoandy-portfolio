@@ -34,6 +34,8 @@
     padding: 60px 0 40px;
     position: relative; overflow: hidden;
   }
+  .hero-inner { max-width: 1200px; margin: 0 auto; }
+
   .hero::before { content: ''; position: absolute; top: -80px; right: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(34,211,238,.08) 0%, transparent 70%); border-radius: 50%; }
   .hero::after  { content: ''; position: absolute; bottom: -60px; left: -40px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(56,189,248,.06) 0%, transparent 70%); border-radius: 50%; }
   .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
@@ -133,7 +135,9 @@
 <body>
 
 <header class="hero">
-  <div class="container">
+  
+  <div class="hero-inner">
+<div class="container">
     <p class="breadcrumb">HTB Sherlocks &nbsp;/&nbsp; <span>DFIR / Active Directory</span> &nbsp;/&nbsp; CrownJewel-1</p>
     <div class="hero-badges">
       <span class="badge badge-platform">HackTheBox</span>
@@ -150,6 +154,8 @@
       <div class="hero-meta-item"><span class="label">Threat Actor:</span><span class="value">Scattered Spider</span></div>
       <div class="hero-meta-item"><span class="label">Objetivo:</span><span class="value">Domain Controller (DC01)</span></div>
     </div>
+  </div>
+
   </div>
 </header>
 
