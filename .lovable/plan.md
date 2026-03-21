@@ -62,3 +62,44 @@ Estilo **cyberpunk/futurista**: fondo oscuro, colores neón (verde #00ff41, cyan
 - Sin backend necesario (contenido estático con enlaces)
 - Animaciones CSS para efectos neón y glow
 - Diseño uniforme en 2 columnas donde aplique
+
+---
+
+## Formato Estándar de Reportes (Oopsie/Brutus Format)
+
+**TODOS** los reportes de máquinas (HTB, HackMyVM, Sherlocks) deben seguir este formato unificado. NO se permite otro formato.
+
+### Estructura HTML obligatoria:
+1. **Canvas Matrix** — fondo animado `<canvas id="matrix">` con caracteres cayendo (opacity 0.13)
+2. **Hero section** (`max-width: 1200px`, centrado):
+   - `hero-breadcrumb`: `Plataforma / OS / NombreMáquina`
+   - `tags`: pills con `tag-htb` (verde), `tag-hmv` (magenta), `tag-sherlock` (cyan), `tag-os`, `tag-easy/medium/hard/veryeasy`
+   - `h1`: Nombre + `<span>Machine</span>` (palabra en verde)
+   - `hero-desc`: Párrafo descriptivo de la cadena de ataque
+   - `meta-row`: Autor (Yoandy Ramírez Delgado), Tipo, Herramienta Clave, Objetivo
+3. **Main grid** (`1fr 280px`):
+   - **Content**: Secciones `.section` con `.section-header` (`.section-icon` dot verde + `h2` uppercase)
+   - **Sidebar**: Cards con `Detalles del Reto` (detail-rows), `Skills Demostradas` (barras de progreso), `Herramientas` (tool-items)
+4. **Code blocks**: `<pre><code>` con `::before` terminal header (botones rojo/amarillo/verde + label "terminal")
+5. **Clases de color**: `.cmd` (cyan), `.highlight` (verde), `.cred` (amarillo), `.flag-val` (rosa), `.comment` (verde oscuro), `.output` (gris)
+6. **Callouts**: `.callout-info`, `.callout-danger`, `.callout-tip`, `.callout-warn`
+7. **Timeline**: `.timeline-item` con dot verde y línea vertical
+8. **MITRE ATT&CK**: `.mitre-grid` con `.mitre-tag` badges
+9. **Flags**: `.flags-grid` con `.flag-card` (hash rosa)
+
+### CSS Variables:
+```css
+--bg:#0a0e1a; --card-bg:#111827; --border:#1e2d4a; --primary:#4ade80;
+--cyan:#22d3ee; --text:#e2e8f0; --text-dim:#94a3b8; --text-muted:#64748b;
+--red:#f87171; --yellow:#fbbf24; --purple:#a78bfa; --orange:#fb923c;
+```
+
+### Tarjetas de descripción en la app React:
+- Resumen técnico conciso de la cadena de ataque real (NO genérico)
+- Tags relevantes a las herramientas/técnicas específicas usadas
+- Dificultad y OS correctos
+
+### Reportes actuales (33 total):
+**HTB Machines (24):** meow, fawn, dancing, redeemer, appointment, explosion, preignition, mongod, synced, funnel, bike, vaccine, archetype, oopsie, unified, ignition, precious, steamcloud, eighteen, twomillion, cctv, pterodactyl, interpreter, airtouch
+**Sherlocks (5):** brutus, crownjewel1, dreamjob1, dreamjob2, romcom
+**HackMyVM (4):** dc01, dc01-v2, tripladvisor, devoops
