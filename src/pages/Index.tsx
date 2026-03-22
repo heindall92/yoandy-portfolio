@@ -554,7 +554,7 @@ const Index = () => {
                 <div className="tl2"><span className="tk">role   :</span><span className="tv"> Offensive Security Specialist</span></div>
                 <div className="tl2"><span className="tk">base   :</span><span className="tv"> Lepe, Huelva, Spain</span></div>
                 <div className="tl2"><span className="tk">os     :</span><span className="tv"> Kali Linux 2024.x</span></div>
-                <div className="tl2"><span className="tk">mcp    :</span><span className="tv"> 21 custom tools + Claude AI</span></div>
+                <div className="tl2"><span className="tk">tools  :</span><span className="tv"> Metasploit · Burp · Nmap · SQLMap</span></div>
                 <div className="tl2">&nbsp;</div>
                 <div className="tl2"><span className="tp">❯ </span><span className="tc">nmap</span><span className="ts"> -A -sV -p- target.htb</span></div>
                 <div className="tl2"><span style={{ color: "var(--green)" }}>22/tcp  </span><span className="ts">open </span><span className="tv">ssh OpenSSH 9.2</span></div>
