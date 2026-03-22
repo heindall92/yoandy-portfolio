@@ -536,12 +536,13 @@ const Index = () => {
         <div className="stag rev">01 // SOBRE HEINDALL</div>
         <div className="about-grid">
           <div>
-            <h2 className="bh rev d1" style={{ marginBottom: 28 }}>El <em>Guardián</em><br />que Todo<br />lo Ve</h2>
-            <p className="about-p rev d2">Soy <strong>Yoandy Ramírez Delgado</strong>, alias <span className="hl">Heindall</span> — como el dios nórdico que vigila el Bifrost con ojos que ven en la oscuridad. En ciberseguridad: <strong>encuentro lo que otros no ven.</strong></p>
-            <p className="about-p rev d3">+4 años en IT. Construí un <span className="hl">MCP Hacking Server</span> personalizado con 21 herramientas de pentesting integradas con Claude AI. Master en Ciberseguridad & AI — Evolve Academy. Objetivo: <strong>OSCP · CPTS · Red Team</strong>.</p>
-            <div className="quote-block rev d4">
-              <div className="qb-rune">ᚺᛖᛁᚾᛞᚨᛚᛚ — EDDA PROSAICA</div>
-              <p className="qb-txt">"Heindall vigila el Bifrost con ojos que ven en la oscuridad y oídos que escuchan crecer la hierba. El guardián nunca duerme."</p>
+            <h2 className="bh rev d1" style={{ marginBottom: 28 }}>Sobre <em>Mí</em></h2>
+            <p className="about-p rev d2">Técnico en Sistemas en transición activa hacia <strong>Ciberseguridad Ofensiva y Pentesting</strong>. Con experiencia sólida en hardware, redes y troubleshooting de sistemas, actualmente me especializo en seguridad ofensiva a través de formación práctica en <span className="hl">Hack The Box Academy</span> y preparación para certificación <strong>eJPT</strong>.</p>
+            <p className="about-p rev d3"><strong>🎯 Áreas de Especialización:</strong> Pentesting y Hacking Ético · Análisis de Vulnerabilidades (OWASP Top 10) · Networking (TCP/IP, Firewall, VPN) · Herramientas: Nmap, Metasploit, Burp Suite, Wireshark, Kali Linux · Scripting: Python, Bash · Sistemas: Windows, Linux (Ubuntu, Debian) · Seguridad en Redes y Hardening de Sistemas.</p>
+            <p className="about-p rev d4"><strong>🚀 Formación en Curso:</strong> Máster en Ciberseguridad (inicio: 19 de enero 2026) · Certificación eJPT — Junior Penetration Tester (en preparación) · Hack The Box Academy — Footprinting y Reconnaissance.</p>
+            <div className="quote-block rev d5">
+              <div className="qb-rune">💡 OBJETIVO PROFESIONAL</div>
+              <p className="qb-txt">Integrarme en equipos de Red Team, Blue Team o SOC como Analista de Seguridad Junior, aplicando mi experiencia técnica en sistemas y mi formación avanzada en pentesting para identificar y mitigar vulnerabilidades. Abierto a oportunidades en ciberseguridad ofensiva, análisis de vulnerabilidades y pentesting.</p>
             </div>
           </div>
           <div>
