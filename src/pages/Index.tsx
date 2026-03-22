@@ -467,8 +467,7 @@ const Index = () => {
                 DELGADO
               </div>
               <div className="cl-sub">
-                Pentester · Equipo Rojo · Seguridad Aumentada De IA.
-                Alias <strong style={{ color: "var(--green)" }}>Heindall</strong> — el guardián que todo lo ve.
+                Junior Security Analyst | Pentester | eJPT Candidate | Ethical Hacking | Offensive Cybersecurity
               </div>
             </div>
           </div>
