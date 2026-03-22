@@ -688,7 +688,7 @@ const Index = () => {
         </div>
         <div className="rm-wrap">
           <div>
-            <h3 className="rm-h rev d1">Roadmap<br /><em>Bifrost</em></h3>
+            <h3 className="rm-h rev d1">Roadmap<br /><em>Offensive</em></h3>
             <p className="rm-sub rev d2">La ruta de Heindall hacia las certificaciones élite del offensive security.</p>
           </div>
           <div className="rm-steps">
