@@ -243,7 +243,7 @@ const Index = () => {
         .hl{color:var(--green)}
         .quote-block{margin-top:36px;padding:24px 28px;background:var(--green3);border-left:2px solid rgba(0,232,122,.4);border-radius:0 10px 10px 0}
         .qb-rune{font-family:var(--mo);font-size:.58rem;color:var(--green);letter-spacing:.2em;margin-bottom:8px;opacity:.6}
-        .qb-txt{font-size:.83rem;color:var(--text-d2);line-height:1.8;font-style:italic;font-weight:300}
+        .qb-txt{font-size:.92rem;color:var(--text-d2);line-height:1.8;font-style:italic;font-weight:300}
 
         /* Terminal */
         .term{background:rgba(5,14,8,.9);border:1px solid rgba(0,232,122,.1);border-radius:14px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.5)}
