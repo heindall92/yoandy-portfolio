@@ -61,7 +61,7 @@ const diffClass = (d: string) => {
 };
 const diffLabel = (d: string) => d.toUpperCase();
 
-const marqueeItems = ["HEINDALL", "GUARDIAN OF BIFROST", "OFFENSIVE SECURITY", "PENETRATION TESTING", "RED TEAM OPS", "ETHICAL HACKING", "CTF HUNTER"];
+const marqueeItems = ["HEINDALL", "RED TEAM OPERATOR", "OFFENSIVE SECURITY", "PENETRATION TESTING", "VULNERABILITY HUNTER", "ETHICAL HACKING", "CTF HUNTER"];
 
 const Index = () => {
   const [search, setSearch] = useState("");
