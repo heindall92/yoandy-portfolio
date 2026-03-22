@@ -550,7 +550,7 @@ const Index = () => {
               <div className="t-bar"><div className="td tdr" /><div className="td tdy" /><div className="td tdg" /><span className="t-ttl">heindall@kali:~$</span></div>
               <div className="t-bod">
                 <div className="tl2"><span className="tp">❯ </span><span className="tc">cat</span><span className="ts"> ~/.heindall/identity</span></div>
-                <div className="tl2"><span className="tk">alias  :</span><span className="tv"> Heindall · Guardian of Bifrost</span></div>
+                <div className="tl2"><span className="tk">alias  :</span><span className="tv"> Heindall · Red Team Operator</span></div>
                 <div className="tl2"><span className="tk">role   :</span><span className="tv"> Offensive Security Specialist</span></div>
                 <div className="tl2"><span className="tk">base   :</span><span className="tv"> Lepe, Huelva, Spain</span></div>
                 <div className="tl2"><span className="tk">os     :</span><span className="tv"> Kali Linux 2024.x</span></div>
