@@ -364,14 +364,77 @@ const Navbar = () => {
 
       {mobileOpen && (
         <div className="gmobile-menu">
-          <button style={{ position: "absolute", top: "20px", right: "20px", background: "none", border: "none", color: "#00e87a", cursor: "pointer" }} onClick={() => setMobileOpen(false)}>
+          <button style={{ position: "absolute", top: "18px", right: "18px", background: "none", border: "none", color: "#00e87a", cursor: "pointer" }} onClick={() => setMobileOpen(false)}>
             <X size={28} />
           </button>
-          {navItems.map((item) => (
-            <button key={item.href} className="nav-link" onClick={(e) => scrollTo(e, item.href)}>
-              {item.label}
+
+          {location.pathname.startsWith("/report/") && (
+            <button
+              onClick={() => { setMobileOpen(false); navigate("/"); }}
+              style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "6px", fontFamily: "'JetBrains Mono', monospace", fontSize: ".85rem", color: "#00e87a", background: "none", border: "1px solid rgba(0,232,122,.25)", borderRadius: "8px", padding: "8px 18px", cursor: "pointer" }}
+            >
+              ← Volver
             </button>
-          ))}
+          )}
+
+          {/* Mobile Search */}
+          <div className="gmobile-search">
+            <div style={{ position: "relative" }}>
+              <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,.3)" }} />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar máquina..."
+                style={{ paddingLeft: "36px" }}
+              />
+            </div>
+            <div className="gmobile-chips">
+              {platforms.map((p) => {
+                const active = selectedPlatforms.includes(p);
+                const color = p === "HTB" ? "#00e87a" : p === "Sherlock" ? "#00c8ff" : "#c800ff";
+                return (
+                  <button key={p} onClick={() => toggleFilter(selectedPlatforms, p, setSelectedPlatforms)} style={active ? { borderColor: color, color, background: `${color}15` } : {}}>
+                    {p}
+                  </button>
+                );
+              })}
+              {difficulties.map((d) => {
+                const active = selectedDifficulties.includes(d);
+                const color = d === "VERY EASY" ? "#c800ff" : d === "EASY" ? "#00e87a" : d === "MEDIUM" ? "#e8a800" : "#e85050";
+                return (
+                  <button key={d} onClick={() => toggleFilter(selectedDifficulties, d, setSelectedDifficulties)} style={active ? { borderColor: color, color, background: `${color}15` } : {}}>
+                    {d}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Mobile Results */}
+          {hasFilters && (
+            <div className="gmobile-results">
+              {results.length === 0 ? (
+                <p style={{ textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: ".75rem", color: "rgba(255,255,255,.25)", padding: "16px" }}>Sin resultados</p>
+              ) : (
+                results.map((r) => (
+                  <button key={r.slug} onClick={() => { setMobileOpen(false); goToReport(r.slug); }}>
+                    <span style={{ fontSize: "1rem" }}>{r.emoji}</span>
+                    <span style={{ flex: 1, fontFamily: "'JetBrains Mono', monospace", fontSize: ".8rem", color: "#e0e0e0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".55rem", padding: "2px 6px", borderRadius: "20px", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.5)" }}>{r.difficulty}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Nav links */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+            {navItems.map((item) => (
+              <button key={item.href} className="nav-link" onClick={(e) => scrollTo(e, item.href)}>
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </>
