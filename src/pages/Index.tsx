@@ -68,6 +68,7 @@ const Index = () => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [counter, setCounter] = useState(0);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
   /* Counter animation */
