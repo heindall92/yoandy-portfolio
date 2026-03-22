@@ -276,7 +276,7 @@ const Index = () => {
         .skc-n{font-family:var(--bb);font-size:1.15rem;letter-spacing:.08em;color:var(--text-d);margin-bottom:8px}
         .skc-d{font-size:.88rem;color:var(--text-d2);line-height:1.6;margin-bottom:16px;font-weight:300}
         .skc-ts{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px}
-        .skt{padding:3px 9px;border-radius:4px;font-family:var(--mo);font-size:.58rem;color:rgba(0,232,122,.7);border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.04);letter-spacing:.04em}
+        .skt{padding:4px 10px;border-radius:4px;font-family:var(--mo);font-size:.68rem;color:rgba(0,232,122,.7);border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.04);letter-spacing:.04em}
         .skb{height:2px;background:rgba(255,255,255,.05);border-radius:1px;overflow:hidden}
         .skf{height:100%;background:linear-gradient(90deg,var(--green),rgba(0,232,122,.3));width:0;transition:width 1.4s cubic-bezier(.23,1,.32,1)}
 
