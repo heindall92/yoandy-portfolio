@@ -230,7 +230,7 @@ const Index = () => {
         .sec{padding:100px 52px;position:relative;z-index:10}
         .sec-dark{background:var(--ink)}
         .sec-mid{background:var(--forest)}
-        .stag{display:flex;align-items:center;gap:14px;font-family:var(--mo);font-size:.6rem;letter-spacing:.22em;margin-bottom:56px;color:var(--green)}
+        .stag{display:flex;align-items:center;gap:14px;font-family:var(--mo);font-size:.72rem;letter-spacing:.22em;margin-bottom:56px;color:var(--green)}
         .stag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);flex-shrink:0}
         .stag::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(0,232,122,.2),transparent)}
         .bh{font-family:var(--bb);font-size:clamp(3.5rem,6vw,7rem);line-height:.92;letter-spacing:.02em;color:var(--text-d)}
