@@ -296,7 +296,7 @@ const Index = () => {
         .wu-hdesc{font-size:1rem;color:var(--text-l2);line-height:1.8;font-weight:300}
 
         .srch{position:relative;margin-bottom:14px}
-        .sin{width:100%;padding:15px 50px;background:white;border:2px solid rgba(26,46,32,.1);border-radius:10px;font-family:var(--mo);font-size:.8rem;color:var(--text-l);outline:none;letter-spacing:.04em;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+        .sin{width:100%;padding:16px 50px;background:white;border:2px solid rgba(26,46,32,.1);border-radius:10px;font-family:var(--mo);font-size:.9rem;color:var(--text-l);outline:none;letter-spacing:.04em;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,.04)}
         .sin:focus{border-color:var(--sage);box-shadow:0 0 0 4px rgba(42,96,72,.08)}
         .sin::placeholder{color:var(--text-l3)}
         .sico{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:.85rem;color:var(--text-l3);pointer-events:none}
