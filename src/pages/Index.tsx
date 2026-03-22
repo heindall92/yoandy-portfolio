@@ -431,7 +431,7 @@ const Index = () => {
         <a href="#home" className="nlogo">
           <div>
             <span className="nlogo-h">HEINDALL</span>
-            <div className="nlogo-s">GUARDIAN // OFFENSIVE SEC</div>
+            <div className="nlogo-s">RED TEAM // OFFENSIVE SEC</div>
           </div>
         </a>
         <ul className="nlinks">
