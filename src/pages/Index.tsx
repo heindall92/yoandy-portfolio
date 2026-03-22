@@ -449,16 +449,32 @@ const Index = () => {
         <div className="h-bg-grid" />
 
         <div className="main-card rev">
+          {/* LEFT — Name & Info */}
           <div className="card-left">
             <div className="cl-top">
               <div className="cl-brand">
                 <span className="cl-brand-dot" />
                 HEINDALL/
               </div>
-              <div className="cl-slash">/OFFENSIVE SEC</div>
+              <div className="cl-slash">/SEC OFENSIVA</div>
             </div>
 
-            {/* ORB */}
+            <div className="cl-bottom">
+              <div className="cl-tag">// GUARDIÁN DE BIFROST · SEGURIDAD OFENSIVA</div>
+              <div className="cl-headline">
+                YOANDY<br />
+                <span>RAMÍREZ</span>
+                DELGADO
+              </div>
+              <div className="cl-sub">
+                Pentester · Equipo Rojo · Seguridad Aumentada De IA.
+                Alias <strong style={{ color: "var(--green)" }}>Heindall</strong> — el guardián que todo lo ve.
+              </div>
+            </div>
+          </div>
+
+          {/* CENTER — Orb */}
+          <div className="card-center">
             <div className="orb-wrap">
               <div className="orb">
                 <div className="orb-ring orb-ring-1" />
@@ -477,34 +493,23 @@ const Index = () => {
                 <div className="particle p6" />
               </div>
             </div>
-
-            <div className="cl-bottom">
-              <div className="cl-tag">// GUARDIAN OF BIFROST · OFFENSIVE SECURITY</div>
-              <div className="cl-headline">
-                YOANDY<br />
-                <span>RAMÍREZ</span>
-                DELGADO
-              </div>
-              <div className="cl-sub">
-                Pentester · Red Team · AI-Augmented Security. Alias <strong style={{ color: "var(--green)" }}>Heindall</strong> — el guardián que todo lo ve.
-              </div>
-            </div>
           </div>
 
+          {/* RIGHT — Stats */}
           <div className="card-right">
             <div className="cr-deco" />
             <div className="cr-deco2" />
 
             <div className="cr-top" style={{ position: "relative", zIndex: 2 }}>
-              <div className="cr-label">MACHINES PWNED</div>
+              <div className="cr-label">MÁQUINAS PENEADAS</div>
               <div className="cr-big-num">{counter}<span>+</span></div>
               <div className="cr-desc">Máquinas comprometidas en HTB, HackMyVM y Sherlocks. Cada una, un writeup técnico.</div>
             </div>
 
             <div className="cr-badges" style={{ position: "relative", zIndex: 2 }}>
-              <div className="cr-badge"><div className="cb-dot cb-g" /><div className="cb-txt">HTB Status</div><div className="cb-val">ACTIVE</div></div>
-              <div className="cr-badge"><div className="cb-dot cb-b" /><div className="cb-txt">eJPT Prep</div><div className="cb-val">70%</div></div>
-              <div className="cr-badge"><div className="cb-dot cb-a" /><div className="cb-txt">Certifications</div><div className="cb-val">8+</div></div>
+              <div className="cr-badge"><div className="cb-dot cb-g" /><div className="cb-txt">Estado de HTB</div><div className="cb-val">ACTIVO</div></div>
+              <div className="cr-badge"><div className="cb-dot cb-b" /><div className="cb-txt">eJPT Preparación</div><div className="cb-val">70%</div></div>
+              <div className="cr-badge"><div className="cb-dot cb-a" /><div className="cb-txt">Certificaciones</div><div className="cb-val">8+</div></div>
             </div>
 
             <a href="#writeups" className="cr-btn" style={{ position: "relative", zIndex: 2 }}>
