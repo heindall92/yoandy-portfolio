@@ -460,7 +460,7 @@ const Index = () => {
             </div>
 
             <div className="cl-bottom">
-              <div className="cl-tag">// GUARDIÁN DE BIFROST · SEGURIDAD OFENSIVA</div>
+              <div className="cl-tag">// RED TEAM OPERATOR · SEGURIDAD OFENSIVA</div>
               <div className="cl-headline">
                 YOANDY<br />
                 <span>RAMÍREZ</span>
