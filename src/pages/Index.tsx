@@ -152,8 +152,8 @@ const Index = () => {
         .dnav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;justify-content:space-between;align-items:center;padding:22px 52px;transition:all .4s}
         .dnav.solid{background:rgba(11,26,16,.92);backdrop-filter:blur(24px);border-bottom:1px solid rgba(0,232,122,.08);padding:15px 52px}
         .nlogo{display:flex;align-items:center;gap:12px;text-decoration:none}
-        .nlogo-h{font-family:var(--bb);font-size:1rem;letter-spacing:.25em;color:var(--green);line-height:1}
-        .nlogo-s{font-family:var(--mo);font-size:.48rem;color:var(--text-d3);letter-spacing:.2em;margin-top:2px}
+        .nlogo-h{font-family:var(--bb);font-size:1.3rem;letter-spacing:.25em;color:var(--green);line-height:1}
+        .nlogo-s{font-family:var(--mo);font-size:.6rem;color:var(--text-d3);letter-spacing:.2em;margin-top:2px}
         .nlinks{display:flex;gap:28px;list-style:none;margin:0;padding:0}
         .nlinks a{font-family:var(--mo);font-size:.62rem;color:var(--text-d3);text-decoration:none;letter-spacing:.12em;transition:color .3s}
         .nlinks a:hover{color:var(--green)}
