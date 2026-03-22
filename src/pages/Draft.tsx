@@ -478,7 +478,7 @@ const Draft = () => {
             </div>
 
             <div className="cl-bottom">
-              <div className="cl-tag">// GUARDIAN OF BIFROST · OFFENSIVE SECURITY</div>
+              <div className="cl-tag">// RED TEAM OPERATOR · OFFENSIVE SECURITY</div>
               <div className="cl-headline">
                 YOANDY<br />
                 <span>RAMÍREZ</span>
