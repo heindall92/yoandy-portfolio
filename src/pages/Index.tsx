@@ -157,6 +157,11 @@ const Index = () => {
         .nlinks{display:flex;gap:32px;list-style:none;margin:0;padding:0}
         .nlinks a{font-family:var(--mo);font-size:.92rem;color:var(--text-d3);text-decoration:none;letter-spacing:.12em;transition:color .3s}
         .nlinks a:hover{color:var(--green)}
+        .nmobile-toggle{display:none;background:none;border:none;color:var(--green);cursor:pointer}
+        .nmobile-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:299;background:rgba(11,26,16,.97);backdrop-filter:blur(24px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px}
+        .nmobile-overlay a{font-family:var(--mo);font-size:1.3rem;color:var(--text-d3);text-decoration:none;letter-spacing:.15em;transition:color .3s;padding:12px 0}
+        .nmobile-overlay a:hover{color:var(--green)}
+        @media(max-width:900px){.nlinks{display:none}.nmobile-toggle{display:block}}
 
         /* HERO */
         .draft-hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:100px 20px 80px}
