@@ -170,7 +170,7 @@ const Index = () => {
         .cl-brand{font-family:var(--bb);font-size:.95rem;letter-spacing:.25em;color:var(--green);display:flex;align-items:center;gap:8px}
         .cl-brand-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pd 1.2s infinite alternate}
         @keyframes pd{to{opacity:.2;transform:scale(.5)}}
-        .cl-slash{font-family:var(--bb);font-size:.8rem;letter-spacing:.2em;color:rgba(0,232,122,.3)}
+        .cl-slash{font-family:var(--bb);font-size:.95rem;letter-spacing:.2em;color:rgba(0,232,122,.3)}
 
         /* Orb */
         .orb-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:340px;height:340px;z-index:2}
