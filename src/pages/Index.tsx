@@ -404,10 +404,10 @@ const Index = () => {
         /* Responsive */
         @media(max-width:1100px){
           .main-card{grid-template-columns:1fr;min-height:auto}
-          .orb-wrap{width:260px;height:260px}
-          .orb-ring-1{width:250px;height:250px}.orb-ring-2{width:210px;height:210px}.orb-ring-3{width:175px;height:175px}
-          .orb-aura{width:200px;height:200px}.orb-core{width:120px;height:120px}
-          .card-left{min-height:500px}
+          .card-center{width:100%;padding:30px 0;justify-content:center}
+          .orb-wrap{width:220px;height:220px}
+          .orb-ring-1{width:220px;height:220px}.orb-ring-2{width:180px;height:180px}.orb-ring-3{width:145px;height:145px}
+          .orb-aura{width:170px;height:170px}.orb-core{width:110px;height:110px}
           .about-grid,.sk-intro,.rm-wrap,.contact-grid,.wu-top{grid-template-columns:1fr}
           .cert-grid{grid-template-columns:repeat(2,1fr)}
           .sec{padding:80px 28px}
