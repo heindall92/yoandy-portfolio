@@ -135,7 +135,7 @@ const Navbar = () => {
           <div ref={searchRef} className="relative">
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 bg-muted/30 text-muted-foreground hover:text-primary hover:border-primary/30 transition-all duration-300 font-mono text-xs"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 bg-muted/30 text-muted-foreground hover:text-primary hover:border-primary/30 transition-all duration-300 font-mono text-sm"
             >
               <Search size={14} />
               <span className="hidden sm:inline">Buscar...</span>
