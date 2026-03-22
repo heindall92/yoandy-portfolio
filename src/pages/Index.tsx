@@ -159,32 +159,35 @@ const Index = () => {
         .nlinks a:hover{color:var(--green)}
 
         /* HERO */
-        .draft-hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:100px 52px 80px}
+        .draft-hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:100px 20px 80px}
         .h-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 55%,var(--forest) 0%,var(--ink) 70%)}
         .h-bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,232,122,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,232,122,.03) 1px,transparent 1px);background-size:56px 56px}
 
-        /* Main card */
-        .main-card{position:relative;z-index:10;width:100%;max-width:1160px;background:linear-gradient(135deg,var(--pine) 0%,var(--forest) 100%);border-radius:28px;overflow:hidden;box-shadow:0 60px 120px rgba(0,0,0,.6),0 0 0 1px rgba(0,232,122,.12),inset 0 1px 0 rgba(0,232,122,.1);display:grid;grid-template-columns:1.1fr 1fr;min-height:600px}
-        .card-left{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:44px}
+        /* Main card — 3 columns */
+        .main-card{position:relative;z-index:10;width:100%;max-width:1400px;background:linear-gradient(135deg,var(--pine) 0%,var(--forest) 100%);border-radius:28px;overflow:hidden;box-shadow:0 60px 120px rgba(0,0,0,.6),0 0 0 1px rgba(0,232,122,.12),inset 0 1px 0 rgba(0,232,122,.1);display:grid;grid-template-columns:1fr auto 1fr;min-height:560px}
+        
+        /* Left — name & info */
+        .card-left{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:40px 44px}
         .cl-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:5;margin-bottom:auto}
         .cl-brand{font-family:var(--bb);font-size:.95rem;letter-spacing:.25em;color:var(--green);display:flex;align-items:center;gap:8px}
         .cl-brand-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pd 1.2s infinite alternate}
         @keyframes pd{to{opacity:.2;transform:scale(.5)}}
         .cl-slash{font-family:var(--bb);font-size:.95rem;letter-spacing:.2em;color:rgba(0,232,122,.3)}
 
-        /* Orb */
-        .orb-wrap{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);width:300px;height:300px;z-index:2}
+        /* Center — Orb */
+        .card-center{position:relative;display:flex;align-items:center;justify-content:center;width:320px;padding:40px 0}
+        .orb-wrap{position:relative;width:280px;height:280px}
         .orb{width:100%;height:100%;position:relative;display:flex;align-items:center;justify-content:center}
         .orb-ring{position:absolute;border-radius:50%;border:1px solid;animation:ring-spin linear infinite;transform-origin:center}
-        .orb-ring-1{width:330px;height:330px;border-color:rgba(0,232,122,.08);animation-duration:30s}
-        .orb-ring-2{width:280px;height:280px;border-color:rgba(0,232,122,.12);animation-duration:20s;animation-direction:reverse;border-style:dashed}
-        .orb-ring-3{width:230px;height:230px;border-color:rgba(0,232,122,.15);animation-duration:15s}
+        .orb-ring-1{width:280px;height:280px;border-color:rgba(0,232,122,.08);animation-duration:30s}
+        .orb-ring-2{width:230px;height:230px;border-color:rgba(0,232,122,.12);animation-duration:20s;animation-direction:reverse;border-style:dashed}
+        .orb-ring-3{width:185px;height:185px;border-color:rgba(0,232,122,.15);animation-duration:15s}
         @keyframes ring-spin{to{transform:rotate(360deg)}}
-        .orb-aura{position:absolute;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(0,232,122,.18) 0%,rgba(0,232,122,.08) 35%,transparent 70%);animation:aura-pulse 4s ease-in-out infinite}
+        .orb-aura{position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(0,232,122,.18) 0%,rgba(0,232,122,.08) 35%,transparent 70%);animation:aura-pulse 4s ease-in-out infinite}
         @keyframes aura-pulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.1);opacity:1}}
-        .orb-core{width:160px;height:160px;border-radius:50%;background:radial-gradient(circle at 38% 35%,rgba(0,232,122,.35) 0%,rgba(15,48,32,.8) 50%,rgba(11,26,16,.95) 100%);border:1px solid rgba(0,232,122,.3);box-shadow:0 0 60px rgba(0,232,122,.2),0 0 120px rgba(0,232,122,.08),inset 0 0 40px rgba(0,232,122,.1);position:relative;z-index:3;display:flex;align-items:center;justify-content:center;overflow:hidden}
+        .orb-core{width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 38% 35%,rgba(0,232,122,.35) 0%,rgba(15,48,32,.8) 50%,rgba(11,26,16,.95) 100%);border:1px solid rgba(0,232,122,.3);box-shadow:0 0 60px rgba(0,232,122,.2),0 0 120px rgba(0,232,122,.08),inset 0 0 40px rgba(0,232,122,.1);position:relative;z-index:3;display:flex;align-items:center;justify-content:center;overflow:hidden}
         .orb-core::before{content:'';position:absolute;top:10%;left:15%;width:40%;height:30%;border-radius:50%;background:rgba(255,255,255,.12);filter:blur(8px)}
-        .orb-rune{font-family:var(--bb);font-size:3.2rem;color:rgba(0,232,122,.7);text-shadow:0 0 30px var(--green);position:relative;z-index:2;animation:rune-glow 3s ease-in-out infinite}
+        .orb-rune{font-family:var(--bb);font-size:3rem;color:rgba(0,232,122,.7);text-shadow:0 0 30px var(--green);position:relative;z-index:2;animation:rune-glow 3s ease-in-out infinite}
         @keyframes rune-glow{0%,100%{text-shadow:0 0 20px var(--green),0 0 40px rgba(0,232,122,.4)}50%{text-shadow:0 0 40px var(--green),0 0 80px rgba(0,232,122,.6)}}
         .orb-scan{position:absolute;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,rgba(0,232,122,.5),transparent);animation:oscan 3s linear infinite;z-index:4;pointer-events:none}
         @keyframes oscan{0%{top:5%;opacity:0}10%{opacity:.8}90%{opacity:.5}100%{top:95%;opacity:0}}
@@ -194,7 +197,7 @@ const Index = () => {
 
         .cl-bottom{position:relative;z-index:5;margin-top:auto;padding-top:24px}
         .cl-tag{font-family:var(--mo);font-size:.72rem;color:rgba(0,232,122,.45);letter-spacing:.15em;margin-bottom:12px}
-        .cl-headline{font-family:var(--bb);font-size:clamp(3.2rem,5.5vw,5.5rem);line-height:.92;letter-spacing:.02em;color:var(--text-d)}
+        .cl-headline{font-family:var(--bb);font-size:clamp(3.2rem,4.5vw,5rem);line-height:.92;letter-spacing:.02em;color:var(--text-d)}
         .cl-headline span{color:var(--green);display:block}
         .cl-sub{font-family:var(--dm);font-size:.95rem;color:var(--text-d2);margin-top:14px;font-weight:300;line-height:1.6;max-width:400px}
 
