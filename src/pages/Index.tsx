@@ -448,7 +448,25 @@ const Index = () => {
           <li><a href="#certs">certs</a></li>
           <li><a href="#contact">contact</a></li>
         </ul>
+        <button className="nmobile-toggle" onClick={() => setMobileNavOpen(!mobileNavOpen)}>
+          {mobileNavOpen ? <X size={28} /> : (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          )}
+        </button>
       </nav>
+
+      {mobileNavOpen && (
+        <div className="nmobile-overlay">
+          <button style={{ position: "absolute", top: "18px", right: "18px", background: "none", border: "none", color: "var(--green)", cursor: "pointer" }} onClick={() => setMobileNavOpen(false)}>
+            <X size={28} />
+          </button>
+          {["about", "skills", "writeups", "certs", "contact"].map((s) => (
+            <a key={s} href={`#${s}`} onClick={() => setMobileNavOpen(false)}>{s}</a>
+          ))}
+        </div>
+      )}
 
       {/* HERO */}
       <section className="draft-hero" id="home" ref={heroRef}>
