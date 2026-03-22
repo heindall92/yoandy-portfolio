@@ -351,9 +351,9 @@ const Index = () => {
         .rm-step.done .rm-n{color:var(--green)}
         .rm-step.cur .rm-n{color:rgba(0,232,122,.5)}
         .rm-b{flex:1}
-        .rm-t{font-family:var(--dm);font-weight:600;font-size:.87rem;color:var(--text-d);margin-bottom:4px}
+        .rm-t{font-family:var(--dm);font-weight:600;font-size:.95rem;color:var(--text-d);margin-bottom:4px}
         .rm-step.done .rm-t{color:rgba(0,232,122,.8)}
-        .rm-d{font-size:.75rem;color:var(--text-d3);font-weight:300}
+        .rm-d{font-size:.82rem;color:var(--text-d3);font-weight:300}
         .rmbg{padding:4px 12px;border-radius:20px;font-family:var(--mo);font-size:.55rem;letter-spacing:.1em;flex-shrink:0;align-self:flex-start;margin-top:4px}
         .rbd{background:rgba(0,232,122,.07);border:1px solid rgba(0,232,122,.18);color:var(--green)}
         .rba{background:rgba(56,217,245,.07);border:1px solid rgba(56,217,245,.2);color:var(--blue);animation:agl 2s infinite}
