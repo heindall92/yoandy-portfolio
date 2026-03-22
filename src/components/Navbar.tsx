@@ -135,6 +135,8 @@ const Navbar = () => {
         .gnav .gsearch-btn:hover{border-color:rgba(0,232,122,.3);color:#00e87a}
         .gnav .gsearch-btn kbd{font-size:.6rem;padding:2px 6px;border-radius:4px;background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.1);color:rgba(255,255,255,.3)}
         .gmobile-toggle{display:none;background:none;border:none;color:#00e87a;cursor:pointer}
+        .gnav .gback{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:rgba(255,255,255,.4);background:none;border:1px solid rgba(0,232,122,.15);border-radius:8px;padding:5px 14px;cursor:pointer;transition:all .3s;letter-spacing:.05em;margin-right:12px}
+        .gnav .gback:hover{color:#00e87a;border-color:rgba(0,232,122,.35)}
         @media(max-width:900px){
           .gnav{padding:18px 28px}
           .gnav.solid{padding:14px 28px}
