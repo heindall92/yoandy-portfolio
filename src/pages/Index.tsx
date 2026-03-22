@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import { Link } from "react-router-dom";
 import profileImg from "@/assets/profile.jpg";
 import { machines } from "./Machines";
