@@ -130,7 +130,7 @@ const Draft = () => {
     return matchSearch && matchFilter;
   });
 
-  const marqueeItems = ["HEINDALL", "GUARDIAN OF BIFROST", "OFFENSIVE SECURITY", "PENETRATION TESTING", "RED TEAM OPS", "AI + HACKING", "CTF HUNTER"];
+  const marqueeItems = ["HEINDALL", "RED TEAM OPERATOR", "OFFENSIVE SECURITY", "PENETRATION TESTING", "VULNERABILITY HUNTER", "ETHICAL HACKING", "CTF HUNTER"];
 
   return (
     <div className="draft-page">
