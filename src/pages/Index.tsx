@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import { Link } from "react-router-dom";
 import profileImg from "@/assets/profile.jpg";
 import { machines } from "./Machines";
@@ -67,6 +68,7 @@ const Index = () => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [counter, setCounter] = useState(0);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
   /* Counter animation */
@@ -157,6 +159,11 @@ const Index = () => {
         .nlinks{display:flex;gap:32px;list-style:none;margin:0;padding:0}
         .nlinks a{font-family:var(--mo);font-size:.92rem;color:var(--text-d3);text-decoration:none;letter-spacing:.12em;transition:color .3s}
         .nlinks a:hover{color:var(--green)}
+        .nmobile-toggle{display:none;background:none;border:none;color:var(--green);cursor:pointer}
+        .nmobile-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:299;background:rgba(11,26,16,.97);backdrop-filter:blur(24px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px}
+        .nmobile-overlay a{font-family:var(--mo);font-size:1.3rem;color:var(--text-d3);text-decoration:none;letter-spacing:.15em;transition:color .3s;padding:12px 0}
+        .nmobile-overlay a:hover{color:var(--green)}
+        @media(max-width:900px){.nlinks{display:none}.nmobile-toggle{display:block}}
 
         /* HERO */
         .draft-hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:100px 20px 80px}
@@ -441,7 +448,25 @@ const Index = () => {
           <li><a href="#certs">certs</a></li>
           <li><a href="#contact">contact</a></li>
         </ul>
+        <button className="nmobile-toggle" onClick={() => setMobileNavOpen(!mobileNavOpen)}>
+          {mobileNavOpen ? <X size={28} /> : (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          )}
+        </button>
       </nav>
+
+      {mobileNavOpen && (
+        <div className="nmobile-overlay">
+          <button style={{ position: "absolute", top: "18px", right: "18px", background: "none", border: "none", color: "var(--green)", cursor: "pointer" }} onClick={() => setMobileNavOpen(false)}>
+            <X size={28} />
+          </button>
+          {["about", "skills", "writeups", "certs", "contact"].map((s) => (
+            <a key={s} href={`#${s}`} onClick={() => setMobileNavOpen(false)}>{s}</a>
+          ))}
+        </div>
+      )}
 
       {/* HERO */}
       <section className="draft-hero" id="home" ref={heroRef}>
