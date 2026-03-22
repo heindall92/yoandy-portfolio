@@ -377,8 +377,8 @@ const Index = () => {
         .cc-ico2{width:40px;height:40px;border-radius:9px;background:rgba(0,232,122,.08);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
         .cc-inf{flex:1}
         .cc-lbl{font-family:var(--mo);font-size:.54rem;color:var(--text-d3);letter-spacing:.18em;margin-bottom:4px}
-        .cc-val2{font-family:var(--dm);font-weight:600;font-size:.87rem;color:var(--green)}
-        .cc-sub{font-family:var(--mo);font-size:.58rem;color:var(--text-d3);margin-top:2px}
+        .cc-val2{font-family:var(--dm);font-weight:600;font-size:.95rem;color:var(--green)}
+        .cc-sub{font-family:var(--mo);font-size:.68rem;color:var(--text-d3);margin-top:2px}
         .cc-arr{color:var(--text-d3);font-family:var(--mo);font-size:.8rem;transition:all .3s}
         .ccard:hover .cc-arr{color:var(--green);transform:translateX(4px)}
 
