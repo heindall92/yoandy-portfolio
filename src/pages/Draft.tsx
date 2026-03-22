@@ -702,7 +702,7 @@ const Draft = () => {
         <div className="contact-grid">
           <div>
             <div className="stag rev" style={{ marginBottom: 36 }}>05 // CONTACT</div>
-            <h2 className="c-h rev d1">¿Cruzamos<br />el <em>Bifrost</em>?</h2>
+            <h2 className="c-h rev d1">¿Comenzamos<br />la <em>Operación</em>?</h2>
             <p className="c-desc rev d2">Disponible para roles en Pentesting y Red Team, colaboraciones técnicas y proyectos de ciberseguridad.</p>
             <div className="cbtns rev d3">
               <a href="https://www.linkedin.com/in/yoandyrd92/" className="bp" target="_blank" rel="noopener noreferrer">Contactar en LinkedIn</a>
