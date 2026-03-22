@@ -166,7 +166,7 @@ const Index = () => {
         /* Main card */
         .main-card{position:relative;z-index:10;width:100%;max-width:1160px;background:linear-gradient(135deg,var(--pine) 0%,var(--forest) 100%);border-radius:28px;overflow:hidden;box-shadow:0 60px 120px rgba(0,0,0,.6),0 0 0 1px rgba(0,232,122,.12),inset 0 1px 0 rgba(0,232,122,.1);display:grid;grid-template-columns:1.1fr 1fr;min-height:600px}
         .card-left{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:44px}
-        .cl-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:5}
+        .cl-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:5;margin-bottom:auto}
         .cl-brand{font-family:var(--bb);font-size:.95rem;letter-spacing:.25em;color:var(--green);display:flex;align-items:center;gap:8px}
         .cl-brand-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pd 1.2s infinite alternate}
         @keyframes pd{to{opacity:.2;transform:scale(.5)}}
