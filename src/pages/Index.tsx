@@ -317,12 +317,12 @@ const Index = () => {
         .dh{background:rgba(240,79,90,.1);color:var(--red);border:1px solid rgba(240,79,90,.25)}
         .wplat{position:absolute;bottom:12px;left:12px;font-family:var(--mo);font-size:.56rem;color:var(--text-l3);background:rgba(242,237,228,.88);padding:3px 10px;border-radius:3px;letter-spacing:.08em}
         .wb{padding:20px}
-        .wti{font-family:var(--dm);font-weight:600;font-size:.88rem;color:var(--text-l);margin-bottom:7px}
-        .wde{font-size:.76rem;color:var(--text-l2);line-height:1.55;margin-bottom:13px;font-weight:300;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .wti{font-family:var(--dm);font-weight:600;font-size:1rem;color:var(--text-l);margin-bottom:7px}
+        .wde{font-size:.85rem;color:var(--text-l2);line-height:1.55;margin-bottom:13px;font-weight:300;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
         .wtags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
-        .wtag{padding:3px 9px;border-radius:3px;font-family:var(--mo);font-size:.58rem;background:rgba(42,96,72,.07);border:1px solid rgba(42,96,72,.14);color:var(--sage);letter-spacing:.04em}
+        .wtag{padding:4px 10px;border-radius:3px;font-family:var(--mo);font-size:.68rem;background:rgba(42,96,72,.07);border:1px solid rgba(42,96,72,.14);color:var(--sage);letter-spacing:.04em}
         .wft{display:flex;align-items:center;justify-content:space-between}
-        .wlnk{font-family:var(--mo);font-size:.65rem;color:var(--sage);text-decoration:none;display:flex;align-items:center;gap:4px;transition:gap .25s;font-weight:500}
+        .wlnk{font-family:var(--mo);font-size:.75rem;color:var(--sage);text-decoration:none;display:flex;align-items:center;gap:4px;transition:gap .25s;font-weight:500}
         .wlnk:hover{gap:8px}
 
         /* Certs */
