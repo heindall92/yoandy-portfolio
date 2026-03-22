@@ -115,8 +115,8 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 glassmorphism border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <button onClick={(e) => scrollTo(e, "#home")} className="flex items-center gap-2 text-primary font-display text-lg font-bold text-glow-green">
-          <Shield size={24} />
-          <span>YRD</span>
+          <Shield size={28} />
+119:           <span className="text-xl">YRD</span>
         </button>
 
         <div className="hidden md:flex items-center gap-1">
@@ -124,7 +124,7 @@ const Navbar = () => {
             <button
               key={item.href}
               onClick={(e) => scrollTo(e, item.href)}
-              className="px-4 py-2 rounded-md font-mono text-sm text-muted-foreground hover:text-primary hover:text-glow-green transition-all duration-300"
+              className="px-4 py-2 rounded-md font-mono text-base text-muted-foreground hover:text-primary hover:text-glow-green transition-all duration-300"
             >
               {item.label}
             </button>
@@ -135,7 +135,7 @@ const Navbar = () => {
           <div ref={searchRef} className="relative">
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 bg-muted/30 text-muted-foreground hover:text-primary hover:border-primary/30 transition-all duration-300 font-mono text-xs"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 bg-muted/30 text-muted-foreground hover:text-primary hover:border-primary/30 transition-all duration-300 font-mono text-sm"
             >
               <Search size={14} />
               <span className="hidden sm:inline">Buscar...</span>
