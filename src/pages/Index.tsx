@@ -367,9 +367,9 @@ const Index = () => {
         .c-h em{font-style:normal;color:var(--green)}
         .c-desc{font-size:1rem;color:var(--text-d2);line-height:1.8;margin-bottom:36px;font-weight:300}
         .cbtns{display:flex;gap:12px;flex-wrap:wrap}
-        .bp{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;background:var(--green);color:var(--ink);font-family:var(--mo);font-size:.7rem;font-weight:500;letter-spacing:.1em;text-decoration:none;border-radius:6px;transition:all .3s;border:1.5px solid var(--green)}
+        .bp{display:inline-flex;align-items:center;gap:8px;padding:14px 30px;background:var(--green);color:var(--ink);font-family:var(--mo);font-size:.8rem;font-weight:500;letter-spacing:.1em;text-decoration:none;border-radius:6px;transition:all .3s;border:1.5px solid var(--green)}
         .bp:hover{background:transparent;color:var(--green);box-shadow:0 0 30px rgba(0,232,122,.2)}
-        .bo{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;border:1.5px solid rgba(0,232,122,.25);color:var(--text-d2);font-family:var(--mo);font-size:.7rem;letter-spacing:.1em;text-decoration:none;border-radius:6px;transition:all .3s}
+        .bo{display:inline-flex;align-items:center;gap:8px;padding:14px 30px;border:1.5px solid rgba(0,232,122,.25);color:var(--text-d2);font-family:var(--mo);font-size:.8rem;letter-spacing:.1em;text-decoration:none;border-radius:6px;transition:all .3s}
         .bo:hover{border-color:var(--green);color:var(--green)}
         .ccards{display:flex;flex-direction:column;gap:14px}
         .ccard{display:flex;align-items:center;gap:16px;padding:17px 22px;background:rgba(0,232,122,.04);border:1px solid rgba(0,232,122,.1);border-radius:12px;text-decoration:none;transition:all .4s;color:inherit}
