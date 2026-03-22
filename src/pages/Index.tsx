@@ -49,7 +49,7 @@ const skills = [
   { ico: "🏴‍☠️", name: "CTF & Research", desc: `${totalMachines}+ máquinas en HTB, THM, HackMyVM. Serie de tutoriales ES/EN.`, tags: ["HackTheBox", "TryHackMe", "HackMyVM"], pct: "88%" },
 ];
 
-const toolsRow1 = ["⚡ Metasploit", "🌐 Burp Suite", "🔍 Nmap", "💉 SQLMap", "📂 Gobuster", "🦊 ffuf", "🐍 Python", "🔐 hashcat", "🛡️ Nikto", "🔑 jwt_tool", "📡 Subfinder", "🕵️ theHarvester", "🤖 MCP+AI"];
+const toolsRow1 = ["⚡ Metasploit", "🌐 Burp Suite", "🔍 Nmap", "💉 SQLMap", "📂 Gobuster", "🦊 ffuf", "🐍 Python", "🔐 hashcat", "🛡️ Nikto", "🔑 jwt_tool", "📡 Subfinder", "🕵️ theHarvester"];
 const toolsRow2 = ["🧪 LinPEAS", "🪟 WinPEAS", "🔴 MSFVenom", "📡 Amass", "🔎 dnsrecon", "🔗 unfurl", "📜 Nuclei", "🐚 Penelope", "🖧 Wireshark", "🔀 John the Ripper", "🩸 BloodHound"];
 
 /* ── Difficulty helpers ── */
