@@ -137,12 +137,12 @@ const Index = () => {
       <style>{`
         /* ─── MAIN PAGE STYLES ─── */
         .draft-page{
-          --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
-          --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
-          --cream:#f2ede4;--cream2:#faf7f1;--cream3:#e8e0d0;
-          --text-d:#c8f0dc;--text-d2:rgba(200,240,220,.5);--text-d3:rgba(200,240,220,.25);
-          --text-l:#1a2e20;--text-l2:rgba(26,46,32,.55);--text-l3:rgba(26,46,32,.3);
-          --blue:#38d9f5;--amber:#f5a623;--red:#f04f5a;
+          --ink:#2a4a3a;--forest:#3a6050;--pine:#4E7E5D;--moss:#5a8e6a;--sage:#4E7E5D;
+          --green:#4E7E5D;--green2:rgba(78,126,93,.15);--green3:rgba(78,126,93,.06);
+          --cream:#F0F4ED;--cream2:#F0F4ED;--cream3:#BFD8C1;
+          --text-d:#F0F4ED;--text-d2:rgba(240,244,237,.6);--text-d3:rgba(240,244,237,.3);
+          --text-l:#2a4a3a;--text-l2:rgba(42,74,58,.6);--text-l3:rgba(42,74,58,.35);
+          --blue:#6ab5a0;--amber:#a8c090;--red:#c47060;
           --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
           font-family:var(--dm);background:var(--ink);color:var(--text-d);overflow-x:hidden;font-size:18px;
         }
