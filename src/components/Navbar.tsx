@@ -115,8 +115,8 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 glassmorphism border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <button onClick={(e) => scrollTo(e, "#home")} className="flex items-center gap-2 text-primary font-display text-lg font-bold text-glow-green">
-          <Shield size={24} />
-          <span>YRD</span>
+          <Shield size={28} />
+119:           <span className="text-xl">YRD</span>
         </button>
 
         <div className="hidden md:flex items-center gap-1">
