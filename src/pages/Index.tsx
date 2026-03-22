@@ -284,7 +284,7 @@ const Index = () => {
         .tscr{overflow:hidden;mask-image:linear-gradient(90deg,transparent,black 6%,black 94%,transparent);margin-bottom:14px}
         .ttrk{display:flex;gap:12px;animation:mqa 28s linear infinite;width:max-content}
         .ttrk2{animation-direction:reverse}
-        .tpill{display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;background:rgba(0,232,122,.04);border:1px solid rgba(0,232,122,.09);font-family:var(--mo);font-size:.65rem;color:var(--text-d3);white-space:nowrap;letter-spacing:.04em;flex-shrink:0;transition:all .3s}
+        .tpill{display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;background:rgba(0,232,122,.04);border:1px solid rgba(0,232,122,.09);font-family:var(--mo);font-size:.75rem;color:var(--text-d3);white-space:nowrap;letter-spacing:.04em;flex-shrink:0;transition:all .3s}
         .tpill:hover{border-color:var(--green);color:var(--green)}
 
         /* Writeups */
