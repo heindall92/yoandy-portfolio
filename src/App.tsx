@@ -29,6 +29,7 @@ const App = () => (
           <Route path="/hackmyvm" element={<HackMyVM />} />
           <Route path="/report/:slug" element={<Report />} />
           <Route path="/draft" element={<Draft />} />
+          <Route path="/draft2" element={<Draft2 />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

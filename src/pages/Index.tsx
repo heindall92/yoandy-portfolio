@@ -143,6 +143,9 @@ const Index = () => {
             <Link to="/draft" className="inline-flex items-center gap-2 mt-4 px-6 py-3 rounded-lg bg-primary/10 border border-primary/30 font-mono text-sm text-primary hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_0_20px_hsl(120_100%_50%/0.2)] transition-all duration-300">
               🧪 <span>Ver nuevo diseño (borrador)</span>
             </Link>
+            <Link to="/draft2" className="inline-flex items-center gap-2 mt-2 px-6 py-3 rounded-lg bg-primary/10 border border-primary/30 font-mono text-sm text-primary hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_0_20px_hsl(120_100%_50%/0.2)] transition-all duration-300">
+              📱 <span>Ver borrador móvil (Draft 2)</span>
+            </Link>
           </div>
         </div>
       </Section>
