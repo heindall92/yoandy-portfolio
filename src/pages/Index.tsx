@@ -45,11 +45,11 @@ const skills = [
   { ico: "🌐", name: "Web App Security", desc: "SQLi, XSS, SSRF, JWT attacks, IDOR, LFI/RFI — OWASP Top 10 completo.", tags: ["SQLMap", "Nikto", "jwt_tool", "Nuclei", "XSS Hunter"], pct: "78%" },
   { ico: "🔍", name: "Recon & OSINT", desc: "Enumeración activa/pasiva, DNS recon, subdomain takeover, análisis de superficie.", tags: ["Subfinder", "Amass", "dnsrecon", "unfurl", "Harvester"], pct: "85%" },
   { ico: "🐚", name: "Post-Explotación", desc: "PrivEsc Linux/Windows, cron hijacking, SUID abuse, pivoting y movimiento lateral.", tags: ["LinPEAS", "WinPEAS", "Penelope", "MSFVenom", "hashcat"], pct: "75%" },
-  { ico: "🤖", name: "AI + Automation", desc: "MCP Hacking Server propio: 21 tools + Claude AI en flujos de pentesting.", tags: ["MCP Protocol", "Claude API", "Python", "Bash"], pct: "80%" },
+  { ico: "🤖", name: "Automation & Scripting", desc: "Automatización de tareas de pentesting con scripts personalizados en Python y Bash.", tags: ["Python", "Bash", "Scripting", "Automation"], pct: "80%" },
   { ico: "🏴‍☠️", name: "CTF & Research", desc: `${totalMachines}+ máquinas en HTB, THM, HackMyVM. Serie de tutoriales ES/EN.`, tags: ["HackTheBox", "TryHackMe", "HackMyVM"], pct: "88%" },
 ];
 
-const toolsRow1 = ["⚡ Metasploit", "🌐 Burp Suite", "🔍 Nmap", "💉 SQLMap", "📂 Gobuster", "🦊 ffuf", "🐍 Python", "🔐 hashcat", "🛡️ Nikto", "🔑 jwt_tool", "📡 Subfinder", "🕵️ theHarvester", "🤖 MCP+AI"];
+const toolsRow1 = ["⚡ Metasploit", "🌐 Burp Suite", "🔍 Nmap", "💉 SQLMap", "📂 Gobuster", "🦊 ffuf", "🐍 Python", "🔐 hashcat", "🛡️ Nikto", "🔑 jwt_tool", "📡 Subfinder", "🕵️ theHarvester"];
 const toolsRow2 = ["🧪 LinPEAS", "🪟 WinPEAS", "🔴 MSFVenom", "📡 Amass", "🔎 dnsrecon", "🔗 unfurl", "📜 Nuclei", "🐚 Penelope", "🖧 Wireshark", "🔀 John the Ripper", "🩸 BloodHound"];
 
 /* ── Difficulty helpers ── */
@@ -61,7 +61,7 @@ const diffClass = (d: string) => {
 };
 const diffLabel = (d: string) => d.toUpperCase();
 
-const marqueeItems = ["HEINDALL", "GUARDIAN OF BIFROST", "OFFENSIVE SECURITY", "PENETRATION TESTING", "RED TEAM OPS", "AI + HACKING", "CTF HUNTER"];
+const marqueeItems = ["HEINDALL", "GUARDIAN OF BIFROST", "OFFENSIVE SECURITY", "PENETRATION TESTING", "RED TEAM OPS", "ETHICAL HACKING", "CTF HUNTER"];
 
 const Index = () => {
   const [search, setSearch] = useState("");
@@ -536,12 +536,13 @@ const Index = () => {
         <div className="stag rev">01 // SOBRE HEINDALL</div>
         <div className="about-grid">
           <div>
-            <h2 className="bh rev d1" style={{ marginBottom: 28 }}>El <em>Guardián</em><br />que Todo<br />lo Ve</h2>
-            <p className="about-p rev d2">Soy <strong>Yoandy Ramírez Delgado</strong>, alias <span className="hl">Heindall</span> — como el dios nórdico que vigila el Bifrost con ojos que ven en la oscuridad. En ciberseguridad: <strong>encuentro lo que otros no ven.</strong></p>
-            <p className="about-p rev d3">+4 años en IT. Construí un <span className="hl">MCP Hacking Server</span> personalizado con 21 herramientas de pentesting integradas con Claude AI. Master en Ciberseguridad & AI — Evolve Academy. Objetivo: <strong>OSCP · CPTS · Red Team</strong>.</p>
-            <div className="quote-block rev d4">
-              <div className="qb-rune">ᚺᛖᛁᚾᛞᚨᛚᛚ — EDDA PROSAICA</div>
-              <p className="qb-txt">"Heindall vigila el Bifrost con ojos que ven en la oscuridad y oídos que escuchan crecer la hierba. El guardián nunca duerme."</p>
+            <h2 className="bh rev d1" style={{ marginBottom: 28 }}>Sobre <em>Mí</em></h2>
+            <p className="about-p rev d2">Técnico en Sistemas en transición activa hacia <strong>Ciberseguridad Ofensiva y Pentesting</strong>. Con experiencia sólida en hardware, redes y troubleshooting de sistemas, actualmente me especializo en seguridad ofensiva a través de formación práctica en <span className="hl">Hack The Box Academy</span> y preparación para certificación <strong>eJPT</strong>.</p>
+            <p className="about-p rev d3"><strong>🎯 Áreas de Especialización:</strong> Pentesting y Hacking Ético · Análisis de Vulnerabilidades (OWASP Top 10) · Networking (TCP/IP, Firewall, VPN) · Herramientas: Nmap, Metasploit, Burp Suite, Wireshark, Kali Linux · Scripting: Python, Bash · Sistemas: Windows, Linux (Ubuntu, Debian) · Seguridad en Redes y Hardening de Sistemas.</p>
+            <p className="about-p rev d4"><strong>🚀 Formación en Curso:</strong> Máster en Ciberseguridad (inicio: 19 de enero 2026) · Certificación eJPT — Junior Penetration Tester (en preparación) · Hack The Box Academy — Footprinting y Reconnaissance.</p>
+            <div className="quote-block rev d5">
+              <div className="qb-rune">💡 OBJETIVO PROFESIONAL</div>
+              <p className="qb-txt">Integrarme en equipos de Red Team, Blue Team o SOC como Analista de Seguridad Junior, aplicando mi experiencia técnica en sistemas y mi formación avanzada en pentesting para identificar y mitigar vulnerabilidades. Abierto a oportunidades en ciberseguridad ofensiva, análisis de vulnerabilidades y pentesting.</p>
             </div>
           </div>
           <div>
@@ -553,7 +554,7 @@ const Index = () => {
                 <div className="tl2"><span className="tk">role   :</span><span className="tv"> Offensive Security Specialist</span></div>
                 <div className="tl2"><span className="tk">base   :</span><span className="tv"> Lepe, Huelva, Spain</span></div>
                 <div className="tl2"><span className="tk">os     :</span><span className="tv"> Kali Linux 2024.x</span></div>
-                <div className="tl2"><span className="tk">mcp    :</span><span className="tv"> 21 custom tools + Claude AI</span></div>
+                <div className="tl2"><span className="tk">tools  :</span><span className="tv"> Metasploit · Burp · Nmap · SQLMap</span></div>
                 <div className="tl2">&nbsp;</div>
                 <div className="tl2"><span className="tp">❯ </span><span className="tc">nmap</span><span className="ts"> -A -sV -p- target.htb</span></div>
                 <div className="tl2"><span style={{ color: "var(--green)" }}>22/tcp  </span><span className="ts">open </span><span className="tv">ssh OpenSSH 9.2</span></div>
@@ -564,7 +565,7 @@ const Index = () => {
             </div>
             <div className="tl-wrap revr d2">
               <div className="tl-item2"><div className="tl-dot2" /><div className="tl-yr2">2025 — HOY</div><div className="tl-ti2">Master Ciberseguridad & AI</div><div className="tl-de2">Evolve Academy · eJPT en progreso</div></div>
-              <div className="tl-item2"><div className="tl-dot2" /><div className="tl-yr2">2024</div><div className="tl-ti2">MCP Hacking Server · HTB Full Path</div><div className="tl-de2">21 tools · Claude AI · Jr. Analyst completado</div></div>
+              <div className="tl-item2"><div className="tl-dot2" /><div className="tl-yr2">2024</div><div className="tl-ti2">HTB Academy · Full Path Completado</div><div className="tl-de2">Jr. Cybersecurity Analyst · Google · IBM · Cisco certs</div></div>
               <div className="tl-item2"><div className="tl-dot2" /><div className="tl-yr2">2020+</div><div className="tl-ti2">IT Specialist · 4+ años</div><div className="tl-de2">Redes · Sistemas · Automatización</div></div>
             </div>
           </div>
