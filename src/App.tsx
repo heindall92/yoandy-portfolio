@@ -18,7 +18,7 @@ const queryClient = new QueryClient();
 const AppContent = () => {
   const location = useLocation();
   // Hide global navbar on pages that have their own nav
-  const hideNavbar = location.pathname === "/" || location.pathname === "/draft" || location.pathname === "/draft2" || location.pathname.startsWith("/report/");
+  const hideNavbar = location.pathname === "/" || location.pathname === "/draft" || location.pathname === "/draft2";
 
   return (
     <>
