@@ -250,7 +250,7 @@ const Index = () => {
         .t-bar{background:rgba(10,22,14,.9);padding:12px 20px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,232,122,.07)}
         .td{width:11px;height:11px;border-radius:50%}.tdr{background:#ff5f57}.tdy{background:#febc2e}.tdg{background:#28c840}
         .t-ttl{font-family:var(--mo);font-size:.62rem;color:var(--text-d3);margin-left:auto;margin-right:auto}
-        .t-bod{padding:24px;font-family:var(--mo);font-size:.76rem;line-height:2.2}
+        .t-bod{padding:24px;font-family:var(--mo);font-size:.85rem;line-height:2.2}
         .tl2{display:flex;gap:10px;flex-wrap:wrap}
         .tp{color:var(--green)}.tc{color:#6ee7b7}.ts{color:var(--text-d3)}.tv{color:var(--text-d)}.tk{color:var(--amber)}.te{color:var(--red)}
         .tcur{display:inline-block;width:7px;height:.85em;background:var(--green);vertical-align:middle;animation:blink 1s infinite}
