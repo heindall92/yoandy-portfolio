@@ -365,7 +365,7 @@ const Index = () => {
         .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;z-index:2}
         .c-h{font-family:var(--bb);font-size:clamp(3rem,5.5vw,6rem);line-height:.92;letter-spacing:.02em;margin-bottom:20px;color:var(--text-d)}
         .c-h em{font-style:normal;color:var(--green)}
-        .c-desc{font-size:.88rem;color:var(--text-d2);line-height:1.8;margin-bottom:36px;font-weight:300}
+        .c-desc{font-size:1rem;color:var(--text-d2);line-height:1.8;margin-bottom:36px;font-weight:300}
         .cbtns{display:flex;gap:12px;flex-wrap:wrap}
         .bp{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;background:var(--green);color:var(--ink);font-family:var(--mo);font-size:.7rem;font-weight:500;letter-spacing:.1em;text-decoration:none;border-radius:6px;transition:all .3s;border:1.5px solid var(--green)}
         .bp:hover{background:transparent;color:var(--green);box-shadow:0 0 30px rgba(0,232,122,.2)}
