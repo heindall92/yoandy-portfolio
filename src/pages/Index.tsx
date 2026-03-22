@@ -155,7 +155,7 @@ const Index = () => {
         .nlogo-h{font-family:var(--bb);font-size:1.3rem;letter-spacing:.25em;color:var(--green);line-height:1}
         .nlogo-s{font-family:var(--mo);font-size:.6rem;color:var(--text-d3);letter-spacing:.2em;margin-top:2px}
         .nlinks{display:flex;gap:28px;list-style:none;margin:0;padding:0}
-        .nlinks a{font-family:var(--mo);font-size:.62rem;color:var(--text-d3);text-decoration:none;letter-spacing:.12em;transition:color .3s}
+        .nlinks a{font-family:var(--mo);font-size:.75rem;color:var(--text-d3);text-decoration:none;letter-spacing:.12em;transition:color .3s}
         .nlinks a:hover{color:var(--green)}
 
         /* HERO */
