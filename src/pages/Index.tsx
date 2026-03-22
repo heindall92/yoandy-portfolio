@@ -639,10 +639,10 @@ const Index = () => {
         <div className="wug">
           {filtered.map((w) => {
             const bgGrad = w.platform === "HTB"
-              ? "linear-gradient(135deg,#041810,#07281a)"
+              ? "linear-gradient(135deg,#2a4a3a,#3a6050)"
               : w.platform === "Sherlock"
-              ? "linear-gradient(135deg,#12051e,#200838)"
-              : "linear-gradient(135deg,#1a0808,#350d0d)";
+              ? "linear-gradient(135deg,#3a5060,#4a6070)"
+              : "linear-gradient(135deg,#5a4040,#6a5050)";
             return (
               <Link to={`/report/${w.slug}`} className="wuc" key={w.slug}>
                 <div className="wtop">
