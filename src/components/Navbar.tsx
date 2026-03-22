@@ -1,15 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Shield, Search } from "lucide-react";
+import { X, Search } from "lucide-react";
 import { machines } from "@/pages/Machines";
 import { sherlocks } from "@/pages/Sherlocks";
 import { hmvMachines } from "@/pages/HackMyVM";
 
 const navItems = [
-  { href: "#home", label: "Home" },
-  { href: "#about", label: "About" },
-  { href: "#skills", label: "Skills" },
-  { href: "#projects", label: "Projects" },
+  { href: "#about", label: "about" },
+  { href: "#skills", label: "skills" },
+  { href: "#writeups", label: "writeups" },
+  { href: "#certs", label: "certs" },
+  { href: "#contact", label: "contact" },
 ];
 
 type SearchResult = {
@@ -30,19 +31,20 @@ const platforms = ["HTB", "Sherlock", "HackMyVM"] as const;
 const difficulties = ["VERY EASY", "EASY", "MEDIUM", "HARD"] as const;
 
 const diffChipColors: Record<string, string> = {
-  "VERY EASY": "bg-neon-magenta/15 text-neon-magenta border-neon-magenta/30",
-  "EASY": "bg-primary/15 text-primary border-primary/30",
-  "MEDIUM": "bg-neon-yellow/15 text-neon-yellow border-neon-yellow/30",
-  "HARD": "bg-destructive/15 text-destructive border-destructive/30",
+  "VERY EASY": "bg-[hsl(300,100%,60%)]/15 text-[hsl(300,100%,60%)] border-[hsl(300,100%,60%)]/30",
+  "EASY": "bg-[hsl(120,100%,50%)]/15 text-[hsl(120,100%,50%)] border-[hsl(120,100%,50%)]/30",
+  "MEDIUM": "bg-[hsl(43,96%,56%)]/15 text-[hsl(43,96%,56%)] border-[hsl(43,96%,56%)]/30",
+  "HARD": "bg-[hsl(0,85%,60%)]/15 text-[hsl(0,85%,60%)] border-[hsl(0,85%,60%)]/30",
 };
 
 const platformChipColors: Record<string, string> = {
-  "HTB": "bg-primary/15 text-primary border-primary/30",
-  "Sherlock": "bg-neon-cyan/15 text-neon-cyan border-neon-cyan/30",
-  "HackMyVM": "bg-neon-magenta/15 text-neon-magenta border-neon-magenta/30",
+  "HTB": "bg-[hsl(120,100%,50%)]/15 text-[hsl(120,100%,50%)] border-[hsl(120,100%,50%)]/30",
+  "Sherlock": "bg-[hsl(187,85%,53%)]/15 text-[hsl(187,85%,53%)] border-[hsl(187,85%,53%)]/30",
+  "HackMyVM": "bg-[hsl(300,100%,60%)]/15 text-[hsl(300,100%,60%)] border-[hsl(300,100%,60%)]/30",
 };
 
 const Navbar = () => {
+  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -86,6 +88,12 @@ const Navbar = () => {
   };
 
   useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", handler);
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
@@ -112,154 +120,238 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glassmorphism border-b border-border">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <button onClick={(e) => scrollTo(e, "#home")} className="flex items-center gap-2 text-primary font-display text-lg font-bold text-glow-green">
-          <Shield size={28} />
-119:           <span className="text-xl">YRD</span>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        .gnav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;justify-content:space-between;align-items:center;padding:22px 52px;transition:all .4s}
+        .gnav.solid{background:rgba(11,26,16,.92);backdrop-filter:blur(24px);border-bottom:1px solid rgba(0,232,122,.08);padding:15px 52px}
+        .gnav .glogo{display:flex;align-items:center;gap:12px;text-decoration:none;cursor:pointer;background:none;border:none}
+        .gnav .glogo-h{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.25em;color:#00e87a;line-height:1}
+        .gnav .glogo-s{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:rgba(255,255,255,.35);letter-spacing:.2em;margin-top:2px}
+        .gnav .glinks{display:flex;gap:32px;list-style:none;margin:0;padding:0;align-items:center}
+        .gnav .glinks a,.gnav .glinks button.nav-link{font-family:'JetBrains Mono',monospace;font-size:.92rem;color:rgba(255,255,255,.35);text-decoration:none;letter-spacing:.12em;transition:color .3s;background:none;border:none;cursor:pointer;padding:0}
+        .gnav .glinks a:hover,.gnav .glinks button.nav-link:hover{color:#00e87a}
+        .gnav .gsearch-btn{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:8px;border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.05);color:rgba(255,255,255,.35);font-family:'JetBrains Mono',monospace;font-size:.78rem;cursor:pointer;transition:all .3s;letter-spacing:.05em}
+        .gnav .gsearch-btn:hover{border-color:rgba(0,232,122,.3);color:#00e87a}
+        .gnav .gsearch-btn kbd{font-size:.6rem;padding:2px 6px;border-radius:4px;background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.1);color:rgba(255,255,255,.3)}
+        .gmobile-toggle{display:none;background:none;border:none;color:#00e87a;cursor:pointer}
+        @media(max-width:900px){
+          .gnav{padding:18px 28px}
+          .gnav.solid{padding:14px 28px}
+          .gnav .glinks{display:none}
+          .gmobile-toggle{display:block}
+        }
+        @media(max-width:640px){
+          .gnav{padding:14px 18px}
+        }
+        .gmobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;z-index:299;background:rgba(11,26,16,.97);backdrop-filter:blur(24px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:24px}
+        .gmobile-menu a,.gmobile-menu button.nav-link{font-family:'JetBrains Mono',monospace;font-size:1.2rem;color:rgba(255,255,255,.5);text-decoration:none;letter-spacing:.15em;transition:color .3s;background:none;border:none;cursor:pointer}
+        .gmobile-menu a:hover,.gmobile-menu button.nav-link:hover{color:#00e87a}
+      `}</style>
+
+      <nav className={`gnav${scrolled ? " solid" : ""}`}>
+        <button className="glogo" onClick={(e) => scrollTo(e, "#home")}>
+          <div>
+            <span className="glogo-h">HEINDALL</span>
+            <div className="glogo-s">GUARDIAN // OFFENSIVE SEC</div>
+          </div>
         </button>
 
-        <div className="hidden md:flex items-center gap-1">
+        <ul className="glinks">
           {navItems.map((item) => (
-            <button
-              key={item.href}
-              onClick={(e) => scrollTo(e, item.href)}
-              className="px-4 py-2 rounded-md font-mono text-base text-muted-foreground hover:text-primary hover:text-glow-green transition-all duration-300"
-            >
+            <li key={item.href}>
+              <button className="nav-link" onClick={(e) => scrollTo(e, item.href)}>
+                {item.label}
+              </button>
+            </li>
+          ))}
+          <li>
+            <div ref={searchRef} style={{ position: "relative" }}>
+              <button className="gsearch-btn" onClick={() => setSearchOpen(!searchOpen)}>
+                <Search size={14} />
+                <span>Buscar...</span>
+                <kbd>⌘K</kbd>
+              </button>
+
+              {searchOpen && (
+                <div style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "calc(100% + 8px)",
+                  width: "400px",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(0,232,122,.12)",
+                  background: "rgba(11,26,16,.96)",
+                  backdropFilter: "blur(24px)",
+                  boxShadow: "0 20px 60px rgba(0,0,0,.5)",
+                  overflow: "hidden",
+                  zIndex: 500,
+                }}>
+                  {/* Search input */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px", borderBottom: "1px solid rgba(0,232,122,.08)" }}>
+                    <Search size={16} style={{ color: "rgba(255,255,255,.3)", flexShrink: 0 }} />
+                    <input
+                      ref={inputRef}
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Buscar máquina o sherlock..."
+                      style={{
+                        flex: 1,
+                        background: "transparent",
+                        border: "none",
+                        outline: "none",
+                        color: "#e0e0e0",
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: ".82rem",
+                      }}
+                    />
+                    {query && (
+                      <button onClick={() => setQuery("")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.3)", cursor: "pointer" }}>
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Filter chips */}
+                  <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(0,232,122,.06)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".6rem", color: "rgba(255,255,255,.3)", letterSpacing: ".1em", textTransform: "uppercase", marginRight: "4px" }}>Plataforma</span>
+                      {platforms.map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => toggleFilter(selectedPlatforms, p, setSelectedPlatforms)}
+                          style={{
+                            padding: "2px 10px",
+                            borderRadius: "20px",
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontSize: ".65rem",
+                            border: `1px solid ${selectedPlatforms.includes(p) ? (p === "HTB" ? "rgba(0,232,122,.4)" : p === "Sherlock" ? "rgba(0,200,255,.4)" : "rgba(200,0,255,.4)") : "rgba(255,255,255,.1)"}`,
+                            background: selectedPlatforms.includes(p) ? (p === "HTB" ? "rgba(0,232,122,.12)" : p === "Sherlock" ? "rgba(0,200,255,.12)" : "rgba(200,0,255,.12)") : "rgba(255,255,255,.03)",
+                            color: selectedPlatforms.includes(p) ? (p === "HTB" ? "#00e87a" : p === "Sherlock" ? "#00c8ff" : "#c800ff") : "rgba(255,255,255,.4)",
+                            cursor: "pointer",
+                            transition: "all .2s",
+                          }}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".6rem", color: "rgba(255,255,255,.3)", letterSpacing: ".1em", textTransform: "uppercase", marginRight: "4px" }}>Dificultad</span>
+                      {difficulties.map((d) => {
+                        const colors: Record<string, { active: string; border: string; bg: string }> = {
+                          "VERY EASY": { active: "#c800ff", border: "rgba(200,0,255,.4)", bg: "rgba(200,0,255,.12)" },
+                          "EASY": { active: "#00e87a", border: "rgba(0,232,122,.4)", bg: "rgba(0,232,122,.12)" },
+                          "MEDIUM": { active: "#e8a800", border: "rgba(232,168,0,.4)", bg: "rgba(232,168,0,.12)" },
+                          "HARD": { active: "#e85050", border: "rgba(232,80,80,.4)", bg: "rgba(232,80,80,.12)" },
+                        };
+                        const c = colors[d];
+                        return (
+                          <button
+                            key={d}
+                            onClick={() => toggleFilter(selectedDifficulties, d, setSelectedDifficulties)}
+                            style={{
+                              padding: "2px 10px",
+                              borderRadius: "20px",
+                              fontFamily: "'JetBrains Mono', monospace",
+                              fontSize: ".65rem",
+                              border: `1px solid ${selectedDifficulties.includes(d) ? c.border : "rgba(255,255,255,.1)"}`,
+                              background: selectedDifficulties.includes(d) ? c.bg : "rgba(255,255,255,.03)",
+                              color: selectedDifficulties.includes(d) ? c.active : "rgba(255,255,255,.4)",
+                              cursor: "pointer",
+                              transition: "all .2s",
+                            }}
+                          >
+                            {d}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Results */}
+                  <div style={{ maxHeight: "280px", overflowY: "auto" }}>
+                    {!hasFilters && (
+                      <p style={{ padding: "24px 16px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: ".75rem", color: "rgba(255,255,255,.25)" }}>Escribe o filtra para buscar...</p>
+                    )}
+                    {hasFilters && results.length === 0 && (
+                      <p style={{ padding: "24px 16px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: ".75rem", color: "rgba(255,255,255,.25)" }}>Sin resultados</p>
+                    )}
+                    {hasFilters && results.length > 0 && (
+                      <>
+                        <div style={{ padding: "8px 16px 4px" }}>
+                          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".65rem", color: "rgba(255,255,255,.2)" }}>{results.length} resultado{results.length !== 1 ? "s" : ""}</span>
+                        </div>
+                        {results.map((r) => (
+                          <button
+                            key={r.slug}
+                            onClick={() => goToReport(r.slug)}
+                            style={{
+                              width: "100%",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "12px",
+                              padding: "10px 16px",
+                              background: "transparent",
+                              border: "none",
+                              cursor: "pointer",
+                              textAlign: "left",
+                              transition: "background .2s",
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,232,122,.06)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                          >
+                            <span style={{ fontSize: "1.1rem" }}>{r.emoji}</span>
+                            <span style={{ flex: 1, fontFamily: "'JetBrains Mono', monospace", fontSize: ".82rem", color: "#e0e0e0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
+                            <span style={{
+                              fontFamily: "'JetBrains Mono', monospace",
+                              fontSize: ".6rem",
+                              padding: "2px 8px",
+                              borderRadius: "20px",
+                              border: "1px solid rgba(255,255,255,.1)",
+                              color: "rgba(255,255,255,.5)",
+                            }}>{r.difficulty}</span>
+                            <span style={{
+                              fontFamily: "'JetBrains Mono', monospace",
+                              fontSize: ".6rem",
+                              padding: "2px 8px",
+                              borderRadius: "20px",
+                              border: `1px solid ${r.platform === "HTB" ? "rgba(0,232,122,.3)" : r.platform === "Sherlock" ? "rgba(0,200,255,.3)" : "rgba(200,0,255,.3)"}`,
+                              color: r.platform === "HTB" ? "#00e87a" : r.platform === "Sherlock" ? "#00c8ff" : "#c800ff",
+                            }}>{r.platform}</span>
+                          </button>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </li>
+        </ul>
+
+        <button className="gmobile-toggle" onClick={() => setMobileOpen(!mobileOpen)}>
+          {mobileOpen ? <X size={28} /> : (
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          )}
+        </button>
+      </nav>
+
+      {mobileOpen && (
+        <div className="gmobile-menu">
+          <button style={{ position: "absolute", top: "20px", right: "20px", background: "none", border: "none", color: "#00e87a", cursor: "pointer" }} onClick={() => setMobileOpen(false)}>
+            <X size={28} />
+          </button>
+          {navItems.map((item) => (
+            <button key={item.href} className="nav-link" onClick={(e) => scrollTo(e, item.href)}>
               {item.label}
             </button>
           ))}
         </div>
-
-        <div className="flex items-center gap-2">
-          <div ref={searchRef} className="relative">
-            <button
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 bg-muted/30 text-muted-foreground hover:text-primary hover:border-primary/30 transition-all duration-300 font-mono text-sm"
-            >
-              <Search size={14} />
-              <span className="hidden sm:inline">Buscar...</span>
-              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted/60 border border-border/40 text-[10px] text-muted-foreground/60 font-mono">
-                ⌘K
-              </kbd>
-            </button>
-
-            {searchOpen && (
-              <div className="absolute right-0 top-full mt-2 w-96 rounded-xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl shadow-primary/5 overflow-hidden z-50">
-                {/* Search input */}
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30">
-                  <Search size={16} className="text-muted-foreground/60 shrink-0" />
-                  <input
-                    ref={inputRef}
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Buscar máquina o sherlock..."
-                    className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/40 outline-none font-mono"
-                  />
-                  {query && (
-                    <button onClick={() => setQuery("")} className="text-muted-foreground/40 hover:text-muted-foreground">
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
-
-                {/* Filter chips */}
-                <div className="px-4 py-2.5 border-b border-border/20 space-y-2">
-                  {/* Platform filters */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-wider mr-1">Plataforma</span>
-                    {platforms.map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => toggleFilter(selectedPlatforms, p, setSelectedPlatforms)}
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-mono border transition-all duration-200 ${
-                          selectedPlatforms.includes(p)
-                            ? platformChipColors[p] + " opacity-100"
-                            : "bg-muted/20 text-muted-foreground/50 border-border/30 hover:border-border/60"
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Difficulty filters */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-wider mr-1">Dificultad</span>
-                    {difficulties.map((d) => (
-                      <button
-                        key={d}
-                        onClick={() => toggleFilter(selectedDifficulties, d, setSelectedDifficulties)}
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-mono border transition-all duration-200 ${
-                          selectedDifficulties.includes(d)
-                            ? diffChipColors[d] + " opacity-100"
-                            : "bg-muted/20 text-muted-foreground/50 border-border/30 hover:border-border/60"
-                        }`}
-                      >
-                        {d}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Results */}
-                <div className="max-h-64 overflow-y-auto">
-                  {!hasFilters && (
-                    <p className="px-4 py-6 text-center text-xs text-muted-foreground/50 font-mono">Escribe o filtra para buscar...</p>
-                  )}
-                  {hasFilters && results.length === 0 && (
-                    <p className="px-4 py-6 text-center text-xs text-muted-foreground/50 font-mono">Sin resultados</p>
-                  )}
-                  {hasFilters && results.length > 0 && (
-                    <>
-                      <div className="px-4 pt-2 pb-1">
-                        <span className="text-[10px] font-mono text-muted-foreground/40">{results.length} resultado{results.length !== 1 ? "s" : ""}</span>
-                      </div>
-                      {results.map((r) => (
-                        <button
-                          key={r.slug}
-                          onClick={() => goToReport(r.slug)}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/5 transition-colors text-left"
-                        >
-                          <span className="text-lg">{r.emoji}</span>
-                          <div className="flex-1 min-w-0">
-                            <span className="text-sm font-mono text-foreground block truncate">{r.name}</span>
-                          </div>
-                          <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border shrink-0 ${diffChipColors[r.difficulty] || "bg-muted/50 text-muted-foreground/60 border-border/30"}`}>
-                            {r.difficulty}
-                          </span>
-                          <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border shrink-0 ${platformChipColors[r.platform] || "bg-muted/50 text-muted-foreground/60 border-border/30"}`}>
-                            {r.platform}
-                          </span>
-                        </button>
-                      ))}
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <button className="md:hidden text-primary" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {mobileOpen && (
-        <div className="md:hidden glassmorphism border-t border-border pb-4">
-          {navItems.map((item) => (
-            <button
-              key={item.href}
-              onClick={(e) => scrollTo(e, item.href)}
-              className="block w-full text-left px-6 py-3 font-mono text-sm text-muted-foreground hover:text-primary transition-all"
-            >
-              {">"} {item.label}
-            </button>
-          ))}
-        </div>
       )}
-    </nav>
+    </>
   );
 };
 
