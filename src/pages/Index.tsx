@@ -202,21 +202,21 @@ const Index = () => {
         .card-right{background:var(--cream2);display:flex;flex-direction:column;justify-content:space-between;padding:40px 44px;position:relative;overflow:hidden}
         .cr-deco{position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;background:rgba(0,232,122,.06);pointer-events:none}
         .cr-deco2{position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;border-radius:50%;background:rgba(0,232,122,.04);pointer-events:none}
-        .cr-label{font-family:var(--mo);font-size:.58rem;color:var(--text-l3);letter-spacing:.2em;margin-bottom:14px}
-        .cr-big-num{font-family:var(--bb);font-size:clamp(4rem,8vw,7rem);color:var(--text-l);line-height:.9;letter-spacing:.02em}
+        .cr-label{font-family:var(--mo);font-size:.72rem;color:var(--text-l3);letter-spacing:.2em;margin-bottom:14px;text-transform:uppercase}
+        .cr-big-num{font-family:var(--bb);font-size:clamp(4.5rem,9vw,7.5rem);color:var(--text-l);line-height:.9;letter-spacing:.02em}
         .cr-big-num span{color:var(--sage);font-size:60%}
-        .cr-desc{font-size:.82rem;color:var(--text-l2);line-height:1.65;margin-top:14px;font-weight:300;max-width:280px}
+        .cr-desc{font-size:.95rem;color:var(--text-l2);line-height:1.65;margin-top:14px;font-weight:300;max-width:320px}
         .cr-badges{display:flex;flex-direction:column;gap:10px}
-        .cr-badge{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;background:var(--cream);border:1px solid rgba(26,46,32,.08)}
+        .cr-badge{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:10px;background:var(--cream);border:1px solid rgba(26,46,32,.08)}
         .cb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
         .cb-g{background:var(--sage);box-shadow:0 0 8px rgba(42,96,72,.5)}
         .cb-b{background:#3aafa9;box-shadow:0 0 8px rgba(58,175,169,.5)}
         .cb-a{background:var(--amber);box-shadow:0 0 8px rgba(245,166,35,.5)}
-        .cb-txt{font-family:var(--dm);font-size:.78rem;color:var(--text-l);flex:1;font-weight:500}
-        .cb-val{font-family:var(--bb);font-size:1rem;color:var(--text-l);letter-spacing:.05em}
+        .cb-txt{font-family:var(--dm);font-size:.9rem;color:var(--text-l);flex:1;font-weight:500}
+        .cb-val{font-family:var(--bb);font-size:1.15rem;color:var(--text-l);letter-spacing:.05em}
         .cr-btn{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:var(--ink);border-radius:10px;text-decoration:none;transition:all .4s;cursor:pointer}
         .cr-btn:hover{background:var(--forest);transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.3)}
-        .cr-btn-txt{font-family:var(--bb);font-size:1rem;letter-spacing:.12em;color:var(--green)}
+        .cr-btn-txt{font-family:var(--bb);font-size:1.15rem;letter-spacing:.12em;color:var(--green)}
         .cr-btn-ico{width:36px;height:36px;border-radius:8px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:.9rem}
 
         /* Marquee */
