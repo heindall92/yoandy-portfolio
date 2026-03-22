@@ -333,7 +333,7 @@ const Index = () => {
         .cc:hover::after{opacity:1}
         .cc-ico{font-size:1.5rem;margin-bottom:12px;display:block}
         .cc-org{font-family:var(--mo);font-size:.54rem;color:rgba(0,232,122,.45);letter-spacing:.2em;margin-bottom:7px}
-        .cc-n{font-family:var(--dm);font-size:.8rem;font-weight:500;color:var(--text-d);line-height:1.3}
+        .cc-n{font-family:var(--dm);font-size:.9rem;font-weight:500;color:var(--text-d);line-height:1.3}
         .ccs{display:inline-block;margin-top:10px;padding:3px 12px;border-radius:20px;font-family:var(--mo);font-size:.55rem;letter-spacing:.1em}
         .cs-d{background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.2);color:var(--green)}
         .cs-w{background:rgba(56,217,245,.08);border:1px solid rgba(56,217,245,.18);color:var(--blue)}
