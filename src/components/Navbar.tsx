@@ -138,17 +138,31 @@ const Navbar = () => {
         .gnav .gback{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:rgba(255,255,255,.4);background:none;border:1px solid rgba(0,232,122,.15);border-radius:8px;padding:5px 14px;cursor:pointer;transition:all .3s;letter-spacing:.05em;margin-right:12px}
         .gnav .gback:hover{color:#00e87a;border-color:rgba(0,232,122,.35)}
         @media(max-width:900px){
-          .gnav{padding:18px 28px}
-          .gnav.solid{padding:14px 28px}
+          .gnav{padding:16px 20px}
+          .gnav.solid{padding:14px 20px}
+          .gnav .glogo-h{font-size:1.3rem;letter-spacing:.2em}
+          .gnav .glogo-s{font-size:.6rem;letter-spacing:.15em}
           .gnav .glinks{display:none}
           .gmobile-toggle{display:block}
+          .gnav .gback{font-size:.7rem;padding:4px 10px;margin-right:8px}
         }
-        @media(max-width:640px){
-          .gnav{padding:14px 18px}
+        @media(max-width:480px){
+          .gnav{padding:14px 14px}
+          .gnav .glogo-h{font-size:1.1rem;letter-spacing:.15em}
+          .gnav .glogo-s{font-size:.5rem;display:none}
         }
-        .gmobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;z-index:299;background:rgba(11,26,16,.97);backdrop-filter:blur(24px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:24px}
-        .gmobile-menu a,.gmobile-menu button.nav-link{font-family:'JetBrains Mono',monospace;font-size:1.2rem;color:rgba(255,255,255,.5);text-decoration:none;letter-spacing:.15em;transition:color .3s;background:none;border:none;cursor:pointer}
+        .gmobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;z-index:299;background:rgba(11,26,16,.97);backdrop-filter:blur(24px);display:flex;flex-direction:column;align-items:center;padding:80px 24px 40px;overflow-y:auto}
+        .gmobile-menu a,.gmobile-menu button.nav-link{font-family:'JetBrains Mono',monospace;font-size:1.3rem;color:rgba(255,255,255,.5);text-decoration:none;letter-spacing:.15em;transition:color .3s;background:none;border:none;cursor:pointer;padding:12px 0}
         .gmobile-menu a:hover,.gmobile-menu button.nav-link:hover{color:#00e87a}
+        .gmobile-search{width:100%;max-width:360px;margin-bottom:28px}
+        .gmobile-search input{width:100%;padding:12px 16px;border-radius:10px;border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.05);color:#e0e0e0;font-family:'JetBrains Mono',monospace;font-size:.85rem;outline:none}
+        .gmobile-search input::placeholder{color:rgba(255,255,255,.3)}
+        .gmobile-search input:focus{border-color:rgba(0,232,122,.35)}
+        .gmobile-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:center}
+        .gmobile-chips button{padding:4px 12px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:.7rem;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:rgba(255,255,255,.4);cursor:pointer;transition:all .2s}
+        .gmobile-results{width:100%;max-width:360px;max-height:200px;overflow-y:auto;margin-bottom:16px}
+        .gmobile-results button{width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;background:transparent;border:none;cursor:pointer;text-align:left;border-radius:8px;transition:background .2s}
+        .gmobile-results button:active{background:rgba(0,232,122,.1)}
       `}</style>
 
       <nav className={`gnav${scrolled ? " solid" : ""}`}>
@@ -350,14 +364,77 @@ const Navbar = () => {
 
       {mobileOpen && (
         <div className="gmobile-menu">
-          <button style={{ position: "absolute", top: "20px", right: "20px", background: "none", border: "none", color: "#00e87a", cursor: "pointer" }} onClick={() => setMobileOpen(false)}>
+          <button style={{ position: "absolute", top: "18px", right: "18px", background: "none", border: "none", color: "#00e87a", cursor: "pointer" }} onClick={() => setMobileOpen(false)}>
             <X size={28} />
           </button>
-          {navItems.map((item) => (
-            <button key={item.href} className="nav-link" onClick={(e) => scrollTo(e, item.href)}>
-              {item.label}
+
+          {location.pathname.startsWith("/report/") && (
+            <button
+              onClick={() => { setMobileOpen(false); navigate("/"); }}
+              style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "6px", fontFamily: "'JetBrains Mono', monospace", fontSize: ".85rem", color: "#00e87a", background: "none", border: "1px solid rgba(0,232,122,.25)", borderRadius: "8px", padding: "8px 18px", cursor: "pointer" }}
+            >
+              ← Volver
             </button>
-          ))}
+          )}
+
+          {/* Mobile Search */}
+          <div className="gmobile-search">
+            <div style={{ position: "relative" }}>
+              <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,.3)" }} />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar máquina..."
+                style={{ paddingLeft: "36px" }}
+              />
+            </div>
+            <div className="gmobile-chips">
+              {platforms.map((p) => {
+                const active = selectedPlatforms.includes(p);
+                const color = p === "HTB" ? "#00e87a" : p === "Sherlock" ? "#00c8ff" : "#c800ff";
+                return (
+                  <button key={p} onClick={() => toggleFilter(selectedPlatforms, p, setSelectedPlatforms)} style={active ? { borderColor: color, color, background: `${color}15` } : {}}>
+                    {p}
+                  </button>
+                );
+              })}
+              {difficulties.map((d) => {
+                const active = selectedDifficulties.includes(d);
+                const color = d === "VERY EASY" ? "#c800ff" : d === "EASY" ? "#00e87a" : d === "MEDIUM" ? "#e8a800" : "#e85050";
+                return (
+                  <button key={d} onClick={() => toggleFilter(selectedDifficulties, d, setSelectedDifficulties)} style={active ? { borderColor: color, color, background: `${color}15` } : {}}>
+                    {d}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Mobile Results */}
+          {hasFilters && (
+            <div className="gmobile-results">
+              {results.length === 0 ? (
+                <p style={{ textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: ".75rem", color: "rgba(255,255,255,.25)", padding: "16px" }}>Sin resultados</p>
+              ) : (
+                results.map((r) => (
+                  <button key={r.slug} onClick={() => { setMobileOpen(false); goToReport(r.slug); }}>
+                    <span style={{ fontSize: "1rem" }}>{r.emoji}</span>
+                    <span style={{ flex: 1, fontFamily: "'JetBrains Mono', monospace", fontSize: ".8rem", color: "#e0e0e0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".55rem", padding: "2px 6px", borderRadius: "20px", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.5)" }}>{r.difficulty}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Nav links */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+            {navItems.map((item) => (
+              <button key={item.href} className="nav-link" onClick={(e) => scrollTo(e, item.href)}>
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </>
