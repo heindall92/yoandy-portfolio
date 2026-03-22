@@ -45,7 +45,7 @@ const skills = [
   { ico: "🌐", name: "Web App Security", desc: "SQLi, XSS, SSRF, JWT attacks, IDOR, LFI/RFI — OWASP Top 10 completo.", tags: ["SQLMap", "Nikto", "jwt_tool", "Nuclei", "XSS Hunter"], pct: "78%" },
   { ico: "🔍", name: "Recon & OSINT", desc: "Enumeración activa/pasiva, DNS recon, subdomain takeover, análisis de superficie.", tags: ["Subfinder", "Amass", "dnsrecon", "unfurl", "Harvester"], pct: "85%" },
   { ico: "🐚", name: "Post-Explotación", desc: "PrivEsc Linux/Windows, cron hijacking, SUID abuse, pivoting y movimiento lateral.", tags: ["LinPEAS", "WinPEAS", "Penelope", "MSFVenom", "hashcat"], pct: "75%" },
-  { ico: "🤖", name: "AI + Automation", desc: "MCP Hacking Server propio: 21 tools + Claude AI en flujos de pentesting.", tags: ["MCP Protocol", "Claude API", "Python", "Bash"], pct: "80%" },
+  { ico: "🤖", name: "Automation & Scripting", desc: "Automatización de tareas de pentesting con scripts personalizados en Python y Bash.", tags: ["Python", "Bash", "Scripting", "Automation"], pct: "80%" },
   { ico: "🏴‍☠️", name: "CTF & Research", desc: `${totalMachines}+ máquinas en HTB, THM, HackMyVM. Serie de tutoriales ES/EN.`, tags: ["HackTheBox", "TryHackMe", "HackMyVM"], pct: "88%" },
 ];
 
