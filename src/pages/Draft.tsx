@@ -130,7 +130,7 @@ const Draft = () => {
     return matchSearch && matchFilter;
   });
 
-  const marqueeItems = ["HEINDALL", "GUARDIAN OF BIFROST", "OFFENSIVE SECURITY", "PENETRATION TESTING", "RED TEAM OPS", "AI + HACKING", "CTF HUNTER"];
+  const marqueeItems = ["HEINDALL", "RED TEAM OPERATOR", "OFFENSIVE SECURITY", "PENETRATION TESTING", "VULNERABILITY HUNTER", "ETHICAL HACKING", "CTF HUNTER"];
 
   return (
     <div className="draft-page">
@@ -428,7 +428,7 @@ const Draft = () => {
         <Link to="/draft" className="nlogo">
           <div>
             <span className="nlogo-h">HEINDALL</span>
-            <div className="nlogo-s">GUARDIAN // OFFENSIVE SEC</div>
+            <div className="nlogo-s">RED TEAM // OFFENSIVE SEC</div>
           </div>
         </Link>
         <ul className="nlinks">
@@ -478,7 +478,7 @@ const Draft = () => {
             </div>
 
             <div className="cl-bottom">
-              <div className="cl-tag">// GUARDIAN OF BIFROST · OFFENSIVE SECURITY</div>
+              <div className="cl-tag">// RED TEAM OPERATOR · OFFENSIVE SECURITY</div>
               <div className="cl-headline">
                 YOANDY<br />
                 <span>RAMÍREZ</span>
@@ -544,7 +544,7 @@ const Draft = () => {
               <div className="t-bar"><div className="td tdr" /><div className="td tdy" /><div className="td tdg" /><span className="t-ttl">heindall@kali:~$</span></div>
               <div className="t-bod">
                 <div className="tl2"><span className="tp">❯ </span><span className="tc">cat</span><span className="ts"> ~/.heindall/identity</span></div>
-                <div className="tl2"><span className="tk">alias  :</span><span className="tv"> Heindall · Guardian of Bifrost</span></div>
+                <div className="tl2"><span className="tk">alias  :</span><span className="tv"> Heindall · Red Team Operator</span></div>
                 <div className="tl2"><span className="tk">role   :</span><span className="tv"> Offensive Security Specialist</span></div>
                 <div className="tl2"><span className="tk">base   :</span><span className="tv"> Lepe, Huelva, Spain</span></div>
                 <div className="tl2"><span className="tk">os     :</span><span className="tv"> Kali Linux 2024.x</span></div>
@@ -682,7 +682,7 @@ const Draft = () => {
         </div>
         <div className="rm-wrap">
           <div>
-            <h3 className="rm-h rev d1">Roadmap<br /><em>Bifrost</em></h3>
+            <h3 className="rm-h rev d1">Roadmap<br /><em>Offensive</em></h3>
             <p className="rm-sub rev d2">La ruta de Heindall hacia las certificaciones élite del offensive security.</p>
           </div>
           <div className="rm-steps">
@@ -702,7 +702,7 @@ const Draft = () => {
         <div className="contact-grid">
           <div>
             <div className="stag rev" style={{ marginBottom: 36 }}>05 // CONTACT</div>
-            <h2 className="c-h rev d1">¿Cruzamos<br />el <em>Bifrost</em>?</h2>
+            <h2 className="c-h rev d1">¿Comenzamos<br />la <em>Operación</em>?</h2>
             <p className="c-desc rev d2">Disponible para roles en Pentesting y Red Team, colaboraciones técnicas y proyectos de ciberseguridad.</p>
             <div className="cbtns rev d3">
               <a href="https://www.linkedin.com/in/yoandyrd92/" className="bp" target="_blank" rel="noopener noreferrer">Contactar en LinkedIn</a>

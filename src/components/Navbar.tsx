@@ -175,7 +175,7 @@ const Navbar = () => {
           <button className="glogo" onClick={(e) => scrollTo(e, "#home")}>
             <div>
               <span className="glogo-h">HEINDALL</span>
-              <div className="glogo-s">GUARDIAN // OFFENSIVE SEC</div>
+              <div className="glogo-s">RED TEAM // OFFENSIVE SEC</div>
             </div>
           </button>
         </div>
