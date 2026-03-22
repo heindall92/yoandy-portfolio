@@ -27,6 +27,7 @@ const App = () => (
           <Route path="/sherlocks" element={<Sherlocks />} />
           <Route path="/hackmyvm" element={<HackMyVM />} />
           <Route path="/report/:slug" element={<Report />} />
+          <Route path="/draft" element={<Draft />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
