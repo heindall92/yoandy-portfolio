@@ -266,7 +266,7 @@ const Index = () => {
 
         /* Skills */
         .sk-intro{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:end;margin-bottom:72px}
-        .sk-desc{font-size:.88rem;color:var(--text-d2);line-height:1.8;font-weight:300}
+        .sk-desc{font-size:1rem;color:var(--text-d2);line-height:1.8;font-weight:300}
         .sk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(0,232,122,.06);border-radius:18px;overflow:hidden;margin-bottom:56px}
         .skc{background:var(--forest);padding:30px 26px;transition:all .4s;position:relative;overflow:hidden}
         .skc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);transform:scaleX(0);transform-origin:left;transition:transform .4s}
