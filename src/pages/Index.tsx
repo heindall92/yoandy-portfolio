@@ -301,7 +301,7 @@ const Index = () => {
         .sin::placeholder{color:var(--text-l3)}
         .sico{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:.85rem;color:var(--text-l3);pointer-events:none}
         .frow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:48px;position:relative;z-index:2}
-        .fb{padding:6px 16px;border-radius:20px;font-family:var(--mo);font-size:.62rem;border:1.5px solid rgba(26,46,32,.12);background:transparent;color:var(--text-l2);cursor:pointer;transition:all .3s;letter-spacing:.07em}
+        .fb{padding:7px 18px;border-radius:20px;font-family:var(--mo);font-size:.72rem;border:1.5px solid rgba(26,46,32,.12);background:transparent;color:var(--text-l2);cursor:pointer;transition:all .3s;letter-spacing:.07em}
         .fb:hover{border-color:var(--sage);color:var(--sage)}
         .fb.on{background:var(--sage);border-color:var(--sage);color:white}
 
