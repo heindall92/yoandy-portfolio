@@ -138,17 +138,31 @@ const Navbar = () => {
         .gnav .gback{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:rgba(255,255,255,.4);background:none;border:1px solid rgba(0,232,122,.15);border-radius:8px;padding:5px 14px;cursor:pointer;transition:all .3s;letter-spacing:.05em;margin-right:12px}
         .gnav .gback:hover{color:#00e87a;border-color:rgba(0,232,122,.35)}
         @media(max-width:900px){
-          .gnav{padding:18px 28px}
-          .gnav.solid{padding:14px 28px}
+          .gnav{padding:16px 20px}
+          .gnav.solid{padding:14px 20px}
+          .gnav .glogo-h{font-size:1.3rem;letter-spacing:.2em}
+          .gnav .glogo-s{font-size:.6rem;letter-spacing:.15em}
           .gnav .glinks{display:none}
           .gmobile-toggle{display:block}
+          .gnav .gback{font-size:.7rem;padding:4px 10px;margin-right:8px}
         }
-        @media(max-width:640px){
-          .gnav{padding:14px 18px}
+        @media(max-width:480px){
+          .gnav{padding:14px 14px}
+          .gnav .glogo-h{font-size:1.1rem;letter-spacing:.15em}
+          .gnav .glogo-s{font-size:.5rem;display:none}
         }
-        .gmobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;z-index:299;background:rgba(11,26,16,.97);backdrop-filter:blur(24px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:24px}
-        .gmobile-menu a,.gmobile-menu button.nav-link{font-family:'JetBrains Mono',monospace;font-size:1.2rem;color:rgba(255,255,255,.5);text-decoration:none;letter-spacing:.15em;transition:color .3s;background:none;border:none;cursor:pointer}
+        .gmobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;z-index:299;background:rgba(11,26,16,.97);backdrop-filter:blur(24px);display:flex;flex-direction:column;align-items:center;padding:80px 24px 40px;overflow-y:auto}
+        .gmobile-menu a,.gmobile-menu button.nav-link{font-family:'JetBrains Mono',monospace;font-size:1.3rem;color:rgba(255,255,255,.5);text-decoration:none;letter-spacing:.15em;transition:color .3s;background:none;border:none;cursor:pointer;padding:12px 0}
         .gmobile-menu a:hover,.gmobile-menu button.nav-link:hover{color:#00e87a}
+        .gmobile-search{width:100%;max-width:360px;margin-bottom:28px}
+        .gmobile-search input{width:100%;padding:12px 16px;border-radius:10px;border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.05);color:#e0e0e0;font-family:'JetBrains Mono',monospace;font-size:.85rem;outline:none}
+        .gmobile-search input::placeholder{color:rgba(255,255,255,.3)}
+        .gmobile-search input:focus{border-color:rgba(0,232,122,.35)}
+        .gmobile-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:center}
+        .gmobile-chips button{padding:4px 12px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:.7rem;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:rgba(255,255,255,.4);cursor:pointer;transition:all .2s}
+        .gmobile-results{width:100%;max-width:360px;max-height:200px;overflow-y:auto;margin-bottom:16px}
+        .gmobile-results button{width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;background:transparent;border:none;cursor:pointer;text-align:left;border-radius:8px;transition:background .2s}
+        .gmobile-results button:active{background:rgba(0,232,122,.1)}
       `}</style>
 
       <nav className={`gnav${scrolled ? " solid" : ""}`}>
