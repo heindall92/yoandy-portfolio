@@ -144,7 +144,7 @@ const Index = () => {
           --text-l:#1a2e20;--text-l2:rgba(26,46,32,.55);--text-l3:rgba(26,46,32,.3);
           --blue:#38d9f5;--amber:#f5a623;--red:#f04f5a;
           --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
-          font-family:var(--dm);background:var(--ink);color:var(--text-d);overflow-x:hidden;font-size:16px;
+          font-family:var(--dm);background:var(--ink);color:var(--text-d);overflow-x:hidden;font-size:18px;
         }
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
