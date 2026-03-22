@@ -124,7 +124,7 @@ const Navbar = () => {
             <button
               key={item.href}
               onClick={(e) => scrollTo(e, item.href)}
-              className="px-4 py-2 rounded-md font-mono text-sm text-muted-foreground hover:text-primary hover:text-glow-green transition-all duration-300"
+              className="px-4 py-2 rounded-md font-mono text-base text-muted-foreground hover:text-primary hover:text-glow-green transition-all duration-300"
             >
               {item.label}
             </button>
