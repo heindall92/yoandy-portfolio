@@ -173,7 +173,7 @@ const Index = () => {
         .cl-slash{font-family:var(--bb);font-size:.95rem;letter-spacing:.2em;color:rgba(0,232,122,.3)}
 
         /* Orb */
-        .orb-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:340px;height:340px;z-index:2}
+        .orb-wrap{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);width:300px;height:300px;z-index:2}
         .orb{width:100%;height:100%;position:relative;display:flex;align-items:center;justify-content:center}
         .orb-ring{position:absolute;border-radius:50%;border:1px solid;animation:ring-spin linear infinite;transform-origin:center}
         .orb-ring-1{width:330px;height:330px;border-color:rgba(0,232,122,.08);animation-duration:30s}
