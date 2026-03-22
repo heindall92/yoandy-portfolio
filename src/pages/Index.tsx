@@ -273,8 +273,8 @@ const Index = () => {
         .skc:hover{background:rgba(0,232,122,.04);transform:translateY(-4px) scale(1.01)}
         .skc:hover::after{transform:scaleX(1)}
         .skc-ico{font-size:1.5rem;margin-bottom:14px;display:block}
-        .skc-n{font-family:var(--bb);font-size:1.05rem;letter-spacing:.08em;color:var(--text-d);margin-bottom:8px}
-        .skc-d{font-size:.76rem;color:var(--text-d2);line-height:1.6;margin-bottom:16px;font-weight:300}
+        .skc-n{font-family:var(--bb);font-size:1.15rem;letter-spacing:.08em;color:var(--text-d);margin-bottom:8px}
+        .skc-d{font-size:.88rem;color:var(--text-d2);line-height:1.6;margin-bottom:16px;font-weight:300}
         .skc-ts{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px}
         .skt{padding:3px 9px;border-radius:4px;font-family:var(--mo);font-size:.58rem;color:rgba(0,232,122,.7);border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.04);letter-spacing:.04em}
         .skb{height:2px;background:rgba(255,255,255,.05);border-radius:1px;overflow:hidden}
