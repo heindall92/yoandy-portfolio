@@ -565,7 +565,7 @@ const Index = () => {
             </div>
             <div className="tl-wrap revr d2">
               <div className="tl-item2"><div className="tl-dot2" /><div className="tl-yr2">2025 — HOY</div><div className="tl-ti2">Master Ciberseguridad & AI</div><div className="tl-de2">Evolve Academy · eJPT en progreso</div></div>
-              <div className="tl-item2"><div className="tl-dot2" /><div className="tl-yr2">2024</div><div className="tl-ti2">MCP Hacking Server · HTB Full Path</div><div className="tl-de2">21 tools · Claude AI · Jr. Analyst completado</div></div>
+              <div className="tl-item2"><div className="tl-dot2" /><div className="tl-yr2">2024</div><div className="tl-ti2">HTB Academy · Full Path Completado</div><div className="tl-de2">Jr. Cybersecurity Analyst · Google · IBM · Cisco certs</div></div>
               <div className="tl-item2"><div className="tl-dot2" /><div className="tl-yr2">2020+</div><div className="tl-ti2">IT Specialist · 4+ años</div><div className="tl-de2">Redes · Sistemas · Automatización</div></div>
             </div>
           </div>
