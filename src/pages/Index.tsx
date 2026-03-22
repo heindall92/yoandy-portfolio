@@ -238,7 +238,7 @@ const Index = () => {
 
         /* About */
         .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
-        .about-p{font-size:.9rem;color:var(--text-d2);line-height:1.9;margin-bottom:16px;font-weight:300}
+        .about-p{font-size:1rem;color:var(--text-d2);line-height:1.9;margin-bottom:16px;font-weight:300}
         .about-p strong{color:var(--text-d);font-weight:500}
         .hl{color:var(--green)}
         .quote-block{margin-top:36px;padding:24px 28px;background:var(--green3);border-left:2px solid rgba(0,232,122,.4);border-radius:0 10px 10px 0}
