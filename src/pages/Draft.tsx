@@ -437,6 +437,8 @@ const Draft = () => {
           <li><a href="#writeups">writeups</a></li>
           <li><a href="#certs">certs</a></li>
           <li><a href="#contact">contact</a></li>
+          <li><Link to="/draft2" style={{color:'rgba(124,58,237,.7)'}}>draft 2</Link></li>
+          <li><Link to="/" style={{color:'rgba(200,240,220,.5)'}}>← home</Link></li>
         </ul>
       </nav>
 
