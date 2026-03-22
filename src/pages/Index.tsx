@@ -293,7 +293,7 @@ const Index = () => {
         .wu-top{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:end;margin-bottom:60px;position:relative;z-index:2}
         .wu-h{font-family:var(--bb);font-size:clamp(3.5rem,6vw,6.5rem);line-height:.92;letter-spacing:.02em;color:var(--text-l)}
         .wu-h em{font-style:normal;color:var(--sage)}
-        .wu-hdesc{font-size:.88rem;color:var(--text-l2);line-height:1.8;font-weight:300}
+        .wu-hdesc{font-size:1rem;color:var(--text-l2);line-height:1.8;font-weight:300}
 
         .srch{position:relative;margin-bottom:14px}
         .sin{width:100%;padding:15px 50px;background:white;border:2px solid rgba(26,46,32,.1);border-radius:10px;font-family:var(--mo);font-size:.8rem;color:var(--text-l);outline:none;letter-spacing:.04em;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,.04)}
