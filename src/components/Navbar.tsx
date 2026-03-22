@@ -152,12 +152,19 @@ const Navbar = () => {
       `}</style>
 
       <nav className={`gnav${scrolled ? " solid" : ""}`}>
-        <button className="glogo" onClick={(e) => scrollTo(e, "#home")}>
-          <div>
-            <span className="glogo-h">HEINDALL</span>
-            <div className="glogo-s">GUARDIAN // OFFENSIVE SEC</div>
-          </div>
-        </button>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          {location.pathname.startsWith("/report/") && (
+            <button className="gback" onClick={() => navigate("/")}>
+              ← Volver
+            </button>
+          )}
+          <button className="glogo" onClick={(e) => scrollTo(e, "#home")}>
+            <div>
+              <span className="glogo-h">HEINDALL</span>
+              <div className="glogo-s">GUARDIAN // OFFENSIVE SEC</div>
+            </div>
+          </button>
+        </div>
 
         <ul className="glinks">
           {navItems.map((item) => (
