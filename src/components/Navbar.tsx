@@ -123,8 +123,8 @@ const Navbar = () => {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600&display=swap');
-        .gnav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;justify-content:space-between;align-items:center;padding:22px 52px;transition:all .4s}
-        .gnav.solid{background:rgba(11,26,16,.92);backdrop-filter:blur(24px);border-bottom:1px solid rgba(0,232,122,.08);padding:15px 52px}
+        .gnav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;justify-content:space-between;align-items:center;padding:28px 52px;transition:all .4s;background:rgba(11,26,16,.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,232,122,.06)}
+        .gnav.solid{background:rgba(11,26,16,.95);backdrop-filter:blur(24px);border-bottom:1px solid rgba(0,232,122,.1);padding:22px 52px}
         .gnav .glogo{display:flex;align-items:center;gap:12px;text-decoration:none;cursor:pointer;background:none;border:none}
         .gnav .glogo-h{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.25em;color:#00e87a;line-height:1}
         .gnav .glogo-s{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:rgba(255,255,255,.35);letter-spacing:.2em;margin-top:2px}

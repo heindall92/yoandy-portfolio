@@ -58,12 +58,12 @@ const Report = () => {
   }
 
   return (
-    <div className="bg-background min-h-screen pt-16">
+    <div className="bg-background min-h-screen pt-20">
       <iframe
         src={report.file}
         title={report.title}
         className="w-full border-none"
-        style={{ height: "calc(100vh - 64px)" }}
+        style={{ height: "calc(100vh - 80px)" }}
       />
     </div>
   );
