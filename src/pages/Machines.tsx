@@ -178,6 +178,13 @@ const machines = [
     difficulty: "EASY", diffColor: "primary",
     os: "Linux",
   },
+  {
+    slug: "kobold-htb", emoji: "🐉", name: "Kobold",
+    desc: "Explotación de CVE-2026-23744 en MCPJam Inspector expuesto en 0.0.0.0, permitiendo RCE no autenticado vía /api/mcp/connect. Escalada mediante sg docker aprovechando contraseña vacía en /etc/gshadow, seguida de Docker escape con montaje del filesystem del host.",
+    tags: ["CVE-2026-23744", "MCP Inspector", "Docker Escape", "sg"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Linux",
+  },
 ];
 
 const diffStyles: Record<string, { badge: string; stripe: string; glow: string }> = {
