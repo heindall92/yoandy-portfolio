@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fawn — HTB Machine Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+}
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
+}
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
+}
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(0,232,122,0.1); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff { background: rgba(0,232,122,0.08); color: var(--green); border: 1px solid rgba(0,232,122,0.2); }
+.tag-diff-medium { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.tag-diff-hard { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.tag-os { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.tag-staff { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.hero-stats {
+  display: flex; gap: 28px; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label {
+  font-family: var(--mo);
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3);
+}
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
+
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; width: 260px; height: 260px; }
+.hero-orb canvas { display: block; width: 260px !important; height: 260px !important; }
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}.code-compare,.lessons-grid{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.agent-panel{grid-template-columns:1fr;}}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--cyan);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--cyan);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text2);}
+.warning-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:1rem;display:flex;gap:1rem;align-items:flex-start;margin:1rem 0;}
+.warning-icon{font-size:1.5rem;flex-shrink:0;}
+.warning-card strong{color:var(--red);display:block;margin-bottom:.25rem;}
+.warning-card p{font-size:.85rem;color:var(--text2);}
+.worknotes-box{background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.15);border-radius:10px;padding:1.25rem;margin:1rem 0;}
+.worknotes-box h4{color:var(--yellow);font-size:.85rem;margin-bottom:.75rem;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table .highlight{color:var(--green);font-weight:600;}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--green);text-align:center;line-height:1;margin:.5rem 0;font-family:var(--bb);}
+.score-label{text-align:center;font-size:.75rem;color:var(--text3);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
+
+/* ─── EXTRA COMPONENT STYLES ─── */
+.nse-bonus{background:linear-gradient(135deg,rgba(251,191,36,.06),rgba(251,191,36,.02));border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.nse-bonus h3{color:var(--yellow);margin-bottom:.75rem;}
+.ftp-session{background:rgba(5,14,8,.9);border-radius:12px;padding:1.25rem;margin:1rem 0;font-family:var(--mo);font-size:.82rem;}
+.ftp-cmd{color:var(--cyan);}.ftp-resp{color:var(--text3);}.ftp-success{color:var(--green);}.ftp-flag{color:var(--yellow);font-weight:700;}
+.key-dump{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin:1.5rem 0;font-family:var(--mo);}
+.key-dump-header{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:1rem;}
+.key-row{display:flex;align-items:center;gap:1rem;padding:.5rem .75rem;border-radius:6px;margin:.3rem 0;}
+.key-row.flag-key{background:rgba(0,232,122,.05);border:1px solid rgba(0,232,122,.15);}
+.key-name{color:var(--cyan);min-width:60px;font-weight:600;}
+.key-arrow{color:var(--border);}.key-value{color:var(--text2);flex:1;}
+.key-row.flag-key .key-value{color:var(--green);font-weight:600;}
+.key-badge{background:rgba(0,232,122,.15);color:var(--green);padding:.1rem .5rem;border-radius:4px;font-size:.7rem;font-weight:700;border:1px solid rgba(0,232,122,.3);}
+.rce-path{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:1.25rem;background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:10px;margin:1rem 0;}
+.rce-step{background:var(--card2);padding:.35rem .75rem;border-radius:6px;font-family:var(--mo);font-size:.8rem;color:var(--text2);}
+.rce-arrow{color:var(--text3);font-size:1.2rem;}
+.rce-result{color:var(--red);border:1px solid rgba(248,113,113,.3);background:rgba(248,113,113,.08);}
+.redis-cmd-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;font-family:var(--mo);}
+.redis-cmd-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.redis-cmd-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.redis-cmd-table tr:last-child td{border-bottom:none;}
+.sqli-box{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;margin:1.5rem 0;border:1px solid var(--border);}
+.sqli-row{margin:.75rem 0;display:flex;align-items:flex-start;gap:1rem;}
+.sqli-label{color:var(--text3);font-size:.78rem;min-width:110px;font-family:var(--mo);padding-top:.2rem;flex-shrink:0;}
+.sqli-query{font-family:var(--mo);font-size:.88rem;line-height:1.8;flex:1;}
+.q-keyword{color:var(--blue);font-weight:700;}.q-string{color:var(--green);}.q-inject{color:var(--red);font-weight:900;font-size:1.1rem;}
+.q-comment{color:var(--text3);text-decoration:line-through;opacity:.55;}.q-result{color:var(--yellow);font-size:.8rem;margin-left:.5rem;}
+.sqli-divider{border:none;border-top:1px solid var(--border);margin:.75rem 0;}
+.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
+.vuln-code,.safe-code{border-radius:8px;padding:1rem;border:1px solid;}
+.vuln-code{background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.3);}
+.safe-code{background:rgba(0,232,122,.05);border-color:rgba(0,232,122,.3);}
+.code-header{font-size:.82rem;font-weight:700;margin-bottom:.75rem;}
+.vuln-code .code-header{color:var(--red);}.safe-code .code-header{color:var(--green);}
+.code-box{background:rgba(5,14,8,.9);border-radius:6px;padding:.75rem;font-family:var(--mo);font-size:.78rem;color:var(--text2);margin:.5rem 0;}
+.code-note{font-size:.8rem;margin-top:.5rem;}
+.vuln-code .code-note{color:var(--red);}.safe-code .code-note{color:var(--green);}
+.curl-breakdown{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;border:1px solid var(--border);margin:1rem 0;}
+.curl-parts-top{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;}
+.curl-part-item{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:80px;}
+.curl-token{font-family:var(--mo);padding:.25rem .6rem;background:var(--card2);border-radius:4px;font-size:.82rem;white-space:nowrap;}
+.curl-token.cmd-t{color:var(--green);}.curl-token.flag-t{color:var(--yellow);}.curl-token.url-t{color:var(--orange);}
+.curl-explain-small{font-size:.72rem;color:var(--text3);text-align:center;max-width:100px;}
+.curl-payload{border-top:1px solid var(--border);padding-top:1rem;display:flex;gap:1rem;}
+.curl-payload-token{font-family:var(--mo);font-size:.82rem;color:var(--text2);background:var(--card2);padding:.4rem .75rem;border-radius:4px;flex-shrink:0;}
+.curl-payload-explain{font-size:.82rem;color:var(--text2);}
+.curl-payload-explain strong{color:var(--text);}
+.payloads-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;}
+.payloads-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.payloads-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.payloads-table tr:last-child td{border-bottom:none;}
+.payloads-table td code{color:var(--red);background:rgba(248,113,113,.1);padding:.1rem .3rem;border-radius:3px;}
+.highlight-row{background:rgba(0,232,122,.04);}
+.highlight-row td{border-left:3px solid var(--green);}
+.record-badge{background:rgba(251,191,36,.1);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:6px;padding:.3rem .75rem;font-size:.75rem;text-align:center;margin-top:.5rem;}
+.owasp-badge{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:.4rem .75rem;font-size:.78rem;font-weight:600;text-align:center;margin:.5rem 0;}
+.smb-tree{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1.25rem;font-family:var(--mo);font-size:.85rem;color:var(--text2);margin:1rem 0;}
+
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">HackTheBox</span>
+        <span class="tag tag-category">Starting Point</span>
+        <span class="tag tag-diff">Very Easy</span>
+        <span class="tag tag-os">Linux</span>
+      </div>
+      <h1><span>Fawn</span> — FTP Anonymous Login</h1>
+      <p class="hero-sub">Explotación de vsftpd 3.0.3 con acceso anónimo habilitado en el puerto 21. La configuración permite conectarse sin credenciales reales y descargar archivos del servidor. La flag estaba accesible directamente en el directorio raíz del FTP. El script NSE ftp-anon de Nmap reveló la flag antes de la conexión manual.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Target</span><span class="stat-value green">10.129.18.193</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Linux</span></div>
+        <div class="stat"><span class="stat-label">Puerto</span><span class="stat-value">21 · FTP</span></div>
+        <div class="stat"><span class="stat-label">Tiempo</span><span class="stat-value">~3 min</span></div>
+        <div class="stat"><span class="stat-label">Comandos</span><span class="stat-value">3</span></div>
+      </div>
+    </div>
+    <!-- Orb — Right -->
+    <div class="hero-orb">
+      <canvas id="heroOrb" width="520" height="520"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<main>
+
+<div class="section">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p>La máquina Fawn expone <strong>vsftpd 3.0.3 en el puerto 21</strong> con acceso anónimo habilitado. Esto permite que cualquier persona se conecte sin credenciales reales y descargue archivos del servidor. La flag estaba accesible directamente en el directorio raíz del FTP. Hecho notable: el script NSE <code>ftp-anon</code> de Nmap reveló la flag <strong>antes de que nos conectáramos manualmente</strong>, demostrando que leer el output completo de <code>nmap -sC</code> puede ahorrarnos pasos adicionales.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>¿Qué es FTP y por qué el acceso anónimo es peligroso?</h2>
+  <p style="color:var(--text-dim);font-size:0.92rem;margin-bottom:1rem;"><strong>FTP</strong> (File Transfer Protocol) es un protocolo de red para transferir archivos. Creado en <strong>1971</strong>, es uno de los protocolos de Internet más antiguos aún en uso. El acceso anónimo permite conectarse con el usuario <code>anonymous</code> y cualquier contraseña — diseñado para distribución pública de archivos.</p>
+  <div class="vuln-card">
+    <h3>⚠ ¿Cuándo es peligroso?</h3>
+    <ul style="font-size:0.9rem;color:var(--text-dim);">
+      <li><strong>Archivos sensibles expuestos:</strong> Si los permisos no están bien configurados, archivos privados quedan accesibles a cualquier persona.</li>
+      <li><strong>Texto plano:</strong> FTP no cifra el tráfico — contraseñas y archivos viajan en claro, visibles con Wireshark.</li>
+      <li><strong>Sin autenticación real:</strong> El servidor acepta cualquier contraseña para el usuario anonymous.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Reconocimiento — Paso a Paso</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Reconocimiento</div>
+    <h3>Verificar conectividad con ping</h3>
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>Confirmar que la máquina está activa y obtener una primera pista del OS mediante el TTL, antes de lanzar herramientas más pesadas.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">ping</span> <span class="flag-opt">-c2</span> <span class="ip">10.129.18.193</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>ping</code> → herramienta ICMP de diagnóstico de red</div>
+        <div class="cmd-note"><code>-c2</code> → enviar 2 paquetes y detenerse. Sin este flag corre indefinidamente.</div>
+        <div class="cmd-note"><code>10.129.18.193</code> → IP del objetivo en la VPN de HTB</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>64 bytes from 10.129.18.193: icmp_seq=1 ttl=63 time=43.1 ms
+64 bytes from 10.129.18.193: icmp_seq=2 ttl=63 time=43.4 ms
+2 packets transmitted, 2 received, 0% packet loss</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li><code>ttl=63</code> → Linux confirmado (TTL inicial 64, menos 1 salto de red = 63)</li>
+        <li><code>0% packet loss</code> → conectividad perfecta con la VPN de HTB</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Máquina Linux activa. Iniciamos descubrimiento de puertos con nmap.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Reconocimiento</div>
+    <h3>Descubrir puertos abiertos — Nmap fase rápida</h3>
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>Mapear todos los servicios expuestos. Escaneamos los 65535 puertos para no perdernos ningún servicio en puertos no estándar.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p-</span> <span class="flag-opt">--open</span> <span class="flag-opt">-n</span> <span class="flag-opt">-T4</span> <span class="flag-opt">-sS</span> <span class="ip">10.129.18.193</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p-</code> → todos los 65535 puertos TCP</div>
+        <div class="cmd-note"><code>--open</code> → solo puertos abiertos (los cerrados/filtrados no son vectores inmediatos)</div>
+        <div class="cmd-note"><code>-n</code> → sin resolución DNS (más rápido)</div>
+        <div class="cmd-note"><code>-T4</code> → velocidad agresiva (escala T0-T5)</div>
+        <div class="cmd-note"><code>-sS</code> → SYN scan: envía SYN sin completar el handshake (más sigiloso)</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>PORT   STATE SERVICE
+21/tcp open  ftp</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>1 solo puerto abierto: <code>21/tcp</code> → FTP (File Transfer Protocol)</li>
+        <li>Superficie de ataque mínima: un único servicio = un único vector</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>FTP en puerto 21. El árbol de decisión Ghost-Ops indica: ejecutar nmap -sC para que el script <code>ftp-anon</code> detecte automáticamente el acceso anónimo.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Reconocimiento (EL MOMENTO REVELADOR)</div>
+    <h3>Enumerar FTP con scripts NSE — Nmap ya encuentra la flag</h3>
+    <div class="why-box">
+      <strong>¿Por qué esta fase es especialmente importante en Fawn?</strong>
+      <p>El script NSE <code>ftp-anon</code> se conecta automáticamente como usuario <code>anonymous</code> y lista el directorio. En esta máquina, <strong>nmap reveló flag.txt ANTES de que nos conectáramos manualmente</strong>. Este es el principio central de Ghost-Ops: leer siempre el output completo de nmap -sC antes de ejecutar comandos adicionales.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p21</span> <span class="flag-opt">-sC</span> <span class="flag-opt">-sV</span> <span class="flag-opt">-n</span> <span class="ip">10.129.18.193</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p21</code> → solo el puerto 21. No re-escanear todos los 65535.</div>
+        <div class="cmd-note"><code>-sC</code> → scripts NSE por defecto. Para FTP incluye: <strong>ftp-anon</strong> (intenta login anónimo y lista directorio), <strong>ftp-syst</strong> (info del OS vía FTP), <strong>ftp-bounce</strong> (verifica si es proxy FTP).</div>
+        <div class="cmd-note"><code>-sV</code> → detectar versión exacta del servicio FTP</div>
+        <div class="cmd-note"><code>-n</code> → sin resolución DNS</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.3
+| ftp-anon: Anonymous FTP login allowed (FTP code 230)
+|_-rw-r--r--    1 0        0              32 Jun 04  2021 flag.txt
+| ftp-syst:
+|   FTP server status:
+|      Connected to ::ffff:10.10.14.72
+|      Logged in as ftp
+|      TYPE: ASCII
+|      Control connection is plain text
+|_     vsFTPd 3.0.7 - secure, fast, stable
+
+Service Info: OS: Unix</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice cada línea?</strong>
+      <ul>
+        <li><code>vsftpd 3.0.3</code> → Very Secure FTP Daemon, servidor FTP muy común en Linux</li>
+        <li><code>ftp-anon: Anonymous FTP login allowed (FTP code 230)</code> → <strong>LOGIN ANÓNIMO CONFIRMADO</strong>. Código 230 = "User logged in, proceed" (RFC 959). El script se conectó como anonymous y el servidor lo aceptó.</li>
+        <li><code>-rw-r--r-- 1 0 0 32 Jun 04 2021 flag.txt</code> → <strong>¡La flag está aquí!</strong> Tamaño 32 bytes = longitud exacta de un hash MD5. Permisos de lectura para todos.</li>
+        <li><code>plain text</code> → FTP sin cifrado confirmado. Todo el tráfico es legible en la red.</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>El script NSE confirmó anonymous login Y localizó flag.txt. El ataque está esencialmente resuelto — solo falta conectarnos y descargar el archivo.</p>
+    </div>
+  </div>
+</div>
+
+<!-- NSE BONUS -->
+<div class="nse-bonus">
+  <h3>⭐ Bonus: Lo que Nmap ya sabía antes de que nos conectáramos</h3>
+  <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:0.75rem;">Esta máquina ilustra un principio fundamental de Ghost-Ops: <strong>los scripts NSE de Nmap pueden hacer el trabajo de reconocimiento completo</strong>. El script <code>ftp-anon</code>:</p>
+  <ol style="color:var(--text-dim);font-size:0.88rem;padding-left:1.5rem;">
+    <li>Se conecta automáticamente al servidor FTP con <code>USER anonymous</code></li>
+    <li>Verifica si el servidor responde con código 230 (login OK)</li>
+    <li>Ejecuta <code>LIST</code> para listar el directorio raíz</li>
+    <li>Reporta todo en la salida de nmap — incluyendo <code>flag.txt</code></li>
+  </ol>
+  <p style="color:var(--yellow);font-size:0.85rem;margin-top:0.75rem;font-weight:600;">Regla Ghost-Ops: Leer SIEMPRE el output completo de nmap -sC antes de ejecutar comandos adicionales.</p>
+</div>
+
+<div class="section">
+  <h2>Explotación — Paso a Paso</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 4 — Explotación</div>
+    <h3>Sesión FTP completa — login anonymous y descarga de flag</h3>
+    <div class="why-box">
+      <strong>¿Por qué conectarnos si nmap ya reveló la flag?</strong>
+      <p>Nmap nos confirmó que flag.txt existe y es accesible, pero necesitamos descargar el archivo para leerlo. El cliente <code>ftp</code> nos permite hacer exactamente eso con una sesión interactiva. Usamos <code>-n</code> para control manual del login.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">ftp</span> <span class="flag-opt">-n</span> <span class="ip">10.129.18.193</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>ftp</code> → cliente FTP de línea de comandos estándar de Linux</div>
+        <div class="cmd-note"><code>-n</code> → no hacer auto-login usando <code>~/.netrc</code> (archivo con credenciales guardadas). Con -n tomamos control manual.</div>
+        <div class="cmd-note"><code>10.129.18.193</code> → IP del servidor FTP objetivo</div>
+      </div>
+    </div>
+
+    <div class="ftp-session">
+      <div class="output-label">Sesión FTP completa</div>
+      <br>
+      <span style="color:var(--text-muted);">Connected to 10.129.18.193.</span><br>
+      <span style="color:var(--text-muted);">220 (vsFTPd 3.0.3)</span><br>
+      <br>
+      <span class="ftp-cmd">ftp&gt; quote USER anonymous</span><br>
+      <span class="ftp-resp">331 Please specify the password.</span><br>
+      <br>
+      <span class="ftp-cmd">ftp&gt; quote PASS anonymous</span><br>
+      <span class="ftp-success">230 Login successful.</span><br>
+      <br>
+      <span class="ftp-cmd">ftp&gt; ls</span><br>
+      <span class="ftp-flag">-rw-r--r--    1 0        0              32 Jun 04  2021 flag.txt</span><br>
+      <br>
+      <span class="ftp-cmd">ftp&gt; get flag.txt</span><br>
+      <span class="ftp-success">226 Transfer complete. 32 bytes received.</span><br>
+      <br>
+      <span class="ftp-cmd">ftp&gt; bye</span><br>
+      <span class="ftp-resp">221 Goodbye.</span>
+    </div>
+
+    <div class="interpret-box">
+      <strong>¿Qué hace cada comando dentro de la sesión FTP?</strong>
+      <table class="data-table">
+        <tr><th>Comando</th><th>¿Qué hace?</th><th>¿Por qué?</th></tr>
+        <tr><td><code>quote USER anonymous</code></td><td>Envía el comando FTP USER directamente al servidor</td><td>Iniciar autenticación con usuario anonymous</td></tr>
+        <tr><td><code>quote PASS anonymous</code></td><td>Envía la contraseña — el servidor acepta cualquier valor</td><td>Completar la autenticación sin contraseña real</td></tr>
+        <tr><td><code>ls</code></td><td>Lista el contenido del directorio actual en el servidor</td><td>Ver qué archivos están disponibles</td></tr>
+        <tr><td><code>get flag.txt</code></td><td>Descarga flag.txt del servidor al directorio local</td><td>Obtener la flag</td></tr>
+        <tr><td><code>bye</code></td><td>Envía QUIT al servidor y cierra la sesión limpiamente</td><td>Buena práctica: cerrar la conexión correctamente</td></tr>
+      </table>
+    </div>
+
+    <div class="info-box">
+      <p><strong>Códigos de respuesta FTP:</strong> <code>230</code> = Login exitoso | <code>331</code> = Username OK, espera password | <code>226</code> = Transferencia completa | <code>221</code> = Sesión cerrada</p>
+    </div>
+
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Archivo descargado exitosamente (32 bytes). Leemos la flag con <code>cat flag.txt</code>.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 5 — Flag</div>
+    <h3>Leer la flag con cat</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">cat</span> <span class="param">flag.txt</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>cat</code> → (concatenate) lee y muestra el contenido de un archivo en la terminal. La forma más directa de leer un archivo de texto en Linux.</div>
+        <div class="cmd-note"><code>flag.txt</code> → archivo descargado del servidor FTP en el paso anterior</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>035db21c881520061c53e0536e44f815</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>La flag es un hash MD5 de 32 caracteres hexadecimales — formato estándar de flags en HTB</li>
+        <li>Coincide con el tamaño de 32 bytes que nos informó nmap en el listado del directorio</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li>Puerto 21 abierto → siempre ejecutar <code>nmap -sC</code> primero</li>
+        <li><code>ftp-anon</code> detecta acceso anónimo automáticamente</li>
+        <li>Si ftp-anon dice YES, el ataque está prácticamente resuelto</li>
+        <li>Orden: nmap -sC → ftp -n → get → bye</li>
+        <li>Siempre explorar subdirectorios en FTP (no solo raíz)</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li>Deshabilitar FTP anónimo: <code>anonymous_enable=NO</code></li>
+        <li>Usar SFTP (FTP sobre SSH) — cifrado y seguro</li>
+        <li>Si anonymous es necesario, solo lectura, sin archivos sensibles</li>
+        <li>Revisar logs: <code>/var/log/vsftpd.log</code></li>
+        <li>Firewall: restringir puerto 21 a IPs específicas</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción en este ataque</th></tr>
+    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap descubriendo FTP en puerto 21</td></tr>
+    <tr><td><code>T1190</code></td><td>Exploit Public-Facing App</td><td>Acceso a FTP expuesto sin autenticación</td></tr>
+    <tr><td><code>T1078.001</code></td><td>Valid Accounts: Default</td><td>Login con credenciales anonymous (default FTP)</td></tr>
+    <tr><td><code>T1039</code></td><td>Data from Network Shared Drive</td><td>Descarga de flag.txt del servidor FTP</td></tr>
+  </table>
+</div>
+
+<div class="flag-box">
+  <div class="flag-label">Flag</div>
+  <div class="flag-value">035db21c881520061c53e0536e44f815</div>
+  <p style="color:var(--text-muted);font-size:0.8rem;margin-top:0.75rem;">Archivo: ftp://10.129.18.193/flag.txt</p>
+</div>
+
+</main>
+<aside class="sidebar">
+
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">Máquina</span><span class="meta-value">Fawn</span></div>
+    <div class="meta-row"><span class="meta-label">Plataforma</span><span class="meta-value">HackTheBox</span></div>
+    <div class="meta-row"><span class="meta-label">Categoría</span><span class="meta-value">Starting Point</span></div>
+    <div class="meta-row"><span class="meta-label">Dificultad</span><span class="meta-value" style="color:var(--green);">Very Easy</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux Unix</span></div>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.18.193</span></div>
+    <div class="meta-row"><span class="meta-label">Puerto</span><span class="meta-value">21/tcp FTP</span></div>
+    <div class="meta-row"><span class="meta-label">Servicio</span><span class="meta-value">vsftpd 3.0.3</span></div>
+    <div class="meta-row"><span class="meta-label">Fecha</span><span class="meta-value">2026-03-15</span></div>
+    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~3 min</span></div>
+    <div class="meta-row"><span class="meta-label">Comandos</span><span class="meta-value">3</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Herramientas Usadas</h4>
+    <div style="display:flex;flex-direction:column;gap:.4rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--green);font-family:'JetBrains Mono',monospace;font-size:.75rem;">ping</span>
+        <span style="color:var(--text3);font-size:.75rem;">Diagnóstico ICMP + OS fingerprint</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--green);font-family:'JetBrains Mono',monospace;font-size:.75rem;">nmap</span>
+        <span style="color:var(--text3);font-size:.75rem;">Port scan + scripts NSE (ftp-anon)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;">
+        <span style="color:var(--green);font-family:'JetBrains Mono',monospace;font-size:.75rem;">ftp</span>
+        <span style="color:var(--text3);font-size:.75rem;">Cliente FTP anonymous login</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Tabla de Contenidos</h4>
+    <div style="display:flex;flex-direction:column;gap:.3rem;">
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">Resumen Ejecutivo</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">¿Qué es FTP?</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">Reconocimiento</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">NSE Bonus</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">Explotación</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">Lecciones</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">MITRE ATT&CK</a>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1190</span>
+    <span class="mitre-tag">T1078.001</span>
+    <span class="mitre-tag">T1039</span>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Flag</h4>
+    <div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:8px;padding:.9rem;text-align:center;">
+      <div style="font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;">flag.txt</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--green);word-break:break-all;font-weight:700;">035db21c881520061c53e0536e44f815</div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Cadena de Ataque</h4>
+    <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.75rem;">
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text2);font-family:'JetBrains Mono',monospace;">1. ping → TTL=63 Linux</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text2);font-family:'JetBrains Mono',monospace;">2. nmap -p- → puerto 21</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--orange);color:var(--text2);font-family:'JetBrains Mono',monospace;">3. nmap -sC → ftp-anon YES</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--yellow);color:var(--text2);font-family:'JetBrains Mono',monospace;">4. ftp anonymous → ls</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--green);color:var(--green);font-family:'JetBrains Mono',monospace;font-weight:700;">5. get flag.txt → FLAG ✅</div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Ghost-Ops Score</h4>
+    <div class="score-num">3/3</div>
+    <div class="score-label">predicciones correctas ✅</div>
+    <p style="font-size:0.75rem;color:var(--text3);text-align:center;margin-top:0.5rem;">Nmap -sC reveló flag.txt antes de conectarnos</p>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item"><span class="glosario-term">FTP</span><span class="glosario-def">File Transfer Protocol — transferencia de archivos, puerto 21, sin cifrado</span></div>
+    <div class="glosario-item"><span class="glosario-term">vsftpd</span><span class="glosario-def">Very Secure FTP Daemon — servidor FTP open source para Linux</span></div>
+    <div class="glosario-item"><span class="glosario-term">ftp-anon</span><span class="glosario-def">Script NSE que detecta acceso anónimo FTP automáticamente</span></div>
+    <div class="glosario-item"><span class="glosario-term">Código 230</span><span class="glosario-def">"User logged in, proceed" — login FTP exitoso</span></div>
+    <div class="glosario-item"><span class="glosario-term">SFTP</span><span class="glosario-def">FTP sobre SSH — versión cifrada y segura de FTP</span></div>
+    <div class="glosario-item"><span class="glosario-term">NSE</span><span class="glosario-def">Nmap Scripting Engine — scripts Lua para automatizar reconocimiento</span></div>
+  </div>
+
+</aside>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer style="background:var(--forest);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text3);font-size:.82rem;">HTB Starting Point · Fawn · Very Easy · Linux · FTP 21 · 2026-03-15</p>
+  <p style="color:var(--text3);font-size:.78rem;margin-top:.35rem;">Reporte generado por <span style="color:var(--green);">kali</span> · Cadena: ping → nmap -sC (ftp-anon) → ftp anonymous → flag</p>
+</footer>
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script>
+(function(){
+  var c=document.getElementById('heroOrb');if(!c)return;
+  var r=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(260,260,false);
+  var s=new THREE.Scene(),cam=new THREE.PerspectiveCamera(58,1,0.1,100);cam.position.z=7.4;
+  var cfg=[[1.45,3,0.06],[2.1,1,0.03],[2.75,1,0.018]];
+  var sp=cfg.map(function(v){var m=new THREE.Mesh(new THREE.IcosahedronGeometry(v[0],v[1]),new THREE.MeshBasicMaterial({color:0x00e87a,wireframe:true,transparent:true,opacity:v[2]}));s.add(m);return m;});
+  var t=0;(function a(){requestAnimationFrame(a);t+=0.012;sp[0].rotation.y=t*0.35;sp[0].rotation.x=t*0.18;sp[1].rotation.y=-t*0.25;sp[1].rotation.z=t*0.15;sp[2].rotation.y=t*0.15;sp[2].rotation.z=-t*0.1;r.render(s,cam);})();
+})();
+</script>
+</body>
+</html>
