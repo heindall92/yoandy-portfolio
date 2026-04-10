@@ -864,6 +864,8 @@ const Index = () => {
               ? "linear-gradient(135deg,#12051e,#200838)"
               : w.platform === "Cert"
               ? "linear-gradient(135deg,#0a1628,#0d2040)"
+              : w.platform === "THL"
+              ? "linear-gradient(135deg,#1a1005,#2d1a08)"
               : "linear-gradient(135deg,#1a0808,#350d0d)";
             return (
               <Link to={`/report/${w.slug}`} className="wuc" key={w.slug}>
