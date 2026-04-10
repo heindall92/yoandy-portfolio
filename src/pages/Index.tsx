@@ -13,6 +13,12 @@ const allWriteups = [
   ...sherlocks.map((s) => ({ ...s, platform: "Sherlock", type: "sherlock", os: "N/A" })),
   ...hmvMachines.map((m) => ({ ...m, platform: "HackMyVM", type: "hmv" })),
   {
+    slug: "buda-thl", emoji: "🧘", name: "Buda", platform: "THL", type: "thl",
+    desc: "Linux Hard de The Hacker Labs. Enumeración de virtual hosts, SQL Injection para credenciales FTP, crackeo de ZIP cifrado, port knocking para desbloquear SSH y escalada con SUID /usr/bin/bash.",
+    tags: ["SQLi", "Port Knocking", "SUID", "ffuf", "fcrackzip"],
+    difficulty: "HARD", diffColor: "destructive", os: "Linux",
+  },
+  {
     slug: "ejptv2-cert", emoji: "🎯", name: "eJPTv2", platform: "Cert", type: "cert",
     desc: "Evaluación ofensiva completa de red híbrida DMZ + red interna. Reconocimiento y enumeración de 7 hosts, explotación multi-vector (Drupalgeddon2, FTP webshell, WordPress RCE, SMB brute force), pivoting via autoroute y post-explotación con hashdump. 86% aprobado.",
     tags: ["eJPTv2", "Pivoting", "Drupalgeddon2", "Metasploit", "SMB"],
@@ -389,6 +395,7 @@ const Index = () => {
     if (filter === "htb") matchFilter = w.platform === "HTB";
     else if (filter === "sherlock") matchFilter = w.platform === "Sherlock";
     else if (filter === "hmv") matchFilter = w.platform === "HackMyVM";
+    else if (filter === "thl") matchFilter = w.platform === "THL";
     else if (filter === "cert") matchFilter = w.platform === "Cert";
     else if (filter === "easy") matchFilter = w.difficulty.toLowerCase().includes("easy");
     else if (filter === "medium") matchFilter = w.difficulty.toLowerCase().includes("medium");
@@ -838,6 +845,7 @@ const Index = () => {
             { key: "htb", label: "HackTheBox" },
             { key: "sherlock", label: "Sherlocks" },
             { key: "hmv", label: "HackMyVM" },
+            { key: "thl", label: "The Hacker Labs" },
             { key: "cert", label: "Certs" },
             { key: "easy", label: "Easy" },
             { key: "medium", label: "Medium" },
@@ -856,6 +864,8 @@ const Index = () => {
               ? "linear-gradient(135deg,#12051e,#200838)"
               : w.platform === "Cert"
               ? "linear-gradient(135deg,#0a1628,#0d2040)"
+              : w.platform === "THL"
+              ? "linear-gradient(135deg,#1a1005,#2d1a08)"
               : "linear-gradient(135deg,#1a0808,#350d0d)";
             return (
               <Link to={`/report/${w.slug}`} className="wuc" key={w.slug}>
