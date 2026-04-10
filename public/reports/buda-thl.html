@@ -102,9 +102,8 @@ h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
 .stat-value.green { color: var(--green); }
 
 /* Orb */
-.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; }
-.orb-w { position: relative; width: 260px; height: 260px; }
-.orb-w canvas { position: absolute; inset: 0; }
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; width: 260px; height: 260px; }
+.hero-orb canvas { display: block; width: 260px !important; height: 260px !important; }
 
 /* ─── LAYOUT ─── */
 .container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
@@ -215,9 +214,7 @@ h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
     </div>
     <!-- Orb — Right -->
     <div class="hero-orb">
-      <div class="orb-w">
-        <canvas id="heroOrb" width="520" height="520"></canvas>
-      </div>
+      <canvas id="heroOrb" width="520" height="520"></canvas>
     </div>
   </div>
 </div>
@@ -1019,36 +1016,16 @@ bash-5.1# cat /root/root.txt
   <p style="color:var(--text-muted);font-size:.78rem;margin-top:.35rem;">Reporte generado por <span style="color:var(--accent);">kali</span> · Cadena: vhost → SQLi → FTP → ZIP crack → port knock → SSH → SUID bash → root</p>
 </footer>
 
-<!-- Three.js Orb -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <script>
 (function(){
-  const canvas = document.getElementById('heroOrb');
-  if (!canvas) return;
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  renderer.setSize(260, 260);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-  camera.position.z = 7.4;
-  const mat1 = new THREE.MeshBasicMaterial({ color: 0x00e87a, wireframe: true, transparent: true, opacity: 0.18 });
-  const mat2 = new THREE.MeshBasicMaterial({ color: 0x00e87a, wireframe: true, transparent: true, opacity: 0.10 });
-  const mat3 = new THREE.MeshBasicMaterial({ color: 0x00e87a, wireframe: true, transparent: true, opacity: 0.06 });
-  const g1 = new THREE.IcosahedronGeometry(1.8, 1);
-  const g2 = new THREE.IcosahedronGeometry(2.4, 0);
-  const g3 = new THREE.IcosahedronGeometry(3.0, 0);
-  const m1 = new THREE.Mesh(g1, mat1);
-  const m2 = new THREE.Mesh(g2, mat2);
-  const m3 = new THREE.Mesh(g3, mat3);
-  scene.add(m1, m2, m3);
-  function animate() {
-    requestAnimationFrame(animate);
-    m1.rotation.x += 0.003; m1.rotation.y += 0.005;
-    m2.rotation.x -= 0.002; m2.rotation.y += 0.003;
-    m3.rotation.x += 0.001; m3.rotation.y -= 0.002;
-    renderer.render(scene, camera);
-  }
-  animate();
+  var c=document.getElementById('heroOrb');if(!c)return;
+  var r=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(260,260,false);
+  var s=new THREE.Scene(),cam=new THREE.PerspectiveCamera(58,1,0.1,100);cam.position.z=7.4;
+  var cfg=[[1.45,3,0.06],[2.1,1,0.03],[2.75,1,0.018]];
+  var sp=cfg.map(function(v){var m=new THREE.Mesh(new THREE.IcosahedronGeometry(v[0],v[1]),new THREE.MeshBasicMaterial({color:0x00e87a,wireframe:true,transparent:true,opacity:v[2]}));s.add(m);return m;});
+  var t=0;(function a(){requestAnimationFrame(a);t+=0.012;sp[0].rotation.y=t*0.35;sp[0].rotation.x=t*0.18;sp[1].rotation.y=-t*0.25;sp[1].rotation.z=t*0.15;sp[2].rotation.y=t*0.15;sp[2].rotation.z=-t*0.1;r.render(s,cam);})();
 })();
 </script>
 
