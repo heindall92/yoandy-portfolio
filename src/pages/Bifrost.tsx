@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { authenticator } from "otplib";
 import { reports } from "@/lib/reports-registry";
 import {
   getProtectionConfig,
@@ -15,7 +16,7 @@ import {
   type AccessLogEntry,
 } from "@/lib/bifrost-config";
 
-const SESSION_KEY = "bifrost_admin";
+const SESSION_KEY = "bifrost_session";
 const SESSION_DURATION = 7200000; // 2 hours
 const LOCKOUT_KEY = "bifrost_lockout";
 const MAX_ATTEMPTS = 3;
@@ -56,7 +57,7 @@ const btnStyle: React.CSSProperties = {
 const Bifrost = () => {
   const navigate = useNavigate();
   const [authed, setAuthed] = useState(false);
-  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const [loginError, setLoginError] = useState("");
   const [attempts, setAttempts] = useState(0);
   const [lockoutUntil, setLockoutUntil] = useState(0);
@@ -70,7 +71,7 @@ const Bifrost = () => {
   const [logs, setLogs] = useState<AccessLogEntry[]>([]);
   const [saved, setSaved] = useState(false);
 
-  const bifrostKey = import.meta.env.VITE_BIFROST_KEY;
+  const bifrostTotpSecret = import.meta.env.VITE_BIFROST_TOTP_SECRET;
 
   // Add noindex meta
   useEffect(() => {
@@ -180,12 +181,20 @@ const Bifrost = () => {
       return;
     }
 
-    if (!bifrostKey) {
-      setLoginError("BIFROST: Variable VITE_BIFROST_KEY no configurada en .env");
+    if (!bifrostTotpSecret) {
+      setLoginError("BIFROST: Variable VITE_BIFROST_TOTP_SECRET no configurada en .env");
       return;
     }
 
-    if (password === bifrostKey) {
+    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+      setLoginError("// ERROR: Código debe ser 6 dígitos");
+      setCode("");
+      return;
+    }
+
+    const isValid = authenticator.check(code, bifrostTotpSecret);
+
+    if (isValid) {
       const expires = Date.now() + SESSION_DURATION;
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires }));
       setAuthed(true);
@@ -197,14 +206,14 @@ const Bifrost = () => {
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
       if (newAttempts >= MAX_ATTEMPTS) {
-        const until = Date.now() + 300000; // 5 min
+        const until = Date.now() + 300000;
         setLockoutUntil(until);
         sessionStorage.setItem(LOCKOUT_KEY, JSON.stringify({ until, count: newAttempts }));
         setLoginError(`BLOQUEADO: 3 intentos fallidos. Espera 5 minutos.`);
       } else {
-        setLoginError(`// ERROR: Contraseña incorrecta (${newAttempts}/${MAX_ATTEMPTS})`);
+        setLoginError(`// ERROR: Código TOTP inválido (${newAttempts}/${MAX_ATTEMPTS})`);
       }
-      setPassword("");
+      setCode("");
     }
   };
 
@@ -256,10 +265,6 @@ const Bifrost = () => {
   // Not authed → redirect silently or show login
   if (!authed) {
     // If no bifrost key and no session, redirect
-    if (!bifrostKey && !password) {
-      // Still show login so the error message is visible
-    }
-
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a0a", fontFamily: "'JetBrains Mono', monospace" }}>
         <form onSubmit={handleLogin} style={{ background: "#111", border: "1px solid #00ff41", borderRadius: 8, padding: "48px 40px", maxWidth: 420, width: "100%", textAlign: "center", boxShadow: "0 0 30px rgba(0,255,65,0.08)" }}>
@@ -267,18 +272,20 @@ const Bifrost = () => {
             🌉
           </div>
           <h2 style={{ color: "#00ff41", fontSize: 18, letterSpacing: 2, marginBottom: 8, textShadow: "0 0 8px rgba(0,255,65,0.4)" }}>
-            // BIFROST
+            // BIFROST ACCESS
           </h2>
-          <p style={{ color: "#555", fontSize: 12, marginBottom: 28 }}>Contraseña maestra requerida</p>
+          <p style={{ color: "#555", fontSize: 12, marginBottom: 28 }}>Código TOTP requerido</p>
 
           <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            type="text"
+            inputMode="numeric"
+            maxLength={6}
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="000000"
             autoFocus
             disabled={lockoutUntil > Date.now()}
-            style={{ ...inputStyle, width: "100%", textAlign: "center", fontSize: 18, letterSpacing: 6, marginBottom: 4 }}
+            style={{ ...inputStyle, width: "100%", textAlign: "center", fontSize: 24, letterSpacing: 12, marginBottom: 4 }}
           />
 
           {loginError && (
