@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DreamJob-1 — Sherlock Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+}
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
+}
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
+}
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(0,232,122,0.1); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff { background: rgba(0,232,122,0.08); color: var(--green); border: 1px solid rgba(0,232,122,0.2); }
+.tag-diff-medium { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.tag-diff-hard { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.tag-os { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.tag-staff { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.hero-stats {
+  display: flex; gap: 28px; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label {
+  font-family: var(--mo);
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3);
+}
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
+
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; }
+.orb-w { position: relative; width: 260px; height: 260px; }
+.orb-w .orb-el { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.orb-ring { position: absolute; border-radius: 50%; border: 1px solid; animation: ors linear infinite; }
+.orb-r1 { width: 260px; height: 260px; border-color: rgba(0,232,122,0.08); animation-duration: 30s; }
+.orb-r2 { width: 214px; height: 214px; border-color: rgba(0,232,122,0.12); animation-duration: 20s; animation-direction: reverse; border-style: dashed; }
+.orb-r3 { width: 172px; height: 172px; border-color: rgba(0,232,122,0.15); animation-duration: 15s; }
+@keyframes ors { to { transform: rotate(360deg); } }
+.orb-aura {
+  position: absolute; width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,232,122,0.18) 0%, rgba(0,232,122,0.08) 35%, transparent 70%);
+  animation: oap 4s ease-in-out infinite;
+}
+@keyframes oap { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+.orb-core {
+  width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, rgba(0,232,122,0.35) 0%, rgba(15,48,32,0.8) 50%, rgba(11,26,16,0.95) 100%);
+  border: 1px solid rgba(0,232,122,0.3);
+  box-shadow: 0 0 60px rgba(0,232,122,0.2), 0 0 120px rgba(0,232,122,0.08), inset 0 0 40px rgba(0,232,122,0.1);
+  position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.orb-core::before {
+  content: ''; position: absolute; top: 10%; left: 15%; width: 40%; height: 30%;
+  border-radius: 50%; background: rgba(255,255,255,0.12); filter: blur(8px);
+}
+.orb-rune {
+  font-family: var(--bb); font-size: 2.2rem; color: rgba(0,232,122,0.7);
+  text-shadow: 0 0 30px var(--green); position: relative; z-index: 2;
+  animation: org 3s ease-in-out infinite;
+}
+@keyframes org { 0%,100% { text-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,232,122,0.4); } 50% { text-shadow: 0 0 40px var(--green), 0 0 80px rgba(0,232,122,0.6); } }
+.orb-scan {
+  position: absolute; left: 0; right: 0; height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(0,232,122,0.5), transparent);
+  animation: osc 3s linear infinite; z-index: 4; pointer-events: none;
+}
+@keyframes osc { 0% { top: 5%; opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.5; } 100% { top: 95%; opacity: 0; } }
+.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pf linear infinite}
+.p1{top:15%;left:25%;animation-duration:6s}.p2{top:25%;right:18%;animation-duration:8s;animation-delay:-2s;width:4px;height:4px}.p3{bottom:20%;left:30%;animation-duration:7s;animation-delay:-4s}.p4{bottom:30%;right:25%;animation-duration:9s;animation-delay:-1s;opacity:.6}
+@keyframes pf{0%{transform:translateY(0) scale(1);opacity:1}33%{transform:translateY(-12px) translateX(8px) scale(1.3);opacity:.7}66%{transform:translateY(-6px) translateX(-10px) scale(.8);opacity:.9}100%{transform:translateY(0) scale(1);opacity:1}}
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}.code-compare,.lessons-grid{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.agent-panel{grid-template-columns:1fr;}}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--cyan);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--cyan);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text2);}
+.warning-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:1rem;display:flex;gap:1rem;align-items:flex-start;margin:1rem 0;}
+.warning-icon{font-size:1.5rem;flex-shrink:0;}
+.warning-card strong{color:var(--red);display:block;margin-bottom:.25rem;}
+.warning-card p{font-size:.85rem;color:var(--text2);}
+.worknotes-box{background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.15);border-radius:10px;padding:1.25rem;margin:1rem 0;}
+.worknotes-box h4{color:var(--yellow);font-size:.85rem;margin-bottom:.75rem;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table .highlight{color:var(--green);font-weight:600;}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--green);text-align:center;line-height:1;margin:.5rem 0;font-family:var(--bb);}
+.score-label{text-align:center;font-size:.75rem;color:var(--text3);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
+
+/* ─── EXTRA COMPONENT STYLES ─── */
+.nse-bonus{background:linear-gradient(135deg,rgba(251,191,36,.06),rgba(251,191,36,.02));border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.nse-bonus h3{color:var(--yellow);margin-bottom:.75rem;}
+.ftp-session{background:rgba(5,14,8,.9);border-radius:12px;padding:1.25rem;margin:1rem 0;font-family:var(--mo);font-size:.82rem;}
+.ftp-cmd{color:var(--cyan);}.ftp-resp{color:var(--text3);}.ftp-success{color:var(--green);}.ftp-flag{color:var(--yellow);font-weight:700;}
+.key-dump{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin:1.5rem 0;font-family:var(--mo);}
+.key-dump-header{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:1rem;}
+.key-row{display:flex;align-items:center;gap:1rem;padding:.5rem .75rem;border-radius:6px;margin:.3rem 0;}
+.key-row.flag-key{background:rgba(0,232,122,.05);border:1px solid rgba(0,232,122,.15);}
+.key-name{color:var(--cyan);min-width:60px;font-weight:600;}
+.key-arrow{color:var(--border);}.key-value{color:var(--text2);flex:1;}
+.key-row.flag-key .key-value{color:var(--green);font-weight:600;}
+.key-badge{background:rgba(0,232,122,.15);color:var(--green);padding:.1rem .5rem;border-radius:4px;font-size:.7rem;font-weight:700;border:1px solid rgba(0,232,122,.3);}
+.rce-path{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:1.25rem;background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:10px;margin:1rem 0;}
+.rce-step{background:var(--card2);padding:.35rem .75rem;border-radius:6px;font-family:var(--mo);font-size:.8rem;color:var(--text2);}
+.rce-arrow{color:var(--text3);font-size:1.2rem;}
+.rce-result{color:var(--red);border:1px solid rgba(248,113,113,.3);background:rgba(248,113,113,.08);}
+.redis-cmd-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;font-family:var(--mo);}
+.redis-cmd-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.redis-cmd-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.redis-cmd-table tr:last-child td{border-bottom:none;}
+.sqli-box{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;margin:1.5rem 0;border:1px solid var(--border);}
+.sqli-row{margin:.75rem 0;display:flex;align-items:flex-start;gap:1rem;}
+.sqli-label{color:var(--text3);font-size:.78rem;min-width:110px;font-family:var(--mo);padding-top:.2rem;flex-shrink:0;}
+.sqli-query{font-family:var(--mo);font-size:.88rem;line-height:1.8;flex:1;}
+.q-keyword{color:var(--blue);font-weight:700;}.q-string{color:var(--green);}.q-inject{color:var(--red);font-weight:900;font-size:1.1rem;}
+.q-comment{color:var(--text3);text-decoration:line-through;opacity:.55;}.q-result{color:var(--yellow);font-size:.8rem;margin-left:.5rem;}
+.sqli-divider{border:none;border-top:1px solid var(--border);margin:.75rem 0;}
+.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
+.vuln-code,.safe-code{border-radius:8px;padding:1rem;border:1px solid;}
+.vuln-code{background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.3);}
+.safe-code{background:rgba(0,232,122,.05);border-color:rgba(0,232,122,.3);}
+.code-header{font-size:.82rem;font-weight:700;margin-bottom:.75rem;}
+.vuln-code .code-header{color:var(--red);}.safe-code .code-header{color:var(--green);}
+.code-box{background:rgba(5,14,8,.9);border-radius:6px;padding:.75rem;font-family:var(--mo);font-size:.78rem;color:var(--text2);margin:.5rem 0;}
+.code-note{font-size:.8rem;margin-top:.5rem;}
+.vuln-code .code-note{color:var(--red);}.safe-code .code-note{color:var(--green);}
+.curl-breakdown{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;border:1px solid var(--border);margin:1rem 0;}
+.curl-parts-top{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;}
+.curl-part-item{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:80px;}
+.curl-token{font-family:var(--mo);padding:.25rem .6rem;background:var(--card2);border-radius:4px;font-size:.82rem;white-space:nowrap;}
+.curl-token.cmd-t{color:var(--green);}.curl-token.flag-t{color:var(--yellow);}.curl-token.url-t{color:var(--orange);}
+.curl-explain-small{font-size:.72rem;color:var(--text3);text-align:center;max-width:100px;}
+.curl-payload{border-top:1px solid var(--border);padding-top:1rem;display:flex;gap:1rem;}
+.curl-payload-token{font-family:var(--mo);font-size:.82rem;color:var(--text2);background:var(--card2);padding:.4rem .75rem;border-radius:4px;flex-shrink:0;}
+.curl-payload-explain{font-size:.82rem;color:var(--text2);}
+.curl-payload-explain strong{color:var(--text);}
+.payloads-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;}
+.payloads-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.payloads-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.payloads-table tr:last-child td{border-bottom:none;}
+.payloads-table td code{color:var(--red);background:rgba(248,113,113,.1);padding:.1rem .3rem;border-radius:3px;}
+.highlight-row{background:rgba(0,232,122,.04);}
+.highlight-row td{border-left:3px solid var(--green);}
+.record-badge{background:rgba(251,191,36,.1);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:6px;padding:.3rem .75rem;font-size:.75rem;text-align:center;margin-top:.5rem;}
+.owasp-badge{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:.4rem .75rem;font-size:.78rem;font-weight:600;text-align:center;margin:.5rem 0;}
+.smb-tree{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1.25rem;font-family:var(--mo);font-size:.85rem;color:var(--text2);margin:1rem 0;}
+
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">Sherlock</span>
+        <span class="tag tag-category">DFIR</span>
+        <span class="tag tag-diff">Easy</span>
+        <span class="tag tag-os">Windows</span>
+      </div>
+      <h1><span>DreamJob-1</span> — Phishing Campaign Analysis</h1>
+      <p class="hero-sub">Análisis forense de una campaña de phishing sofisticada. Investigación de correos maliciosos, análisis de documentos con macros, identificación de indicadores de compromiso (IoCs) y reconstrucción de la cadena de infección.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Tipo</span><span class="stat-value">Blue Team</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Windows</span></div>
+        <div class="stat"><span class="stat-label">Área</span><span class="stat-value">DFIR</span></div>
+        <div class="stat"><span class="stat-label">Artefactos</span><span class="stat-value">Email + Docs</span></div>
+      </div>
+    </div>
+    <!-- Orb — Right -->
+    <div class="hero-orb">
+      <div class="orb-w">
+        <div class="orb-el">
+          <div class="orb-ring orb-r1"></div>
+          <div class="orb-ring orb-r2"></div>
+          <div class="orb-ring orb-r3"></div>
+          <div class="orb-aura"></div>
+          <div class="orb-core"><span class="orb-rune">ᚺ</span></div>
+          <div class="orb-scan"></div>
+          <div class="particle p1"></div>
+          <div class="particle p2"></div>
+          <div class="particle p3"></div>
+          <div class="particle p4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="layout">
+
+    <main class="content">
+
+      <h2 id="scenario"><div class="ico">📋</div> Escenario</h2>
+      <p>
+        El analista de CTI de una organización de defensa ha recibido alertas sobre un posible ataque de spearphishing con temática de ofertas de empleo. Se sospecha que el actor detrás del ataque es <strong>Lazarus Group</strong>, el prolífico APT de origen norcoreano. La investigación requiere recopilar Cyber Threat Intelligence para caracterizar la campaña, identificar sus IOCs y mapear las TTPs del actor.
+      </p>
+
+      <div class="apt-card">
+        <div class="apt-title">Lazarus Group</div>
+        <div class="apt-sub">APT38 &nbsp;·&nbsp; Nexo gubernamental: Corea del Norte &nbsp;·&nbsp; Bureau 121</div>
+        <div class="apt-grid">
+          <div class="apt-item">
+            <div class="apt-item-label">Primera actividad</div>
+            <div class="apt-item-value">~2009</div>
+          </div>
+          <div class="apt-item">
+            <div class="apt-item-label">Motivación</div>
+            <div class="apt-item-value">Espionaje + Financiero</div>
+          </div>
+          <div class="apt-item">
+            <div class="apt-item-label">Sectores objetivo</div>
+            <div class="apt-item-value">Defensa, Crypto, Finanzas</div>
+          </div>
+          <div class="apt-item">
+            <div class="apt-item-label">Operación analizada</div>
+            <div class="apt-item-value">Dream Job</div>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="operacion"><div class="ico">🎯</div> Operación Dream Job</h2>
+      <p>
+        La <strong>Operación Dream Job</strong> es una campaña de spearphishing altamente sofisticada que explota la psicología humana: el deseo de mejorar profesionalmente. Los objetivos reciben ofertas de empleo atractivas de empresas de defensa y tecnología de alto perfil como Lockheed Martin, BAE Systems o Boeing. Toda la cadena de infección parte de este engaño.
+      </p>
+
+      <div class="callout callout-warning">
+        <strong>⚠ Primera observación</strong>
+        La Operación Dream Job fue detectada por primera vez en <strong>septiembre de 2019</strong> y continúa activa en variantes evolutivas. Esta longevidad demuestra la efectividad de las técnicas de ingeniería social del actor.
+      </div>
+
+      <h3>Sub-Campañas Identificadas</h3>
+      <p>
+        La operación no es monolítica; evolucionó en sub-campañas que comparten infraestructura y TTPs pero adaptan el señuelo al objetivo:
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;">
+        <span class="campaign-tag">Operation Dream Job (original)</span>
+        <span class="campaign-tag">Operation North Star</span>
+        <span class="campaign-tag">Operation Interception</span>
+      </div>
+      <p>
+        Todas las sub-campañas comparten el eje central: documentos de Office con macros maliciosas disfrazados de contratos de empleo, hojas salariales o descripciones de puestos en empresas de defensa reconocidas.
+      </p>
+
+      <h2 id="cadena"><div class="ico">⛓</div> Cadena de Infección</h2>
+
+      <div class="phase-header">
+        <div class="phase-num">1</div>
+        <div>
+          <div class="phase-title">Initial Access — Spearphishing</div>
+          <div class="phase-desc">Documento Word malicioso como señuelo laboral</div>
+        </div>
+      </div>
+      <p>
+        El vector inicial es un documento de Microsoft Word especialmente crafteado, nombrado para parecer una oferta legítima:
+      </p>
+      <div class="highlight-box">
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:8px;">DOCUMENTO SEÑUELO</div>
+        <code>Salary_Lockheed_Martin_confidential_job_opportunities.doc</code>
+        <div style="margin-top:8px;font-size:13px;color:var(--text-muted);">El nombre invoca una empresa de defensa de alto perfil (Lockheed Martin) y sugiere información confidencial, creando urgencia y curiosidad en el objetivo.</div>
+      </div>
+
+      <div class="phase-header">
+        <div class="phase-num">2</div>
+        <div>
+          <div class="phase-title">Execution — Macro VBA</div>
+          <div class="phase-desc">Descarga de payload de segunda etapa</div>
+        </div>
+      </div>
+      <p>
+        El documento contiene una macro VBA que, al ser ejecutada (habitualmente con la excusa de "habilitar contenido"), realiza una petición HTTP a la infraestructura C2 del actor para descargar el payload de segunda etapa:
+      </p>
+      <pre><code>https://markettrendingcenter.com/lk_job_oppor.docx</code><span class="pre-label">URL C2</span></pre>
+      <p>
+        El dominio está diseñado para parecer legítimo (simulando un centro de tendencias de mercado). El payload descargado es otro documento que finalmente despliega el RAT <strong>DRATzarus</strong>.
+      </p>
+
+      <div class="phase-header">
+        <div class="phase-num">3</div>
+        <div>
+          <div class="phase-title">Execution — LOLBins</div>
+          <div class="phase-desc">Ejecución mediante binarios legítimos del sistema</div>
+        </div>
+      </div>
+      <p>
+        Una característica distintiva de Lazarus Group es el abuso de <strong>LOLBins</strong> (Living-off-the-Land Binaries). En lugar de ejecutar malware directamente (lo que podría activar antivirus), utiliza binarios firmados y legítimos de Windows:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>LOLBin</th><th>Uso por Lazarus</th><th>MITRE</th></tr></thead>
+          <tbody>
+            <tr><td><code>regsvr32.exe</code></td><td>Cargar DLLs maliciosas desde URLs remotas</td><td><span class="mitre-tag">T1218.010</span></td></tr>
+            <tr><td><code>rundll32.exe</code></td><td>Ejecución de código malicioso en DLLs</td><td><span class="mitre-tag">T1218.011</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="phase-header">
+        <div class="phase-num">4</div>
+        <div>
+          <div class="phase-title">Lateral Movement — Internal Spearphishing</div>
+          <div class="phase-desc">T1534 — Expansión dentro de la red comprometida</div>
+        </div>
+      </div>
+      <p>
+        Una vez dentro de la red, Lazarus no usa herramientas de movimiento lateral convencionales. En cambio, aplica <strong>Internal Spearphishing (T1534)</strong>: envío de emails de phishing desde cuentas internas ya comprometidas hacia otros empleados de la organización. Esto elude controles de seguridad de email porque el remitente es interno y de confianza.
+      </p>
+
+      <div class="phase-header">
+        <div class="phase-num">5</div>
+        <div>
+          <div class="phase-title">Command &amp; Control — DRATzarus RAT</div>
+          <div class="phase-desc">Remote Access Trojan de Lazarus Group</div>
+        </div>
+      </div>
+      <p>
+        El payload final es <strong>DRATzarus</strong>, un RAT (Remote Access Trojan) desarrollado internamente por Lazarus Group. Sus características clave:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Característica</th><th>Detalle</th></tr></thead>
+          <tbody>
+            <tr><td>Método de ejecución</td><td>Native API (evita detección por hooking de API de alto nivel)</td></tr>
+            <tr><td>Anti-sandbox</td><td>Comprobaciones temporales (time-based checks)</td></tr>
+            <tr><td>Anti-debug</td><td><code>IsDebuggerPresent</code> Windows API</td></tr>
+            <tr><td>Relación</td><td>Comparte código con el malware MATA (otro framework de Lazarus)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="iocs"><div class="ico">🔬</div> Análisis de IOCs</h2>
+      <p>
+        La investigación de IOCs se realiza con <strong>VirusTotal</strong> para correlacionar hashes conocidos y extraer metadatos de los artefactos. Los artefactos analizados incluyen:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Artefacto</th><th>Tipo</th><th>Fuente de análisis</th></tr></thead>
+          <tbody>
+            <tr><td><code>IEXPLORE.exe</code></td><td>Ejecutable (disfrazado como Internet Explorer)</td><td>VirusTotal</td></tr>
+            <tr><td><code>BAE_HPC_SE.iso</code></td><td>Imagen ISO como vehículo de entrega</td><td>VirusTotal</td></tr>
+            <tr><td>Documento Word señuelo</td><td>Archivo .doc con macro VBA</td><td>VirusTotal + metadata2go</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>💡 Metadata del Documento</strong>
+        El análisis de metadatos del documento señuelo con herramientas como <strong>metadata2go.com</strong> reveló información sobre el autor original y las modificaciones. Este tipo de descuido operacional por parte del actor es valioso para la atribución.
+      </div>
+
+      <h2 id="mitre"><div class="ico">🎯</div> Mapeo MITRE ATT&CK</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Técnica</th><th>Táctica</th><th>Observación</th></tr></thead>
+          <tbody>
+            <tr><td><span class="mitre-tag">T1566.001</span></td><td>Spearphishing Attachment</td><td>Initial Access</td><td>Documento Word con macro</td></tr>
+            <tr><td><span class="mitre-tag">T1059.005</span></td><td>Visual Basic</td><td>Execution</td><td>Macro VBA en el documento señuelo</td></tr>
+            <tr><td><span class="mitre-tag">T1218.010</span></td><td>Signed Binary Proxy — Regsvr32</td><td>Defense Evasion / Execution</td><td>LOLBin para cargar DLLs</td></tr>
+            <tr><td><span class="mitre-tag">T1218.011</span></td><td>Signed Binary Proxy — Rundll32</td><td>Defense Evasion / Execution</td><td>LOLBin para ejecución de código</td></tr>
+            <tr><td><span class="mitre-tag">T1534</span></td><td>Internal Spearphishing</td><td>Lateral Movement</td><td>Phishing interno desde cuentas comprometidas</td></tr>
+            <tr><td><span class="mitre-tag">T1106</span></td><td>Native API</td><td>Execution</td><td>DRATzarus evita hooking de alto nivel</td></tr>
+            <tr><td><span class="mitre-tag">T1497</span></td><td>Virtualization/Sandbox Evasion</td><td>Defense Evasion</td><td>Time-based anti-sandbox checks</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="conclusions"><div class="ico">📊</div> Conclusiones</h2>
+      <p>
+        La Operación Dream Job es un ejemplo paradigmático de cómo un actor de amenaza con recursos estatales puede construir campañas de larga duración, evolutivas y de alta efectividad. La combinación de ingeniería social con temática de empleo, uso de LOLBins y un RAT propio con capacidades anti-análisis sitúa a Lazarus Group entre los actores más sofisticados del panorama de amenazas global.
+      </p>
+      <div class="callout callout-success">
+        <strong>✅ Valor del CTI</strong>
+        Este Sherlock demuestra la importancia del Cyber Threat Intelligence en la defensa proactiva. Conocer las TTPs, IOCs y patrones de comportamiento de actores como Lazarus permite a los equipos de defensa anticipar ataques antes de que lleguen a fase de ejecución.
+      </div>
+      <div class="callout callout-danger">
+        <strong>🔴 Indicadores de Compromiso Clave</strong>
+        Documentos Office con nombres de empresas de defensa + macros VBA + conexiones a dominios recién registrados con nombres de marketing + LOLBins en proceso tree inusual = patrón Lazarus/Dream Job con alta probabilidad.
+      </div>
+
+    </main>
+
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Detalles del Reto</div>
+        <div class="sidebar-card-body">
+          <div class="info-row"><span class="k">Dificultad</span><span class="v"><span class="badge badge-hard" style="font-size:10px">Hard</span></span></div>
+          <div class="info-row"><span class="k">Tipo</span><span class="v">Sherlock / CTI</span></div>
+          <div class="info-row"><span class="k">Threat Actor</span><span class="v">Lazarus Group</span></div>
+          <div class="info-row"><span class="k">Nexo</span><span class="v">Corea del Norte</span></div>
+          <div class="info-row"><span class="k">Primera obs.</span><span class="v">Sept. 2019</span></div>
+          <div class="info-row"><span class="k">RAT</span><span class="v">DRATzarus</span></div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Skills Demostradas</div>
+        <div class="sidebar-card-body">
+          <div class="score-bar"><div class="score-label"><span>CTI / APT Research</span><span style="color:var(--accent2)">95%</span></div><div class="score-track"><div class="score-fill" style="width:95%"></div></div></div>
+          <div class="score-bar"><div class="score-label"><span>MITRE ATT&amp;CK</span><span style="color:var(--accent2)">90%</span></div><div class="score-track"><div class="score-fill" style="width:90%"></div></div></div>
+          <div class="score-bar"><div class="score-label"><span>IOC Analysis</span><span style="color:var(--accent2)">88%</span></div><div class="score-track"><div class="score-fill" style="width:88%"></div></div></div>
+          <div class="score-bar"><div class="score-label"><span>Malware Analysis</span><span style="color:var(--accent2)">80%</span></div><div class="score-track"><div class="score-fill" style="width:80%"></div></div></div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Herramientas</div>
+        <div class="sidebar-card-body">
+          <div class="tool-item"><div class="tool-dot"></div>VirusTotal</div>
+          <div class="tool-item"><div class="tool-dot"></div>MITRE ATT&amp;CK Navigator</div>
+          <div class="tool-item"><div class="tool-dot"></div>metadata2go.com</div>
+          <div class="tool-item"><div class="tool-dot"></div>OSINT / Open Sources</div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">MITRE ATT&CK</div>
+        <div class="sidebar-card-body" style="display:flex;flex-wrap:wrap;gap:5px;padding:14px;">
+          <span class="mitre-tag">T1566.001</span>
+          <span class="mitre-tag">T1059.005</span>
+          <span class="mitre-tag">T1218.010</span>
+          <span class="mitre-tag">T1218.011</span>
+          <span class="mitre-tag">T1534</span>
+          <span class="mitre-tag">T1106</span>
+          <span class="mitre-tag">T1497</span>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Tabla de Contenidos</div>
+        <div class="sidebar-card-body" style="padding:12px 16px;">
+          <div class="toc-item"><span class="toc-num">01</span>Escenario</div>
+          <div class="toc-item"><span class="toc-num">02</span>Operación Dream Job</div>
+          <div class="toc-item"><span class="toc-num">03</span>Cadena de Infección</div>
+          <div class="toc-item"><span class="toc-num">04</span>Análisis de IOCs</div>
+          <div class="toc-item"><span class="toc-num">05</span>MITRE ATT&amp;CK</div>
+          <div class="toc-item"><span class="toc-num">06</span>Conclusiones</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="footer">
+    <div><span class="footer-author">Yoandy Ramirez Delgado</span> &nbsp;·&nbsp; Cybersecurity Analyst &amp; Penetration Tester</div>
+    <div>HTB Sherlocks · Dream Job-1 · CTI · 2026</div>
+  </footer>
+</div>
+
+</body>
+</html>

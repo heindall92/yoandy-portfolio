@@ -1,0 +1,344 @@
+import { Link } from "react-router-dom";
+import { FileText, ArrowLeft, Terminal, Server } from "lucide-react";
+import { motion } from "framer-motion";
+
+const machines = [
+  {
+    slug: "meow-htb", emoji: "🐱", name: "Meow",
+    desc: "Servicio Telnet expuesto sin autenticación que permite acceso directo como root. Reconocimiento con Nmap para identificar el puerto 23 abierto y conexión directa sin credenciales.",
+    tags: ["Telnet", "Enumeration", "Linux"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "fawn-htb", emoji: "🦌", name: "Fawn",
+    desc: "Servidor FTP vsftpd 3.0.3 con login anónimo habilitado. Reconocimiento con Nmap para identificar el servicio y descarga directa de la flag mediante acceso anónimo al servidor FTP.",
+    tags: ["FTP", "Anonymous Login", "Nmap"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "dancing-htb", emoji: "💃", name: "Dancing",
+    desc: "Servidor SMB con sesión nula permitida. Enumeración de shares con smbclient para identificar recursos compartidos accesibles y exfiltración de la flag desde un share sin autenticación.",
+    tags: ["SMB", "Null Session", "smbclient"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Windows",
+  },
+  {
+    slug: "redeemer-htb", emoji: "🔑", name: "Redeemer",
+    desc: "Base de datos Redis expuesta en el puerto 6379 sin autenticación. Conexión directa con redis-cli para enumerar bases de datos, listar claves y extraer la flag almacenada en texto plano.",
+    tags: ["Redis", "NoSQL", "Enumeration"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "appointment-htb", emoji: "📅", name: "Appointment",
+    desc: "Aplicación web con Apache 2.4.38 y backend PHP/MySQL. Inyección SQL en el formulario de login para bypass de autenticación mediante payload clásico de comilla simple y comentario SQL.",
+    tags: ["SQLi", "Login Bypass", "Web"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "explosion-htb", emoji: "💥", name: "Explosion",
+    desc: "Servicio RDP expuesto en Windows con la cuenta Administrator sin contraseña. Conexión remota con xfreerdp utilizando credenciales vacías para obtener acceso directo al escritorio y la flag.",
+    tags: ["RDP", "xfreerdp", "Nmap", "Windows"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Windows",
+  },
+  {
+    slug: "preignition-htb", emoji: "🔥", name: "Preignition",
+    desc: "Servidor Nginx con panel de administración oculto. Directory brute-force con Gobuster para descubrir /admin.php y acceso mediante credenciales por defecto admin:admin.",
+    tags: ["Web", "Gobuster", "Default Creds", "Nginx"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "mongod-htb", emoji: "🍃", name: "Mongod",
+    desc: "MongoDB 3.6.8 expuesto en el puerto 27017 sin autenticación habilitada. Conexión directa con mongo shell para enumerar bases de datos, colecciones y volcado directo de la flag con mongoexport.",
+    tags: ["MongoDB", "NoSQL", "Enumeration"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "synced-htb", emoji: "🔄", name: "Synced",
+    desc: "Servicio rsync expuesto con share accesible sin autenticación. Listado de módulos disponibles y descarga directa de la flag desde el recurso compartido mediante rsync anónimo.",
+    tags: ["rsync", "Anonymous", "Linux"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "funnel-htb", emoji: "🔧", name: "Funnel",
+    desc: "FTP anónimo con credenciales de empleados expuestas. Acceso SSH con password spraying, port forwarding local para alcanzar PostgreSQL interno en puerto 5432 y extracción de la flag desde la base de datos.",
+    tags: ["FTP", "SSH Tunnel", "PostgreSQL"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "bike-htb", emoji: "🏍️", name: "Bike",
+    desc: "Server-Side Template Injection en aplicación Node.js con motor de plantillas Handlebars. Inyección de payload SSTI en campo de entrada web para lograr ejecución remota de código como root.",
+    tags: ["SSTI", "Node.js", "Handlebars", "Web"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "vaccine-htb", emoji: "💉", name: "Vaccine",
+    desc: "Acceso FTP anónimo para obtener un archivo ZIP cifrado. Cracking de contraseñas MD5 con hashcat, inyección SQL en panel web para RCE vía COPY FROM PROGRAM de PostgreSQL, y escalada a root abusando de permisos sudo sobre vi (GTFOBins).",
+    tags: ["SQLi", "FTP", "PostgreSQL", "GTFOBins"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "archetype-htb", emoji: "🏛️", name: "Archetype",
+    desc: "Enumeración SMB anónima para obtener credenciales de configuración MSSQL. Abuso de xp_cmdshell para ejecución remota de código y escalada de privilegios mediante historial de PowerShell que expone contraseñas de administrador.",
+    tags: ["SMB", "MSSQL", "xp_cmdshell", "PowerShell"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Windows",
+  },
+  {
+    slug: "oopsie-htb", emoji: "🐛", name: "Oopsie",
+    desc: "Manipulación de cookies para escalada horizontal en aplicación web, abuso de IDOR para acceso como Super Admin, subida de PHP webshell para reverse shell, y escalada a root vía binario SUID con PATH hijacking.",
+    tags: ["IDOR", "File Upload", "SUID", "PATH Hijack"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "unified-htb", emoji: "🔗", name: "Unified",
+    desc: "Explotación de Log4Shell (CVE-2021-44228) en UniFi Network Application 6.4.54 mediante inyección JNDI en el campo remember del login. Shell inversa con RogueJNDI y modificación directa de contraseñas en MongoDB para comprometer la cuenta root.",
+    tags: ["Log4Shell", "CVE-2021-44228", "MongoDB", "JNDI"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "precious-htb", emoji: "💎", name: "Precious",
+    desc: "Inyección de comandos en pdfkit (CVE-2022-25765) a través de una aplicación Ruby/Sinatra de conversión web. Credenciales en archivos de configuración de Bundler para movimiento lateral y escalada a root mediante deserialización insegura de YAML con sudo.",
+    tags: ["CVE-2022-25765", "pdfkit", "YAML", "Ruby"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Linux",
+  },
+  {
+    slug: "ignition-htb", emoji: "🔥", name: "Ignition",
+    desc: "Resolución de Virtual Host para acceder a panel de administración Magento oculto en servidor Nginx. Directory fuzzing con Gobuster y bypass de login con credenciales por defecto.",
+    tags: ["Web", "Gobuster", "Magento", "Virtual Host"],
+    difficulty: "VERY EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
+  {
+    slug: "steamcloud-htb", emoji: "☁️", name: "SteamCloud",
+    desc: "Clúster Kubernetes con Kubelet API sin autenticación en puerto 10250. Ejecución remota de comandos en pods existentes, extracción de ServiceAccount token, creación de pod privilegiado con hostPath mount y escape al filesystem del host como root.",
+    tags: ["Kubernetes", "Kubelet", "Container Escape", "ServiceAccount"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Linux",
+  },
+  {
+    slug: "eighteen-htb", emoji: "🔢", name: "Eighteen",
+    desc: "Inyección SQL en el endpoint /add_expense para obtener ejecución de comandos vía xp_cmdshell, suplantación de identidad en MSSQL, acceso remoto con Evil-WinRM, explotación de BadSuccessor (CVE-2025-53779) para DCSync y escalada a Administrador del dominio. Windows Server 2025 AD DC.",
+    tags: ["HTB", "Windows", "Active Directory", "CVE-2025-53779"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Windows",
+  },
+  {
+    slug: "twomillion-htb", emoji: "💰", name: "TwoMillion",
+    desc: "Decodificación ROT13 del código de invitación de la API, registro de usuario y escalada a administrador mediante PUT, inyección de comandos para obtener shell SSH, y escalada de privilegios a Root explotando CVE-2023-0386 (OverlayFS). Ubuntu 22.04.",
+    tags: ["HTB", "Linux", "API", "CVE-2023-0386"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Linux",
+  },
+  {
+    slug: "cctv-htb", emoji: "📹", name: "CCTV",
+    desc: "Sistema de videovigilancia con ZoneMinder y credenciales por defecto. SQL Injection para extraer hashes, sniffing de red interna para capturar contraseñas, túnel SSH a MotionEye y RCE (CVE-2024-51482 / CVE-2025-60787) para obtener root.",
+    tags: ["SQLi", "Sniffing", "CVE-2024-51482", "MotionEye"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Linux",
+  },
+  {
+    slug: "pterodactyl-htb", emoji: "🦕", name: "Pterodactyl",
+    desc: "Explotación de dos CVEs en Pterodactyl Panel. Path Traversal (CVE-2025-49132) para leer configuraciones con credenciales MySQL, cracking de hashes bcrypt con John, y escalada a root mediante race condition en udisks2 con imagen XFS y SUID bash.",
+    tags: ["CVE-2025-49132", "Pterodactyl", "udisks2", "bcrypt"],
+    difficulty: "MEDIUM", diffColor: "neon-yellow",
+    os: "Linux",
+  },
+  {
+    slug: "interpreter-htb", emoji: "🖥️", name: "Interpreter",
+    desc: "Ejecución remota de código sin autenticación en Mirth Connect mediante CVE-2023-43208 (XStream), obtención de credenciales MySQL, inyección HL7 vía eval(), y escalada a Root aprovechando sudo python3 sin contraseña para asignar SUID a bash.",
+    tags: ["HTB", "Linux", "CVE-2023-43208", "HL7"],
+    difficulty: "MEDIUM", diffColor: "neon-yellow",
+    os: "Linux",
+  },
+  {
+    slug: "airtouch-htb", emoji: "📡", name: "AirTouch",
+    desc: "Entorno corporativo WiFi con múltiples SSIDs. Captura de handshakes WPA2-PSK, descifrado de tráfico HTTP, explotación web del router interno y ataque Evil Twin 802.1X para hashes MSCHAPv2 y root.",
+    tags: ["HTB", "Linux", "Wi-Fi", "WPA2", "Evil Twin", "802.1X"],
+    difficulty: "MEDIUM", diffColor: "neon-yellow",
+    os: "Linux",
+  },
+  {
+    slug: "devvortex-htb", emoji: "🌀", name: "Devvortex",
+    desc: "Enumeración de subdominios con ffuf para descubrir Joomla 4.2.6 vulnerable a CVE-2023-23752 (fuga de credenciales API). Acceso al panel con credenciales filtradas, inyección de webshell PHP en template Cassiopeia para reverse shell, extracción de hashes bcrypt de MySQL y escalada a root mediante apport-cli (CVE-2023-1326).",
+    tags: ["Joomla", "CVE-2023-23752", "CVE-2023-1326", "MySQL"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Linux",
+  },
+  {
+    slug: "kobold-htb", emoji: "🐉", name: "Kobold",
+    desc: "Explotación de CVE-2026-23744 en MCPJam Inspector expuesto en 0.0.0.0, permitiendo RCE no autenticado vía /api/mcp/connect. Escalada mediante sg docker aprovechando contraseña vacía en /etc/gshadow, seguida de Docker escape con montaje del filesystem del host.",
+    tags: ["CVE-2026-23744", "MCP Inspector", "Docker Escape", "sg"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Linux",
+  },
+  {
+    slug: "variatype-htb", emoji: "🔤", name: "VariaType",
+    desc: "Cadena de tres CVEs: Git exposed para extraer credenciales, fontTools varLib path traversal (CVE-2025-66034) para webshell como www-data, FontForge ZIP filename injection (CVE-2024-25081) para escalar a steve, y setuptools path traversal (CVE-2025-47273) con sudo misconfiguration para root.",
+    tags: ["CVE-2025-66034", "CVE-2024-25081", "CVE-2025-47273", "Git Exposed", "fontTools"],
+    difficulty: "MEDIUM", diffColor: "neon-yellow",
+    os: "Linux",
+  },
+  {
+    slug: "pirates-htb", emoji: "⚓", name: "Pirates",
+    desc: "Máquina Windows Active Directory Hard. Cadena de 8 técnicas avanzadas: Pre-W2K password abuse → gMSA hash extraction → Chisel SOCKS5 → NTLM Relay CVE-2019-1040 + RBCD → S4U2Proxy → LSA Secrets dump → ForceChangePassword → KCD + SPN Hijacking → DCSync. Dominio completamente comprometido.",
+    tags: ["Active Directory", "CVE-2019-1040", "RBCD", "KCD", "DCSync", "gMSA", "Kerberos"],
+    difficulty: "HARD", diffColor: "destructive",
+    os: "Windows",
+  },
+];
+
+const diffStyles: Record<string, { badge: string; stripe: string; glow: string }> = {
+  "neon-magenta": {
+    badge: "bg-neon-magenta/10 text-neon-magenta border border-neon-magenta/20",
+    stripe: "bg-neon-magenta",
+    glow: "group-hover:shadow-[0_0_25px_hsl(300_100%_60%/0.3)]",
+  },
+  "primary": {
+    badge: "bg-primary/10 text-primary border border-primary/20",
+    stripe: "bg-primary",
+    glow: "group-hover:shadow-[0_0_25px_hsl(120_100%_50%/0.3)]",
+  },
+  "neon-yellow": {
+    badge: "bg-neon-yellow/10 text-neon-yellow border border-neon-yellow/20",
+    stripe: "bg-neon-yellow",
+    glow: "group-hover:shadow-[0_0_25px_hsl(43_96%_56%/0.3)]",
+  },
+  "destructive": {
+    badge: "bg-destructive/10 text-destructive border border-destructive/20",
+    stripe: "bg-destructive",
+    glow: "group-hover:shadow-[0_0_25px_hsl(0_85%_60%/0.3)]",
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      delay: i * 0.08,
+      duration: 0.5,
+      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+    },
+  }),
+};
+
+const MachineCard = ({ m, index = 0 }: { m: typeof machines[0]; index?: number }) => {
+  const style = diffStyles[m.diffColor];
+
+  return (
+    <motion.div
+      custom={index}
+      variants={cardVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-50px" }}
+    >
+      <Link
+        to={`/report/${m.slug}`}
+        className={`group relative block overflow-hidden rounded-xl bg-card border border-border/50 transition-all duration-500 hover:-translate-y-2 ${style.glow}`}
+      >
+        {/* Difficulty color stripe */}
+        <div className={`absolute left-0 top-0 bottom-0 w-1 ${style.stripe} opacity-60 group-hover:opacity-100 transition-opacity duration-300`} />
+
+        {/* Terminal bar */}
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/50 border-b border-border/30">
+          <div className="flex gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-destructive/70" />
+            <div className="w-2.5 h-2.5 rounded-full bg-neon-yellow/70" />
+            <div className="w-2.5 h-2.5 rounded-full bg-primary/70" />
+          </div>
+          <div className="flex items-center gap-2 ml-2 flex-1 min-w-0">
+            <Terminal size={12} className="text-muted-foreground/60" />
+            <span className="font-mono text-xs text-muted-foreground/60 truncate">root@htb:~/{m.slug}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Server size={12} className="text-muted-foreground/40" />
+            <span className="font-mono text-[10px] text-muted-foreground/40">{m.os}</span>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-5 pl-6">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl drop-shadow-lg">{m.emoji}</span>
+              <div>
+                <h3 className="font-mono text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">{m.name}</h3>
+                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono mt-1 ${style.badge}`}>{m.difficulty}</span>
+              </div>
+            </div>
+            <FileText size={16} className="text-muted-foreground/30 group-hover:text-primary transition-all duration-300 group-hover:rotate-12" />
+          </div>
+
+          <p className="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-2">{m.desc}</p>
+
+          <div className="flex flex-wrap gap-1.5">
+            {m.tags.map((tag) => (
+              <span key={tag} className="px-2 py-0.5 rounded font-mono text-[10px] bg-muted/80 text-secondary/80 border border-secondary/10 group-hover:border-secondary/30 transition-colors duration-300">{tag}</span>
+            ))}
+          </div>
+
+          {/* Bottom status bar */}
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/20">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="font-mono text-[10px] text-primary/70">ROOTED</span>
+            </div>
+            <span className="font-mono text-[10px] text-muted-foreground/40 group-hover:text-primary/60 transition-colors duration-300">
+              Ver writeup →
+            </span>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+};
+
+export { machines, MachineCard };
+
+const Machines = () => (
+  <div className="min-h-screen pt-24 pb-16 relative z-10">
+    <div className="container mx-auto px-4 max-w-5xl">
+      <Link to="/machines" className="inline-flex items-center gap-2 font-mono text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
+        <ArrowLeft size={16} /> Volver a Máquinas HTB
+      </Link>
+      <motion.h2
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+        className="font-display text-3xl font-bold text-primary text-glow-green mb-2"
+      >
+        {">"} Máquinas HTB
+      </motion.h2>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="font-mono text-sm text-muted-foreground mb-10"
+      >
+        {machines.length} máquinas completadas — ordenadas por dificultad
+      </motion.p>
+      <div className="grid md:grid-cols-2 gap-6">
+        {machines.map((m, i) => <MachineCard key={m.slug} m={m} index={i} />)}
+      </div>
+    </div>
+  </div>
+);
+
+export default Machines;
