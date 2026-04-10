@@ -71,7 +71,7 @@ const WriteupGuard = ({ isProtected, children }: WriteupGuardProps) => {
     setError("");
 
     if (!secret) {
-      setError("SISTEMA: Configura VITE_TOTP_SECRET en Lovable Settings > Environment Variables con un secret base32. Genera uno con authenticator.generateSecret() de otplib.");
+      setError("SISTEMA: Configura VITE_TOTP_SECRET en Lovable Settings > Environment Variables con un secret base32. Genera uno con generateSecret() de otplib.");
       return;
     }
 
