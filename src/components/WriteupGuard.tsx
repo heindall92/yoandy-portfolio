@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, type ReactNode } from "react";
-import { verify } from "otplib";
+import { verifySync } from "otplib";
 
 const SESSION_KEY = "totp_meow";
 const SESSION_DURATION = 600000; // 10 minutes
@@ -81,7 +81,7 @@ const WriteupGuard = ({ isProtected, children }: WriteupGuardProps) => {
       return;
     }
 
-    const valid = authenticator.check(trimmed, secret);
+    const valid = verifySync({ token: trimmed, secret });
     if (valid) {
       const expires = Date.now() + SESSION_DURATION;
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires }));
