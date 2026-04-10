@@ -192,7 +192,7 @@ const Bifrost = () => {
       return;
     }
 
-    const isValid = authenticator.check(code, bifrostTotpSecret);
+    const isValid = verifySync({ token: code, secret: bifrostTotpSecret });
 
     if (isValid) {
       const expires = Date.now() + SESSION_DURATION;
