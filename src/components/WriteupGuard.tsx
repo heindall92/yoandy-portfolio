@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type ReactNode } from "react";
+import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { verifySync } from "otplib";
 
 const SESSION_KEY = "totp_meow";
@@ -14,6 +14,9 @@ const WriteupGuard = ({ isProtected, children }: WriteupGuardProps) => {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [remaining, setRemaining] = useState(0);
+  const [devtoolsWarning, setDevtoolsWarning] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const childrenBackupRef = useRef<Node[]>([]);
 
   const secret = import.meta.env.VITE_TOTP_SECRET;
 
@@ -64,6 +67,74 @@ const WriteupGuard = ({ isProtected, children }: WriteupGuardProps) => {
     return () => clearInterval(interval);
   }, [granted, isProtected]);
 
+  // Anti-exfiltration protections (only when granted & protected)
+  useEffect(() => {
+    if (!isProtected || !granted) return;
+
+    const container = contentRef.current;
+
+    const blockEvent = (e: Event) => e.preventDefault();
+
+    const blockKeys = (e: KeyboardEvent) => {
+      // Ctrl+P, Ctrl+S, Ctrl+U
+      if ((e.ctrlKey || e.metaKey) && ["p", "s", "u"].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      // Ctrl+A inside container
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a" && container?.contains(e.target as Node)) {
+        e.preventDefault();
+        return;
+      }
+      // F12
+      if (e.key === "F12") {
+        e.preventDefault();
+        setDevtoolsWarning(true);
+        setTimeout(() => setDevtoolsWarning(false), 3000);
+        return;
+      }
+      // Ctrl+Shift+I/J/C
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && ["i", "j", "c"].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        setDevtoolsWarning(true);
+        setTimeout(() => setDevtoolsWarning(false), 3000);
+        return;
+      }
+    };
+
+    // Print blocking
+    const handleBeforePrint = () => {
+      if (container) {
+        childrenBackupRef.current = Array.from(container.childNodes).map(n => n.cloneNode(true));
+        while (container.firstChild) container.removeChild(container.firstChild);
+      }
+    };
+    const handleAfterPrint = () => {
+      if (container && childrenBackupRef.current.length > 0) {
+        childrenBackupRef.current.forEach(n => container.appendChild(n));
+        childrenBackupRef.current = [];
+      }
+    };
+
+    // Attach listeners
+    document.addEventListener("copy", blockEvent, true);
+    document.addEventListener("cut", blockEvent, true);
+    document.addEventListener("dragstart", blockEvent, true);
+    document.addEventListener("keydown", blockKeys, true);
+    window.addEventListener("beforeprint", handleBeforePrint);
+    window.addEventListener("afterprint", handleAfterPrint);
+
+    return () => {
+      document.removeEventListener("copy", blockEvent, true);
+      document.removeEventListener("cut", blockEvent, true);
+      document.removeEventListener("dragstart", blockEvent, true);
+      document.removeEventListener("keydown", blockKeys, true);
+      window.removeEventListener("beforeprint", handleBeforePrint);
+      window.removeEventListener("afterprint", handleAfterPrint);
+    };
+  }, [isProtected, granted]);
+
   if (!isProtected) return <>{children}</>;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -100,9 +171,40 @@ const WriteupGuard = ({ isProtected, children }: WriteupGuardProps) => {
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
+  const sessionTimestamp = new Date().toLocaleString("es-ES");
+  const watermarkText = `HEINDALL // CONFIDENCIAL // ${sessionTimestamp} // SOLO LECTURA    `;
+
   if (granted) {
     return (
-      <div className="relative">
+      <div className="relative" style={{ position: "relative" }}>
+        {/* Print-block styles + selection block */}
+        <style>{`
+          @media print {
+            .writeup-protected-content { display: none !important; }
+            .writeup-print-block { display: flex !important; }
+          }
+          .writeup-protected-content {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+          }
+          .writeup-protected-content iframe,
+          .writeup-protected-content p,
+          .writeup-protected-content span,
+          .writeup-protected-content h1,
+          .writeup-protected-content h2,
+          .writeup-protected-content h3,
+          .writeup-protected-content pre,
+          .writeup-protected-content code {
+            pointer-events: none;
+          }
+          .writeup-protected-content {
+            pointer-events: auto;
+            overflow: auto;
+          }
+        `}</style>
+
+        {/* Countdown badge */}
         <div
           style={{
             position: "fixed",
@@ -121,7 +223,103 @@ const WriteupGuard = ({ isProtected, children }: WriteupGuardProps) => {
         >
           ⏱ {formatTime(remaining)}
         </div>
-        {children}
+
+        {/* Print block message (hidden on screen) */}
+        <div
+          className="writeup-print-block"
+          style={{
+            display: "none",
+            minHeight: "100vh",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#0d0d0d",
+            color: "#00ff41",
+            fontFamily: "monospace",
+            fontSize: 24,
+            textAlign: "center",
+            letterSpacing: 2,
+          }}
+        >
+          CONTENIDO PROTEGIDO — IMPRESIÓN NO AUTORIZADA
+        </div>
+
+        {/* Protected content wrapper */}
+        <div
+          ref={contentRef}
+          className="writeup-protected-content"
+          onContextMenu={(e) => e.preventDefault()}
+          style={{ position: "relative" }}
+        >
+          {children}
+
+          {/* Watermark overlay */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              pointerEvents: "none",
+              zIndex: 9998,
+              overflow: "hidden",
+              opacity: 0.06,
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: "-50%",
+                left: "-50%",
+                width: "200%",
+                height: "200%",
+                transform: "rotate(-35deg)",
+                display: "flex",
+                flexWrap: "wrap",
+                alignContent: "flex-start",
+                fontFamily: "monospace",
+                fontSize: 14,
+                color: "#00ff41",
+                lineHeight: "48px",
+                letterSpacing: 2,
+                whiteSpace: "nowrap",
+                wordBreak: "keep-all",
+              }}
+            >
+              {Array.from({ length: 200 }, (_, i) => (
+                <span key={i} style={{ padding: "0 24px" }}>
+                  {watermarkText}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* DevTools warning overlay */}
+        {devtoolsWarning && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              background: "rgba(0,0,0,0.92)",
+              zIndex: 99999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: "monospace",
+              color: "#ff4444",
+              fontSize: 20,
+              letterSpacing: 3,
+              textAlign: "center",
+              textShadow: "0 0 20px rgba(255,68,68,0.5)",
+            }}
+          >
+            ⚠ HEINDALL: ACCESO A HERRAMIENTAS DE DESARROLLO DETECTADO ⚠
+          </div>
+        )}
       </div>
     );
   }
