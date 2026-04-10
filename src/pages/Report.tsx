@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import ReportPasswordGate from "@/components/ReportPasswordGate";
+import WriteupGuard from "@/components/WriteupGuard";
 
-const reports: Record<string, { title: string; file: string; section: string }> = {
-  "meow-htb": { title: "Writeup — Meow (HTB)", file: "/reports/meow-htb.html", section: "htb" },
+const reports: Record<string, { title: string; file: string; section: string; protected?: boolean }> = {
+  "meow-htb": { title: "Writeup — Meow (HTB)", file: "/reports/meow-htb.html", section: "htb", protected: true },
   "fawn-htb": { title: "Writeup — Fawn (HTB)", file: "/reports/fawn-htb.html", section: "htb" },
   "dancing-htb": { title: "Writeup — Dancing (HTB)", file: "/reports/dancing-htb.html", section: "htb" },
   "redeemer-htb": { title: "Writeup — Redeemer (HTB)", file: "/reports/redeemer-htb.html", section: "htb" },
@@ -65,14 +66,16 @@ const Report = () => {
 
   return (
     <ReportPasswordGate>
-      <div className="bg-background min-h-screen pt-20">
-        <iframe
-          src={report.file}
-          title={report.title}
-          className="w-full border-none"
-          style={{ height: "calc(100vh - 80px)" }}
-        />
-      </div>
+      <WriteupGuard isProtected={!!report.protected}>
+        <div className="bg-background min-h-screen pt-20">
+          <iframe
+            src={report.file}
+            title={report.title}
+            className="w-full border-none"
+            style={{ height: "calc(100vh - 80px)" }}
+          />
+        </div>
+      </WriteupGuard>
     </ReportPasswordGate>
   );
 };
