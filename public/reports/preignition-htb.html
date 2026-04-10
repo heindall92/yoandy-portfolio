@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preignition — HTB Machine Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+}
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
+}
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
+}
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(0,232,122,0.1); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff { background: rgba(0,232,122,0.08); color: var(--green); border: 1px solid rgba(0,232,122,0.2); }
+.tag-diff-medium { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.tag-diff-hard { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.tag-os { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.tag-staff { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.hero-stats {
+  display: flex; gap: 28px; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label {
+  font-family: var(--mo);
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3);
+}
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
+
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; }
+.orb-w { position: relative; width: 260px; height: 260px; }
+.orb-w .orb-el { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.orb-ring { position: absolute; border-radius: 50%; border: 1px solid; animation: ors linear infinite; }
+.orb-r1 { width: 260px; height: 260px; border-color: rgba(0,232,122,0.08); animation-duration: 30s; }
+.orb-r2 { width: 214px; height: 214px; border-color: rgba(0,232,122,0.12); animation-duration: 20s; animation-direction: reverse; border-style: dashed; }
+.orb-r3 { width: 172px; height: 172px; border-color: rgba(0,232,122,0.15); animation-duration: 15s; }
+@keyframes ors { to { transform: rotate(360deg); } }
+.orb-aura {
+  position: absolute; width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,232,122,0.18) 0%, rgba(0,232,122,0.08) 35%, transparent 70%);
+  animation: oap 4s ease-in-out infinite;
+}
+@keyframes oap { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+.orb-core {
+  width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, rgba(0,232,122,0.35) 0%, rgba(15,48,32,0.8) 50%, rgba(11,26,16,0.95) 100%);
+  border: 1px solid rgba(0,232,122,0.3);
+  box-shadow: 0 0 60px rgba(0,232,122,0.2), 0 0 120px rgba(0,232,122,0.08), inset 0 0 40px rgba(0,232,122,0.1);
+  position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.orb-core::before {
+  content: ''; position: absolute; top: 10%; left: 15%; width: 40%; height: 30%;
+  border-radius: 50%; background: rgba(255,255,255,0.12); filter: blur(8px);
+}
+.orb-rune {
+  font-family: var(--bb); font-size: 2.2rem; color: rgba(0,232,122,0.7);
+  text-shadow: 0 0 30px var(--green); position: relative; z-index: 2;
+  animation: org 3s ease-in-out infinite;
+}
+@keyframes org { 0%,100% { text-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,232,122,0.4); } 50% { text-shadow: 0 0 40px var(--green), 0 0 80px rgba(0,232,122,0.6); } }
+.orb-scan {
+  position: absolute; left: 0; right: 0; height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(0,232,122,0.5), transparent);
+  animation: osc 3s linear infinite; z-index: 4; pointer-events: none;
+}
+@keyframes osc { 0% { top: 5%; opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.5; } 100% { top: 95%; opacity: 0; } }
+.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pf linear infinite}
+.p1{top:15%;left:25%;animation-duration:6s}.p2{top:25%;right:18%;animation-duration:8s;animation-delay:-2s;width:4px;height:4px}.p3{bottom:20%;left:30%;animation-duration:7s;animation-delay:-4s}.p4{bottom:30%;right:25%;animation-duration:9s;animation-delay:-1s;opacity:.6}
+@keyframes pf{0%{transform:translateY(0) scale(1);opacity:1}33%{transform:translateY(-12px) translateX(8px) scale(1.3);opacity:.7}66%{transform:translateY(-6px) translateX(-10px) scale(.8);opacity:.9}100%{transform:translateY(0) scale(1);opacity:1}}
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}.code-compare,.lessons-grid{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.agent-panel{grid-template-columns:1fr;}}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--cyan);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--cyan);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text2);}
+.warning-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:1rem;display:flex;gap:1rem;align-items:flex-start;margin:1rem 0;}
+.warning-icon{font-size:1.5rem;flex-shrink:0;}
+.warning-card strong{color:var(--red);display:block;margin-bottom:.25rem;}
+.warning-card p{font-size:.85rem;color:var(--text2);}
+.worknotes-box{background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.15);border-radius:10px;padding:1.25rem;margin:1rem 0;}
+.worknotes-box h4{color:var(--yellow);font-size:.85rem;margin-bottom:.75rem;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table .highlight{color:var(--green);font-weight:600;}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--green);text-align:center;line-height:1;margin:.5rem 0;font-family:var(--bb);}
+.score-label{text-align:center;font-size:.75rem;color:var(--text3);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
+
+/* ─── EXTRA COMPONENT STYLES ─── */
+.nse-bonus{background:linear-gradient(135deg,rgba(251,191,36,.06),rgba(251,191,36,.02));border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.nse-bonus h3{color:var(--yellow);margin-bottom:.75rem;}
+.ftp-session{background:rgba(5,14,8,.9);border-radius:12px;padding:1.25rem;margin:1rem 0;font-family:var(--mo);font-size:.82rem;}
+.ftp-cmd{color:var(--cyan);}.ftp-resp{color:var(--text3);}.ftp-success{color:var(--green);}.ftp-flag{color:var(--yellow);font-weight:700;}
+.key-dump{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin:1.5rem 0;font-family:var(--mo);}
+.key-dump-header{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:1rem;}
+.key-row{display:flex;align-items:center;gap:1rem;padding:.5rem .75rem;border-radius:6px;margin:.3rem 0;}
+.key-row.flag-key{background:rgba(0,232,122,.05);border:1px solid rgba(0,232,122,.15);}
+.key-name{color:var(--cyan);min-width:60px;font-weight:600;}
+.key-arrow{color:var(--border);}.key-value{color:var(--text2);flex:1;}
+.key-row.flag-key .key-value{color:var(--green);font-weight:600;}
+.key-badge{background:rgba(0,232,122,.15);color:var(--green);padding:.1rem .5rem;border-radius:4px;font-size:.7rem;font-weight:700;border:1px solid rgba(0,232,122,.3);}
+.rce-path{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:1.25rem;background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:10px;margin:1rem 0;}
+.rce-step{background:var(--card2);padding:.35rem .75rem;border-radius:6px;font-family:var(--mo);font-size:.8rem;color:var(--text2);}
+.rce-arrow{color:var(--text3);font-size:1.2rem;}
+.rce-result{color:var(--red);border:1px solid rgba(248,113,113,.3);background:rgba(248,113,113,.08);}
+.redis-cmd-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;font-family:var(--mo);}
+.redis-cmd-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.redis-cmd-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.redis-cmd-table tr:last-child td{border-bottom:none;}
+.sqli-box{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;margin:1.5rem 0;border:1px solid var(--border);}
+.sqli-row{margin:.75rem 0;display:flex;align-items:flex-start;gap:1rem;}
+.sqli-label{color:var(--text3);font-size:.78rem;min-width:110px;font-family:var(--mo);padding-top:.2rem;flex-shrink:0;}
+.sqli-query{font-family:var(--mo);font-size:.88rem;line-height:1.8;flex:1;}
+.q-keyword{color:var(--blue);font-weight:700;}.q-string{color:var(--green);}.q-inject{color:var(--red);font-weight:900;font-size:1.1rem;}
+.q-comment{color:var(--text3);text-decoration:line-through;opacity:.55;}.q-result{color:var(--yellow);font-size:.8rem;margin-left:.5rem;}
+.sqli-divider{border:none;border-top:1px solid var(--border);margin:.75rem 0;}
+.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
+.vuln-code,.safe-code{border-radius:8px;padding:1rem;border:1px solid;}
+.vuln-code{background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.3);}
+.safe-code{background:rgba(0,232,122,.05);border-color:rgba(0,232,122,.3);}
+.code-header{font-size:.82rem;font-weight:700;margin-bottom:.75rem;}
+.vuln-code .code-header{color:var(--red);}.safe-code .code-header{color:var(--green);}
+.code-box{background:rgba(5,14,8,.9);border-radius:6px;padding:.75rem;font-family:var(--mo);font-size:.78rem;color:var(--text2);margin:.5rem 0;}
+.code-note{font-size:.8rem;margin-top:.5rem;}
+.vuln-code .code-note{color:var(--red);}.safe-code .code-note{color:var(--green);}
+.curl-breakdown{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;border:1px solid var(--border);margin:1rem 0;}
+.curl-parts-top{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;}
+.curl-part-item{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:80px;}
+.curl-token{font-family:var(--mo);padding:.25rem .6rem;background:var(--card2);border-radius:4px;font-size:.82rem;white-space:nowrap;}
+.curl-token.cmd-t{color:var(--green);}.curl-token.flag-t{color:var(--yellow);}.curl-token.url-t{color:var(--orange);}
+.curl-explain-small{font-size:.72rem;color:var(--text3);text-align:center;max-width:100px;}
+.curl-payload{border-top:1px solid var(--border);padding-top:1rem;display:flex;gap:1rem;}
+.curl-payload-token{font-family:var(--mo);font-size:.82rem;color:var(--text2);background:var(--card2);padding:.4rem .75rem;border-radius:4px;flex-shrink:0;}
+.curl-payload-explain{font-size:.82rem;color:var(--text2);}
+.curl-payload-explain strong{color:var(--text);}
+.payloads-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:1rem 0;}
+.payloads-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.payloads-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.payloads-table tr:last-child td{border-bottom:none;}
+.payloads-table td code{color:var(--red);background:rgba(248,113,113,.1);padding:.1rem .3rem;border-radius:3px;}
+.highlight-row{background:rgba(0,232,122,.04);}
+.highlight-row td{border-left:3px solid var(--green);}
+.record-badge{background:rgba(251,191,36,.1);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:6px;padding:.3rem .75rem;font-size:.75rem;text-align:center;margin-top:.5rem;}
+.owasp-badge{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:.4rem .75rem;font-size:.78rem;font-weight:600;text-align:center;margin:.5rem 0;}
+.smb-tree{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1.25rem;font-family:var(--mo);font-size:.85rem;color:var(--text2);margin:1rem 0;}
+
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">HackTheBox</span>
+        <span class="tag tag-category">Starting Point</span>
+        <span class="tag tag-diff">Very Easy</span>
+        <span class="tag tag-os">Linux</span>
+      </div>
+      <h1><span>Preignition</span> — Nginx Default Credentials</h1>
+      <p class="hero-sub">Enumeración de un servidor Nginx con gobuster para descubrir el panel de login admin.php. Acceso exitoso con credenciales por defecto admin:admin. Se documenta la importancia del directory fuzzing y la seguridad de credenciales predeterminadas.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Target</span><span class="stat-value green">10.129.x.x</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Linux</span></div>
+        <div class="stat"><span class="stat-label">Puerto</span><span class="stat-value">80 · Nginx</span></div>
+        <div class="stat"><span class="stat-label">Tiempo</span><span class="stat-value">~5 min</span></div>
+        <div class="stat"><span class="stat-label">Comandos</span><span class="stat-value">3</span></div>
+      </div>
+    </div>
+    <!-- Orb — Right -->
+    <div class="hero-orb">
+      <div class="orb-w">
+        <div class="orb-el">
+          <div class="orb-ring orb-r1"></div>
+          <div class="orb-ring orb-r2"></div>
+          <div class="orb-ring orb-r3"></div>
+          <div class="orb-aura"></div>
+          <div class="orb-core"><span class="orb-rune">ᚺ</span></div>
+          <div class="orb-scan"></div>
+          <div class="particle p1"></div>
+          <div class="particle p2"></div>
+          <div class="particle p3"></div>
+          <div class="particle p4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<main>
+
+<div class="section">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p>Preignition es un sistema <strong>Linux con nginx 1.14.2</strong> que expone únicamente el puerto 80 HTTP. La página principal muestra la pantalla de bienvenida por defecto de nginx — aparentemente vacía. Sin embargo, un <strong>brute force de directorios</strong> con gobuster revela <code>/admin.php</code>: un panel de administración PHP protegido por formulario de login. Las credenciales por defecto <code>admin:admin</code> otorgan acceso inmediato y exponen la flag en el dashboard.</p>
+  </div>
+
+  <div class="attack-flow">
+    <div class="flow-step">nmap → 80/tcp nginx</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">gobuster → /admin.php</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">POST admin:admin</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step success">FLAG ✅</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>¿Por qué la página por defecto de nginx oculta vectores?</h2>
+  <p style="color:var(--text-dim);font-size:.92rem;margin-bottom:1rem;">Cuando nginx muestra <em>"Welcome to nginx!"</em>, es tentador asumir que no hay nada más. Error crítico. <strong>La página principal no representa el contenido completo del servidor</strong> — solo el index del webroot. Pueden existir decenas de archivos y rutas sin enlazar que son invisibles hasta hacer brute force.</p>
+  <div class="vuln-card">
+    <h3>⚠ Dos vulnerabilidades encadenadas</h3>
+    <p style="font-size:.9rem;color:var(--text-dim);margin-bottom:.5rem;"><strong>1. Panel admin no vinculado pero accesible:</strong> <code>/admin.php</code> existe en el servidor pero no aparece en la página principal. Sin gobuster, nunca lo encontraríamos.</p>
+    <p style="font-size:.9rem;color:var(--text-dim);"><strong>2. Credenciales por defecto sin cambiar:</strong> El panel acepta <code>admin:admin</code> — la combinación más predecible posible. Instalación sin hardening post-deploy.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Reconocimiento — Paso a Paso</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Reconocimiento</div>
+    <h3>Nmap — Descubrir puertos y servicio web</h3>
+    <div class="why-box">
+      <strong>¿Por qué escanear todos los puertos primero?</strong>
+      <p>TTL=63 delata Linux (TTL inicial 64, menos 1 salto = 63). En Linux, los servicios web pueden estar en puertos no estándar: 8080, 8443, 3000, 5000. Si solo escaneamos los top 1000 podríamos perder servicios críticos. Aquí solo hay un puerto — pero confirmarlo es esencial antes de asumir.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p-</span> <span class="flag-opt">--open</span> <span class="flag-opt">-n</span> <span class="flag-opt">-T4</span> <span class="ip">10.129.6.224</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p-</code> → todos los puertos 1-65535</div>
+        <div class="cmd-note"><code>--open</code> → solo puertos en estado OPEN</div>
+        <div class="cmd-note"><code>-n</code> → sin resolución DNS (ahorra tiempo)</div>
+        <div class="cmd-note"><code>-T4</code> → agresivo — válido en lab, no en producción real</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output Fase 1 — Descubrimiento</div>
+      <pre>PORT   STATE SERVICE REASON
+80/tcp open  http    syn-ack ttl 63</pre>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output Fase 2 — Detalle</div>
+      <pre>PORT   STATE SERVICE VERSION
+80/tcp open  http    nginx 1.14.2
+|_http-title: Welcome to nginx!
+|_http-server-header: nginx/1.14.2
+| http-methods:
+|_  Supported Methods: GET HEAD</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li><code>ttl 63</code> → Linux confirmado (TTL 64 - 1 salto = 63)</li>
+        <li><code>nginx 1.14.2</code> → servidor web Nginx. Versión 1.14.2 (Debian Stretch era) — puede tener CVEs pero empezamos por lo más simple</li>
+        <li><code>http-title: Welcome to nginx!</code> → página de bienvenida por defecto. No hay contenido visible en raíz</li>
+        <li><code>Supported Methods: GET HEAD</code> → servidor básico, sin PUT/POST en raíz (pero pueden existir en rutas específicas)</li>
+        <li>Solo <strong>1 puerto</strong> → ese es EL vector. No hay SSH, no hay SMB. Todo el ataque va por HTTP.</li>
+      </ul>
+    </div>
+    <div class="decision-box"><strong>Decisión tomada</strong><p>Un solo puerto HTTP. La página principal es el default de nginx → hay contenido oculto. Lanzar gobuster en paralelo con el nmap detallado para no perder tiempo.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Enumeración Web</div>
+    <h3>Gobuster — Descubrir rutas y archivos ocultos</h3>
+    <div class="why-box">
+      <strong>¿Qué es gobuster y qué es directory brute forcing?</strong>
+      <p><code>gobuster</code> es una herramienta de fuerza bruta para descubrimiento de contenido web. En modo <code>dir</code>, toma una wordlist con miles de nombres comunes (admin, login, dashboard, backup...) y los prueba uno por uno como rutas HTTP. El servidor responde con códigos de estado: <strong>200 = existe</strong>, 404 = no existe, 301/302 = redirección. Es como probar miles de puertas en un edificio para ver cuáles están abiertas.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">gobuster</span> <span class="param">dir</span>
+        <span class="flag-opt">-u</span> <span class="ip">http://10.129.6.224</span>
+        <span class="flag-opt">-w</span> <span class="param">/usr/share/wordlists/dirb/common.txt</span>
+        <span class="flag-opt">-x</span> <span class="param">php,html,txt</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>dir</code> → modo directory/file brute force</div>
+        <div class="cmd-note"><code>-u http://10.129.6.224</code> → URL objetivo completa</div>
+        <div class="cmd-note"><code>-w /usr/share/wordlists/dirb/common.txt</code> → wordlist con ~4600 palabras comunes (admin, login, backup, config...)</div>
+        <div class="cmd-note"><code>-x php,html,txt</code> → probar también con extensiones — busca admin.php además de /admin</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>===============================================================
+Gobuster v3.x
+===============================================================
+[+] Url:     http://10.129.6.224
+[+] Wordlist: /usr/share/wordlists/dirb/common.txt
+===============================================================
+
+/admin.php  (Status: 200) [Size: 999]
+
+===============================================================
+Finished
+===============================================================</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué significa este output?</strong>
+      <ul>
+        <li><code>/admin.php (Status: 200)</code> → el archivo <strong>existe y es accesible</strong> sin autenticación previa. Status 200 = OK, el servidor lo sirve.</li>
+        <li><code>Size: 999</code> → 999 bytes. Tamaño pequeño = probablemente un formulario de login simple, no una aplicación compleja.</li>
+        <li>La extensión <code>.php</code> confirma que el servidor ejecuta PHP — abre vectores de webshell si conseguimos upload.</li>
+      </ul>
+    </div>
+    <div class="decision-box"><strong>Decisión tomada</strong><p>Panel admin en <code>/admin.php</code>. Tamaño 999 bytes → login form simple. Probar credenciales por defecto: <code>admin:admin</code> es la primera opción según patrón Ghost-Ops.</p></div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Explotación — Credenciales por Defecto</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Explotación</div>
+    <h3>POST admin:admin al panel de login</h3>
+    <div class="why-box">
+      <strong>¿Por qué empezar con admin:admin y no hacer brute force completo?</strong>
+      <p>En entornos HTB Starting Point (y en muchos entornos reales), la misconfiguration más común es dejar las credenciales de instalación sin cambiar. El orden de prueba Ghost-Ops es: <code>admin:admin → admin:password → admin:(vacío) → root:root → [nombre_maquina]:[nombre_maquina]</code>. Siempre probar el más simple antes de atacar con diccionario.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="flag-opt">-X POST</span> <span class="ip">http://10.129.6.224/admin.php</span>
+        <span class="flag-opt">-d</span> <span class="param">"username=admin&amp;password=admin"</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>curl</code> → cliente HTTP de línea de comandos — envía peticiones web y muestra respuesta</div>
+        <div class="cmd-note"><code>-s</code> → (silent) sin barra de progreso ni mensajes extra</div>
+        <div class="cmd-note"><code>-X POST</code> → método HTTP POST — el que usan los formularios de login</div>
+        <div class="cmd-note"><code>http://10.129.6.224/admin.php</code> → URL del panel descubierto por gobuster</div>
+        <div class="cmd-note"><code>-d "username=admin&password=admin"</code> → (data) cuerpo del POST — simula rellenar el formulario con admin/admin</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output (fragmento relevante)</div>
+      <pre>&lt;div class="dashboard"&gt;
+  &lt;h2&gt;Welcome, admin!&lt;/h2&gt;
+  &lt;p&gt;flag: <span style="color:var(--accent);font-weight:700;">6483bee07c1c1d57f14e5b0717503c73</span>&lt;/p&gt;
+&lt;/div&gt;</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué ocurrió?</strong>
+      <ul>
+        <li>El servidor aceptó <code>admin:admin</code> y devolvió el dashboard directamente en la respuesta HTML</li>
+        <li>La flag aparece en texto plano en el HTML del dashboard — no hace falta navegar por la interfaz</li>
+        <li>Con <code>-L</code> (follow redirects) y <code>-c cookies.txt</code> podríamos mantener sesión para exploración adicional</li>
+      </ul>
+    </div>
+    <div class="decision-box"><strong>Resultado</strong><p>Flag obtenida en el primer intento de credenciales. Tiempo total: ~3 minutos incluyendo nmap completo.</p></div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>¿Cómo funciona el ataque? — Diagrama</h2>
+  <div style="background:#050810;border:1px solid var(--border);border-radius:10px;padding:1.5rem;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--text-dim);">
+    <pre>
+[Kali]                              [Preignition 10.129.6.224]
+  │                                          │
+  ├─── GET / ──────────────────────────────► │
+  │◄── "Welcome to nginx!" ─────────────────┤  ← página vacía, nada visible
+  │                                          │
+  ├─── gobuster: GET /admin ───────────────► │
+  │◄── 404 Not Found ───────────────────────┤
+  ├─── gobuster: GET /admin.php ───────────► │
+  │◄── 200 OK [999 bytes] ──────────────────┤  ← ¡ENCONTRADO!
+  │                                          │
+  ├─── POST /admin.php                       │
+  │    username=admin                        │
+  │    password=admin ────────────────────► │
+  │◄── 200 OK + dashboard + FLAG ───────────┤  ← credenciales aceptadas
+  │                                          │
+  [FLAG: 6483bee07c1c1d57f14e5b0717503c73]
+    </pre>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Panel de Agentes Ghost-Ops</h2>
+  <div class="agent-panel">
+    <div class="agent-card rto">
+      <div class="agent-label">⚔ RTO — Red Team</div>
+      <p>Vector: HTTP único → gobuster con extensiones PHP → /admin.php → POST admin:admin. Mínimo 3 comandos. Si default creds fallan: hydra con rockyou. Si hay upload en dashboard: webshell PHP.</p>
+    </div>
+    <div class="agent-card bta">
+      <div class="agent-label">🛡 BTA — Blue Team</div>
+      <p>Nivel de ruido: MEDIO. Gobuster genera ~4600 peticiones GET en segundos — detectable por volumen en access.log. Login con admin:admin genera 1 evento en app log. WAF básico bloquearía gobuster por rate limiting.</p>
+    </div>
+    <div class="agent-card bhm">
+      <div class="agent-label">🎭 BHM — Black Hat</div>
+      <p>nginx default page = siempre hacer gobuster. "Preignition" = ignición previa = el panel admin es la llave que inicia todo. Si el dashboard tiene funcionalidades: buscar file upload, command execution, config export.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Credenciales por Defecto — Orden de Prueba</h2>
+  <div class="creds-box">
+    <h4>📋 Patrón Ghost-Ops validado (probar en este orden)</h4>
+    <table class="data-table" style="margin:0;">
+      <tr><th>#</th><th>Usuario</th><th>Contraseña</th><th>Éxito en</th></tr>
+      <tr><td>1</td><td><code>admin</code></td><td><code>admin</code></td><td style="color:var(--accent);">Preignition ✅</td></tr>
+      <tr><td>2</td><td><code>admin</code></td><td><code>password</code></td><td style="color:var(--text-muted);">—</td></tr>
+      <tr><td>3</td><td><code>admin</code></td><td>(vacío)</td><td style="color:var(--text-muted);">—</td></tr>
+      <tr><td>4</td><td><code>root</code></td><td><code>root</code></td><td style="color:var(--text-muted);">—</td></tr>
+      <tr><td>5</td><td><code>administrator</code></td><td><code>administrator</code></td><td style="color:var(--text-muted);">—</td></tr>
+      <tr><td>6</td><td>[nombre_maquina]</td><td>[nombre_maquina]</td><td style="color:var(--text-muted);">—</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li>TTL=63 → Linux → preparar herramientas web (gobuster, nikto, curl)</li>
+        <li>Página default de nginx/apache NO significa servidor vacío — siempre hacer gobuster</li>
+        <li>Incluir extensiones <code>-x php,html,txt</code> — admin.php es más común que /admin/</li>
+        <li>Probar credenciales default ANTES de brute force — ahorra tiempo y ruido</li>
+        <li>curl -X POST simula login sin necesitar browser — más rápido para CTF</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li>Cambiar credenciales por defecto INMEDIATAMENTE tras instalar cualquier aplicación</li>
+        <li>Implementar rate limiting en el login (max 5 intentos por IP)</li>
+        <li>Mover el panel admin a ruta no predecible: no <code>/admin.php</code></li>
+        <li>Detectar: peticiones GET masivas en logs (gobuster = cientos por segundo)</li>
+        <li>Añadir autenticación HTTP básica (htpasswd) como capa adicional</li>
+        <li>Implementar CAPTCHA o 2FA en paneles administrativos</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción</th></tr>
+    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap para descubrir nginx en puerto 80</td></tr>
+    <tr><td><code>T1595.003</code></td><td>Active Scanning: Wordlist Scanning</td><td>Gobuster para descubrir /admin.php</td></tr>
+    <tr><td><code>T1078.001</code></td><td>Valid Accounts: Default Accounts</td><td>Login con admin:admin sin cambiar defaults</td></tr>
+    <tr><td><code>T1110.001</code></td><td>Brute Force: Password Guessing</td><td>Prueba de credenciales por defecto predecibles</td></tr>
+    <tr><td><code>T1083</code></td><td>File and Directory Discovery</td><td>Descubrimiento de rutas con wordlist</td></tr>
+  </table>
+</div>
+
+<div class="flag-box">
+  <div class="flag-label">Flag — Dashboard Admin</div>
+  <div class="flag-value">6483bee07c1c1d57f14e5b0717503c73</div>
+  <p style="color:var(--text-muted);font-size:.8rem;margin-top:.75rem;">Ruta: http://10.129.6.224/admin.php → POST admin:admin</p>
+</div>
+
+</main>
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.6.224</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux</span></div>
+    <div class="meta-row"><span class="meta-label">Web</span><span class="meta-value">nginx 1.14.2</span></div>
+    <div class="meta-row"><span class="meta-label">Puerto</span><span class="meta-value">80/tcp HTTP</span></div>
+    <div class="meta-row"><span class="meta-label">Vector</span><span class="meta-value">/admin.php</span></div>
+    <div class="meta-row"><span class="meta-label">Creds</span><span class="meta-value">admin:admin</span></div>
+    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~3 min</span></div>
+    <div class="meta-row"><span class="meta-label">Comandos</span><span class="meta-value">3</span></div>
+  </div>
+  <div class="sidebar-card">
+    <h4>Herramientas</h4>
+    <div style="font-size:.8rem;color:var(--text-dim);display:flex;flex-direction:column;gap:.4rem;">
+      <span>🔍 nmap — reconocimiento</span>
+      <span>💥 gobuster — dir brute force</span>
+      <span>🌐 curl — POST login</span>
+    </div>
+  </div>
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1595.003</span>
+    <span class="mitre-tag">T1078.001</span>
+    <span class="mitre-tag">T1110.001</span>
+    <span class="mitre-tag">T1083</span>
+  </div>
+  <div class="sidebar-card">
+    <h4>Ghost-Ops Score</h4>
+    <div class="score-num">3/3</div>
+    <div class="score-label">predicciones correctas ✅</div>
+    <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:.5rem;">/admin.php + admin:admin exacto</p>
+  </div>
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item"><span class="glosario-term">nginx</span><span class="glosario-def">Servidor web open-source de alto rendimiento. Puerto 80 HTTP por defecto.</span></div>
+    <div class="glosario-item"><span class="glosario-term">gobuster</span><span class="glosario-def">Herramienta de brute force para rutas web. Prueba palabras de una lista como URLs.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Status 200</span><span class="glosario-def">Código HTTP que significa "OK" — el recurso existe y el servidor lo devuelve.</span></div>
+    <div class="glosario-item"><span class="glosario-term">POST</span><span class="glosario-def">Método HTTP para enviar datos al servidor. Lo usan los formularios de login.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Default Credentials</span><span class="glosario-def">Credenciales de fábrica no cambiadas. admin:admin es la más común del mundo.</span></div>
+    <div class="glosario-item"><span class="glosario-term">TTL 63</span><span class="glosario-def">Time To Live = 63 → Linux (TTL inicial 64, minus 1 hop). Windows usa 127/128.</span></div>
+  </div>
+</aside>
+</div>
+
+<footer style="background:var(--card);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text-muted);font-size:.82rem;">HTB Starting Point · Preignition · Very Easy · Linux · nginx 1.14.2 · 2026-03-16</p>
+</footer>
+
+</body>
+</html>
