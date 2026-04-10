@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, type ReactNode } from "react";
-import { authenticator } from "otplib";
+import { verify } from "otplib";
 
 const SESSION_KEY = "totp_meow";
 const SESSION_DURATION = 600000; // 10 minutes
