@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { authenticator } from "otplib";
+import { verifySync } from "otplib";
 import { reports } from "@/lib/reports-registry";
 import {
   getProtectionConfig,
