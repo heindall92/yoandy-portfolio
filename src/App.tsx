@@ -16,13 +16,14 @@ import Draft4 from "./pages/Draft4";
 import Machines from "./pages/Machines";
 import Sherlocks from "./pages/Sherlocks";
 import HackMyVM from "./pages/HackMyVM";
+import Bifrost from "./pages/Bifrost";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
-  const hideNavbar = location.pathname === "/" || location.pathname === "/draft" || location.pathname === "/draft2" || location.pathname === "/draft3" || location.pathname === "/draft4" || location.pathname === "/login";
+  const hideNavbar = location.pathname === "/" || location.pathname === "/draft" || location.pathname === "/draft2" || location.pathname === "/draft3" || location.pathname === "/draft4" || location.pathname === "/login" || location.pathname === "/bifrost";
 
   return (
     <>
@@ -42,6 +43,7 @@ const AppContent = () => {
         <Route path="/draft2" element={<Draft2 />} />
         <Route path="/draft3" element={<Draft3 />} />
         <Route path="/draft4" element={<Draft4 />} />
+        <Route path="/bifrost" element={<Bifrost />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
