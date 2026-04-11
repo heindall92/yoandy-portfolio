@@ -256,9 +256,12 @@ const Bifrost = () => {
         description: "La protección de writeups ya aplica igual en desktop, móvil y tableta.",
       });
       setTimeout(() => setSaved(false), 2000);
-    } catch {
+    } catch (error) {
+      const errorCode = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "";
       toast.error("No se pudieron guardar los cambios", {
-        description: "Inicia sesión con una cuenta autorizada y vuelve a intentarlo.",
+        description: errorCode === "42501"
+          ? "Tu sesión de Bifrost es válida, pero este email no estaba autorizado como admin en el backend."
+          : "Ocurrió un error al guardar la configuración. Vuelve a intentarlo.",
       });
     }
   };
