@@ -31,6 +31,13 @@ const hmvMachines = [
     difficulty: "EASY", diffColor: "neon-magenta",
     os: "Linux",
   },
+  {
+    slug: "talk-hmv", emoji: "💬", name: "Talk",
+    desc: "Linux con nginx y app PHP chatME. SQL Injection clásica en login, dump completo con sqlmap, credenciales en texto plano para credential spraying SSH con Hydra, y escalada a root con sudo lynx (GTFOBins).",
+    tags: ["SQLi", "sqlmap", "Credential Spraying", "GTFOBins", "lynx"],
+    difficulty: "EASY", diffColor: "neon-magenta",
+    os: "Linux",
+  },
 ];
 
 const diffStyles: Record<string, { badge: string; stripe: string; glow: string }> = {
