@@ -35,6 +35,57 @@ export type Database = {
         }
         Relationships: []
       }
+      writeup_protection_overrides: {
+        Row: {
+          created_at: string
+          id: string
+          is_protected: boolean
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_protected?: boolean
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_protected?: boolean
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      writeup_security_settings: {
+        Row: {
+          created_at: string
+          global_enabled: boolean
+          id: string
+          session_minutes: number
+          singleton: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          global_enabled?: boolean
+          id?: string
+          session_minutes?: number
+          singleton?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          global_enabled?: boolean
+          id?: string
+          session_minutes?: number
+          singleton?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

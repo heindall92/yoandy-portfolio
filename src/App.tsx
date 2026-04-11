@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Report from "./pages/Report";
 import Login from "./pages/Login";
@@ -33,7 +34,7 @@ const AppContent = () => {
         <Route path="/hackmyvm" element={<HackMyVM />} />
         <Route path="/report/:slug" element={<Report />} />
         
-        <Route path="/bifrost" element={<Bifrost />} />
+        <Route path="/bifrost" element={<ProtectedRoute><Bifrost /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

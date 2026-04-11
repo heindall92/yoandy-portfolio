@@ -8,11 +8,12 @@ const SESSION_KEY = "totp_meow";
 interface WriteupGuardProps {
   isProtected: boolean;
   slug?: string;
+  sessionMinutes?: number;
   children: ReactNode;
 }
 
-const WriteupGuard = ({ isProtected, slug = "unknown", children }: WriteupGuardProps) => {
-  const sessionDuration = getTotpMinutes() * 60 * 1000;
+const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children }: WriteupGuardProps) => {
+  const sessionDuration = (sessionMinutes ?? getTotpMinutes()) * 60 * 1000;
 
   const [granted, setGranted] = useState(false);
   const [code, setCode] = useState("");
@@ -156,7 +157,7 @@ const WriteupGuard = ({ isProtected, slug = "unknown", children }: WriteupGuardP
       setGranted(true);
       setRemaining(sessionDuration);
       logAccess(slug, "GRANTED");
-      toast.success("Acceso concedido", { description: `Sesión activa por ${getTotpMinutes()} minutos` });
+      toast.success("Acceso concedido", { description: `Sesión activa por ${sessionMinutes ?? getTotpMinutes()} minutos` });
     } else {
       setError("// ERROR: Código TOTP inválido o expirado");
       setCode("");

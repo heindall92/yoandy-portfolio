@@ -1,17 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { verifySync } from "otplib";
+import { toast } from "sonner";
 import { reports } from "@/lib/reports-registry";
 import {
-  getProtectionConfig,
-  setProtectionConfig,
-  getTotpMinutes,
-  setTotpMinutes,
   getAccentColor,
   setAccentColor,
   getBifrostFont,
   setBifrostFont,
   getAccessLog,
+  getRemoteWriteupSecurityConfig,
+  saveRemoteWriteupSecurityConfig,
   type ProtectionConfig,
   type AccessLogEntry,
 } from "@/lib/bifrost-config";
@@ -70,6 +69,7 @@ const Bifrost = () => {
   const [font, setFont] = useState("Orbitron");
   const [logs, setLogs] = useState<AccessLogEntry[]>([]);
   const [saved, setSaved] = useState(false);
+  const [loadingConfig, setLoadingConfig] = useState(false);
 
   const bifrostTotpSecret = import.meta.env.VITE_BIFROST_TOTP_SECRET;
 
@@ -121,7 +121,7 @@ const Bifrost = () => {
 
   useEffect(() => {
     if (checkAdminSession()) {
-      loadConfig();
+      void loadConfig();
     }
   }, [checkAdminSession]);
 
@@ -163,13 +163,28 @@ const Bifrost = () => {
     return () => clearInterval(interval);
   }, [authed]);
 
-  const loadConfig = () => {
-    setProtectionConfigState(getProtectionConfig());
-    setTotpMin(getTotpMinutes());
+  const loadConfig = useCallback(async () => {
+    setLoadingConfig(true);
+
+    try {
+      const remoteConfig = await getRemoteWriteupSecurityConfig();
+
+      setProtectionConfigState({
+        _global_enabled: remoteConfig.globalEnabled,
+        ...remoteConfig.overrides,
+      });
+      setTotpMin(remoteConfig.sessionMinutes);
+    } catch {
+      toast.error("No se pudo cargar Bifrost", {
+        description: "La configuración global de protección no está disponible ahora mismo.",
+      });
+    }
+
     setAccent(getAccentColor());
     setFont(getBifrostFont());
     setLogs([...getAccessLog()]);
-  };
+    setLoadingConfig(false);
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,7 +216,7 @@ const Bifrost = () => {
       setAdminRemaining(SESSION_DURATION);
       setAttempts(0);
       sessionStorage.removeItem(LOCKOUT_KEY);
-      loadConfig();
+      void loadConfig();
     } else {
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
@@ -231,19 +246,26 @@ const Bifrost = () => {
     }));
   };
 
-  const saveAll = () => {
-    setProtectionConfig(protectionConfig);
-    setTotpMinutes(totpMin);
-    setAccentColor(accent);
-    setBifrostFont(font);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const saveAll = async () => {
+    try {
+      await saveRemoteWriteupSecurityConfig(protectionConfig, totpMin);
+      setAccentColor(accent);
+      setBifrostFont(font);
+      setSaved(true);
+      toast.success("Configuración guardada", {
+        description: "La protección de writeups ya aplica igual en desktop, móvil y tableta.",
+      });
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      toast.error("No se pudieron guardar los cambios", {
+        description: "Inicia sesión con una cuenta autorizada y vuelve a intentarlo.",
+      });
+    }
   };
 
   const resetProtection = () => {
     const fresh: ProtectionConfig = {};
     setProtectionConfigState(fresh);
-    setProtectionConfig(fresh);
   };
 
   const formatTime = (ms: number) => {
@@ -330,8 +352,12 @@ const Bifrost = () => {
       <div style={{ marginBottom: 40 }}>
         <p style={{ color: "#555", fontSize: 12, marginBottom: 16, letterSpacing: 2 }}>// ──────── SECCIÓN 1: GESTIÓN DE PROTECCIONES ────────</p>
 
+        {loadingConfig && (
+          <p style={{ color: "#888", fontSize: 12, marginBottom: 16 }}>Sincronizando configuración global…</p>
+        )}
+
         <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-          <button onClick={saveAll} style={{ ...btnStyle, fontSize: 11 }}>
+          <button onClick={() => void saveAll()} style={{ ...btnStyle, fontSize: 11 }}>
             {saved ? "✓ GUARDADO" : "GUARDAR CAMBIOS"}
           </button>
           <button onClick={resetProtection} style={{ ...btnStyle, fontSize: 11, color: "#ffaa00", borderColor: "#ffaa00" }}>
@@ -509,7 +535,7 @@ const Bifrost = () => {
 
       {/* Footer save bar */}
       <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: 16, display: "flex", gap: 12 }}>
-        <button onClick={saveAll} style={btnStyle}>
+        <button onClick={() => void saveAll()} style={btnStyle}>
           {saved ? "✓ CAMBIOS GUARDADOS" : "💾 GUARDAR TODO"}
         </button>
         <button onClick={() => navigate("/")} style={{ ...btnStyle, color: "#555", borderColor: "#333" }}>
