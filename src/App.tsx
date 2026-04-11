@@ -9,9 +9,6 @@ import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
 import Report from "./pages/Report";
 import Login from "./pages/Login";
-import Draft from "./pages/Draft";
-import Draft2 from "./pages/Draft2";
-import Draft3 from "./pages/Draft3";
 import Draft4 from "./pages/Draft4";
 import Machines from "./pages/Machines";
 import Sherlocks from "./pages/Sherlocks";
@@ -23,7 +20,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
-  const hideNavbar = location.pathname === "/" || location.pathname === "/draft" || location.pathname === "/draft2" || location.pathname === "/draft3" || location.pathname === "/draft4" || location.pathname === "/login" || location.pathname === "/bifrost";
+  const hideNavbar = location.pathname === "/" || location.pathname === "/draft4" || location.pathname === "/login" || location.pathname === "/bifrost";
 
   return (
     <>
@@ -35,9 +32,6 @@ const AppContent = () => {
         <Route path="/sherlocks" element={<Sherlocks />} />
         <Route path="/hackmyvm" element={<HackMyVM />} />
         <Route path="/report/:slug" element={<Report />} />
-        <Route path="/draft" element={<Draft />} />
-        <Route path="/draft2" element={<Draft2 />} />
-        <Route path="/draft3" element={<Draft3 />} />
         <Route path="/draft4" element={<Draft4 />} />
         <Route path="/bifrost" element={<Bifrost />} />
         <Route path="*" element={<NotFound />} />
