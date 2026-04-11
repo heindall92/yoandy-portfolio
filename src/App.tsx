@@ -9,7 +9,7 @@ import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
 import Report from "./pages/Report";
 import Login from "./pages/Login";
-import Draft4 from "./pages/Draft4";
+
 import Machines from "./pages/Machines";
 import Sherlocks from "./pages/Sherlocks";
 import HackMyVM from "./pages/HackMyVM";
@@ -20,7 +20,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
-  const hideNavbar = location.pathname === "/" || location.pathname === "/draft4" || location.pathname === "/login" || location.pathname === "/bifrost";
+  const hideNavbar = location.pathname === "/" || location.pathname === "/login" || location.pathname === "/bifrost";
 
   return (
     <>
@@ -32,7 +32,7 @@ const AppContent = () => {
         <Route path="/sherlocks" element={<Sherlocks />} />
         <Route path="/hackmyvm" element={<HackMyVM />} />
         <Route path="/report/:slug" element={<Report />} />
-        <Route path="/draft4" element={<Draft4 />} />
+        
         <Route path="/bifrost" element={<Bifrost />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
