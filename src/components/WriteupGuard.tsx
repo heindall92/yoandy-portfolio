@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
-import { verifySync } from "otplib";
+import { authenticator } from "otplib";
 import { toast } from "sonner";
 import { getTotpMinutes, logAccess } from "@/lib/bifrost-config";
 
@@ -149,8 +149,8 @@ const WriteupGuard = ({ isProtected, slug = "unknown", children }: WriteupGuardP
       return;
     }
 
-    const result = verifySync({ token: trimmed, secret });
-    if (result.valid) {
+    const isValid = authenticator.check(trimmed, secret);
+    if (isValid) {
       const expires = Date.now() + sessionDuration;
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires }));
       setGranted(true);
