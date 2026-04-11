@@ -25,6 +25,7 @@ const Report = () => {
   }
 
   const effectiveProtected = isWriteupProtected(slug, !!report.protected);
+  console.log("[Report] slug:", slug, "report.protected:", report.protected, "effectiveProtected:", effectiveProtected);
 
   return (
     <WriteupGuard isProtected={effectiveProtected} slug={slug}>
