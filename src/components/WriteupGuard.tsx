@@ -156,10 +156,12 @@ const WriteupGuard = ({ isProtected, slug = "unknown", children }: WriteupGuardP
       setGranted(true);
       setRemaining(sessionDuration);
       logAccess(slug, "GRANTED");
+      toast.success("Acceso concedido", { description: `Sesión activa por ${getTotpMinutes()} minutos` });
     } else {
       setError("// ERROR: Código TOTP inválido o expirado");
       setCode("");
       logAccess(slug, "DENIED");
+      toast.error("Código TOTP inválido", { description: "Verifica el código en Google Authenticator e inténtalo de nuevo" });
     }
   };
 
