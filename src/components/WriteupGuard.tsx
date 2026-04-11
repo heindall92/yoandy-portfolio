@@ -148,8 +148,8 @@ const WriteupGuard = ({ isProtected, slug = "unknown", children }: WriteupGuardP
       return;
     }
 
-    const valid = verifySync({ token: trimmed, secret });
-    if (valid) {
+    const result = verifySync({ token: trimmed, secret });
+    if (result.valid) {
       const expires = Date.now() + sessionDuration;
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires }));
       setGranted(true);
