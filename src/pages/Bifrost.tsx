@@ -192,9 +192,9 @@ const Bifrost = () => {
       return;
     }
 
-    const isValid = verifySync({ token: code, secret: bifrostTotpSecret });
+    const result = verifySync({ token: code, secret: bifrostTotpSecret });
 
-    if (isValid) {
+    if (result.valid) {
       const expires = Date.now() + SESSION_DURATION;
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires }));
       setAuthed(true);
