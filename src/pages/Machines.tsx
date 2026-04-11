@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { FileText, ArrowLeft, Terminal, Server } from "lucide-react";
+import { FileText, Terminal, Server, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 
 const machines = [
@@ -201,6 +202,24 @@ const machines = [
   },
 ];
 
+const diffClass = (d: string) => {
+  const dl = d.toLowerCase();
+  if (dl.includes("very easy")) return "de";
+  if (dl.includes("easy")) return "de";
+  if (dl.includes("medium")) return "dm";
+  if (dl.includes("hard")) return "dh";
+  return "de";
+};
+
+const diffLabel = (d: string) => {
+  const dl = d.toLowerCase();
+  if (dl.includes("very easy")) return "VERY EASY";
+  if (dl.includes("easy")) return "EASY";
+  if (dl.includes("medium")) return "MEDIUM";
+  if (dl.includes("hard")) return "HARD";
+  return d.toUpperCase();
+};
+
 const diffStyles: Record<string, { badge: string; stripe: string; glow: string }> = {
   "neon-magenta": {
     badge: "bg-neon-magenta/10 text-neon-magenta border border-neon-magenta/20",
@@ -253,10 +272,7 @@ const MachineCard = ({ m, index = 0 }: { m: typeof machines[0]; index?: number }
         to={`/report/${m.slug}`}
         className={`group relative block overflow-hidden rounded-xl bg-card border border-border/50 transition-all duration-500 hover:-translate-y-2 ${style.glow}`}
       >
-        {/* Difficulty color stripe */}
         <div className={`absolute left-0 top-0 bottom-0 w-1 ${style.stripe} opacity-60 group-hover:opacity-100 transition-opacity duration-300`} />
-
-        {/* Terminal bar */}
         <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/50 border-b border-border/30">
           <div className="flex gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-destructive/70" />
@@ -272,8 +288,6 @@ const MachineCard = ({ m, index = 0 }: { m: typeof machines[0]; index?: number }
             <span className="font-mono text-[10px] text-muted-foreground/40">{m.os}</span>
           </div>
         </div>
-
-        {/* Content */}
         <div className="p-5 pl-6">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
@@ -285,16 +299,12 @@ const MachineCard = ({ m, index = 0 }: { m: typeof machines[0]; index?: number }
             </div>
             <FileText size={16} className="text-muted-foreground/30 group-hover:text-primary transition-all duration-300 group-hover:rotate-12" />
           </div>
-
           <p className="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-2">{m.desc}</p>
-
           <div className="flex flex-wrap gap-1.5">
             {m.tags.map((tag) => (
               <span key={tag} className="px-2 py-0.5 rounded font-mono text-[10px] bg-muted/80 text-secondary/80 border border-secondary/10 group-hover:border-secondary/30 transition-colors duration-300">{tag}</span>
             ))}
           </div>
-
-          {/* Bottom status bar */}
           <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/20">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
@@ -312,33 +322,286 @@ const MachineCard = ({ m, index = 0 }: { m: typeof machines[0]; index?: number }
 
 export { machines, MachineCard };
 
-const Machines = () => (
-  <div className="min-h-screen pt-24 pb-16 relative z-10">
-    <div className="container mx-auto px-4 max-w-5xl">
-      <Link to="/machines" className="inline-flex items-center gap-2 font-mono text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
-        <ArrowLeft size={16} /> Volver a Máquinas HTB
-      </Link>
-      <motion.h2
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-        className="font-display text-3xl font-bold text-primary text-glow-green mb-2"
-      >
-        {">"} Máquinas HTB
-      </motion.h2>
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-        className="font-mono text-sm text-muted-foreground mb-10"
-      >
-        {machines.length} máquinas completadas — ordenadas por dificultad
-      </motion.p>
-      <div className="grid md:grid-cols-2 gap-6">
-        {machines.map((m, i) => <MachineCard key={m.slug} m={m} index={i} />)}
+const Machines = () => {
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  const filtered = machines.filter((m) => {
+    const q = search.toLowerCase();
+    const matchesSearch =
+      !q ||
+      m.name.toLowerCase().includes(q) ||
+      m.desc.toLowerCase().includes(q) ||
+      m.tags.some((t) => t.toLowerCase().includes(q)) ||
+      m.os.toLowerCase().includes(q) ||
+      m.difficulty.toLowerCase().includes(q);
+
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "very-easy" && m.difficulty === "VERY EASY") ||
+      (filter === "easy" && m.difficulty === "EASY") ||
+      (filter === "medium" && m.difficulty === "MEDIUM") ||
+      (filter === "hard" && m.difficulty === "HARD") ||
+      (filter === "linux" && m.os === "Linux") ||
+      (filter === "windows" && m.os === "Windows");
+
+    return matchesSearch && matchesFilter;
+  });
+
+  return (
+    <div className="machines-page">
+      <style>{`
+        .machines-page {
+          --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+          --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+          --cream:#f2ede4;--cream2:#faf7f1;--cream3:#e8e0d0;
+          --text-l:#1a2e20;--text-l2:rgba(26,46,32,.55);--text-l3:rgba(26,46,32,.3);
+          --text-d:#c8f0dc;--text-d2:rgba(200,240,220,.5);
+          --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+          font-family:var(--dm);
+        }
+
+        .m-hero {
+          min-height:100vh;
+          padding:100px 52px 80px;
+          position:relative;
+          overflow:hidden;
+          background:var(--cream2);
+          color:var(--text-l);
+        }
+
+        .m-bg-num {
+          position:absolute;right:-20px;top:-40px;
+          font-family:var(--bb);font-size:clamp(14rem,22vw,26rem);
+          color:rgba(26,46,32,.04);line-height:1;pointer-events:none;user-select:none;letter-spacing:-.05em;
+        }
+
+        .m-top {
+          display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:end;
+          margin-bottom:60px;position:relative;z-index:2;
+        }
+
+        .m-h {
+          font-family:var(--bb);font-size:clamp(3.5rem,6vw,6.5rem);
+          line-height:.92;letter-spacing:.02em;color:var(--text-l);
+        }
+        .m-h em { font-style:normal;color:var(--sage); }
+
+        .m-hdesc {
+          font-size:1rem;color:var(--text-l2);line-height:1.8;font-weight:300;
+        }
+
+        .m-back {
+          display:inline-flex;align-items:center;gap:8px;
+          font-family:var(--mo);font-size:.75rem;color:var(--text-l3);
+          text-decoration:none;letter-spacing:.08em;margin-bottom:20px;
+          transition:color .3s;position:relative;z-index:2;
+        }
+        .m-back:hover { color:var(--sage); }
+
+        .m-srch {
+          position:relative;margin-bottom:14px;z-index:2;
+        }
+        .m-sin {
+          width:100%;padding:16px 50px;background:white;
+          border:2px solid rgba(26,46,32,.1);border-radius:10px;
+          font-family:var(--mo);font-size:.9rem;color:var(--text-l);
+          outline:none;letter-spacing:.04em;transition:all .3s;
+          box-shadow:0 2px 8px rgba(0,0,0,.04);
+        }
+        .m-sin:focus { border-color:var(--sage);box-shadow:0 0 0 4px rgba(42,96,72,.08); }
+        .m-sin::placeholder { color:var(--text-l3); }
+        .m-sico {
+          position:absolute;left:18px;top:50%;transform:translateY(-50%);
+          font-size:.85rem;color:var(--text-l3);pointer-events:none;
+        }
+
+        .m-frow {
+          display:flex;gap:8px;flex-wrap:wrap;margin-bottom:48px;position:relative;z-index:2;
+        }
+        .m-fb {
+          padding:7px 18px;border-radius:20px;font-family:var(--mo);font-size:.72rem;
+          border:1.5px solid rgba(26,46,32,.12);background:transparent;color:var(--text-l2);
+          cursor:pointer;transition:all .3s;letter-spacing:.07em;
+        }
+        .m-fb:hover { border-color:var(--sage);color:var(--sage); }
+        .m-fb.on { background:var(--sage);border-color:var(--sage);color:white; }
+
+        .m-grid {
+          display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+          position:relative;z-index:2;
+        }
+
+        .m-card {
+          background:white;border:1.5px solid rgba(26,46,32,.07);border-radius:16px;
+          overflow:hidden;transition:all .4s cubic-bezier(.23,1,.32,1);
+          box-shadow:0 2px 8px rgba(0,0,0,.04);text-decoration:none;display:block;
+        }
+        .m-card:hover {
+          transform:translateY(-8px);border-color:rgba(42,96,72,.2);
+          box-shadow:0 24px 48px rgba(0,0,0,.1);
+        }
+
+        .mc-top {
+          height:148px;position:relative;display:flex;align-items:center;
+          justify-content:center;overflow:hidden;
+        }
+        .mc-ico { font-size:3.2rem;position:relative;z-index:1; }
+        .mc-tbg { position:absolute;inset:0; }
+        .mc-diff {
+          position:absolute;top:12px;right:12px;padding:4px 12px;border-radius:4px;
+          font-family:var(--mo);font-size:.58rem;letter-spacing:.1em;font-weight:500;
+        }
+        .mc-os {
+          position:absolute;bottom:12px;left:12px;font-family:var(--mo);font-size:.56rem;
+          color:var(--text-l3);background:rgba(242,237,228,.88);padding:3px 10px;
+          border-radius:3px;letter-spacing:.08em;
+        }
+
+        .mc-body { padding:20px; }
+        .mc-name {
+          font-family:var(--dm);font-weight:600;font-size:1rem;
+          color:var(--text-l);margin-bottom:7px;
+        }
+        .mc-desc {
+          font-size:.85rem;color:var(--text-l2);line-height:1.55;margin-bottom:13px;
+          font-weight:300;display:-webkit-box;-webkit-line-clamp:2;
+          -webkit-box-orient:vertical;overflow:hidden;
+        }
+        .mc-tags { display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px; }
+        .mc-tag {
+          padding:4px 10px;border-radius:3px;font-family:var(--mo);font-size:.68rem;
+          background:rgba(42,96,72,.07);border:1px solid rgba(42,96,72,.14);
+          color:var(--sage);letter-spacing:.04em;
+        }
+        .mc-foot { display:flex;align-items:center;justify-content:space-between; }
+        .mc-link {
+          font-family:var(--mo);font-size:.75rem;color:var(--sage);text-decoration:none;
+          display:flex;align-items:center;gap:4px;transition:gap .25s;font-weight:500;
+        }
+        .mc-link:hover { gap:8px; }
+
+        .mc-de { background:rgba(42,96,72,.1);color:var(--sage);border:1px solid rgba(42,96,72,.25); }
+        .mc-dm { background:rgba(245,166,35,.1);color:#f5a623;border:1px solid rgba(245,166,35,.25); }
+        .mc-dh { background:rgba(240,79,90,.1);color:#f04f5a;border:1px solid rgba(240,79,90,.25); }
+
+        .m-empty {
+          text-align:center;padding:80px;font-family:var(--mo);font-size:.8rem;color:var(--text-l3);
+        }
+
+        @media(max-width:1100px) {
+          .m-top { grid-template-columns:1fr;gap:20px; }
+          .m-grid { grid-template-columns:repeat(2,1fr); }
+          .m-hero { padding:100px 24px 60px; }
+        }
+        @media(max-width:700px) {
+          .m-grid { grid-template-columns:1fr; }
+          .m-hero { padding:90px 16px 40px; }
+        }
+      `}</style>
+
+      <div className="m-hero">
+        <div className="m-bg-num">{machines.length}</div>
+
+        <Link to="/" className="m-back">
+          <ArrowLeft size={14} /> Volver al inicio
+        </Link>
+
+        <div className="m-top">
+          <motion.h1
+            className="m-h"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            Máquinas<br /><em>HackTheBox</em>
+          </motion.h1>
+          <motion.p
+            className="m-hdesc"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+          >
+            {machines.length} máquinas comprometidas con metodología completa. Busca por técnica, sistema operativo o dificultad.
+          </motion.p>
+        </div>
+
+        <div className="m-srch">
+          <input
+            type="text"
+            className="m-sin"
+            placeholder="SQLi · Kubernetes · SUID · Windows · RCE ..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <span className="m-sico">🔍</span>
+        </div>
+
+        <div className="m-frow">
+          {[
+            { key: "all", label: "Todos" },
+            { key: "very-easy", label: "Very Easy" },
+            { key: "easy", label: "Easy" },
+            { key: "medium", label: "Medium" },
+            { key: "hard", label: "Hard" },
+            { key: "linux", label: "Linux" },
+            { key: "windows", label: "Windows" },
+          ].map((f) => (
+            <button
+              key={f.key}
+              className={`m-fb ${filter === f.key ? "on" : ""}`}
+              onClick={() => setFilter(f.key)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="m-grid">
+          {filtered.map((m) => {
+            const dc = diffClass(m.difficulty);
+            return (
+              <motion.div
+                key={m.slug}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5 }}
+              >
+                <Link to={`/report/${m.slug}`} className="m-card">
+                  <div className="mc-top">
+                    <div className="mc-tbg" style={{ background: "linear-gradient(135deg,#041810,#07281a)" }} />
+                    <span className="mc-ico">{m.emoji}</span>
+                    <span className={`mc-diff mc-${dc}`}>{diffLabel(m.difficulty)}</span>
+                    <span className="mc-os">{m.os}</span>
+                  </div>
+                  <div className="mc-body">
+                    <div className="mc-name">{m.name}</div>
+                    <div className="mc-desc">{m.desc}</div>
+                    <div className="mc-tags">
+                      {m.tags.slice(0, 4).map((t) => (
+                        <span className="mc-tag" key={t}>{t}</span>
+                      ))}
+                    </div>
+                    <div className="mc-foot">
+                      <span className="mc-link">Leer writeup →</span>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {filtered.length === 0 && (
+          <div className="m-empty">
+            <span style={{ display: "block", fontSize: "2rem", marginBottom: 10 }}>🔍</span>
+            Sin resultados — prueba: linux · sqli · kubernetes · windows...
+          </div>
+        )}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default Machines;
