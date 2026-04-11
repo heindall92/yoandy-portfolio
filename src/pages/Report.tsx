@@ -27,18 +27,16 @@ const Report = () => {
   const effectiveProtected = isWriteupProtected(slug, !!report.protected);
 
   return (
-    <ReportPasswordGate>
-      <WriteupGuard isProtected={effectiveProtected} slug={slug}>
-        <div className="bg-background min-h-screen pt-20">
-          <iframe
-            src={report.file}
-            title={report.title}
-            className="w-full border-none"
-            style={{ height: "calc(100vh - 80px)" }}
-          />
-        </div>
-      </WriteupGuard>
-    </ReportPasswordGate>
+    <WriteupGuard isProtected={effectiveProtected} slug={slug}>
+      <div className="bg-background min-h-screen pt-20">
+        <iframe
+          src={report.file}
+          title={report.title}
+          className="w-full border-none"
+          style={{ height: "calc(100vh - 80px)" }}
+        />
+      </div>
+    </WriteupGuard>
   );
 };
 

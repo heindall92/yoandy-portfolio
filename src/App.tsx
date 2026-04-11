@@ -34,11 +34,7 @@ const AppContent = () => {
         <Route path="/machines" element={<Machines />} />
         <Route path="/sherlocks" element={<Sherlocks />} />
         <Route path="/hackmyvm" element={<HackMyVM />} />
-        <Route path="/report/:slug" element={
-          <ProtectedRoute>
-            <Report />
-          </ProtectedRoute>
-        } />
+        <Route path="/report/:slug" element={<Report />} />
         <Route path="/draft" element={<Draft />} />
         <Route path="/draft2" element={<Draft2 />} />
         <Route path="/draft3" element={<Draft3 />} />
