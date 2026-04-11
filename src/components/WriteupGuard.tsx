@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { verifySync } from "otplib";
+import { toast } from "sonner";
 import { getTotpMinutes, logAccess } from "@/lib/bifrost-config";
 
 const SESSION_KEY = "totp_meow";
@@ -155,10 +156,12 @@ const WriteupGuard = ({ isProtected, slug = "unknown", children }: WriteupGuardP
       setGranted(true);
       setRemaining(sessionDuration);
       logAccess(slug, "GRANTED");
+      toast.success("Acceso concedido", { description: `Sesión activa por ${getTotpMinutes()} minutos` });
     } else {
       setError("// ERROR: Código TOTP inválido o expirado");
       setCode("");
       logAccess(slug, "DENIED");
+      toast.error("Código TOTP inválido", { description: "Verifica el código en Google Authenticator e inténtalo de nuevo" });
     }
   };
 
