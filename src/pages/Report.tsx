@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import ReportPasswordGate from "@/components/ReportPasswordGate";
+
 import WriteupGuard from "@/components/WriteupGuard";
 import { reports } from "@/lib/reports-registry";
 import { isWriteupProtected } from "@/lib/bifrost-config";
