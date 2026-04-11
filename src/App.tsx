@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import ProtectedRoute from "@/components/ProtectedRoute";
+
 import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
 import Report from "./pages/Report";
@@ -34,11 +34,7 @@ const AppContent = () => {
         <Route path="/machines" element={<Machines />} />
         <Route path="/sherlocks" element={<Sherlocks />} />
         <Route path="/hackmyvm" element={<HackMyVM />} />
-        <Route path="/report/:slug" element={
-          <ProtectedRoute>
-            <Report />
-          </ProtectedRoute>
-        } />
+        <Route path="/report/:slug" element={<Report />} />
         <Route path="/draft" element={<Draft />} />
         <Route path="/draft2" element={<Draft2 />} />
         <Route path="/draft3" element={<Draft3 />} />
