@@ -207,6 +207,13 @@ const machines = [
     difficulty: "EASY", diffColor: "neon-green",
     os: "Linux",
   },
+  {
+    slug: "silentium-htb", emoji: "🤫", name: "Silentium",
+    desc: "Máquina Linux con Flowise 3.0.5 y Gogs 0.13.0 en Docker. Cadena de 3 CVEs: reset de contraseña sin auth (CVE-2025-58434) → RCE vía inyección en CustomMCP/Function() (CVE-2025-59528) → escape de contenedor mediante race condition de symlink en hooks de Git de Gogs (CVE-2025-8110).",
+    tags: ["CVE-2025-58434", "CVE-2025-59528", "CVE-2025-8110", "Flowise", "Gogs", "Docker", "RCE"],
+    difficulty: "EASY", diffColor: "neon-green",
+    os: "Linux",
+  },
 ];
 
 const diffClass = (d: string) => {
