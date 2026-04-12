@@ -47,4 +47,5 @@ export const reports: Record<string, ReportEntry> = {
   "ejptv2-cert": { title: "eJPTv2 — Informe de Pentesting Completo", file: "/reports/ejptv2-cert.html", section: "certs" },
   "pirates-htb": { title: "Writeup — Pirates (HTB)", file: "/reports/pirates-htb.html", section: "htb" },
   "writeup-htb": { title: "Writeup — Writeup (HTB)", file: "/reports/writeup-htb.html", section: "htb" },
+  "silentium-htb": { title: "Writeup — Silentium (HTB)", file: "/reports/silentium-htb.html", section: "htb" },
 };
