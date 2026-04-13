@@ -186,7 +186,7 @@ const Bifrost = () => {
     setLoadingConfig(false);
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError("");
 
@@ -196,39 +196,44 @@ const Bifrost = () => {
       return;
     }
 
-    if (!bifrostTotpSecret) {
-      setLoginError("BIFROST: Variable VITE_BIFROST_TOTP_SECRET no configurada en .env");
-      return;
-    }
-
     if (code.length !== 6 || !/^\d{6}$/.test(code)) {
       setLoginError("// ERROR: Código debe ser 6 dígitos");
       setCode("");
       return;
     }
 
-    const result = verifySync({ token: code, secret: bifrostTotpSecret });
+    setBifrostLoading(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("verify-totp", {
+        body: { token: code, type: "bifrost" },
+      });
 
-    if (result.valid) {
-      const expires = Date.now() + SESSION_DURATION;
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires }));
-      setAuthed(true);
-      setAdminRemaining(SESSION_DURATION);
-      setAttempts(0);
-      sessionStorage.removeItem(LOCKOUT_KEY);
-      void loadConfig();
-    } else {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      if (newAttempts >= MAX_ATTEMPTS) {
-        const until = Date.now() + 300000;
-        setLockoutUntil(until);
-        sessionStorage.setItem(LOCKOUT_KEY, JSON.stringify({ until, count: newAttempts }));
-        setLoginError(`BLOQUEADO: 3 intentos fallidos. Espera 5 minutos.`);
+      if (fnError || !data?.valid) {
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+        if (newAttempts >= MAX_ATTEMPTS) {
+          const until = Date.now() + 300000;
+          setLockoutUntil(until);
+          sessionStorage.setItem(LOCKOUT_KEY, JSON.stringify({ until, count: newAttempts }));
+          setLoginError(`BLOQUEADO: 3 intentos fallidos. Espera 5 minutos.`);
+        } else {
+          setLoginError(`// ERROR: Código TOTP inválido (${newAttempts}/${MAX_ATTEMPTS})`);
+        }
+        setCode("");
       } else {
-        setLoginError(`// ERROR: Código TOTP inválido (${newAttempts}/${MAX_ATTEMPTS})`);
+        const expires = Date.now() + SESSION_DURATION;
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires }));
+        setAuthed(true);
+        setAdminRemaining(SESSION_DURATION);
+        setAttempts(0);
+        sessionStorage.removeItem(LOCKOUT_KEY);
+        void loadConfig();
       }
-      setCode("");
+    } catch {
+      setLoginError("// ERROR: Error de conexión con el servidor");
+    } finally {
+      setBifrostLoading(false);
+    }
     }
   };
 
