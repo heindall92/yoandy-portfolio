@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { sanitizeSearch } from "@/lib/security";
 import { useLocation, useNavigate } from "react-router-dom";
 import { X, Search, LogOut } from "lucide-react";
 import { machines } from "@/pages/Machines";
@@ -220,7 +221,7 @@ const Navbar = () => {
                     <input
                       ref={inputRef}
                       value={query}
-                      onChange={(e) => setQuery(e.target.value)}
+                      onChange={(e) => setQuery(sanitizeSearch(e.target.value))}
                       placeholder="Buscar máquina o sherlock..."
                       style={{
                         flex: 1,
@@ -400,7 +401,7 @@ const Navbar = () => {
               <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,.3)" }} />
               <input
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => setQuery(sanitizeSearch(e.target.value))}
                 placeholder="Buscar máquina..."
                 style={{ paddingLeft: "36px" }}
               />

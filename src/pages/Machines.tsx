@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sanitizeSearch } from "@/lib/security";
 import { Link } from "react-router-dom";
 import { FileText, Terminal, Server, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
@@ -546,7 +547,7 @@ const Machines = () => {
             className="m-sin"
             placeholder="SQLi · Kubernetes · SUID · Windows · RCE ..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => setSearch(sanitizeSearch(e.target.value))}
           />
           <span className="m-sico">🔍</span>
         </div>
