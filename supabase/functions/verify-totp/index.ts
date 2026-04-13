@@ -2,7 +2,6 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-import { createHmac } from "node:crypto";
 
 // TOTP validation entirely server-side — secret never reaches the browser
 
@@ -22,16 +21,22 @@ function base32Decode(encoded: string): Uint8Array {
   return bytes;
 }
 
-function generateTOTP(secret: string, timeStep: number): string {
+async function hmacSha1(key: Uint8Array, data: Uint8Array): Promise<Uint8Array> {
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw", key, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", cryptoKey, data);
+  return new Uint8Array(sig);
+}
+
+async function generateTOTP(secret: string, timeStep: number): Promise<string> {
   const key = base32Decode(secret);
   const time = Math.floor(Date.now() / 1000 / 30) + timeStep;
-  const buffer = new ArrayBuffer(8);
-  const view = new DataView(buffer);
+  const buffer = new Uint8Array(8);
+  const view = new DataView(buffer.buffer);
   view.setUint32(4, time, false);
 
-  const hmac = createHmac("sha1", key);
-  hmac.update(Buffer.from(buffer));
-  const hash = hmac.digest();
+  const hash = await hmacSha1(key, buffer);
 
   const offset = hash[hash.length - 1] & 0x0f;
   const code =
@@ -43,17 +48,17 @@ function generateTOTP(secret: string, timeStep: number): string {
   return (code % 1000000).toString().padStart(6, "0");
 }
 
-function verifyTOTP(token: string, secret: string, window = 1): boolean {
+async function verifyTOTP(token: string, secret: string, window = 1): Promise<boolean> {
   for (let i = -window; i <= window; i++) {
-    if (generateTOTP(secret, i) === token) return true;
+    if (await generateTOTP(secret, i) === token) return true;
   }
   return false;
 }
 
-// Rate limiting: simple in-memory store (per isolate)
+// Rate limiting: in-memory per isolate
 const attempts = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 5;
-const WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+const WINDOW_MS = 5 * 60 * 1000;
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -81,7 +86,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { token } = await req.json();
+    const body = await req.json();
+    const token = body?.token;
 
     if (!token || typeof token !== "string" || !/^\d{6}$/.test(token)) {
       return new Response(
@@ -99,13 +105,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    const valid = verifyTOTP(token, secret);
+    const valid = await verifyTOTP(token, secret);
 
     return new Response(
       JSON.stringify({ valid }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch {
+  } catch (err) {
+    console.error("verify-totp error:", err);
     return new Response(
       JSON.stringify({ valid: false, error: "Solicitud inválida" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
