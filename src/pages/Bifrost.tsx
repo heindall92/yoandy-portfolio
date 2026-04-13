@@ -234,7 +234,6 @@ const Bifrost = () => {
     } finally {
       setBifrostLoading(false);
     }
-    }
   };
 
   const toggleProtection = (slug: string) => {
