@@ -18,12 +18,6 @@ const allWriteups = [
     tags: ["SQLi", "Port Knocking", "SUID", "ffuf", "fcrackzip"],
     difficulty: "HARD", diffColor: "destructive", os: "Linux",
   },
-  {
-    slug: "ejptv2-cert", emoji: "🎯", name: "eJPTv2", platform: "Cert", type: "cert",
-    desc: "Evaluación ofensiva completa de red híbrida DMZ + red interna. Reconocimiento y enumeración de 7 hosts, explotación multi-vector (Drupalgeddon2, FTP webshell, WordPress RCE, SMB brute force), pivoting via autoroute y post-explotación con hashdump. 86% aprobado.",
-    tags: ["eJPTv2", "Pivoting", "Drupalgeddon2", "Metasploit", "SMB"],
-    difficulty: "CERTIFICATION", diffColor: "primary", os: "Windows · Linux",
-  },
 ];
 
 const totalMachines = allWriteups.length;
