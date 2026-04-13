@@ -88,6 +88,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const token = body?.token;
+    const type = body?.type || "writeup"; // "writeup" or "bifrost"
 
     if (!token || typeof token !== "string" || !/^\d{6}$/.test(token)) {
       return new Response(
@@ -96,9 +97,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const secret = Deno.env.get("TOTP_SECRET");
+    const secretName = type === "bifrost" ? "BIFROST_TOTP_SECRET" : "TOTP_SECRET";
+    const secret = Deno.env.get(secretName);
     if (!secret) {
-      console.error("TOTP_SECRET not configured");
+      console.error(`${secretName} not configured`);
       return new Response(
         JSON.stringify({ valid: false, error: "Error de configuración del servidor" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
