@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
-import { verifySync } from "otplib";
 import { toast } from "sonner";
 import { getTotpMinutes, logAccess } from "@/lib/bifrost-config";
+import { supabase } from "@/integrations/supabase/client";
 
 const SESSION_KEY = "totp_meow";
 
@@ -18,12 +18,11 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
   const [granted, setGranted] = useState(false);
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [remaining, setRemaining] = useState(0);
   const [devtoolsWarning, setDevtoolsWarning] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const childrenBackupRef = useRef<Node[]>([]);
-
-  const secret = import.meta.env.VITE_TOTP_SECRET;
 
   const checkSession = useCallback(() => {
     try {
@@ -135,14 +134,9 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
 
   if (!isProtected) return <>{children}</>;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
-    if (!secret) {
-      setError("SISTEMA: Configura VITE_TOTP_SECRET en Lovable Settings > Environment Variables con un secret base32. Genera uno con generateSecret() de otplib.");
-      return;
-    }
 
     const trimmed = code.trim();
     if (trimmed.length !== 6 || !/^\d{6}$/.test(trimmed)) {
@@ -150,19 +144,39 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
       return;
     }
 
-    const result = verifySync({ token: trimmed, secret });
-    if (result.valid) {
-      const expires = Date.now() + sessionDuration;
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires }));
-      setGranted(true);
-      setRemaining(sessionDuration);
-      logAccess(slug, "GRANTED");
-      toast.success("Acceso concedido", { description: `Sesión activa por ${sessionMinutes ?? getTotpMinutes()} minutos` });
-    } else {
-      setError("// ERROR: Código TOTP inválido o expirado");
-      setCode("");
-      logAccess(slug, "DENIED");
-      toast.error("Código TOTP inválido", { description: "Verifica el código en Google Authenticator e inténtalo de nuevo" });
+    setLoading(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("verify-totp", {
+        body: { token: trimmed },
+      });
+
+      if (fnError) {
+        setError("// ERROR: No se pudo verificar el código");
+        setCode("");
+        logAccess(slug, "DENIED");
+        toast.error("Error de verificación", { description: "Inténtalo de nuevo" });
+        return;
+      }
+
+      if (data?.valid) {
+        const expires = Date.now() + sessionDuration;
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires }));
+        setGranted(true);
+        setRemaining(sessionDuration);
+        logAccess(slug, "GRANTED");
+        toast.success("Acceso concedido", { description: `Sesión activa por ${sessionMinutes ?? getTotpMinutes()} minutos` });
+      } else {
+        const errMsg = data?.error || "Código TOTP inválido o expirado";
+        setError(`// ERROR: ${errMsg}`);
+        setCode("");
+        logAccess(slug, "DENIED");
+        toast.error("Código TOTP inválido", { description: "Verifica el código en Google Authenticator e inténtalo de nuevo" });
+      }
+    } catch {
+      setError("// ERROR: Error de conexión con el servidor");
+      toast.error("Error de conexión");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -247,7 +261,7 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
           Autenticación TOTP requerida (Google Authenticator)
         </p>
 
-        <input type="text" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="000000" autoFocus
+        <input type="text" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="000000" autoFocus disabled={loading}
           style={{ width: "100%", background: "#0a0a0a", border: "1px solid #333", borderRadius: 6, padding: "14px 16px", color: "#00ff41", fontSize: 24, textAlign: "center", letterSpacing: 12, fontFamily: "'JetBrains Mono', monospace", outline: "none", boxSizing: "border-box" }}
           onFocus={(e) => (e.target.style.borderColor = "#00ff41")}
           onBlur={(e) => (e.target.style.borderColor = "#333")}
@@ -259,11 +273,11 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
           </p>
         )}
 
-        <button type="submit" style={{ width: "100%", marginTop: 20, padding: "12px", background: "transparent", border: "1px solid #00ff41", borderRadius: 6, color: "#00ff41", fontSize: 13, letterSpacing: 2, fontFamily: "'JetBrains Mono', monospace", cursor: "pointer", transition: "all 0.2s" }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,255,65,0.1)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(0,255,65,0.2)"; }}
+        <button type="submit" disabled={loading} style={{ width: "100%", marginTop: 20, padding: "12px", background: "transparent", border: "1px solid #00ff41", borderRadius: 6, color: "#00ff41", fontSize: 13, letterSpacing: 2, fontFamily: "'JetBrains Mono', monospace", cursor: loading ? "wait" : "pointer", opacity: loading ? 0.6 : 1, transition: "all 0.2s" }}
+          onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.background = "rgba(0,255,65,0.1)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(0,255,65,0.2)"; } }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.boxShadow = "none"; }}
         >
-          VERIFICAR ACCESO →
+          {loading ? "VERIFICANDO..." : "VERIFICAR ACCESO →"}
         </button>
       </form>
     </div>
