@@ -11,7 +11,7 @@ function base32Decode(encoded: string): Uint8Array {
   let bits = "";
   for (const ch of cleaned) {
     const val = alphabet.indexOf(ch);
-    if (val === -1) throw new Error("Invalid base32 character");
+    if (val === -1) continue; // skip non-base32 chars
     bits += val.toString(2).padStart(5, "0");
   }
   const bytes = new Uint8Array(Math.floor(bits.length / 8));
