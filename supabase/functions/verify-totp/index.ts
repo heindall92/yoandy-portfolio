@@ -7,7 +7,7 @@ const corsHeaders = {
 
 function base32Decode(encoded: string): Uint8Array {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  const cleaned = encoded.replace(/=+$/, "").toUpperCase();
+  const cleaned = encoded.replace(/[\s=]+/g, "").toUpperCase();
   let bits = "";
   for (const ch of cleaned) {
     const val = alphabet.indexOf(ch);
