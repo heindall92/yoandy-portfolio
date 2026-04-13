@@ -26,7 +26,7 @@ const allItems: SearchResult[] = [
   ...machines.map((m) => ({ slug: m.slug, name: m.name, emoji: m.emoji, platform: "HTB", difficulty: m.difficulty })),
   ...sherlocks.map((s) => ({ slug: s.slug, name: s.name, emoji: s.emoji, platform: "Sherlock", difficulty: s.difficulty })),
   ...hmvMachines.map((m) => ({ slug: m.slug, name: m.name, emoji: m.emoji, platform: "HackMyVM", difficulty: m.difficulty })),
-  { slug: "ejptv2-cert", name: "eJPTv2", emoji: "🎯", platform: "Cert", difficulty: "CERTIFICATION" },
+  
   { slug: "pirates-htb", name: "Pirates", emoji: "⚓", platform: "HTB", difficulty: "HARD" },
 ];
 
