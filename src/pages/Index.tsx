@@ -18,6 +18,12 @@ const allWriteups = [
     tags: ["SQLi", "Port Knocking", "SUID", "ffuf", "fcrackzip"],
     difficulty: "HARD", diffColor: "destructive", os: "Linux",
   },
+  {
+    slug: "ejptv2-cert", emoji: "🎯", name: "eJPTv2", platform: "Cert", type: "cert",
+    desc: "Evaluación ofensiva completa de red híbrida DMZ + red interna. Reconocimiento y enumeración de 7 hosts, explotación multi-vector (Drupalgeddon2, FTP webshell, WordPress RCE, SMB brute force), pivoting via autoroute y post-explotación con hashdump. 86% aprobado.",
+    tags: ["eJPTv2", "Pivoting", "Drupalgeddon2", "Metasploit", "SMB"],
+    difficulty: "CERTIFICATION", diffColor: "primary", os: "Windows · Linux",
+  },
 ];
 
 const totalMachines = allWriteups.length;
@@ -861,8 +867,10 @@ const Index = () => {
               : w.platform === "THL"
               ? "linear-gradient(135deg,#1a1005,#2d1a08)"
               : "linear-gradient(135deg,#1a0808,#350d0d)";
+            const Wrapper = w.type === "cert" ? "div" : Link;
+            const wrapperProps = w.type === "cert" ? { className: "wuc", key: w.slug } : { to: `/report/${w.slug}`, className: "wuc", key: w.slug };
             return (
-              <Link to={`/report/${w.slug}`} className="wuc" key={w.slug}>
+              <Wrapper {...(wrapperProps as any)}>
                 <div className="wtop">
                   <div className="wtbg" style={{ background: bgGrad }} />
                   <span className="wico">{w.emoji}</span>
@@ -875,11 +883,13 @@ const Index = () => {
                   <div className="wtags">
                     {w.tags.slice(0, 4).map((t) => <span className="wtag" key={t}>{t}</span>)}
                   </div>
-                  <div className="wft">
-                    <span className="wlnk">Leer writeup →</span>
-                  </div>
+                  {w.type !== "cert" && (
+                    <div className="wft">
+                      <span className="wlnk">Leer writeup →</span>
+                    </div>
+                  )}
                 </div>
-              </Link>
+              </Wrapper>
             );
           })}
         </div>
