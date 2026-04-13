@@ -867,8 +867,10 @@ const Index = () => {
               : w.platform === "THL"
               ? "linear-gradient(135deg,#1a1005,#2d1a08)"
               : "linear-gradient(135deg,#1a0808,#350d0d)";
+            const Wrapper = w.type === "cert" ? "div" : Link;
+            const wrapperProps = w.type === "cert" ? { className: "wuc", key: w.slug } : { to: `/report/${w.slug}`, className: "wuc", key: w.slug };
             return (
-              <Link to={`/report/${w.slug}`} className="wuc" key={w.slug}>
+              <Wrapper {...(wrapperProps as any)}>
                 <div className="wtop">
                   <div className="wtbg" style={{ background: bgGrad }} />
                   <span className="wico">{w.emoji}</span>
@@ -881,11 +883,13 @@ const Index = () => {
                   <div className="wtags">
                     {w.tags.slice(0, 4).map((t) => <span className="wtag" key={t}>{t}</span>)}
                   </div>
-                  <div className="wft">
-                    <span className="wlnk">Leer writeup →</span>
-                  </div>
+                  {w.type !== "cert" && (
+                    <div className="wft">
+                      <span className="wlnk">Leer writeup →</span>
+                    </div>
+                  )}
                 </div>
-              </Link>
+              </Wrapper>
             );
           })}
         </div>
