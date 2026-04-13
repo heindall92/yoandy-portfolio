@@ -71,7 +71,7 @@ const Bifrost = () => {
   const [saved, setSaved] = useState(false);
   const [loadingConfig, setLoadingConfig] = useState(false);
 
-  const bifrostTotpSecret = import.meta.env.VITE_BIFROST_TOTP_SECRET;
+  const [bifrostLoading, setBifrostLoading] = useState(false);
 
   // Add noindex meta
   useEffect(() => {
