@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { verifySync } from "otplib";
 import { toast } from "sonner";
 import { reports } from "@/lib/reports-registry";
+import { supabase } from "@/integrations/supabase/client";
 import {
   getAccentColor,
   setAccentColor,
