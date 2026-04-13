@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { sanitizeSearch } from "@/lib/security";
 import * as THREE from "three";
 import { X } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -835,7 +836,7 @@ const Index = () => {
             className="sin"
             placeholder="SQLi · JWT · LFI · Windows · RCE · HTB · Easy ..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => setSearch(sanitizeSearch(e.target.value))}
           />
           <span className="sico">🔍</span>
         </div>
