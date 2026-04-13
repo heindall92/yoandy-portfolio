@@ -288,8 +288,7 @@ const Bifrost = () => {
     return !!reports[slug]?.protected;
   };
 
-  const secret = import.meta.env.VITE_TOTP_SECRET || "";
-  const maskedSecret = secret ? secret.slice(0, 4) + "***" : "NO CONFIGURADO";
+  const maskedSecret = "SERVER-SIDE (PROTEGIDO)";
 
   // Not authed → redirect silently or show login
   if (!authed) {
