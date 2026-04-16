@@ -35,6 +35,33 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_attempts: {
+        Row: {
+          attempt_count: number
+          client_ip: string
+          created_at: string
+          function_name: string
+          id: string
+          window_start: string
+        }
+        Insert: {
+          attempt_count?: number
+          client_ip: string
+          created_at?: string
+          function_name: string
+          id?: string
+          window_start?: string
+        }
+        Update: {
+          attempt_count?: number
+          client_ip?: string
+          created_at?: string
+          function_name?: string
+          id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       writeup_protection_overrides: {
         Row: {
           created_at: string
@@ -91,6 +118,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          p_function: string
+          p_ip: string
+          p_max_attempts?: number
+          p_window_seconds?: number
+        }
+        Returns: boolean
+      }
+      cleanup_rate_limits: {
+        Args: { p_older_than_minutes?: number }
+        Returns: number
+      }
       is_email_allowed: { Args: { check_email: string }; Returns: boolean }
     }
     Enums: {
