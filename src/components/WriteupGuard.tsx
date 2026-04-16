@@ -193,9 +193,31 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
         body: { token: trimmed },
       });
 
-      // Check for 429 rate limit from server
+      // Handle errors (including 429 rate limit)
       if (fnError) {
-        const errMsg = data?.error || "No se pudo verificar el código";
+        // Extract message from the FunctionsHttpError context
+        let errMsg = "No se pudo verificar el código";
+        try {
+          // The SDK puts the response body inside fnError.context for non-2xx
+          const ctx = (fnError as any).context;
+          if (ctx && typeof ctx.json === "function") {
+            const body = await ctx.json();
+            errMsg = body?.error || errMsg;
+          } else if (data?.error) {
+            errMsg = data.error;
+          }
+        } catch {
+          // fallback
+        }
+
+        // If rate-limited, also set client-side lockout
+        if (errMsg.toLowerCase().includes("demasiados") || errMsg.toLowerCase().includes("too many")) {
+          const until = Date.now() + LOCKOUT_MS;
+          setLockoutUntil(until);
+          setAttempts(MAX_ATTEMPTS);
+          sessionStorage.setItem(LOCKOUT_KEY, JSON.stringify({ until, count: MAX_ATTEMPTS }));
+        }
+
         setError(`// ERROR: ${errMsg}`);
         setCode("");
         logAccess(slug, "DENIED");
