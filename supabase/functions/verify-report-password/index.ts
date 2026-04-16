@@ -5,7 +5,7 @@ const corsHeaders = {
 
 // Rate limiting: in-memory per isolate
 const attempts = new Map<string, { count: number; resetAt: number }>();
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 3;
 const WINDOW_MS = 5 * 60 * 1000;
 
 function checkRateLimit(ip: string): boolean {
