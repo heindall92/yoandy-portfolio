@@ -4,6 +4,9 @@ import { getTotpMinutes, logAccess } from "@/lib/bifrost-config";
 import { supabase } from "@/integrations/supabase/client";
 
 const SESSION_KEY = "totp_meow";
+const LOCKOUT_KEY = "writeup_lockout";
+const MAX_ATTEMPTS = 3;
+const LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 interface WriteupGuardProps {
   isProtected: boolean;
@@ -21,8 +24,41 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
   const [loading, setLoading] = useState(false);
   const [remaining, setRemaining] = useState(0);
   const [devtoolsWarning, setDevtoolsWarning] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
   const childrenBackupRef = useRef<Node[]>([]);
+
+  // Restore lockout state from sessionStorage
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(LOCKOUT_KEY);
+      if (raw) {
+        const { until, count } = JSON.parse(raw);
+        if (Date.now() < until) {
+          setLockoutUntil(until);
+          setAttempts(count);
+        } else {
+          sessionStorage.removeItem(LOCKOUT_KEY);
+        }
+      }
+    } catch {
+      sessionStorage.removeItem(LOCKOUT_KEY);
+    }
+  }, []);
+
+  // Lockout countdown
+  useEffect(() => {
+    if (lockoutUntil <= Date.now()) return;
+    const interval = setInterval(() => {
+      if (Date.now() >= lockoutUntil) {
+        setLockoutUntil(0);
+        setAttempts(0);
+        sessionStorage.removeItem(LOCKOUT_KEY);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockoutUntil]);
 
   const checkSession = useCallback(() => {
     try {
@@ -138,6 +174,13 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
     e.preventDefault();
     setError("");
 
+    // Client-side lockout check
+    if (lockoutUntil > Date.now()) {
+      const secs = Math.ceil((lockoutUntil - Date.now()) / 1000);
+      setError(`// BLOQUEADO: Espera ${secs} segundos antes de intentar de nuevo`);
+      return;
+    }
+
     const trimmed = code.trim();
     if (trimmed.length !== 6 || !/^\d{6}$/.test(trimmed)) {
       setError("// ERROR: Código debe ser 6 dígitos");
@@ -150,11 +193,13 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
         body: { token: trimmed },
       });
 
+      // Check for 429 rate limit from server
       if (fnError) {
-        setError("// ERROR: No se pudo verificar el código");
+        const errMsg = data?.error || "No se pudo verificar el código";
+        setError(`// ERROR: ${errMsg}`);
         setCode("");
         logAccess(slug, "DENIED");
-        toast.error("Error de verificación", { description: "Inténtalo de nuevo" });
+        toast.error("Error de verificación", { description: errMsg });
         return;
       }
 
@@ -163,14 +208,28 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
         sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires }));
         setGranted(true);
         setRemaining(sessionDuration);
+        setAttempts(0);
+        sessionStorage.removeItem(LOCKOUT_KEY);
         logAccess(slug, "GRANTED");
         toast.success("Acceso concedido", { description: `Sesión activa por ${sessionMinutes ?? getTotpMinutes()} minutos` });
       } else {
-        const errMsg = data?.error || "Código TOTP inválido o expirado";
-        setError(`// ERROR: ${errMsg}`);
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+
+        if (newAttempts >= MAX_ATTEMPTS) {
+          const until = Date.now() + LOCKOUT_MS;
+          setLockoutUntil(until);
+          sessionStorage.setItem(LOCKOUT_KEY, JSON.stringify({ until, count: newAttempts }));
+          setError(`// BLOQUEADO: ${MAX_ATTEMPTS} intentos fallidos. Espera 5 minutos.`);
+          toast.error("Bloqueado", { description: "Demasiados intentos fallidos. Espera 5 minutos." });
+        } else {
+          const errMsg = data?.error || "Código TOTP inválido o expirado";
+          setError(`// ERROR: ${errMsg} (${newAttempts}/${MAX_ATTEMPTS})`);
+          toast.error("Código TOTP inválido", { description: `Intento ${newAttempts} de ${MAX_ATTEMPTS}` });
+        }
+
         setCode("");
         logAccess(slug, "DENIED");
-        toast.error("Código TOTP inválido", { description: "Verifica el código en Google Authenticator e inténtalo de nuevo" });
       }
     } catch {
       setError("// ERROR: Error de conexión con el servidor");
@@ -186,6 +245,9 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
     const s = totalSec % 60;
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
+
+  const isLockedOut = lockoutUntil > Date.now();
+  const lockoutSecs = isLockedOut ? Math.ceil((lockoutUntil - Date.now()) / 1000) : 0;
 
   const sessionTimestamp = new Date().toLocaleString("es-ES");
   const watermarkText = `HEINDALL // CONFIDENCIAL // ${sessionTimestamp} // SOLO LECTURA    `;
@@ -261,23 +323,35 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
           Autenticación TOTP requerida (Google Authenticator)
         </p>
 
-        <input type="text" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="000000" autoFocus disabled={loading}
-          style={{ width: "100%", background: "#0a0a0a", border: "1px solid #333", borderRadius: 6, padding: "14px 16px", color: "#00ff41", fontSize: 24, textAlign: "center", letterSpacing: 12, fontFamily: "'JetBrains Mono', monospace", outline: "none", boxSizing: "border-box" }}
-          onFocus={(e) => (e.target.style.borderColor = "#00ff41")}
-          onBlur={(e) => (e.target.style.borderColor = "#333")}
+        <input type="text" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="000000" autoFocus disabled={loading || isLockedOut}
+          style={{ width: "100%", background: "#0a0a0a", border: `1px solid ${isLockedOut ? "#ff4444" : "#333"}`, borderRadius: 6, padding: "14px 16px", color: isLockedOut ? "#ff4444" : "#00ff41", fontSize: 24, textAlign: "center", letterSpacing: 12, fontFamily: "'JetBrains Mono', monospace", outline: "none", boxSizing: "border-box", opacity: isLockedOut ? 0.5 : 1 }}
+          onFocus={(e) => { if (!isLockedOut) e.target.style.borderColor = "#00ff41"; }}
+          onBlur={(e) => { if (!isLockedOut) e.target.style.borderColor = "#333"; }}
         />
 
+        {isLockedOut && (
+          <p style={{ color: "#ff4444", fontSize: 12, marginTop: 12, fontWeight: "bold", letterSpacing: 1 }}>
+            🔒 BLOQUEADO — {formatTime(lockoutSecs * 1000)} restantes
+          </p>
+        )}
+
         {error && (
-          <p style={{ color: error.startsWith("SISTEMA") ? "#ffaa00" : "#ff4444", fontSize: 11, marginTop: 12, textAlign: "left", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+          <p style={{ color: error.includes("BLOQUEADO") ? "#ff4444" : "#ff4444", fontSize: 11, marginTop: 12, textAlign: "left", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
             {error}
           </p>
         )}
 
-        <button type="submit" disabled={loading} style={{ width: "100%", marginTop: 20, padding: "12px", background: "transparent", border: "1px solid #00ff41", borderRadius: 6, color: "#00ff41", fontSize: 13, letterSpacing: 2, fontFamily: "'JetBrains Mono', monospace", cursor: loading ? "wait" : "pointer", opacity: loading ? 0.6 : 1, transition: "all 0.2s" }}
-          onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.background = "rgba(0,255,65,0.1)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(0,255,65,0.2)"; } }}
+        {!isLockedOut && attempts > 0 && attempts < MAX_ATTEMPTS && (
+          <p style={{ color: "#ffaa00", fontSize: 11, marginTop: 8 }}>
+            ⚠ Intentos: {attempts}/{MAX_ATTEMPTS}
+          </p>
+        )}
+
+        <button type="submit" disabled={loading || isLockedOut} style={{ width: "100%", marginTop: 20, padding: "12px", background: "transparent", border: `1px solid ${isLockedOut ? "#ff4444" : "#00ff41"}`, borderRadius: 6, color: isLockedOut ? "#ff4444" : "#00ff41", fontSize: 13, letterSpacing: 2, fontFamily: "'JetBrains Mono', monospace", cursor: loading || isLockedOut ? "not-allowed" : "pointer", opacity: loading || isLockedOut ? 0.4 : 1, transition: "all 0.2s" }}
+          onMouseEnter={(e) => { if (!loading && !isLockedOut) { e.currentTarget.style.background = "rgba(0,255,65,0.1)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(0,255,65,0.2)"; } }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.boxShadow = "none"; }}
         >
-          {loading ? "VERIFICANDO..." : "VERIFICAR ACCESO →"}
+          {isLockedOut ? "BLOQUEADO" : loading ? "VERIFICANDO..." : "VERIFICAR ACCESO →"}
         </button>
       </form>
     </div>

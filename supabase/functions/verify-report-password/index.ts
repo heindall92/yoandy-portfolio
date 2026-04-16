@@ -1,23 +1,9 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Rate limiting: in-memory per isolate
-const attempts = new Map<string, { count: number; resetAt: number }>();
-const MAX_ATTEMPTS = 3;
-const WINDOW_MS = 5 * 60 * 1000;
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = attempts.get(ip);
-  if (!entry || now > entry.resetAt) {
-    attempts.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-    return true;
-  }
-  entry.count++;
-  return entry.count <= MAX_ATTEMPTS;
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -27,7 +13,23 @@ Deno.serve(async (req) => {
   try {
     const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 
-    if (!checkRateLimit(clientIP)) {
+    // Persistent DB-backed rate limiting
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, serviceRoleKey);
+
+    const { data: allowed, error: rlError } = await sb.rpc("check_rate_limit", {
+      p_ip: clientIP,
+      p_function: "verify-report-password",
+      p_max_attempts: 3,
+      p_window_seconds: 300,
+    });
+
+    if (rlError) {
+      console.error("Rate limit DB error:", rlError);
+    }
+
+    if (allowed === false) {
       return new Response(
         JSON.stringify({ error: "Demasiados intentos. Espera 5 minutos." }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
