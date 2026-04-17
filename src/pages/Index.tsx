@@ -403,6 +403,7 @@ const Index = () => {
     else if (filter === "sherlock") matchFilter = w.platform === "Sherlock";
     else if (filter === "hmv") matchFilter = w.platform === "HackMyVM";
     else if (filter === "thl") matchFilter = w.platform === "THL";
+    else if (filter === "thm") matchFilter = w.platform === "TryHackMe";
     else if (filter === "cert") matchFilter = w.platform === "Cert";
     else if (filter === "easy") matchFilter = w.difficulty.toLowerCase().includes("easy");
     else if (filter === "medium") matchFilter = w.difficulty.toLowerCase().includes("medium");
@@ -853,6 +854,7 @@ const Index = () => {
             { key: "sherlock", label: "Sherlocks" },
             { key: "hmv", label: "HackMyVM" },
             { key: "thl", label: "The Hacker Labs" },
+            { key: "thm", label: "TryHackMe" },
             { key: "cert", label: "Certs" },
             { key: "easy", label: "Easy" },
             { key: "medium", label: "Medium" },
