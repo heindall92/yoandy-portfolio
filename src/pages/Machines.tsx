@@ -215,6 +215,13 @@ const machines = [
     difficulty: "EASY", diffColor: "neon-green",
     os: "Linux",
   },
+  {
+    slug: "hammer-thm", emoji: "🔨", name: "Hammer",
+    desc: "Máquina TryHackMe Linux Medium centrada en web. Cadena: directory listing en hmr_logs expone email del usuario → bypass de rate limiting con X-Forwarded-For para forzar OTP de 4 dígitos (50 hilos) → reset de contraseña → análisis del JWT con kid path traversal → forja de token admin firmado con clave conocida (188ade1.key) → RCE como www-data vía execute_command.php.",
+    tags: ["TryHackMe", "JWT", "kid Injection", "OTP Brute", "X-Forwarded-For", "Web", "Apache", "PHP"],
+    difficulty: "MEDIUM", diffColor: "neon-yellow",
+    os: "Linux",
+  },
 ];
 
 const diffClass = (d: string) => {

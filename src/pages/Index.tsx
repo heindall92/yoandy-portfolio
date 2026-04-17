@@ -14,6 +14,12 @@ const allWriteups = [
   ...sherlocks.map((s) => ({ ...s, platform: "Sherlock", type: "sherlock", os: "N/A" })),
   ...hmvMachines.map((m) => ({ ...m, platform: "HackMyVM", type: "hmv" })),
   {
+    slug: "hammer-thm", emoji: "🔨", name: "Hammer", platform: "TryHackMe", type: "thm",
+    desc: "Máquina TryHackMe Linux Medium centrada en web. Cadena: directory listing en hmr_logs expone email → bypass de rate limiting con X-Forwarded-For para forzar OTP de 4 dígitos (50 hilos en paralelo) → reset de password → análisis del JWT con kid path traversal → forja de token admin con clave conocida (188ade1.key) → RCE como www-data.",
+    tags: ["TryHackMe", "JWT", "kid Injection", "OTP Brute", "X-Forwarded-For", "Web"],
+    difficulty: "MEDIUM", diffColor: "neon-yellow", os: "Linux",
+  },
+  {
     slug: "buda-thl", emoji: "🧘", name: "Buda", platform: "THL", type: "thl",
     desc: "Linux Hard de The Hacker Labs. Enumeración de virtual hosts, SQL Injection para credenciales FTP, crackeo de ZIP cifrado, port knocking para desbloquear SSH y escalada con SUID /usr/bin/bash.",
     tags: ["SQLi", "Port Knocking", "SUID", "ffuf", "fcrackzip"],
