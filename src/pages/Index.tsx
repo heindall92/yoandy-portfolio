@@ -854,6 +854,7 @@ const Index = () => {
             { key: "sherlock", label: "Sherlocks" },
             { key: "hmv", label: "HackMyVM" },
             { key: "thl", label: "The Hacker Labs" },
+            { key: "thm", label: "TryHackMe" },
             { key: "cert", label: "Certs" },
             { key: "easy", label: "Easy" },
             { key: "medium", label: "Medium" },
