@@ -29,6 +29,7 @@ const allItems: SearchResult[] = [
   ...hmvMachines.map((m) => ({ slug: m.slug, name: m.name, emoji: m.emoji, platform: "HackMyVM", difficulty: m.difficulty })),
   
   { slug: "pirates-htb", name: "Pirates", emoji: "⚓", platform: "HTB", difficulty: "HARD" },
+  { slug: "hammer-thm", name: "Hammer", emoji: "🔨", platform: "TryHackMe", difficulty: "MEDIUM" },
 ];
 
 const platforms = ["HTB", "Sherlock", "HackMyVM"] as const;
