@@ -32,7 +32,7 @@ const allItems: SearchResult[] = [
   { slug: "hammer-thm", name: "Hammer", emoji: "🔨", platform: "TryHackMe", difficulty: "MEDIUM" },
 ];
 
-const platforms = ["HTB", "Sherlock", "HackMyVM"] as const;
+const platforms = ["HTB", "Sherlock", "HackMyVM", "TryHackMe"] as const;
 const difficulties = ["VERY EASY", "EASY", "MEDIUM", "HARD"] as const;
 
 const diffChipColors: Record<string, string> = {
@@ -46,6 +46,7 @@ const platformChipColors: Record<string, string> = {
   "HTB": "bg-[hsl(120,100%,50%)]/15 text-[hsl(120,100%,50%)] border-[hsl(120,100%,50%)]/30",
   "Sherlock": "bg-[hsl(187,85%,53%)]/15 text-[hsl(187,85%,53%)] border-[hsl(187,85%,53%)]/30",
   "HackMyVM": "bg-[hsl(300,100%,60%)]/15 text-[hsl(300,100%,60%)] border-[hsl(300,100%,60%)]/30",
+  "TryHackMe": "bg-[hsl(0,85%,60%)]/15 text-[hsl(0,85%,60%)] border-[hsl(0,85%,60%)]/30",
 };
 
 const Navbar = () => {
