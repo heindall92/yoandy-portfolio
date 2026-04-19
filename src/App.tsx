@@ -15,6 +15,8 @@ import Machines from "./pages/Machines";
 import Sherlocks from "./pages/Sherlocks";
 import HackMyVM from "./pages/HackMyVM";
 import Bifrost from "./pages/Bifrost";
+import Privacy from "./pages/Privacy";
+import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,7 +35,9 @@ const AppContent = () => {
         <Route path="/sherlocks" element={<Sherlocks />} />
         <Route path="/hackmyvm" element={<HackMyVM />} />
         <Route path="/report/:slug" element={<Report />} />
-        
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/legal" element={<Legal />} />
+
         <Route path="/bifrost" element={<ProtectedRoute><Bifrost /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
