@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_audit_log: {
+        Row: {
+          client_ip: string | null
+          created_at: string
+          detail: string | null
+          function_name: string
+          id: string
+          result: string
+          user_agent: string | null
+        }
+        Insert: {
+          client_ip?: string | null
+          created_at?: string
+          detail?: string | null
+          function_name: string
+          id?: string
+          result: string
+          user_agent?: string | null
+        }
+        Update: {
+          client_ip?: string | null
+          created_at?: string
+          detail?: string | null
+          function_name?: string
+          id?: string
+          result?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       allowed_emails: {
         Row: {
           created_at: string
@@ -130,6 +160,14 @@ export type Database = {
       cleanup_rate_limits: {
         Args: { p_older_than_minutes?: number }
         Returns: number
+      }
+      get_writeup_protection_status: {
+        Args: { p_slug: string }
+        Returns: {
+          global_enabled: boolean
+          is_protected: boolean
+          session_minutes: number
+        }[]
       }
       is_email_allowed: { Args: { check_email: string }; Returns: boolean }
     }
