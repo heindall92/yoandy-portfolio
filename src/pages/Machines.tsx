@@ -215,6 +215,13 @@ const machines = [
     difficulty: "EASY", diffColor: "neon-green",
     os: "Linux",
   },
+  {
+    slug: "boardlight-htb", emoji: "💡", name: "BoardLight",
+    desc: "Cadena web Linux Easy: descubrimiento de VHost crm.board.htb con ffuf, login a Dolibarr 17.0.0 con admin:admin, RCE autenticado vía CVE-2023-30253 usando bypass del filtro PHP con mayúsculas (<?pHp), extracción de credenciales en texto plano de conf.php, password reuse para SSH como larissa y escalada a root explotando CVE-2022-37706 en el binario SUID enlightenment_sys.",
+    tags: ["CVE-2023-30253", "CVE-2022-37706", "Dolibarr", "Enlightenment", "SUID", "VHost", "ffuf"],
+    difficulty: "EASY", diffColor: "primary",
+    os: "Linux",
+  },
 ];
 
 const diffClass = (d: string) => {

