@@ -66,33 +66,51 @@ export function resolveWriteupProtection(
   return hardcodedProtected;
 }
 
-export async function getRemoteWriteupSecurityConfig(): Promise<RemoteWriteupSecurityConfig> {
+// Public-facing: resolve protection for a single slug via SECURITY DEFINER RPC.
+// Falls back to defaults if the request fails (e.g., anon user without DB access).
+export async function getRemoteWriteupSecurityConfig(slug?: string): Promise<RemoteWriteupSecurityConfig> {
+  // Admin path: if the user is authenticated and allowed, the SELECT policies will let
+  // them read the full tables. Otherwise we use the public RPC for a single slug.
   const settingsTable = supabase.from("writeup_security_settings" as never) as any;
   const overridesTable = supabase.from("writeup_protection_overrides" as never) as any;
 
-  const [{ data: settings, error: settingsError }, { data: overrides, error: overridesError }] = await Promise.all([
+  const [settingsRes, overridesRes] = await Promise.all([
     settingsTable.select("global_enabled, session_minutes").limit(1).maybeSingle(),
     overridesTable.select("slug, is_protected"),
   ]);
 
-  if (settingsError || overridesError) {
-    throw settingsError ?? overridesError;
-  }
+  const adminVisible =
+    !settingsRes.error && !overridesRes.error && (settingsRes.data || (overridesRes.data?.length ?? 0) >= 0);
 
-  const securitySettings = (settings as WriteupSecuritySettingsRow | null) ?? null;
-  const protectionOverrides = ((overrides as WriteupProtectionOverrideRow[] | null) ?? []).reduce<Record<string, boolean>>(
-    (acc, entry) => {
+  if (adminVisible && (settingsRes.data || overridesRes.data)) {
+    const securitySettings = (settingsRes.data as WriteupSecuritySettingsRow | null) ?? null;
+    const protectionOverrides = ((overridesRes.data as WriteupProtectionOverrideRow[] | null) ?? []).reduce<
+      Record<string, boolean>
+    >((acc, entry) => {
       acc[entry.slug] = entry.is_protected;
       return acc;
-    },
-    {},
-  );
+    }, {});
+    return {
+      globalEnabled: securitySettings?.global_enabled ?? DEFAULT_REMOTE_WRITEUP_SECURITY.globalEnabled,
+      sessionMinutes: securitySettings?.session_minutes ?? DEFAULT_REMOTE_WRITEUP_SECURITY.sessionMinutes,
+      overrides: protectionOverrides,
+    };
+  }
 
-  return {
-    globalEnabled: securitySettings?.global_enabled ?? DEFAULT_REMOTE_WRITEUP_SECURITY.globalEnabled,
-    sessionMinutes: securitySettings?.session_minutes ?? DEFAULT_REMOTE_WRITEUP_SECURITY.sessionMinutes,
-    overrides: protectionOverrides,
-  };
+  // Anonymous path: use the SECURITY DEFINER RPC scoped to a single slug.
+  if (slug) {
+    const { data, error } = await (supabase.rpc as any)("get_writeup_protection_status", { p_slug: slug });
+    if (!error && Array.isArray(data) && data.length > 0) {
+      const row = data[0] as { is_protected: boolean; session_minutes: number; global_enabled: boolean };
+      return {
+        globalEnabled: row.global_enabled,
+        sessionMinutes: row.session_minutes,
+        overrides: { [slug]: row.is_protected },
+      };
+    }
+  }
+
+  return { ...DEFAULT_REMOTE_WRITEUP_SECURITY };
 }
 
 export async function saveRemoteWriteupSecurityConfig(config: ProtectionConfig, sessionMinutes: number) {

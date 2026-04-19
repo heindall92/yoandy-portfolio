@@ -1,9 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { buildCorsHeaders } from "../_shared/cors.ts";
 
 // TOTP validation entirely server-side — secret never reaches the browser
 
@@ -58,18 +54,34 @@ async function verifyTOTP(token: string, secret: string, window = 1): Promise<bo
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const sb = createClient(supabaseUrl, serviceRoleKey);
+
+  const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const userAgent = req.headers.get("user-agent")?.slice(0, 200) || "unknown";
+
+  const audit = async (result: "granted" | "denied" | "rate_limited" | "error", detail?: string) => {
+    try {
+      await sb.from("access_audit_log").insert({
+        function_name: "verify-totp",
+        client_ip: clientIP,
+        user_agent: userAgent,
+        result,
+        detail: detail?.slice(0, 500) ?? null,
+      });
+    } catch (e) {
+      console.error("audit insert failed:", e);
+    }
+  };
+
   try {
-    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-
-    // Use persistent DB-backed rate limiting via SECURITY DEFINER function
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const sb = createClient(supabaseUrl, serviceRoleKey);
-
     const { data: allowed, error: rlError } = await sb.rpc("check_rate_limit", {
       p_ip: clientIP,
       p_function: "verify-totp",
@@ -77,11 +89,10 @@ Deno.serve(async (req) => {
       p_window_seconds: 300,
     });
 
-    if (rlError) {
-      console.error("Rate limit DB error:", rlError);
-    }
+    if (rlError) console.error("Rate limit DB error:", rlError);
 
     if (allowed === false) {
+      await audit("rate_limited");
       return new Response(
         JSON.stringify({ valid: false, error: "Demasiados intentos. Espera 5 minutos." }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -93,8 +104,17 @@ Deno.serve(async (req) => {
     const type = body?.type || "writeup";
 
     if (!token || typeof token !== "string" || !/^\d{6}$/.test(token)) {
+      await audit("error", "invalid token format");
       return new Response(
         JSON.stringify({ valid: false, error: "Código debe ser 6 dígitos" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (type !== "writeup" && type !== "bifrost") {
+      await audit("error", "invalid type");
+      return new Response(
+        JSON.stringify({ valid: false, error: "Tipo inválido" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -103,6 +123,7 @@ Deno.serve(async (req) => {
     const secret = Deno.env.get(secretName);
     if (!secret) {
       console.error(`${secretName} not configured`);
+      await audit("error", "secret not configured");
       return new Response(
         JSON.stringify({ valid: false, error: "Error de configuración del servidor" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -110,6 +131,7 @@ Deno.serve(async (req) => {
     }
 
     const valid = await verifyTOTP(token, secret);
+    await audit(valid ? "granted" : "denied", `type=${type}`);
 
     return new Response(
       JSON.stringify({ valid }),
@@ -117,6 +139,7 @@ Deno.serve(async (req) => {
     );
   } catch (err) {
     console.error("verify-totp error:", err);
+    await audit("error", String(err).slice(0, 200));
     return new Response(
       JSON.stringify({ valid: false, error: "Solicitud inválida" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }

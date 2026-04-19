@@ -33,7 +33,7 @@ const Report = () => {
 
     setSecurityState((current) => ({ ...current, loading: true, error: false }));
 
-    void getRemoteWriteupSecurityConfig()
+    void getRemoteWriteupSecurityConfig(slug)
       .then((config) => {
         if (cancelled) return;
 

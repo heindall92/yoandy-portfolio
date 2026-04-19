@@ -979,6 +979,8 @@ const Index = () => {
           <a href="https://app.hackthebox.com/users/019c5812-b4ca-7315-b12f-14db6d2b42fa" target="_blank" rel="noopener noreferrer">HTB</a>
           <a href="https://www.linkedin.com/in/yoandyrd92/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
           <a href="https://github.com/heindall92" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="/privacy">Privacidad</a>
+          <a href="/legal">Aviso Legal</a>
         </div>
       </footer>
     </div>
