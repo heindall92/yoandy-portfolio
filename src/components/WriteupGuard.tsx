@@ -3,9 +3,9 @@ import { toast } from "sonner";
 import { getTotpMinutes, logAccess } from "@/lib/bifrost-config";
 import { supabase } from "@/integrations/supabase/client";
 
-const SESSION_KEY = "totp_meow";
+const SESSION_KEY = "writeup_session";
 const LOCKOUT_KEY = "writeup_lockout";
-const MAX_ATTEMPTS = 3;
+const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 interface WriteupGuardProps {
@@ -19,7 +19,7 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
   const sessionDuration = (sessionMinutes ?? getTotpMinutes()) * 60 * 1000;
 
   const [granted, setGranted] = useState(false);
-  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [remaining, setRemaining] = useState(0);
@@ -181,16 +181,16 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
       return;
     }
 
-    const trimmed = code.trim();
-    if (trimmed.length !== 6 || !/^\d{6}$/.test(trimmed)) {
-      setError("// ERROR: Código debe ser 6 dígitos");
+    const trimmed = password.trim();
+    if (trimmed.length === 0) {
+      setError("// ERROR: Contraseña requerida");
       return;
     }
 
     setLoading(true);
     try {
-      const { data, error: fnError } = await supabase.functions.invoke("verify-totp", {
-        body: { token: trimmed },
+      const { data, error: fnError } = await supabase.functions.invoke("verify-global-password", {
+        body: { password: trimmed, type: "writeup" },
       });
 
       if (fnError) {
@@ -211,7 +211,7 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
         return;
       }
 
-      const errMsg = data?.error || "Código TOTP inválido o expirado";
+      const errMsg = data?.error || "Contraseña incorrecta";
       const isRateLimited = Boolean(data?.rateLimited) || errMsg.toLowerCase().includes("demasiados");
 
       if (isRateLimited) {
@@ -233,11 +233,11 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
           toast.error("Bloqueado", { description: "Demasiados intentos fallidos. Espera 5 minutos." });
         } else {
           setError(`// ERROR: ${errMsg} (${newAttempts}/${MAX_ATTEMPTS})`);
-          toast.error("Código TOTP inválido", { description: `Intento ${newAttempts} de ${MAX_ATTEMPTS}` });
+          toast.error("Contraseña incorrecta", { description: `Intento ${newAttempts} de ${MAX_ATTEMPTS}` });
         }
       }
 
-      setCode("");
+      setPassword("");
       logAccess(slug, "DENIED");
     } catch {
       setError("// ERROR: Error de conexión con el servidor");
@@ -328,11 +328,11 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
           // ACCESO RESTRINGIDO
         </h2>
         <p style={{ color: "#555", fontSize: 12, marginBottom: 28 }}>
-          Autenticación TOTP requerida (Google Authenticator)
+          Contraseña global requerida
         </p>
 
-        <input type="text" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="000000" autoFocus disabled={loading || isLockedOut}
-          style={{ width: "100%", background: "#0a0a0a", border: `1px solid ${isLockedOut ? "#ff4444" : "#333"}`, borderRadius: 6, padding: "14px 16px", color: isLockedOut ? "#ff4444" : "#00ff41", fontSize: 24, textAlign: "center", letterSpacing: 12, fontFamily: "'JetBrains Mono', monospace", outline: "none", boxSizing: "border-box", opacity: isLockedOut ? 0.5 : 1 }}
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••••••" autoFocus disabled={loading || isLockedOut} autoComplete="current-password"
+          style={{ width: "100%", background: "#0a0a0a", border: `1px solid ${isLockedOut ? "#ff4444" : "#333"}`, borderRadius: 6, padding: "14px 16px", color: isLockedOut ? "#ff4444" : "#00ff41", fontSize: 18, textAlign: "center", letterSpacing: 4, fontFamily: "'JetBrains Mono', monospace", outline: "none", boxSizing: "border-box", opacity: isLockedOut ? 0.5 : 1 }}
           onFocus={(e) => { if (!isLockedOut) e.target.style.borderColor = "#00ff41"; }}
           onBlur={(e) => { if (!isLockedOut) e.target.style.borderColor = "#333"; }}
         />
