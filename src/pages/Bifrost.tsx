@@ -56,7 +56,7 @@ const btnStyle: React.CSSProperties = {
 const Bifrost = () => {
   const navigate = useNavigate();
   const [authed, setAuthed] = useState(false);
-  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [attempts, setAttempts] = useState(0);
   const [lockoutUntil, setLockoutUntil] = useState(0);
@@ -196,9 +196,8 @@ const Bifrost = () => {
       return;
     }
 
-    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
-      setLoginError("// ERROR: Código debe ser 6 dígitos");
-      setCode("");
+    if (password.trim().length === 0) {
+      setLoginError("// ERROR: Contraseña requerida");
       return;
     }
 
@@ -206,13 +205,13 @@ const Bifrost = () => {
 
     setBifrostLoading(true);
     try {
-      const { data, error: fnError } = await supabase.functions.invoke("verify-totp", {
-        body: { token: code, type: "bifrost" },
+      const { data, error: fnError } = await supabase.functions.invoke("verify-global-password", {
+        body: { password: password.trim(), type: "bifrost" },
       });
 
       if (fnError) {
         setLoginError("// ERROR: No se pudo contactar con el servidor de verificación");
-        setCode("");
+        setPassword("");
         return;
       }
 
@@ -227,7 +226,7 @@ const Bifrost = () => {
         return;
       }
 
-      const errMsg = data?.error || "Código TOTP inválido o expirado";
+      const errMsg = data?.error || "Contraseña incorrecta";
       const isRateLimited = Boolean(data?.rateLimited) || errMsg.toLowerCase().includes("demasiados");
 
       if (isRateLimited) {
@@ -249,7 +248,7 @@ const Bifrost = () => {
         }
       }
 
-      setCode("");
+      setPassword("");
     } catch {
       setLoginError("// ERROR: Error de conexión con el servidor");
     } finally {
@@ -323,18 +322,17 @@ const Bifrost = () => {
           <h2 style={{ color: "#00ff41", fontSize: 18, letterSpacing: 2, marginBottom: 8, textShadow: "0 0 8px rgba(0,255,65,0.4)" }}>
             // BIFROST ACCESS
           </h2>
-          <p style={{ color: "#555", fontSize: 12, marginBottom: 28 }}>Código TOTP requerido</p>
+          <p style={{ color: "#555", fontSize: 12, marginBottom: 28 }}>Contraseña global requerida</p>
 
           <input
-            type="text"
-            inputMode="numeric"
-            maxLength={6}
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            placeholder="000000"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••••••"
             autoFocus
+            autoComplete="current-password"
             disabled={lockoutUntil > Date.now()}
-            style={{ ...inputStyle, width: "100%", textAlign: "center", fontSize: 24, letterSpacing: 12, marginBottom: 4 }}
+            style={{ ...inputStyle, width: "100%", textAlign: "center", fontSize: 18, letterSpacing: 4, marginBottom: 4 }}
           />
 
           {loginError && (
