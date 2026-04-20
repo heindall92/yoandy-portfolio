@@ -193,35 +193,9 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
         body: { token: trimmed },
       });
 
-      // Handle errors (including 429 rate limit)
       if (fnError) {
-        // Extract message from the FunctionsHttpError context
-        let errMsg = "No se pudo verificar el código";
-        try {
-          // The SDK puts the response body inside fnError.context for non-2xx
-          const ctx = (fnError as any).context;
-          if (ctx && typeof ctx.json === "function") {
-            const body = await ctx.json();
-            errMsg = body?.error || errMsg;
-          } else if (data?.error) {
-            errMsg = data.error;
-          }
-        } catch {
-          // fallback
-        }
-
-        // If rate-limited, also set client-side lockout
-        if (errMsg.toLowerCase().includes("demasiados") || errMsg.toLowerCase().includes("too many")) {
-          const until = Date.now() + LOCKOUT_MS;
-          setLockoutUntil(until);
-          setAttempts(MAX_ATTEMPTS);
-          sessionStorage.setItem(LOCKOUT_KEY, JSON.stringify({ until, count: MAX_ATTEMPTS }));
-        }
-
-        setError(`// ERROR: ${errMsg}`);
-        setCode("");
-        logAccess(slug, "DENIED");
-        toast.error("Error de verificación", { description: errMsg });
+        setError("// ERROR: No se pudo contactar con el servidor de verificación");
+        toast.error("Error de conexión", { description: "No se pudo contactar con el servidor de verificación" });
         return;
       }
 
@@ -234,6 +208,19 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
         sessionStorage.removeItem(LOCKOUT_KEY);
         logAccess(slug, "GRANTED");
         toast.success("Acceso concedido", { description: `Sesión activa por ${sessionMinutes ?? getTotpMinutes()} minutos` });
+        return;
+      }
+
+      const errMsg = data?.error || "Código TOTP inválido o expirado";
+      const isRateLimited = Boolean(data?.rateLimited) || errMsg.toLowerCase().includes("demasiados");
+
+      if (isRateLimited) {
+        const until = Date.now() + LOCKOUT_MS;
+        setLockoutUntil(until);
+        setAttempts(MAX_ATTEMPTS);
+        sessionStorage.setItem(LOCKOUT_KEY, JSON.stringify({ until, count: MAX_ATTEMPTS }));
+        setError(`// BLOQUEADO: ${errMsg}`);
+        toast.error("Bloqueado", { description: errMsg });
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
@@ -245,14 +232,13 @@ const WriteupGuard = ({ isProtected, slug = "unknown", sessionMinutes, children 
           setError(`// BLOQUEADO: ${MAX_ATTEMPTS} intentos fallidos. Espera 5 minutos.`);
           toast.error("Bloqueado", { description: "Demasiados intentos fallidos. Espera 5 minutos." });
         } else {
-          const errMsg = data?.error || "Código TOTP inválido o expirado";
           setError(`// ERROR: ${errMsg} (${newAttempts}/${MAX_ATTEMPTS})`);
           toast.error("Código TOTP inválido", { description: `Intento ${newAttempts} de ${MAX_ATTEMPTS}` });
         }
-
-        setCode("");
-        logAccess(slug, "DENIED");
       }
+
+      setCode("");
+      logAccess(slug, "DENIED");
     } catch {
       setError("// ERROR: Error de conexión con el servidor");
       toast.error("Error de conexión");

@@ -94,8 +94,8 @@ Deno.serve(async (req) => {
     if (allowed === false) {
       await audit("rate_limited");
       return new Response(
-        JSON.stringify({ valid: false, error: "Demasiados intentos. Espera 5 minutos." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ valid: false, error: "Demasiados intentos. Espera 5 minutos.", rateLimited: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
       await audit("error", "invalid token format");
       return new Response(
         JSON.stringify({ valid: false, error: "Código debe ser 6 dígitos" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
       await audit("error", "invalid type");
       return new Response(
         JSON.stringify({ valid: false, error: "Tipo inválido" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -125,8 +125,8 @@ Deno.serve(async (req) => {
       console.error(`${secretName} not configured`);
       await audit("error", "secret not configured");
       return new Response(
-        JSON.stringify({ valid: false, error: "Error de configuración del servidor" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ valid: false, error: "Error de configuración del servidor", fallback: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -141,8 +141,8 @@ Deno.serve(async (req) => {
     console.error("verify-totp error:", err);
     await audit("error", String(err).slice(0, 200));
     return new Response(
-      JSON.stringify({ valid: false, error: "Solicitud inválida" }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ valid: false, error: "No se pudo verificar el código", fallback: true }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
