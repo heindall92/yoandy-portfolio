@@ -445,16 +445,16 @@ const Bifrost = () => {
 
       {/* SECTION 2: TOTP Config */}
       <div style={{ marginBottom: 40 }}>
-        <p style={{ color: "#555", fontSize: 12, marginBottom: 16, letterSpacing: 2 }}>// ──────── SECCIÓN 2: CONFIGURACIÓN TOTP ────────</p>
+        <p style={{ color: "#555", fontSize: 12, marginBottom: 16, letterSpacing: 2 }}>// ──────── SECCIÓN 2: CONFIGURACIÓN DE SESIÓN ────────</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 500 }}>
           <div>
-            <label style={{ color: "#555", fontSize: 11, display: "block", marginBottom: 4 }}>SECRET TOTP (enmascarado)</label>
+            <label style={{ color: "#555", fontSize: 11, display: "block", marginBottom: 4 }}>CONTRASEÑA GLOBAL (enmascarada)</label>
             <div style={{ ...inputStyle, color: "#888", cursor: "default" }}>{maskedSecret}</div>
           </div>
 
           <div>
-            <label style={{ color: "#555", fontSize: 11, display: "block", marginBottom: 4 }}>DURACIÓN SESIÓN TOTP (minutos)</label>
+            <label style={{ color: "#555", fontSize: 11, display: "block", marginBottom: 4 }}>DURACIÓN SESIÓN WRITEUP (minutos)</label>
             <input
               type="number"
               min={1}
