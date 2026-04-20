@@ -202,13 +202,41 @@ const Bifrost = () => {
       return;
     }
 
+    if (bifrostLoading) return;
+
     setBifrostLoading(true);
     try {
       const { data, error: fnError } = await supabase.functions.invoke("verify-totp", {
         body: { token: code, type: "bifrost" },
       });
 
-      if (fnError || !data?.valid) {
+      if (fnError) {
+        setLoginError("// ERROR: No se pudo contactar con el servidor de verificación");
+        setCode("");
+        return;
+      }
+
+      if (data?.valid) {
+        const expires = Date.now() + SESSION_DURATION;
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires }));
+        setAuthed(true);
+        setAdminRemaining(SESSION_DURATION);
+        setAttempts(0);
+        sessionStorage.removeItem(LOCKOUT_KEY);
+        void loadConfig();
+        return;
+      }
+
+      const errMsg = data?.error || "Código TOTP inválido o expirado";
+      const isRateLimited = Boolean(data?.rateLimited) || errMsg.toLowerCase().includes("demasiados");
+
+      if (isRateLimited) {
+        const until = Date.now() + 300000;
+        setLockoutUntil(until);
+        setAttempts(MAX_ATTEMPTS);
+        sessionStorage.setItem(LOCKOUT_KEY, JSON.stringify({ until, count: MAX_ATTEMPTS }));
+        setLoginError(`BLOQUEADO: ${errMsg}`);
+      } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
         if (newAttempts >= MAX_ATTEMPTS) {
@@ -217,18 +245,11 @@ const Bifrost = () => {
           sessionStorage.setItem(LOCKOUT_KEY, JSON.stringify({ until, count: newAttempts }));
           setLoginError(`BLOQUEADO: 3 intentos fallidos. Espera 5 minutos.`);
         } else {
-          setLoginError(`// ERROR: Código TOTP inválido (${newAttempts}/${MAX_ATTEMPTS})`);
+          setLoginError(`// ERROR: ${errMsg} (${newAttempts}/${MAX_ATTEMPTS})`);
         }
-        setCode("");
-      } else {
-        const expires = Date.now() + SESSION_DURATION;
-        sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires }));
-        setAuthed(true);
-        setAdminRemaining(SESSION_DURATION);
-        setAttempts(0);
-        sessionStorage.removeItem(LOCKOUT_KEY);
-        void loadConfig();
       }
+
+      setCode("");
     } catch {
       setLoginError("// ERROR: Error de conexión con el servidor");
     } finally {
