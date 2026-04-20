@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.get_writeup_protection_status(text) TO anon, authenticated;
