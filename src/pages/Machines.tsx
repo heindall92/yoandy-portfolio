@@ -222,6 +222,13 @@ const machines = [
     difficulty: "EASY", diffColor: "primary",
     os: "Linux",
   },
+  {
+    slug: "logging-htb", emoji: "📋", name: "Logging",
+    desc: "Máquina ACTIVA Windows Server 2019 (DC). Cadena: credenciales filtradas en trace log del share SMB Logs con rotación de año (2025→2026), TGT Kerberos para svc_recovery (Protected Users), GenericWrite sobre la gMSA msa_health$ via BloodHound → dump del hash NT, Pass-the-Hash a WinRM, DLL Hijack 32-bit en UpdateChecker Agent para impersonar a jaylee.clifton (user.txt), plantilla ADCS UpdateSrv con ENROLLEE_SUPPLIES_SUBJECT para emitir cert TLS de wsus.logging.htb, DNS poisoning con SeMachineAccountPrivilege y servidor WSUS falso (wsuks) que entrega PsExec64 ejecutado como SYSTEM en el DC.",
+    tags: ["Active Directory", "gMSA Abuse", "ADCS", "Rogue WSUS", "DLL Hijack", "DNS Poison", "Pass-the-Hash", "● ACTIVE"],
+    difficulty: "MEDIUM", diffColor: "neon-amber",
+    os: "Windows",
+  },
 ];
 
 const diffClass = (d: string) => {
