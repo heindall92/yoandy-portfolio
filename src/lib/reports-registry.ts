@@ -50,4 +50,5 @@ export const reports: Record<string, ReportEntry> = {
   "silentium-htb": { title: "Writeup — Silentium (HTB)", file: "/reports/silentium-htb.html", section: "htb" },
   "hammer-thm": { title: "Writeup — Hammer (TryHackMe)", file: "/reports/hammer-thm.html", section: "thm" },
   "boardlight-htb": { title: "Writeup — BoardLight (HTB)", file: "/reports/boardlight-htb.html", section: "htb" },
+  "logging-htb": { title: "Writeup — Logging (HTB)", file: "/reports/logging-htb.html", section: "htb" },
 };
