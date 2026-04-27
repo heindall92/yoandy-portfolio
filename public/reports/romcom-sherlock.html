@@ -104,46 +104,9 @@ h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
 .stat-value.green { color: var(--green); }
 
 /* Orb */
-.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; }
-.orb-w { position: relative; width: 260px; height: 260px; }
-.orb-w .orb-el { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-.orb-ring { position: absolute; border-radius: 50%; border: 1px solid; animation: ors linear infinite; }
-.orb-r1 { width: 260px; height: 260px; border-color: rgba(0,232,122,0.08); animation-duration: 30s; }
-.orb-r2 { width: 214px; height: 214px; border-color: rgba(0,232,122,0.12); animation-duration: 20s; animation-direction: reverse; border-style: dashed; }
-.orb-r3 { width: 172px; height: 172px; border-color: rgba(0,232,122,0.15); animation-duration: 15s; }
-@keyframes ors { to { transform: rotate(360deg); } }
-.orb-aura {
-  position: absolute; width: 200px; height: 200px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,232,122,0.18) 0%, rgba(0,232,122,0.08) 35%, transparent 70%);
-  animation: oap 4s ease-in-out infinite;
-}
-@keyframes oap { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
-.orb-core {
-  width: 130px; height: 130px; border-radius: 50%;
-  background: radial-gradient(circle at 38% 35%, rgba(0,232,122,0.35) 0%, rgba(15,48,32,0.8) 50%, rgba(11,26,16,0.95) 100%);
-  border: 1px solid rgba(0,232,122,0.3);
-  box-shadow: 0 0 60px rgba(0,232,122,0.2), 0 0 120px rgba(0,232,122,0.08), inset 0 0 40px rgba(0,232,122,0.1);
-  position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; overflow: hidden;
-}
-.orb-core::before {
-  content: ''; position: absolute; top: 10%; left: 15%; width: 40%; height: 30%;
-  border-radius: 50%; background: rgba(255,255,255,0.12); filter: blur(8px);
-}
-.orb-rune {
-  font-family: var(--bb); font-size: 2.2rem; color: rgba(0,232,122,0.7);
-  text-shadow: 0 0 30px var(--green); position: relative; z-index: 2;
-  animation: org 3s ease-in-out infinite;
-}
-@keyframes org { 0%,100% { text-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,232,122,0.4); } 50% { text-shadow: 0 0 40px var(--green), 0 0 80px rgba(0,232,122,0.6); } }
-.orb-scan {
-  position: absolute; left: 0; right: 0; height: 1.5px;
-  background: linear-gradient(90deg, transparent, rgba(0,232,122,0.5), transparent);
-  animation: osc 3s linear infinite; z-index: 4; pointer-events: none;
-}
-@keyframes osc { 0% { top: 5%; opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.5; } 100% { top: 95%; opacity: 0; } }
-.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pf linear infinite}
-.p1{top:15%;left:25%;animation-duration:6s}.p2{top:25%;right:18%;animation-duration:8s;animation-delay:-2s;width:4px;height:4px}.p3{bottom:20%;left:30%;animation-duration:7s;animation-delay:-4s}.p4{bottom:30%;right:25%;animation-duration:9s;animation-delay:-1s;opacity:.6}
-@keyframes pf{0%{transform:translateY(0) scale(1);opacity:1}33%{transform:translateY(-12px) translateX(8px) scale(1.3);opacity:.7}66%{transform:translateY(-6px) translateX(-10px) scale(.8);opacity:.9}100%{transform:translateY(0) scale(1);opacity:1}}
+/* Orb */
+.hero-orb { display: flex; align-items: center; justify-content: center; position: relative; width: 260px; height: 260px; }
+.hero-orb canvas { display: block; width: 260px !important; height: 260px !important; }
 
 /* ─── LAYOUT ─── */
 .container{display:grid;grid-template-columns:1fr 300px;gap:2rem;max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
@@ -304,22 +267,9 @@ h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
         <div class="stat"><span class="stat-label">Artefactos</span><span class="stat-value">RAT + Registry</span></div>
       </div>
     </div>
-    <!-- Orb — Right -->
+    <!-- Orb — Right (Three.js wireframe icosahedron) -->
     <div class="hero-orb">
-      <div class="orb-w">
-        <div class="orb-el">
-          <div class="orb-ring orb-r1"></div>
-          <div class="orb-ring orb-r2"></div>
-          <div class="orb-ring orb-r3"></div>
-          <div class="orb-aura"></div>
-          <div class="orb-core"><span class="orb-rune">ᚺ</span></div>
-          <div class="orb-scan"></div>
-          <div class="particle p1"></div>
-          <div class="particle p2"></div>
-          <div class="particle p3"></div>
-          <div class="particle p4"></div>
-        </div>
-      </div>
+      <canvas id="heroOrb" width="520" height="520"></canvas>
     </div>
   </div>
 </div>
@@ -595,5 +545,18 @@ h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
   </footer>
 </div>
 
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script>
+(function(){
+  var c=document.getElementById('heroOrb');if(!c)return;
+  var r=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(260,260,false);
+  var s=new THREE.Scene(),cam=new THREE.PerspectiveCamera(58,1,0.1,100);cam.position.z=7.4;
+  var cfg=[[1.45,3,0.06],[2.1,1,0.03],[2.75,1,0.018]];
+  var sp=cfg.map(function(v){var m=new THREE.Mesh(new THREE.IcosahedronGeometry(v[0],v[1]),new THREE.MeshBasicMaterial({color:0x00e87a,wireframe:true,transparent:true,opacity:v[2]}));s.add(m);return m;});
+  var t=0;(function a(){requestAnimationFrame(a);t+=0.012;sp[0].rotation.y=t*0.35;sp[0].rotation.x=t*0.18;sp[1].rotation.y=-t*0.25;sp[1].rotation.z=t*0.15;sp[2].rotation.y=t*0.15;sp[2].rotation.z=-t*0.1;r.render(s,cam);})();
+})();
+</script>
 </body>
 </html>
