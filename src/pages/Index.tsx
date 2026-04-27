@@ -35,6 +35,9 @@ const allWriteups = [
 
 const totalMachines = allWriteups.length;
 
+/* ── Featured operations (highlighted cards) ── */
+const FEATURED_SLUGS = ["pirates-htb", "steamcloud-htb", "ejptv2-cert", "romcom-sherlock", "unified-htb"];
+
 const socialLinks = [
   { label: "LINKEDIN", val: "/yoandyrd92", sub: "Conectar profesionalmente", href: "https://www.linkedin.com/in/yoandyrd92/", ico: "💼" },
   { label: "GITHUB", val: "/heindall92", sub: "Proyectos y herramientas", href: "https://github.com/heindall92", ico: "🐙" },
