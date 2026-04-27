@@ -35,6 +35,9 @@ const allWriteups = [
 
 const totalMachines = allWriteups.length;
 
+/* ── Featured operations (highlighted cards) ── */
+const FEATURED_SLUGS = ["pirates-htb", "steamcloud-htb", "ejptv2-cert", "romcom-sherlock", "unified-htb"];
+
 const socialLinks = [
   { label: "LINKEDIN", val: "/yoandyrd92", sub: "Conectar profesionalmente", href: "https://www.linkedin.com/in/yoandyrd92/", ico: "💼" },
   { label: "GITHUB", val: "/heindall92", sub: "Proyectos y herramientas", href: "https://github.com/heindall92", ico: "🐙" },
@@ -580,6 +583,21 @@ const Index = () => {
         .wlnk{font-family:var(--mo);font-size:.75rem;color:var(--sage);text-decoration:none;display:flex;align-items:center;gap:4px;transition:gap .25s;font-weight:500}
         .wlnk:hover{gap:8px}
 
+        /* Featured operations */
+        .feat-head{display:flex;align-items:center;gap:14px;margin:8px 0 22px;position:relative;z-index:2}
+        .feat-head .feat-bar{flex:1;height:1px;background:linear-gradient(90deg,rgba(0,232,122,.5),transparent)}
+        .feat-title{font-family:var(--bb);font-size:1.4rem;letter-spacing:.18em;color:var(--sage);text-shadow:0 0 18px rgba(0,232,122,.18)}
+        .feat-sub{font-family:var(--mo);font-size:.62rem;letter-spacing:.22em;color:var(--text-l3)}
+        .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-bottom:48px;position:relative;z-index:2}
+        .feat-grid .wuc.feat{border:2px solid rgba(0,232,122,.45);box-shadow:0 6px 24px rgba(0,232,122,.08),0 2px 10px rgba(0,0,0,.06);position:relative}
+        .feat-grid .wuc.feat:hover{border-color:rgba(0,232,122,.75);box-shadow:0 26px 56px rgba(0,232,122,.18),0 12px 28px rgba(0,0,0,.12)}
+        .feat-grid .wtop{height:200px}
+        .feat-grid .wico{font-size:4.2rem}
+        .feat-grid .wde{-webkit-line-clamp:3;font-size:.92rem}
+        .feat-grid .wti{font-size:1.25rem}
+        .feat-badge{position:absolute;top:12px;left:12px;z-index:3;padding:5px 12px;border-radius:4px;font-family:var(--mo);font-size:.6rem;letter-spacing:.18em;font-weight:600;background:linear-gradient(135deg,#00e87a,#00b85f);color:#041810;box-shadow:0 4px 14px rgba(0,232,122,.35);text-transform:uppercase}
+        @media(max-width:900px){.feat-grid{grid-template-columns:1fr}}
+
         /* Certs */
         .cert-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:64px}
         .cc{background:var(--pine);border:1px solid rgba(0,232,122,.08);border-radius:16px;padding:24px 20px;text-align:center;transition:all .4s;position:relative;overflow:hidden}
@@ -724,10 +742,10 @@ const Index = () => {
             <div className="h-role">Junior Security Analyst &nbsp;·&nbsp; Pentester &nbsp;·&nbsp; eJPTv2 Certified</div>
             <div className="h-desc">Ethical Hacking | Offensive Cybersecurity | Máster en Ciberseguridad & IA — Evolve Academy 2026.</div>
             <div className="h-stats">
-              <div className="hstat"><div className="hstat-n">{counter}+</div><div className="hstat-l">MÁQUINAS</div></div>
-              <div className="hstat"><div className="hstat-n">8</div><div className="hstat-l">HTB LVL</div></div>
-              <div className="hstat"><div className="hstat-n">✓</div><div className="hstat-l">eJPTv2</div></div>
-              <div className="hstat"><div className="hstat-n">4+</div><div className="hstat-l">AÑOS EXP</div></div>
+              <div className="hstat"><div className="hstat-n">45+</div><div className="hstat-l">MÁQUINAS COMPROMETIDAS</div></div>
+              <div className="hstat"><div className="hstat-n">Med/Hard</div><div className="hstat-l">NIVEL DEMOSTRADO</div></div>
+              <div className="hstat"><div className="hstat-n">86%</div><div className="hstat-l">eJPTv2 SCORE</div></div>
+              <div className="hstat"><div className="hstat-n">4+</div><div className="hstat-l">AÑOS IT/SISTEMAS</div></div>
             </div>
             <div className="h-btns">
               <a href="#writeups" className="hbtn-p">VER WRITEUPS</a>
@@ -765,8 +783,8 @@ const Index = () => {
             <p className="about-p rev d3">Hoy construyo desde <strong>Lepe, Huelva</strong>: pentesting en <span className="hl">HTB/THM</span>, automatización de recon con <strong>Python y Bash</strong>, y herramientas propias bajo el alias <strong>Heindall</strong>. <strong>eJPTv2</strong> certificado. Máster en Ciberseguridad &amp; IA en curso (Evolve Academy, 2026).</p>
             <p className="about-p rev d4">Busco mi primer rol en <strong>seguridad ofensiva</strong>. No traigo años de empresa — traigo <strong>45+ máquinas comprometidas</strong>, herramientas publicadas, y documentación que demuestra cómo pienso.</p>
             <div className="quote-block rev d5">
-              <div className="qb-rune">💡 OBJETIVO PROFESIONAL</div>
-              <p className="qb-txt"><strong>Red Team Junior / Junior Pentester.</strong> Quiero unirme a un equipo donde pueda comprometer sistemas reales, escribir sobre lo que encuentro, y seguir aprendiendo en producción. Disponible para contratos, prácticas remuneradas o posición junior. Lepe, Huelva — abierto a remoto.</p>
+              <div className="qb-rune">🎯 OBJETIVO PROFESIONAL</div>
+              <p className="qb-txt"><strong>Junior Pentester / Red Team Operator.</strong> Busco incorporarme a un equipo de seguridad ofensiva donde pueda comprometer infraestructuras reales, aprender en producción y contribuir con herramientas propias. Disponible para posición junior, prácticas remuneradas o contrato. Lepe, Huelva — abierto a remoto y presencial.</p>
             </div>
           </div>
           <div>
@@ -863,8 +881,65 @@ const Index = () => {
             </button>
           ))}
         </div>
+        {filter === "all" && search.trim() === "" && (() => {
+          const featured = FEATURED_SLUGS
+            .map((slug) => allWriteups.find((w) => w.slug === slug))
+            .filter((w): w is typeof allWriteups[number] => Boolean(w));
+          if (featured.length === 0) return null;
+          return (
+            <>
+              <div className="feat-head rev">
+                <span className="feat-title">★ OPERACIONES DESTACADAS</span>
+                <span className="feat-bar" />
+                <span className="feat-sub">{featured.length} SELECCIONADAS</span>
+              </div>
+              <div className="feat-grid">
+                {featured.map((w) => {
+                  const bgGrad = w.platform === "HTB"
+                    ? "linear-gradient(135deg,#041810,#07281a)"
+                    : w.platform === "Sherlock"
+                    ? "linear-gradient(135deg,#12051e,#200838)"
+                    : w.platform === "Cert"
+                    ? "linear-gradient(135deg,#0a1628,#0d2040)"
+                    : w.platform === "THL"
+                    ? "linear-gradient(135deg,#1a1005,#2d1a08)"
+                    : "linear-gradient(135deg,#1a0808,#350d0d)";
+                  const Wrapper = w.type === "cert" ? "div" : Link;
+                  const wrapperProps = w.type === "cert"
+                    ? { className: "wuc feat", key: w.slug }
+                    : { to: `/report/${w.slug}`, className: "wuc feat", key: w.slug };
+                  return (
+                    <Wrapper {...(wrapperProps as any)}>
+                      <span className="feat-badge">★ DESTACADO</span>
+                      <div className="wtop">
+                        <div className="wtbg" style={{ background: bgGrad }} />
+                        <span className="wico">{w.emoji}</span>
+                        <span className={`wdiff ${diffClass(w.difficulty)}`}>{diffLabel(w.difficulty)}</span>
+                        <span className="wplat">{w.platform}</span>
+                      </div>
+                      <div className="wb">
+                        <div className="wti">{w.name}</div>
+                        <div className="wde">{w.desc}</div>
+                        <div className="wtags">
+                          {w.tags.slice(0, 5).map((t) => <span className="wtag" key={t}>{t}</span>)}
+                        </div>
+                        {w.type !== "cert" && (
+                          <div className="wft">
+                            <span className="wlnk">Leer writeup →</span>
+                          </div>
+                        )}
+                      </div>
+                    </Wrapper>
+                  );
+                })}
+              </div>
+            </>
+          );
+        })()}
         <div className="wug">
-          {filtered.map((w) => {
+          {filtered
+            .filter((w) => !(filter === "all" && search.trim() === "" && FEATURED_SLUGS.includes(w.slug)))
+            .map((w) => {
             const bgGrad = w.platform === "HTB"
               ? "linear-gradient(135deg,#041810,#07281a)"
               : w.platform === "Sherlock"
