@@ -685,7 +685,6 @@ const Index = () => {
           <li><a href="#writeups">writeups</a></li>
           <li><a href="#certs">certs</a></li>
           <li><a href="#contact">contact</a></li>
-          <li><Link to="/draft3" style={{color:'var(--green)',opacity:.85}}>draft3</Link></li>
         </ul>
         <button className="nmobile-toggle" onClick={() => setMobileNavOpen(!mobileNavOpen)}>
           {mobileNavOpen ? <X size={28} /> : (
@@ -704,7 +703,6 @@ const Index = () => {
           {["about", "skills", "writeups", "certs", "contact"].map((s) => (
             <a key={s} href={`#${s}`} onClick={() => setMobileNavOpen(false)}>{s}</a>
           ))}
-          <Link to="/draft3" onClick={() => setMobileNavOpen(false)} style={{color:'var(--green)',opacity:.85,fontFamily:'var(--mo)',fontSize:'1.3rem',letterSpacing:'.15em',textDecoration:'none',padding:'12px 0'}}>draft3</Link>
         </div>
       )}
 
@@ -763,12 +761,12 @@ const Index = () => {
         <div className="about-grid">
           <div>
             <h2 className="bh rev d1" style={{ marginBottom: 28 }}>Sobre <em>Mí</em></h2>
-            <p className="about-p rev d2">Técnico en Sistemas en transición activa hacia <strong>Ciberseguridad Ofensiva y Pentesting</strong>. Con experiencia sólida en hardware, redes y troubleshooting de sistemas, actualmente me especializo en seguridad ofensiva a través de formación práctica en <span className="hl">Hack The Box Academy</span> y certificado <strong>eJPTv2</strong>.</p>
-            <p className="about-p rev d3"><strong>🎯 Áreas de Especialización:</strong> Pentesting y Hacking Ético · Análisis de Vulnerabilidades (OWASP Top 10) · Networking (TCP/IP, Firewall, VPN) · Herramientas: Nmap, Metasploit, Burp Suite, Wireshark, Kali Linux · Scripting: Python, Bash · Sistemas: Windows, Linux (Ubuntu, Debian) · Seguridad en Redes y Hardening de Sistemas.</p>
-            <p className="about-p rev d4"><strong>🚀 Formación en Curso:</strong> Máster en Ciberseguridad (inicio: 19 de enero 2026) · Certificación eJPTv2 — Obtenida ✓ · Hack The Box Academy — Footprinting y Reconnaissance.</p>
+            <p className="about-p rev d2"><strong>4 años rompiendo sistemas</strong> — primero por accidente, ahora por metodología. Vengo de IT: redes, hardware, sistemas. Cuando descubrí que podía aplicar ese conocimiento para encontrar lo que otros no ven, no volví atrás.</p>
+            <p className="about-p rev d3">Hoy construyo desde <strong>Lepe, Huelva</strong>: pentesting en <span className="hl">HTB/THM</span>, automatización de recon con <strong>Python y Bash</strong>, y herramientas propias bajo el alias <strong>Heindall</strong>. <strong>eJPTv2</strong> certificado. Máster en Ciberseguridad &amp; IA en curso (Evolve Academy, 2026).</p>
+            <p className="about-p rev d4">Busco mi primer rol en <strong>seguridad ofensiva</strong>. No traigo años de empresa — traigo <strong>45+ máquinas comprometidas</strong>, herramientas publicadas, y documentación que demuestra cómo pienso.</p>
             <div className="quote-block rev d5">
               <div className="qb-rune">💡 OBJETIVO PROFESIONAL</div>
-              <p className="qb-txt">Integrarme en equipos de Red Team, Blue Team o SOC como Analista de Seguridad Junior, aplicando mi experiencia técnica en sistemas y mi formación avanzada en pentesting para identificar y mitigar vulnerabilidades. Abierto a oportunidades en ciberseguridad ofensiva, análisis de vulnerabilidades y pentesting.</p>
+              <p className="qb-txt"><strong>Red Team Junior / Junior Pentester.</strong> Quiero unirme a un equipo donde pueda comprometer sistemas reales, escribir sobre lo que encuentro, y seguir aprendiendo en producción. Disponible para contratos, prácticas remuneradas o posición junior. Lepe, Huelva — abierto a remoto.</p>
             </div>
           </div>
           <div>
