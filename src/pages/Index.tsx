@@ -724,10 +724,10 @@ const Index = () => {
             <div className="h-role">Junior Security Analyst &nbsp;·&nbsp; Pentester &nbsp;·&nbsp; eJPTv2 Certified</div>
             <div className="h-desc">Ethical Hacking | Offensive Cybersecurity | Máster en Ciberseguridad & IA — Evolve Academy 2026.</div>
             <div className="h-stats">
-              <div className="hstat"><div className="hstat-n">{counter}+</div><div className="hstat-l">MÁQUINAS</div></div>
-              <div className="hstat"><div className="hstat-n">8</div><div className="hstat-l">HTB LVL</div></div>
-              <div className="hstat"><div className="hstat-n">✓</div><div className="hstat-l">eJPTv2</div></div>
-              <div className="hstat"><div className="hstat-n">4+</div><div className="hstat-l">AÑOS EXP</div></div>
+              <div className="hstat"><div className="hstat-n">45+</div><div className="hstat-l">MÁQUINAS COMPROMETIDAS</div></div>
+              <div className="hstat"><div className="hstat-n">Med/Hard</div><div className="hstat-l">NIVEL DEMOSTRADO</div></div>
+              <div className="hstat"><div className="hstat-n">86%</div><div className="hstat-l">eJPTv2 SCORE</div></div>
+              <div className="hstat"><div className="hstat-n">4+</div><div className="hstat-l">AÑOS IT/SISTEMAS</div></div>
             </div>
             <div className="h-btns">
               <a href="#writeups" className="hbtn-p">VER WRITEUPS</a>
