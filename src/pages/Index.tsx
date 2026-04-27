@@ -583,6 +583,21 @@ const Index = () => {
         .wlnk{font-family:var(--mo);font-size:.75rem;color:var(--sage);text-decoration:none;display:flex;align-items:center;gap:4px;transition:gap .25s;font-weight:500}
         .wlnk:hover{gap:8px}
 
+        /* Featured operations */
+        .feat-head{display:flex;align-items:center;gap:14px;margin:8px 0 22px;position:relative;z-index:2}
+        .feat-head .feat-bar{flex:1;height:1px;background:linear-gradient(90deg,rgba(0,232,122,.5),transparent)}
+        .feat-title{font-family:var(--bb);font-size:1.4rem;letter-spacing:.18em;color:var(--sage);text-shadow:0 0 18px rgba(0,232,122,.18)}
+        .feat-sub{font-family:var(--mo);font-size:.62rem;letter-spacing:.22em;color:var(--text-l3)}
+        .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-bottom:48px;position:relative;z-index:2}
+        .feat-grid .wuc.feat{border:2px solid rgba(0,232,122,.45);box-shadow:0 6px 24px rgba(0,232,122,.08),0 2px 10px rgba(0,0,0,.06);position:relative}
+        .feat-grid .wuc.feat:hover{border-color:rgba(0,232,122,.75);box-shadow:0 26px 56px rgba(0,232,122,.18),0 12px 28px rgba(0,0,0,.12)}
+        .feat-grid .wtop{height:200px}
+        .feat-grid .wico{font-size:4.2rem}
+        .feat-grid .wde{-webkit-line-clamp:3;font-size:.92rem}
+        .feat-grid .wti{font-size:1.25rem}
+        .feat-badge{position:absolute;top:12px;left:12px;z-index:3;padding:5px 12px;border-radius:4px;font-family:var(--mo);font-size:.6rem;letter-spacing:.18em;font-weight:600;background:linear-gradient(135deg,#00e87a,#00b85f);color:#041810;box-shadow:0 4px 14px rgba(0,232,122,.35);text-transform:uppercase}
+        @media(max-width:900px){.feat-grid{grid-template-columns:1fr}}
+
         /* Certs */
         .cert-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:64px}
         .cc{background:var(--pine);border:1px solid rgba(0,232,122,.08);border-radius:16px;padding:24px 20px;text-align:center;transition:all .4s;position:relative;overflow:hidden}
