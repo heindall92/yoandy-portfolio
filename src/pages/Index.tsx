@@ -765,8 +765,8 @@ const Index = () => {
             <p className="about-p rev d3">Hoy construyo desde <strong>Lepe, Huelva</strong>: pentesting en <span className="hl">HTB/THM</span>, automatización de recon con <strong>Python y Bash</strong>, y herramientas propias bajo el alias <strong>Heindall</strong>. <strong>eJPTv2</strong> certificado. Máster en Ciberseguridad &amp; IA en curso (Evolve Academy, 2026).</p>
             <p className="about-p rev d4">Busco mi primer rol en <strong>seguridad ofensiva</strong>. No traigo años de empresa — traigo <strong>45+ máquinas comprometidas</strong>, herramientas publicadas, y documentación que demuestra cómo pienso.</p>
             <div className="quote-block rev d5">
-              <div className="qb-rune">💡 OBJETIVO PROFESIONAL</div>
-              <p className="qb-txt"><strong>Red Team Junior / Junior Pentester.</strong> Quiero unirme a un equipo donde pueda comprometer sistemas reales, escribir sobre lo que encuentro, y seguir aprendiendo en producción. Disponible para contratos, prácticas remuneradas o posición junior. Lepe, Huelva — abierto a remoto.</p>
+              <div className="qb-rune">🎯 OBJETIVO PROFESIONAL</div>
+              <p className="qb-txt"><strong>Junior Pentester / Red Team Operator.</strong> Busco incorporarme a un equipo de seguridad ofensiva donde pueda comprometer infraestructuras reales, aprender en producción y contribuir con herramientas propias. Disponible para posición junior, prácticas remuneradas o contrato. Lepe, Huelva — abierto a remoto y presencial.</p>
             </div>
           </div>
           <div>
