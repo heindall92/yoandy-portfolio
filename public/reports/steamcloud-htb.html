@@ -305,22 +305,9 @@ h3{font-size:1.05rem;color:var(--text);margin-bottom:.75rem;font-weight:600;}
         <div class="stat"><span class="stat-label">Vectores</span><span class="stat-value">2</span></div>
       </div>
     </div>
-    <!-- Orb — Right -->
+    <!-- Orb — Right (Three.js wireframe icosahedron) -->
     <div class="hero-orb">
-      <div class="orb-w">
-        <div class="orb-el">
-          <div class="orb-ring orb-r1"></div>
-          <div class="orb-ring orb-r2"></div>
-          <div class="orb-ring orb-r3"></div>
-          <div class="orb-aura"></div>
-          <div class="orb-core"><span class="orb-rune">ᚺ</span></div>
-          <div class="orb-scan"></div>
-          <div class="particle p1"></div>
-          <div class="particle p2"></div>
-          <div class="particle p3"></div>
-          <div class="particle p4"></div>
-        </div>
-      </div>
+      <canvas id="heroOrb" width="520" height="520"></canvas>
     </div>
   </div>
 </div>
@@ -954,5 +941,18 @@ NS: kube-system | POD: kube-scheduler          | CONTAINERS: ['kube-scheduler']<
   <p style="margin-top:4px;font-size:11px;">Fines educativos — Pentesting autorizado en entorno HTB</p>
 </footer>
 
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script>
+(function(){
+  var c=document.getElementById('heroOrb');if(!c)return;
+  var r=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(260,260,false);
+  var s=new THREE.Scene(),cam=new THREE.PerspectiveCamera(58,1,0.1,100);cam.position.z=7.4;
+  var cfg=[[1.45,3,0.06],[2.1,1,0.03],[2.75,1,0.018]];
+  var sp=cfg.map(function(v){var m=new THREE.Mesh(new THREE.IcosahedronGeometry(v[0],v[1]),new THREE.MeshBasicMaterial({color:0x00e87a,wireframe:true,transparent:true,opacity:v[2]}));s.add(m);return m;});
+  var t=0;(function a(){requestAnimationFrame(a);t+=0.012;sp[0].rotation.y=t*0.35;sp[0].rotation.x=t*0.18;sp[1].rotation.y=-t*0.25;sp[1].rotation.z=t*0.15;sp[2].rotation.y=t*0.15;sp[2].rotation.z=-t*0.1;r.render(s,cam);})();
+})();
+</script>
 </body>
 </html>
