@@ -881,8 +881,65 @@ const Index = () => {
             </button>
           ))}
         </div>
+        {filter === "all" && search.trim() === "" && (() => {
+          const featured = FEATURED_SLUGS
+            .map((slug) => allWriteups.find((w) => w.slug === slug))
+            .filter((w): w is typeof allWriteups[number] => Boolean(w));
+          if (featured.length === 0) return null;
+          return (
+            <>
+              <div className="feat-head rev">
+                <span className="feat-title">★ OPERACIONES DESTACADAS</span>
+                <span className="feat-bar" />
+                <span className="feat-sub">{featured.length} SELECCIONADAS</span>
+              </div>
+              <div className="feat-grid">
+                {featured.map((w) => {
+                  const bgGrad = w.platform === "HTB"
+                    ? "linear-gradient(135deg,#041810,#07281a)"
+                    : w.platform === "Sherlock"
+                    ? "linear-gradient(135deg,#12051e,#200838)"
+                    : w.platform === "Cert"
+                    ? "linear-gradient(135deg,#0a1628,#0d2040)"
+                    : w.platform === "THL"
+                    ? "linear-gradient(135deg,#1a1005,#2d1a08)"
+                    : "linear-gradient(135deg,#1a0808,#350d0d)";
+                  const Wrapper = w.type === "cert" ? "div" : Link;
+                  const wrapperProps = w.type === "cert"
+                    ? { className: "wuc feat", key: w.slug }
+                    : { to: `/report/${w.slug}`, className: "wuc feat", key: w.slug };
+                  return (
+                    <Wrapper {...(wrapperProps as any)}>
+                      <span className="feat-badge">★ DESTACADO</span>
+                      <div className="wtop">
+                        <div className="wtbg" style={{ background: bgGrad }} />
+                        <span className="wico">{w.emoji}</span>
+                        <span className={`wdiff ${diffClass(w.difficulty)}`}>{diffLabel(w.difficulty)}</span>
+                        <span className="wplat">{w.platform}</span>
+                      </div>
+                      <div className="wb">
+                        <div className="wti">{w.name}</div>
+                        <div className="wde">{w.desc}</div>
+                        <div className="wtags">
+                          {w.tags.slice(0, 5).map((t) => <span className="wtag" key={t}>{t}</span>)}
+                        </div>
+                        {w.type !== "cert" && (
+                          <div className="wft">
+                            <span className="wlnk">Leer writeup →</span>
+                          </div>
+                        )}
+                      </div>
+                    </Wrapper>
+                  );
+                })}
+              </div>
+            </>
+          );
+        })()}
         <div className="wug">
-          {filtered.map((w) => {
+          {filtered
+            .filter((w) => !(filter === "all" && search.trim() === "" && FEATURED_SLUGS.includes(w.slug)))
+            .map((w) => {
             const bgGrad = w.platform === "HTB"
               ? "linear-gradient(135deg,#041810,#07281a)"
               : w.platform === "Sherlock"
