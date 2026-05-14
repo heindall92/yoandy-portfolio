@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { FileText, ArrowLeft, Terminal, Server } from "lucide-react";
 import { motion } from "framer-motion";
+import { useSeo } from "@/hooks/use-seo";
 
 const hmvMachines = [
   {
@@ -147,7 +148,13 @@ const HMVCard = ({ m, index = 0 }: { m: typeof hmvMachines[0]; index?: number })
 
 export { hmvMachines, HMVCard };
 
-const HackMyVM = () => (
+const HackMyVM = () => {
+  useSeo({
+    title: "HackMyVM | Heindall — Write-ups Active Directory y Linux",
+    description: "Write-ups de máquinas HackMyVM: Active Directory (Kerberoasting, Pass-the-Hash), pivoting y escalada en entornos Linux y Windows.",
+    path: "/hackmyvm",
+  });
+  return (
   <div className="min-h-screen pt-24 pb-16 relative z-10">
     <div className="container mx-auto px-4 max-w-5xl">
       <Link to="/hackmyvm" className="inline-flex items-center gap-2 font-mono text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
@@ -174,6 +181,7 @@ const HackMyVM = () => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default HackMyVM;
