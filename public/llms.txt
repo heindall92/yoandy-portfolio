@@ -1,0 +1,19 @@
+# Heindall — Yoandy Ramírez Delgado
+
+> Portfolio de ciberseguridad ofensiva de Yoandy Ramírez Delgado (Red Team Operator). Recoge write-ups técnicos de máquinas y retos de Hack The Box, Sherlocks, HackMyVM, TryHackMe y The Hacker Labs.
+
+El sitio está principalmente en español. Los informes detallan cadenas de ataque, CVEs, herramientas y procedimientos de pentesting y análisis forense.
+
+## Pages
+
+- [Inicio](/): Presentación, búsqueda global y catálogo destacado de write-ups.
+- [Máquinas HTB](/machines): Write-ups de máquinas Hack The Box (Linux y Windows).
+- [Sherlocks](/sherlocks): Investigaciones forenses y de threat intelligence (HTB Sherlocks).
+- [HackMyVM](/hackmyvm): Write-ups de máquinas HackMyVM, incluyendo Active Directory.
+- [Política de Privacidad](/privacy): Tratamiento de datos del sitio Heindall.
+- [Aviso Legal](/legal): Titularidad y términos legales del sitio.
+
+## Optional
+
+- [Report — DC01 v2 (HackMyVM)](/report/dc01-v2-hmv): Ejemplo de informe estilo pentest completo (Active Directory, Kerberoasting, Pass-the-Hash).
+- [Report — Hammer (TryHackMe)](/report/hammer-thm): Web, JWT kid path traversal, OTP brute con X-Forwarded-For.
