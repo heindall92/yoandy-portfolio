@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { FileText, ArrowLeft, Terminal, Search } from "lucide-react";
 import { motion } from "framer-motion";
+import { useSeo } from "@/hooks/use-seo";
 
 const sherlocks = [
   {
@@ -143,7 +144,13 @@ const SherlockCard = ({ s, index = 0 }: { s: typeof sherlocks[0]; index?: number
 
 export { sherlocks, SherlockCard };
 
-const Sherlocks = () => (
+const Sherlocks = () => {
+  useSeo({
+    title: "Sherlocks HTB | Heindall — Investigaciones forenses",
+    description: "Investigaciones DFIR y threat intelligence (HTB Sherlocks): análisis forense, IOCs, TTPs y caza de amenazas como Lazarus y Scattered Spider.",
+    path: "/sherlocks",
+  });
+  return (
   <div className="min-h-screen pt-24 pb-16 relative z-10">
     <div className="container mx-auto px-4 max-w-5xl">
       <Link to="/sherlocks" className="inline-flex items-center gap-2 font-mono text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
@@ -170,6 +177,7 @@ const Sherlocks = () => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default Sherlocks;
