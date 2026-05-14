@@ -1,6 +1,12 @@
 import { Link } from "react-router-dom";
+import { useSeo } from "@/hooks/use-seo";
 
 const Privacy = () => {
+  useSeo({
+    title: "Política de Privacidad | Heindall",
+    description: "Política de privacidad del portfolio Heindall: tratamiento de datos personales conforme al RGPD y la LSSI-CE.",
+    path: "/privacy",
+  });
   return (
     <div className="min-h-screen bg-background text-foreground pt-24 pb-16 px-6">
       <article className="max-w-3xl mx-auto font-mono space-y-6 text-sm leading-relaxed">

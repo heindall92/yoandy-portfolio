@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { sanitizeSearch } from "@/lib/security";
+import { useSeo } from "@/hooks/use-seo";
 import * as THREE from "three";
 import { X } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -88,6 +89,12 @@ const diffLabel = (d: string) => d.toUpperCase();
 const marqueeItems = ["HEINDALL", "RED TEAM OPERATOR", "OFFENSIVE SECURITY", "PENETRATION TESTING", "VULNERABILITY HUNTER", "ETHICAL HACKING", "CTF HUNTER"];
 
 const Index = () => {
+  useSeo({
+    title: "Heindall | Yoandy Ramírez — Red Team & Pentesting",
+    description: "Portfolio de Yoandy Ramírez Delgado: 45+ write-ups de HTB, Sherlocks, HackMyVM y TryHackMe sobre Red Team, pentesting y forense digital.",
+    path: "/",
+    type: "profile",
+  });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [counter, setCounter] = useState(0);

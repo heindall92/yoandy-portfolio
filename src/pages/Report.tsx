@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import WriteupGuard from "@/components/WriteupGuard";
 import { reports } from "@/lib/reports-registry";
 import { getRemoteWriteupSecurityConfig, resolveWriteupProtection } from "@/lib/bifrost-config";
+import { useSeo } from "@/hooks/use-seo";
 
 interface ReportSecurityState {
   loading: boolean;
@@ -15,16 +16,39 @@ interface ReportSecurityState {
 const Report = () => {
   const { slug } = useParams<{ slug: string }>();
   const report = slug ? reports[slug] : null;
+
+  const seoTitle = report ? `${report.title} | Heindall` : "Informe no encontrado | Heindall";
+  const seoDescription = report
+    ? `${report.title} — write-up técnico publicado en el portfolio Heindall de Yoandy Ramírez Delgado: cadena de ataque, herramientas y mitigaciones.`
+    : "Este informe no existe o ha sido movido. Vuelve al portfolio Heindall.";
+  useSeo({
+    title: seoTitle,
+    description: seoDescription,
+    path: slug ? `/report/${slug}` : "/report",
+    type: "article",
+    jsonLd: report
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: report.title,
+          description: seoDescription,
+          url: `https://yoandyramirez.com/report/${slug}`,
+          author: {
+            "@type": "Person",
+            name: "Yoandy Ramírez Delgado",
+            url: "https://yoandyramirez.com/",
+          },
+          inLanguage: "es",
+        }
+      : undefined,
+  });
+
   const [securityState, setSecurityState] = useState<ReportSecurityState>({
     loading: true,
     error: false,
     isProtected: !!report?.protected,
     sessionMinutes: 10,
   });
-
-  useEffect(() => {
-    if (report) document.title = report.title;
-  }, [report]);
 
   useEffect(() => {
     let cancelled = false;
