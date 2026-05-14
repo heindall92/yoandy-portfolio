@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { sanitizeSearch } from "@/lib/security";
+import { useSeo } from "@/hooks/use-seo";
 import { Link } from "react-router-dom";
 import { FileText, Terminal, Server, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
@@ -352,6 +353,11 @@ const MachineCard = ({ m, index = 0 }: { m: typeof machines[0]; index?: number }
 export { machines, MachineCard };
 
 const Machines = () => {
+  useSeo({
+    title: "Máquinas HTB | Heindall — Write-ups Hack The Box",
+    description: "Catálogo de write-ups de máquinas Hack The Box (Linux y Windows): enumeración, explotación y escalada de privilegios paso a paso.",
+    path: "/machines",
+  });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
