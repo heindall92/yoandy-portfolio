@@ -483,7 +483,7 @@ const Index = () => {
     };
     animOrb();
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", onResize); };
-  }, []);
+  }, [theme]);
 
   /* Counter animation */
   useEffect(() => {
