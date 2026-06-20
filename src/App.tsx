@@ -21,12 +21,13 @@ import Bifrost from "./pages/Bifrost";
 import Privacy from "./pages/Privacy";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
+import Cristal from "./pages/Cristal";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
-  const hideNavbar = location.pathname === "/" || location.pathname === "/login" || location.pathname === "/bifrost";
+  const hideNavbar = location.pathname === "/" || location.pathname === "/login" || location.pathname === "/bifrost" || location.pathname === "/cristal";
 
   return (
     <>
@@ -42,6 +43,7 @@ const AppContent = () => {
         <Route path="/report/:slug" element={<Report />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/legal" element={<Legal />} />
+        <Route path="/cristal" element={<Cristal />} />
 
         <Route path="/bifrost" element={<ProtectedRoute><Bifrost /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
