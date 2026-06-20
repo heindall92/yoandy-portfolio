@@ -301,9 +301,9 @@ const Navbar = () => {
                   </div>
 
                   {/* Filter chips */}
-                  <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(0,232,122,.06)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div style={{ padding: "10px 16px", borderBottom: "1px solid var(--gd-border-subtle)", display: "flex", flexDirection: "column", gap: "8px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".6rem", color: "rgba(255,255,255,.3)", letterSpacing: ".1em", textTransform: "uppercase", marginRight: "4px" }}>Plataforma</span>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".6rem", color: "var(--gd-muted)", letterSpacing: ".1em", textTransform: "uppercase", marginRight: "4px" }}>Plataforma</span>
                       {platforms.map((p) => (
                         <button
                           key={p}
@@ -313,9 +313,9 @@ const Navbar = () => {
                             borderRadius: "20px",
                             fontFamily: "'JetBrains Mono', monospace",
                             fontSize: ".65rem",
-                            border: `1px solid ${selectedPlatforms.includes(p) ? (p === "HTB" ? "rgba(0,232,122,.4)" : p === "Sherlock" ? "rgba(0,200,255,.4)" : "rgba(200,0,255,.4)") : "rgba(255,255,255,.1)"}`,
-                            background: selectedPlatforms.includes(p) ? (p === "HTB" ? "rgba(0,232,122,.12)" : p === "Sherlock" ? "rgba(0,200,255,.12)" : "rgba(200,0,255,.12)") : "rgba(255,255,255,.03)",
-                            color: selectedPlatforms.includes(p) ? (p === "HTB" ? "#00e87a" : p === "Sherlock" ? "#00c8ff" : "#c800ff") : "rgba(255,255,255,.4)",
+                            border: `1px solid ${selectedPlatforms.includes(p) ? (p === "HTB" ? "rgba(0,232,122,.4)" : p === "Sherlock" ? "rgba(0,200,255,.4)" : "rgba(200,0,255,.4)") : "var(--gd-chip-border)"}`,
+                            background: selectedPlatforms.includes(p) ? (p === "HTB" ? "rgba(0,232,122,.12)" : p === "Sherlock" ? "rgba(0,200,255,.12)" : "rgba(200,0,255,.12)") : "var(--gd-chip-bg)",
+                            color: selectedPlatforms.includes(p) ? (p === "HTB" ? "#00e87a" : p === "Sherlock" ? "#00c8ff" : "#c800ff") : "var(--gd-chip-color)",
                             cursor: "pointer",
                             transition: "all .2s",
                           }}
@@ -325,7 +325,7 @@ const Navbar = () => {
                       ))}
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".6rem", color: "rgba(255,255,255,.3)", letterSpacing: ".1em", textTransform: "uppercase", marginRight: "4px" }}>Dificultad</span>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".6rem", color: "var(--gd-muted)", letterSpacing: ".1em", textTransform: "uppercase", marginRight: "4px" }}>Dificultad</span>
                       {difficulties.map((d) => {
                         const colors: Record<string, { active: string; border: string; bg: string }> = {
                           "VERY EASY": { active: "#c800ff", border: "rgba(200,0,255,.4)", bg: "rgba(200,0,255,.12)" },
@@ -343,9 +343,9 @@ const Navbar = () => {
                               borderRadius: "20px",
                               fontFamily: "'JetBrains Mono', monospace",
                               fontSize: ".65rem",
-                              border: `1px solid ${selectedDifficulties.includes(d) ? c.border : "rgba(255,255,255,.1)"}`,
-                              background: selectedDifficulties.includes(d) ? c.bg : "rgba(255,255,255,.03)",
-                              color: selectedDifficulties.includes(d) ? c.active : "rgba(255,255,255,.4)",
+                              border: `1px solid ${selectedDifficulties.includes(d) ? c.border : "var(--gd-chip-border)"}`,
+                              background: selectedDifficulties.includes(d) ? c.bg : "var(--gd-chip-bg)",
+                              color: selectedDifficulties.includes(d) ? c.active : "var(--gd-chip-color)",
                               cursor: "pointer",
                               transition: "all .2s",
                             }}
