@@ -207,24 +207,11 @@ const Index = () => {
   const [filter, setFilter] = useState("all");
   const [counter, setCounter] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [language, setLanguage] = useState<"es" | "en">("es");
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const heroRef = useRef<HTMLDivElement>(null);
   const orbRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<HTMLCanvasElement>(null);
   const t = copy[language];
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("heindall-theme");
-    const savedLanguage = localStorage.getItem("heindall-language");
-    if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme);
-    if (savedLanguage === "es" || savedLanguage === "en") setLanguage(savedLanguage);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("heindall-theme", theme);
-    localStorage.setItem("heindall-language", language);
-  }, [theme, language]);
 
   /* Three.js particles background — exact replica */
   useEffect(() => {
