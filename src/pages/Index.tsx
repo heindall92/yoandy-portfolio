@@ -566,12 +566,12 @@ const Index = () => {
           font-family:var(--dm);background:var(--ink);color:var(--text-d);overflow-x:hidden;font-size:16px;
         }
         .draft-page.light{
-          /* Mint background so neon-green particles stay visible */
-          --ink:#cfeadb;--forest:#bde0cc;--pine:#e9f6ee;--moss:#a8d4b8;--sage:#245f45;
-          --green:#0a8f55;--green2:rgba(10,143,85,.14);--green3:rgba(10,143,85,.08);
+          /* Mint background with stronger contrast for legibility */
+          --ink:#bfe3d0;--forest:#9fd4b8;--pine:#e0f1e6;--moss:#7fb898;--sage:#1d4f39;
+          --green:#066a3a;--green2:rgba(6,106,58,.20);--green3:rgba(6,106,58,.10);
           --cream:#ffffff;--cream2:#fbf8ef;--cream3:#e2dccd;
-          --text-d:#112318;--text-d2:rgba(17,35,24,.68);--text-d3:rgba(17,35,24,.44);
-          --text-l:#112318;--text-l2:rgba(17,35,24,.62);--text-l3:rgba(17,35,24,.36);
+          --text-d:#06170e;--text-d2:rgba(6,23,14,.78);--text-d3:rgba(6,23,14,.55);
+          --text-l:#06170e;--text-l2:rgba(6,23,14,.72);--text-l3:rgba(6,23,14,.45);
         }
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
