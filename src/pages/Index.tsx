@@ -397,8 +397,8 @@ const Index = () => {
 
       // Outer glow
       const grd = ox.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 1.3);
-      grd.addColorStop(0, "rgba(0,232,122,.08)");
-      grd.addColorStop(1, "rgba(0,232,122,0)");
+      grd.addColorStop(0, `rgba(${rgb},.08)`);
+      grd.addColorStop(1, `rgba(${rgb},0)`);
       ox.beginPath(); ox.arc(cx, cy, R * 1.3, 0, Math.PI * 2);
       ox.fillStyle = grd; ox.fill();
 
@@ -406,7 +406,7 @@ const Index = () => {
       const drawLayer = (layer: typeof layer1, ryMul: number, rxMul: number, alpha: number) => {
         const ry = ot * ryMul, rxr = ot * rxMul;
         ox.beginPath();
-        ox.strokeStyle = `rgba(0,232,122,${alpha})`;
+        ox.strokeStyle = `rgba(${rgb},${alpha})`;
         ox.lineWidth = 0.7;
         for (const [a, b] of layer.edges) {
           const va = layer.verts[a], vb = layer.verts[b];
@@ -428,7 +428,7 @@ const Index = () => {
       const orbitR = R * 1.35;
       const drawOrbit = (tiltX: number, tiltZ: number, electronAngle: number) => {
         ox.beginPath();
-        ox.strokeStyle = 'rgba(0,232,122,0.18)';
+        ox.strokeStyle = `rgba(${rgb},0.18)`;
         ox.lineWidth = 0.7;
         const steps = 100;
         for (let i = 0; i <= steps; i++) {
@@ -452,12 +452,12 @@ const Index = () => {
         // Glow
         ox.beginPath();
         ox.arc(cx + ex2, cy + ey3, 3, 0, Math.PI * 2);
-        ox.fillStyle = 'rgba(0,232,122,0.12)';
+        ox.fillStyle = `rgba(${rgb},0.12)`;
         ox.fill();
         // Core electron
         ox.beginPath();
         ox.arc(cx + ex2, cy + ey3, 1.8, 0, Math.PI * 2);
-        ox.fillStyle = 'rgba(0,232,122,0.5)';
+        ox.fillStyle = `rgba(${rgb},0.5)`;
         ox.fill();
       };
       drawOrbit(0, 0.5, ot * 2);
@@ -467,8 +467,8 @@ const Index = () => {
       // Core glow
       const pulse = 0.06 + Math.sin(ot * 2) * 0.03;
       const cg = ox.createRadialGradient(cx, cy, 0, cx, cy, R * 0.35);
-      cg.addColorStop(0, `rgba(0,232,122,${pulse + 0.08})`);
-      cg.addColorStop(1, "rgba(0,232,122,0)");
+      cg.addColorStop(0, `rgba(${rgb},${pulse + 0.08})`);
+      cg.addColorStop(1, `rgba(${rgb},0)`);
       ox.beginPath(); ox.arc(cx, cy, R * 0.35, 0, Math.PI * 2);
       ox.fillStyle = cg; ox.fill();
 
@@ -476,8 +476,8 @@ const Index = () => {
       const txtPulse = 0.65 + Math.sin(ot * 1.8) * 0.2;
       ox.font = `${Math.round(R * 0.38)}px Bebas Neue`;
       ox.textAlign = "center"; ox.textBaseline = "middle";
-      ox.shadowColor = "rgba(0,232,122,.7)"; ox.shadowBlur = 18 + Math.sin(ot * 2) * 6;
-      ox.fillStyle = `rgba(0,232,122,${txtPulse})`;
+      ox.shadowColor = `rgba(${rgb},${glowStrong})`; ox.shadowBlur = 18 + Math.sin(ot * 2) * 6;
+      ox.fillStyle = `rgba(${rgb},${txtPulse})`;
       ox.fillText("YRD", cx, cy + 2);
       ox.shadowBlur = 0;
     };
