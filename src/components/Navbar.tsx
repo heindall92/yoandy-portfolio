@@ -177,6 +177,11 @@ const Navbar = () => {
         :root.light .gnav .gsearch-btn{color:rgba(6,40,22,.65);border-color:rgba(10,143,85,.22);background:#d4f0e0}
         :root.light .gnav .gsearch-btn:hover{color:#0a8f55;border-color:rgba(10,143,85,.4)}
         :root.light .gnav .gsearch-btn kbd{background:rgba(10,143,85,.1);border-color:rgba(10,143,85,.18);color:rgba(6,40,22,.45)}
+        /* Search dropdown — green forest palette */
+        .gsearch-dropdown{--gd-bg:#07130c;--gd-border:rgba(0,232,122,.18);--gd-border-subtle:rgba(0,232,122,.10);--gd-shadow:0 20px 60px rgba(0,0,0,.5);--gd-text:#00e87a;--gd-muted:rgba(0,232,122,.5);--gd-muted-subtle:rgba(0,232,122,.35);--gd-chip-border:rgba(0,232,122,.12);--gd-chip-bg:rgba(0,232,122,.05);--gd-chip-color:rgba(0,232,122,.5);--gd-hover:rgba(0,232,122,.06)}
+        :root.light .gsearch-dropdown{--gd-bg:#d4f0e0;--gd-border:rgba(10,143,85,.2);--gd-border-subtle:rgba(10,143,85,.12);--gd-shadow:0 20px 60px rgba(0,0,0,.15);--gd-text:#06582e;--gd-muted:rgba(6,40,22,.55);--gd-muted-subtle:rgba(6,40,22,.4);--gd-chip-border:rgba(10,143,85,.15);--gd-chip-bg:rgba(10,143,85,.06);--gd-chip-color:rgba(6,40,22,.55);--gd-hover:rgba(10,143,85,.08)}
+        .gsearch-dropdown input::placeholder{color:var(--gd-muted) !important}
+        .gsearch-dropdown button[style*='background: transparent']:hover{background:var(--gd-hover) !important}
         .gmobile-toggle{display:none;background:none;border:none;color:#00e87a;cursor:pointer}
         .gnav .gback{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:rgba(255,255,255,.4);background:none;border:1px solid rgba(0,232,122,.15);border-radius:8px;padding:5px 14px;cursor:pointer;transition:all .3s;letter-spacing:.05em;margin-right:12px}
         .gnav .gback:hover{color:#00e87a;border-color:rgba(0,232,122,.35)}
