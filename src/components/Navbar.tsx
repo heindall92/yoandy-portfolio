@@ -153,6 +153,17 @@ const Navbar = () => {
         .gnav .gsearch-btn{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:8px;border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.05);color:rgba(255,255,255,.35);font-family:'JetBrains Mono',monospace;font-size:.78rem;cursor:pointer;transition:all .3s;letter-spacing:.05em}
         .gnav .gsearch-btn:hover{border-color:rgba(0,232,122,.3);color:#00e87a}
         .gnav .gsearch-btn kbd{font-size:.6rem;padding:2px 6px;border-radius:4px;background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.1);color:rgba(255,255,255,.3)}
+        .gnav-icon-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;border-radius:8px;border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.05);color:#00e87a;cursor:pointer;transition:all .3s}
+        .gnav-icon-btn:hover{border-color:rgba(0,232,122,.4);box-shadow:0 0 14px rgba(0,232,122,.15)}
+        :root.light .gnav{background:rgba(220,238,225,.92);border-bottom:1px solid rgba(10,143,85,.16)}
+        :root.light .gnav.solid{background:rgba(220,238,225,.96);border-bottom:1px solid rgba(10,143,85,.22)}
+        :root.light .gnav .glogo-h{color:#0a8f55}
+        :root.light .gnav .glogo-s{color:rgba(17,35,24,.55)}
+        :root.light .gnav .glinks a,:root.light .gnav .glinks button.nav-link{color:rgba(17,35,24,.65)}
+        :root.light .gnav .glinks a:hover,:root.light .gnav .glinks button.nav-link:hover{color:#0a8f55}
+        :root.light .gnav-icon-btn{color:#0a8f55;border-color:rgba(10,143,85,.25);background:rgba(10,143,85,.08)}
+        :root.light .gnav .gsearch-btn{color:rgba(17,35,24,.55);border-color:rgba(10,143,85,.2);background:rgba(10,143,85,.06)}
+        :root.light .gnav .gsearch-btn:hover{color:#0a8f55}
         .gmobile-toggle{display:none;background:none;border:none;color:#00e87a;cursor:pointer}
         .gnav .gback{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:rgba(255,255,255,.4);background:none;border:1px solid rgba(0,232,122,.15);border-radius:8px;padding:5px 14px;cursor:pointer;transition:all .3s;letter-spacing:.05em;margin-right:12px}
         .gnav .gback:hover{color:#00e87a;border-color:rgba(0,232,122,.35)}
@@ -386,6 +397,27 @@ const Navbar = () => {
                 </div>
               )}
             </div>
+          </li>
+          <li>
+            <button
+              onClick={toggleLanguage}
+              className="gnav-icon-btn"
+              title={language === "es" ? "Switch to English" : "Cambiar a Español"}
+              aria-label="Toggle language"
+            >
+              <Languages size={14} />
+              <span style={{ marginLeft: 4, fontFamily: "'JetBrains Mono', monospace", fontSize: ".68rem", letterSpacing: ".12em" }}>{language.toUpperCase()}</span>
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={toggleTheme}
+              className="gnav-icon-btn"
+              title={theme === "dark" ? "Modo claro" : "Modo oscuro"}
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
           </li>
           {user && (
             <li>
