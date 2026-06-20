@@ -588,6 +588,21 @@ const Index = () => {
         .nav-actions{display:flex;align-items:center;gap:8px}
         .icon-toggle,.lang-toggle{width:34px;height:34px;border-radius:50%;border:1px solid var(--green2);background:var(--green3);color:var(--green);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:.25s}
         .icon-toggle:hover,.lang-toggle:hover{transform:translateY(-1px);border-color:var(--green);box-shadow:0 0 18px var(--green2)}
+
+        /* ─── Theme Switch (glass pill) ─── */
+        .theme-switch{position:relative;width:88px;height:32px;border-radius:999px;cursor:pointer;border:1px solid rgba(255,255,255,.06);background:#0a0a0a;display:flex;align-items:center;justify-content:space-between;padding:0 11px;font-family:var(--mo);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.55);box-shadow:inset 0 1px 2px rgba(255,255,255,.08),inset 0 -2px 6px rgba(0,0,0,.55),0 6px 14px rgba(0,0,0,.4);transition:background .5s ease,box-shadow .5s ease,color .35s ease,border-color .5s ease;overflow:hidden;-webkit-tap-highlight-color:transparent}
+        .theme-switch .ts-label{position:relative;z-index:1;line-height:1;transition:opacity .35s ease,transform .45s cubic-bezier(.34,1.56,.64,1);user-select:none;pointer-events:none}
+        .theme-switch .ts-bubble{position:absolute;top:2px;left:2px;width:36px;height:26px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.10) 100%);backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%);border:1px solid rgba(255,255,255,.4);box-shadow:0 4px 12px rgba(0,0,0,.45),inset 0 1px 1px rgba(255,255,255,.55),inset 0 -2px 4px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;color:#fff;transition:transform .55s cubic-bezier(.34,1.56,.64,1),background .4s ease,color .4s ease,box-shadow .4s ease;z-index:2}
+        .theme-switch .ts-bubble svg{transition:transform .55s cubic-bezier(.34,1.56,.64,1),opacity .3s ease;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+        .theme-switch.is-dark .ts-bubble{transform:translateX(46px)}
+        .theme-switch.is-light .ts-bubble{transform:translateX(0)}
+        .theme-switch.is-dark .ts-light{opacity:0;transform:translateX(6px)}
+        .theme-switch.is-light .ts-dark{opacity:0;transform:translateX(-6px)}
+        .theme-switch.is-light{background:#ececec;color:rgba(0,0,0,.5);border-color:rgba(0,0,0,.08);box-shadow:inset 0 1px 2px rgba(255,255,255,.85),inset 0 -2px 6px rgba(0,0,0,.08),0 6px 14px rgba(0,0,0,.12)}
+        .theme-switch.is-light .ts-bubble{color:#1a1a1a;background:linear-gradient(180deg,rgba(255,255,255,.75) 0%,rgba(255,255,255,.35) 100%);border-color:rgba(255,255,255,.85);box-shadow:0 4px 10px rgba(0,0,0,.18),inset 0 1px 1px rgba(255,255,255,.9),inset 0 -2px 4px rgba(0,0,0,.06)}
+        .theme-switch:hover .ts-bubble{box-shadow:0 6px 18px rgba(0,0,0,.5),inset 0 1px 1px rgba(255,255,255,.6),inset 0 -2px 4px rgba(0,0,0,.2)}
+        .theme-switch:active .ts-bubble{transform:translateX(46px) scale(.94)}
+        .theme-switch.is-light:active .ts-bubble{transform:translateX(0) scale(.94)}
         .lang-toggle{width:auto;border-radius:999px;padding:0 10px;gap:6px;font-family:var(--mo);font-size:.64rem;letter-spacing:.12em}
         .nmobile-toggle{display:none;background:none;border:none;color:var(--green);cursor:pointer}
         .nmobile-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:299;background:rgba(11,26,16,.97);backdrop-filter:blur(24px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px}
