@@ -53,30 +53,30 @@
 
   /* LIGHT MODE — mint-tinted, keeps neon-green particles legible */
   :root.light {
-    --background: 140 35% 90%;
-    --foreground: 150 30% 12%;
+    --background: 145 35% 85%;
+    --foreground: 150 40% 8%;
 
-    --card: 140 40% 95%;
-    --card-foreground: 150 30% 12%;
+    --card: 145 45% 96%;
+    --card-foreground: 150 40% 8%;
 
-    --popover: 140 40% 95%;
-    --popover-foreground: 150 30% 12%;
+    --popover: 145 45% 96%;
+    --popover-foreground: 150 40% 8%;
 
-    --primary: 145 75% 32%;
-    --primary-foreground: 140 35% 96%;
+    --primary: 150 85% 22%;
+    --primary-foreground: 140 35% 97%;
 
-    --secondary: 145 50% 60%;
-    --secondary-foreground: 150 30% 12%;
+    --secondary: 145 45% 55%;
+    --secondary-foreground: 150 40% 8%;
 
-    --muted: 140 28% 84%;
-    --muted-foreground: 150 15% 30%;
+    --muted: 140 25% 78%;
+    --muted-foreground: 150 25% 22%;
 
-    --accent: 145 75% 32%;
-    --accent-foreground: 140 35% 96%;
+    --accent: 150 85% 22%;
+    --accent-foreground: 140 35% 97%;
 
-    --border: 140 25% 72%;
-    --input: 140 25% 78%;
-    --ring: 145 75% 32%;
+    --border: 145 30% 60%;
+    --input: 145 28% 72%;
+    --ring: 150 85% 22%;
   }
 }
 
