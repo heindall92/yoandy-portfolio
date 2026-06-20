@@ -262,22 +262,22 @@ const Navbar = () => {
               </button>
 
               {searchOpen && (
-                <div style={{
+                <div className="gsearch-dropdown" style={{
                   position: "absolute",
                   right: 0,
                   top: "calc(100% + 8px)",
                   width: "400px",
                   borderRadius: "12px",
-                  border: "1px solid rgba(0,232,122,.12)",
-                  background: "rgba(11,26,16,.96)",
+                  border: "1px solid var(--gd-border)",
+                  background: "var(--gd-bg)",
                   backdropFilter: "blur(24px)",
-                  boxShadow: "0 20px 60px rgba(0,0,0,.5)",
+                  boxShadow: "var(--gd-shadow)",
                   overflow: "hidden",
                   zIndex: 500,
                 }}>
                   {/* Search input */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px", borderBottom: "1px solid rgba(0,232,122,.08)" }}>
-                    <Search size={16} style={{ color: "rgba(255,255,255,.3)", flexShrink: 0 }} />
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px", borderBottom: "1px solid var(--gd-border-subtle)" }}>
+                    <Search size={16} style={{ color: "var(--gd-muted)", flexShrink: 0 }} />
                     <input
                       ref={inputRef}
                       value={query}
@@ -288,13 +288,13 @@ const Navbar = () => {
                         background: "transparent",
                         border: "none",
                         outline: "none",
-                        color: "#e0e0e0",
+                        color: "var(--gd-text)",
                         fontFamily: "'JetBrains Mono', monospace",
                         fontSize: ".82rem",
                       }}
                     />
                     {query && (
-                      <button onClick={() => setQuery("")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.3)", cursor: "pointer" }}>
+                      <button onClick={() => setQuery("")} style={{ background: "none", border: "none", color: "var(--gd-muted)", cursor: "pointer" }}>
                         <X size={14} />
                       </button>
                     )}
