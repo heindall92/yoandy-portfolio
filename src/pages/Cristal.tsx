@@ -353,8 +353,8 @@ const Cristal = () => {
           background: var(--glass-bg);
           border: 1px solid var(--glass-border);
           box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(24px) saturate(160%);
-          -webkit-backdrop-filter: blur(24px) saturate(160%);
+          backdrop-filter: blur(32px) saturate(180%);
+          -webkit-backdrop-filter: blur(32px) saturate(180%);
           display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
         }
         .cr-context {
