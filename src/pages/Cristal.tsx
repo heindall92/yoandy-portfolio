@@ -157,13 +157,13 @@ const Cristal = () => {
           background: var(--glass-bg);
           border: 1px solid var(--glass-border);
           box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(28px) saturate(170%);
-          -webkit-backdrop-filter: blur(28px) saturate(170%);
+          backdrop-filter: blur(36px) saturate(190%);
+          -webkit-backdrop-filter: blur(36px) saturate(190%);
           position: relative; overflow: hidden;
         }
         .cr-hero-card::before {
           content: ""; position: absolute; inset: 0;
-          background: linear-gradient(135deg, rgba(255,255,255,.06) 0%, transparent 40%);
+          background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, transparent 40%);
           pointer-events: none;
         }
         .cr-pill {
