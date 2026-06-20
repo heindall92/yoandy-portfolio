@@ -1039,13 +1039,13 @@ const Index = () => {
 
       {/* PROJECTS TEASER */}
       <section id="projects-teaser" className="sec sec-dark" style={{ borderTop: "1px solid rgba(0,232,122,.12)" }}>
-        <div className="stag rev">02.5 // PROYECTOS</div>
+        <div className="stag rev">{t.projectsTag}</div>
         <div className="sk-intro" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <h2 className="bh rev d1">Proyectos<br /><em>Blue / Purple Team</em></h2>
-            <p className="sk-desc rev d2">Plataformas SOC, honeypots e investigación defensiva. Más allá del CTF: arquitectura real, IA local y compliance.</p>
+            <h2 className="bh rev d1">{t.projectsTitleA}<br /><em>{t.projectsTitleB}</em></h2>
+            <p className="sk-desc rev d2">{t.projectsDesc}</p>
           </div>
-          <Link to="/projects" className="hbtn-p rev d3" style={{ textDecoration: "none" }}>VER TODOS →</Link>
+          <Link to="/projects" className="hbtn-p rev d3" style={{ textDecoration: "none" }}>{t.viewAll}</Link>
         </div>
         <div className="sk-grid" style={{ marginTop: 32 }}>
           {projects.map((p) => (
@@ -1073,7 +1073,7 @@ const Index = () => {
                 {p.tags.slice(0, 4).map((t) => <span className="skt" key={t}>{t}</span>)}
               </div>
               <div style={{ marginTop: 14, fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: "#00e87a", letterSpacing: ".12em" }}>
-                ABRIR CASO →
+                {t.openCase}
               </div>
             </Link>
           ))}
@@ -1084,8 +1084,8 @@ const Index = () => {
       <section id="writeups" className="wu-hero">
         <div className="wu-bg-num">03</div>
         <div className="wu-top">
-          <h2 className="wu-h rev d1">Brechas<br /><em>Documentadas</em></h2>
-          <p className="wu-hdesc rev d2">Cada máquina comprometida con metodología completa. Busca por técnica, plataforma o dificultad.</p>
+          <h2 className="wu-h rev d1">{t.writeupsTitleA}<br /><em>{t.writeupsTitleB}</em></h2>
+          <p className="wu-hdesc rev d2">{t.writeupsDesc}</p>
         </div>
         <div className="srch rev">
           <input
@@ -1123,9 +1123,9 @@ const Index = () => {
           return (
             <>
               <div className="feat-head rev">
-                <span className="feat-title">★ OPERACIONES DESTACADAS</span>
+                <span className="feat-title">{t.featured}</span>
                 <span className="feat-bar" />
-                <span className="feat-sub">{featured.length} SELECCIONADAS</span>
+                <span className="feat-sub">{featured.length} {t.selected}</span>
               </div>
               <div className="feat-grid">
                 {featured.map((w) => {
@@ -1159,7 +1159,7 @@ const Index = () => {
                         </div>
                         {w.type !== "cert" && (
                           <div className="wft">
-                            <span className="wlnk">Leer writeup →</span>
+                            <span className="wlnk">{t.readWriteup}</span>
                           </div>
                         )}
                       </div>
@@ -1201,7 +1201,7 @@ const Index = () => {
                   </div>
                   {w.type !== "cert" && (
                     <div className="wft">
-                      <span className="wlnk">Leer writeup →</span>
+                      <span className="wlnk">{t.readWriteup}</span>
                     </div>
                   )}
                 </div>
@@ -1212,7 +1212,7 @@ const Index = () => {
         {filtered.length === 0 && (
           <div style={{ textAlign: "center", padding: 80, fontFamily: "var(--mo)", fontSize: ".8rem", color: "var(--text-l3)" }}>
             <span style={{ display: "block", fontSize: "2rem", marginBottom: 10 }}>🔍</span>
-            Sin resultados — prueba: linux · sqli · jwt · htb...
+            {t.noResults}
           </div>
         )}
       </section>
