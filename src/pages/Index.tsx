@@ -8,6 +8,7 @@ import profileImg from "@/assets/profile.jpg";
 import { machines } from "./Machines";
 import { sherlocks } from "./Sherlocks";
 import { hmvMachines } from "./HackMyVM";
+import { projects } from "@/lib/projects-registry";
 
 /* ── All writeups combined ── */
 const allWriteups = [
@@ -850,6 +851,49 @@ const Index = () => {
           <div className="ttrk ttrk2">
             {[...toolsRow2, ...toolsRow2].map((t, i) => <span className="tpill" key={i}>{t}</span>)}
           </div>
+        </div>
+      </section>
+
+      {/* PROJECTS TEASER */}
+      <section id="projects-teaser" className="sec sec-dark" style={{ borderTop: "1px solid rgba(0,232,122,.12)" }}>
+        <div className="stag rev">02.5 // PROYECTOS</div>
+        <div className="sk-intro" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <h2 className="bh rev d1">Proyectos<br /><em>Blue / Purple Team</em></h2>
+            <p className="sk-desc rev d2">Plataformas SOC, honeypots e investigación defensiva. Más allá del CTF: arquitectura real, IA local y compliance.</p>
+          </div>
+          <Link to="/projects" className="hbtn-p rev d3" style={{ textDecoration: "none" }}>VER TODOS →</Link>
+        </div>
+        <div className="sk-grid" style={{ marginTop: 32 }}>
+          {projects.map((p) => (
+            <Link
+              key={p.slug}
+              to={`/projects/${p.slug}`}
+              className="skc rev"
+              style={{ textDecoration: "none", color: "inherit", display: "block", position: "relative" }}
+            >
+              <span
+                style={{
+                  position: "absolute", top: 12, right: 12,
+                  fontFamily: "'JetBrains Mono',monospace", fontSize: 10, letterSpacing: ".15em",
+                  color: p.status === "PRODUCTION" ? "#00e87a" : "#ffb547",
+                  border: `1px solid ${p.status === "PRODUCTION" ? "#00e87a" : "#ffb547"}`,
+                  padding: "2px 8px", borderRadius: 4,
+                }}
+              >
+                {p.status}
+              </span>
+              <span className="skc-ico">{p.emoji}</span>
+              <div className="skc-n">{p.name}</div>
+              <div className="skc-d" style={{ minHeight: 60 }}>{p.tagline}</div>
+              <div className="skc-ts">
+                {p.tags.slice(0, 4).map((t) => <span className="skt" key={t}>{t}</span>)}
+              </div>
+              <div style={{ marginTop: 14, fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: "#00e87a", letterSpacing: ".12em" }}>
+                ABRIR CASO →
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 

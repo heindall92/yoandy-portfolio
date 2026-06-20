@@ -189,8 +189,20 @@ const Navbar = () => {
 
         <ul className="glinks">
           <li>
-            <Link to="/projects" className="nav-link" style={{ color: location.pathname.startsWith("/projects") ? "#00e87a" : undefined }}>
+            <Link
+              to="/projects"
+              className="nav-link"
+              style={{
+                color: location.pathname.startsWith("/projects") ? "#00e87a" : "rgba(0,232,122,.85)",
+                display: "inline-flex", alignItems: "center", gap: 6,
+              }}
+            >
               projects
+              <span style={{
+                fontSize: 9, letterSpacing: ".15em",
+                color: "#00e87a", border: "1px solid #00e87a",
+                padding: "1px 5px", borderRadius: 3, lineHeight: 1,
+              }}>NEW</span>
             </Link>
           </li>
           {navItems.map((item) => (
