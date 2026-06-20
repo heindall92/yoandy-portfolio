@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { sanitizeSearch } from "@/lib/security";
 import { useSeo } from "@/hooks/use-seo";
+import { useUI } from "@/contexts/UIContext";
 import * as THREE from "three";
 import { Globe2, Moon, Sun, X } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -207,24 +208,12 @@ const Index = () => {
   const [filter, setFilter] = useState("all");
   const [counter, setCounter] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [language, setLanguage] = useState<"es" | "en">("es");
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const { theme, language, setTheme, setLanguage } = useUI();
   const heroRef = useRef<HTMLDivElement>(null);
   const orbRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<HTMLCanvasElement>(null);
   const t = copy[language];
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("heindall-theme");
-    const savedLanguage = localStorage.getItem("heindall-language");
-    if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme);
-    if (savedLanguage === "es" || savedLanguage === "en") setLanguage(savedLanguage);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("heindall-theme", theme);
-    localStorage.setItem("heindall-language", language);
-  }, [theme, language]);
 
   /* Three.js particles background — exact replica */
   useEffect(() => {
@@ -560,7 +549,8 @@ const Index = () => {
           font-family:var(--dm);background:var(--ink);color:var(--text-d);overflow-x:hidden;font-size:16px;
         }
         .draft-page.light{
-          --ink:#f7fbf6;--forest:#eef7f0;--pine:#ffffff;--moss:#dceade;--sage:#245f45;
+          /* Mint background so neon-green particles stay visible */
+          --ink:#cfeadb;--forest:#bde0cc;--pine:#e9f6ee;--moss:#a8d4b8;--sage:#245f45;
           --green:#0a8f55;--green2:rgba(10,143,85,.14);--green3:rgba(10,143,85,.08);
           --cream:#ffffff;--cream2:#fbf8ef;--cream3:#e2dccd;
           --text-d:#112318;--text-d2:rgba(17,35,24,.68);--text-d3:rgba(17,35,24,.44);

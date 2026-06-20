@@ -50,6 +50,34 @@
     --sidebar-border: 150 25% 14%;
     --sidebar-ring: 120 100% 50%;
   }
+
+  /* LIGHT MODE — mint-tinted, keeps neon-green particles legible */
+  :root.light {
+    --background: 140 35% 90%;
+    --foreground: 150 30% 12%;
+
+    --card: 140 40% 95%;
+    --card-foreground: 150 30% 12%;
+
+    --popover: 140 40% 95%;
+    --popover-foreground: 150 30% 12%;
+
+    --primary: 145 75% 32%;
+    --primary-foreground: 140 35% 96%;
+
+    --secondary: 145 50% 60%;
+    --secondary-foreground: 150 30% 12%;
+
+    --muted: 140 28% 84%;
+    --muted-foreground: 150 15% 30%;
+
+    --accent: 145 75% 32%;
+    --accent-foreground: 140 35% 96%;
+
+    --border: 140 25% 72%;
+    --input: 140 25% 78%;
+    --ring: 145 75% 32%;
+  }
 }
 
 @layer base {
