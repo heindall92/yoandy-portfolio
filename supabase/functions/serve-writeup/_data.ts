@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+// Auto-generated. Protected writeup HTML inlined so it never ships as a static public asset.
+export const PROTECTED_REPORTS: Record<string, { title: string; html: string }> = {
+  'meow-htb': {
+    title: 'Writeup — Meow (HTB)',
+    html: `<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -471,18 +475,18 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</pre>
 
     <div class="cmd-annotated">
       <div class="cmd-line" style="font-size:0.85rem;">
-        <span class="cmd">expect</span> <span class="flag-opt">-c</span> <span class="str-c">'spawn telnet 10.129.18.182; expect "login:"; send "root\r"; expect -re "(Password:|#)"; send "\r"; expect "# "; send "cat /root/flag.txt\r"; expect eof'</span>
+        <span class="cmd">expect</span> <span class="flag-opt">-c</span> <span class="str-c">'spawn telnet 10.129.18.182; expect "login:"; send "root\\r"; expect -re "(Password:|#)"; send "\\r"; expect "# "; send "cat /root/flag.txt\\r"; expect eof'</span>
       </div>
       <div class="cmd-notes">
         <div class="cmd-note"><code>expect</code> → herramienta que automatiza interacciones con programas interactivos de terminal</div>
         <div class="cmd-note"><code>-c</code> → ejecutar el script expect como string inline (sin archivo separado)</div>
         <div class="cmd-note"><code>spawn telnet IP</code> → lanza telnet como proceso hijo que expect controlará</div>
         <div class="cmd-note"><code>expect "login:"</code> → esperar hasta recibir el texto "login:" del servidor</div>
-        <div class="cmd-note"><code>send "root\r"</code> → enviar "root" + retorno de carro (equivalente a Enter)</div>
+        <div class="cmd-note"><code>send "root\\r"</code> → enviar "root" + retorno de carro (equivalente a Enter)</div>
         <div class="cmd-note"><code>expect -re "(Password:|#)"</code> → esperar cualquiera: si pide password continúa; si da prompt (#) ya entró</div>
-        <div class="cmd-note"><code>send "\r"</code> → enviar Enter vacío (contraseña vacía)</div>
+        <div class="cmd-note"><code>send "\\r"</code> → enviar Enter vacío (contraseña vacía)</div>
         <div class="cmd-note"><code>expect "# "</code> → esperar el prompt de shell root que indica login exitoso</div>
-        <div class="cmd-note"><code>send "cat /root/flag.txt\r"</code> → leer la flag una vez dentro</div>
+        <div class="cmd-note"><code>send "cat /root/flag.txt\\r"</code> → leer la flag una vez dentro</div>
       </div>
     </div>
 
@@ -701,4 +705,6 @@ b40abdfe23665f766f9c61ecba8a4c19</pre>
 })();
 </script>
 </body>
-</html>
+</html>`,
+  },
+};
