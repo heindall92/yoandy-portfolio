@@ -14,6 +14,8 @@ import Login from "./pages/Login";
 import Machines from "./pages/Machines";
 import Sherlocks from "./pages/Sherlocks";
 import HackMyVM from "./pages/HackMyVM";
+import Projects from "./pages/Projects";
+import ProjectDetail from "./pages/ProjectDetail";
 import Bifrost from "./pages/Bifrost";
 import Privacy from "./pages/Privacy";
 import Legal from "./pages/Legal";
@@ -34,6 +36,8 @@ const AppContent = () => {
         <Route path="/machines" element={<Machines />} />
         <Route path="/sherlocks" element={<Sherlocks />} />
         <Route path="/hackmyvm" element={<HackMyVM />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/projects/:slug" element={<ProjectDetail />} />
         <Route path="/report/:slug" element={<Report />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/legal" element={<Legal />} />
