@@ -71,6 +71,8 @@ const Navbar = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { user, signOut } = useAuth();
+  const { theme, language, toggleTheme, toggleLanguage } = useUI();
+  const navItems = navItemsByLang[language];
 
   const toggleFilter = (arr: string[], val: string, setter: React.Dispatch<React.SetStateAction<string[]>>) => {
     setter(arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val]);
@@ -226,7 +228,7 @@ const Navbar = () => {
             <div ref={searchRef} style={{ position: "relative" }}>
               <button className="gsearch-btn" onClick={() => setSearchOpen(!searchOpen)}>
                 <Search size={14} />
-                <span>Buscar...</span>
+                <span>{language === "es" ? "Buscar..." : "Search..."}</span>
                 <kbd>⌘K</kbd>
               </button>
 
