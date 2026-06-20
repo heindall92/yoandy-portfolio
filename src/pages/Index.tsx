@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { sanitizeSearch } from "@/lib/security";
 import { useSeo } from "@/hooks/use-seo";
 import * as THREE from "three";
-import { X } from "lucide-react";
+import { Globe2, Moon, Sun, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import profileImg from "@/assets/profile.jpg";
 import { machines } from "./Machines";
@@ -89,6 +89,113 @@ const diffLabel = (d: string) => d.toUpperCase();
 
 const marqueeItems = ["HEINDALL", "RED TEAM OPERATOR", "OFFENSIVE SECURITY", "PENETRATION TESTING", "VULNERABILITY HUNTER", "ETHICAL HACKING", "CTF HUNTER"];
 
+const copy = {
+  es: {
+    projects: "proyectos",
+    about: "sobre mí",
+    skills: "skills",
+    writeups: "writeups",
+    certs: "certs",
+    contact: "contacto",
+    eyebrow: "// RED TEAM OPERATOR · SEGURIDAD OFENSIVA",
+    role: "Junior Security Analyst · Pentester · eJPTv2 Certified",
+    desc: "Ethical Hacking | Offensive Cybersecurity | Máster en Ciberseguridad & IA — Evolve Academy 2026.",
+    writeupsBtn: "VER WRITEUPS",
+    contactBtn: "CONTACTO",
+    statMachines: "MÁQUINAS COMPROMETIDAS",
+    statLevel: "NIVEL DEMOSTRADO",
+    statScore: "eJPTv2 SCORE",
+    statYears: "AÑOS IT/SISTEMAS",
+    status: "OPEN TO WORK · LEPE, HUELVA 🇪🇸",
+    scroll: "SCROLL",
+    aboutTag: "01 // SOBRE HEINDALL",
+    aboutTitleA: "Sobre",
+    aboutTitleB: "Mí",
+    aboutP1: "4 años rompiendo sistemas — primero por accidente, ahora por metodología. Vengo de IT: redes, hardware, sistemas. Cuando descubrí que podía aplicar ese conocimiento para encontrar lo que otros no ven, no volví atrás.",
+    aboutP2: "Hoy construyo desde Lepe, Huelva: pentesting en HTB/THM, automatización de recon con Python y Bash, y herramientas propias bajo el alias Heindall. eJPTv2 certificado. Máster en Ciberseguridad & IA en curso (Evolve Academy, 2026).",
+    aboutP3: "Busco mi primer rol en seguridad ofensiva. No traigo años de empresa — traigo 45+ máquinas comprometidas, herramientas publicadas, y documentación que demuestra cómo pienso.",
+    objective: "🎯 OBJETIVO PROFESIONAL",
+    objectiveText: "Junior Pentester / Red Team Operator. Busco incorporarme a un equipo de seguridad ofensiva donde pueda comprometer infraestructuras reales, aprender en producción y contribuir con herramientas propias. Disponible para posición junior, prácticas remuneradas o contrato. Lepe, Huelva — abierto a remoto y presencial.",
+    skillsTag: "02 // ARSENAL OFENSIVO",
+    skillsTitleA: "Arsenal",
+    skillsTitleB: "Táctico",
+    skillsDesc: "El toolkit de Heindall — herramientas dominadas en CTFs, labs y pentests reales. Cada vector de ataque documentado y probado.",
+    projectsTag: "02.5 // PROYECTOS",
+    projectsTitleA: "Proyectos",
+    projectsTitleB: "Blue / Purple Team",
+    projectsDesc: "Plataformas SOC, honeypots e investigación defensiva. Más allá del CTF: arquitectura real, IA local y compliance.",
+    viewAll: "VER TODOS →",
+    openCase: "ABRIR CASO →",
+    writeupsTitleA: "Brechas",
+    writeupsTitleB: "Documentadas",
+    writeupsDesc: "Cada máquina comprometida con metodología completa. Busca por técnica, plataforma o dificultad.",
+    featured: "★ OPERACIONES DESTACADAS",
+    selected: "SELECCIONADAS",
+    readWriteup: "Leer writeup →",
+    noResults: "Sin resultados — prueba: linux · sqli · jwt · htb...",
+    certsTag: "04 // CERTIFICATIONS & ROADMAP",
+    roadmapDesc: "La ruta de Heindall hacia las certificaciones élite del offensive security.",
+    contactTag: "05 // CONTACT",
+    contactTitle: "¿Comenzamos\nla Operación?",
+    contactDesc: "Disponible para roles en Pentesting y Red Team, colaboraciones técnicas y proyectos de ciberseguridad.",
+    linkedin: "Contactar en LinkedIn",
+    github: "Ver GitHub →",
+    footer: "Todo el contenido es para fines educativos y entornos autorizados ⚠️",
+  },
+  en: {
+    projects: "projects",
+    about: "about",
+    skills: "skills",
+    writeups: "writeups",
+    certs: "certs",
+    contact: "contact",
+    eyebrow: "// RED TEAM OPERATOR · OFFENSIVE SECURITY",
+    role: "Junior Security Analyst · Pentester · eJPTv2 Certified",
+    desc: "Ethical Hacking | Offensive Cybersecurity | Cybersecurity & AI Master's — Evolve Academy 2026.",
+    writeupsBtn: "VIEW WRITEUPS",
+    contactBtn: "CONTACT",
+    statMachines: "COMPROMISED MACHINES",
+    statLevel: "PROVEN LEVEL",
+    statScore: "eJPTv2 SCORE",
+    statYears: "YEARS IT/SYSTEMS",
+    status: "OPEN TO WORK · LEPE, HUELVA 🇪🇸",
+    scroll: "SCROLL",
+    aboutTag: "01 // ABOUT HEINDALL",
+    aboutTitleA: "About",
+    aboutTitleB: "Me",
+    aboutP1: "4 years breaking systems — first by accident, now by methodology. I come from IT: networking, hardware and systems. Once I discovered I could use that knowledge to find what others miss, I never looked back.",
+    aboutP2: "Today I build from Lepe, Huelva: HTB/THM pentesting, recon automation with Python and Bash, and custom tooling under the Heindall alias. eJPTv2 certified. Cybersecurity & AI Master's in progress (Evolve Academy, 2026).",
+    aboutP3: "I am looking for my first offensive security role. I may not bring years in a security company yet — I bring 45+ compromised machines, published tools, and documentation that proves how I think.",
+    objective: "🎯 PROFESSIONAL OBJECTIVE",
+    objectiveText: "Junior Pentester / Red Team Operator. I want to join an offensive security team where I can compromise real infrastructure, learn in production, and contribute with my own tools. Available for junior roles, paid internships or contracts. Lepe, Huelva — open to remote and on-site work.",
+    skillsTag: "02 // OFFENSIVE ARSENAL",
+    skillsTitleA: "Tactical",
+    skillsTitleB: "Arsenal",
+    skillsDesc: "Heindall's toolkit — tools mastered across CTFs, labs and real pentest workflows. Every attack vector is documented and tested.",
+    projectsTag: "02.5 // PROJECTS",
+    projectsTitleA: "Projects",
+    projectsTitleB: "Blue / Purple Team",
+    projectsDesc: "SOC platforms, honeypots and defensive research. Beyond CTFs: real architecture, local AI and compliance.",
+    viewAll: "VIEW ALL →",
+    openCase: "OPEN CASE →",
+    writeupsTitleA: "Documented",
+    writeupsTitleB: "Breaches",
+    writeupsDesc: "Each compromised machine is documented with full methodology. Search by technique, platform or difficulty.",
+    featured: "★ FEATURED OPERATIONS",
+    selected: "SELECTED",
+    readWriteup: "Read writeup →",
+    noResults: "No results — try: linux · sqli · jwt · htb...",
+    certsTag: "04 // CERTIFICATIONS & ROADMAP",
+    roadmapDesc: "Heindall's path toward elite offensive security certifications.",
+    contactTag: "05 // CONTACT",
+    contactTitle: "Shall we start\nthe Operation?",
+    contactDesc: "Available for Pentesting and Red Team roles, technical collaborations and cybersecurity projects.",
+    linkedin: "Contact on LinkedIn",
+    github: "View GitHub →",
+    footer: "All content is for educational purposes and authorized environments only ⚠️",
+  },
+};
+
 const Index = () => {
   useSeo({
     title: "Heindall | Yoandy Ramírez — Red Team & Pentesting",
@@ -100,9 +207,24 @@ const Index = () => {
   const [filter, setFilter] = useState("all");
   const [counter, setCounter] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [language, setLanguage] = useState<"es" | "en">("es");
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const heroRef = useRef<HTMLDivElement>(null);
   const orbRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<HTMLCanvasElement>(null);
+  const t = copy[language];
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("heindall-theme");
+    const savedLanguage = localStorage.getItem("heindall-language");
+    if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme);
+    if (savedLanguage === "es" || savedLanguage === "en") setLanguage(savedLanguage);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("heindall-theme", theme);
+    localStorage.setItem("heindall-language", language);
+  }, [theme, language]);
 
   /* Three.js particles background — exact replica */
   useEffect(() => {
@@ -424,7 +546,7 @@ const Index = () => {
   });
 
   return (
-    <div className="draft-page">
+    <div className={`draft-page ${theme}`} lang={language}>
       <style>{`
         /* ─── MAIN PAGE STYLES ─── */
         .draft-page{
@@ -437,22 +559,36 @@ const Index = () => {
           --bb:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif;--mo:'JetBrains Mono',monospace;
           font-family:var(--dm);background:var(--ink);color:var(--text-d);overflow-x:hidden;font-size:16px;
         }
+        .draft-page.light{
+          --ink:#f7fbf6;--forest:#eef7f0;--pine:#ffffff;--moss:#dceade;--sage:#245f45;
+          --green:#0a8f55;--green2:rgba(10,143,85,.14);--green3:rgba(10,143,85,.08);
+          --cream:#ffffff;--cream2:#fbf8ef;--cream3:#e2dccd;
+          --text-d:#112318;--text-d2:rgba(17,35,24,.68);--text-d3:rgba(17,35,24,.44);
+          --text-l:#112318;--text-l2:rgba(17,35,24,.62);--text-l3:rgba(17,35,24,.36);
+        }
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
         /* NAV */
         .dnav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;justify-content:space-between;align-items:center;padding:22px 52px;transition:all .4s}
         .dnav.solid{background:rgba(11,26,16,.92);backdrop-filter:blur(24px);border-bottom:1px solid rgba(0,232,122,.08);padding:15px 52px}
+        .light .dnav.solid{background:rgba(247,251,246,.92);border-bottom:1px solid rgba(10,143,85,.16)}
         .nlogo{display:flex;align-items:center;gap:12px;text-decoration:none}
         .nlogo-h{font-family:var(--bb);font-size:1.6rem;letter-spacing:.25em;color:var(--green);line-height:1}
         .nlogo-s{font-family:var(--mo);font-size:.72rem;color:var(--text-d3);letter-spacing:.2em;margin-top:2px}
-        .nlinks{display:flex;gap:32px;list-style:none;margin:0;padding:0}
+        .nlinks{display:flex;gap:22px;list-style:none;margin:0;padding:0;align-items:center}
         .nlinks a{font-family:var(--mo);font-size:.92rem;color:var(--text-d3);text-decoration:none;letter-spacing:.12em;transition:color .3s}
         .nlinks a:hover{color:var(--green)}
+        .nav-actions{display:flex;align-items:center;gap:8px}
+        .icon-toggle,.lang-toggle{width:34px;height:34px;border-radius:50%;border:1px solid var(--green2);background:var(--green3);color:var(--green);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:.25s}
+        .icon-toggle:hover,.lang-toggle:hover{transform:translateY(-1px);border-color:var(--green);box-shadow:0 0 18px var(--green2)}
+        .lang-toggle{width:auto;border-radius:999px;padding:0 10px;gap:6px;font-family:var(--mo);font-size:.64rem;letter-spacing:.12em}
         .nmobile-toggle{display:none;background:none;border:none;color:var(--green);cursor:pointer}
         .nmobile-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:299;background:rgba(11,26,16,.97);backdrop-filter:blur(24px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px}
+        .light .nmobile-overlay{background:rgba(247,251,246,.97)}
         .nmobile-overlay a{font-family:var(--mo);font-size:1.3rem;color:var(--text-d3);text-decoration:none;letter-spacing:.15em;transition:color .3s;padding:12px 0}
         .nmobile-overlay a:hover{color:var(--green)}
-        @media(max-width:900px){.nlinks{display:none}.nmobile-toggle{display:block}}
+        .mobile-controls{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+        @media(max-width:900px){.nlinks{display:none}.nmobile-toggle{display:block}.dnav{padding:18px 28px}}
 
         /* HERO */
         .draft-hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:100px 20px 80px}
@@ -479,11 +615,13 @@ const Index = () => {
         .hbtn-s:hover{border-color:var(--text-d2);color:var(--text-d);transform:translateY(-2px)}
         .h-right{flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center}
         .h-right canvas{width:380px;height:380px}
+        .hero-profile{position:absolute;top:-18px;right:-10px;z-index:4;width:116px;height:116px;border-radius:50%;padding:4px;background:var(--green2);border:1px solid var(--green);box-shadow:0 0 32px var(--green2),0 18px 45px rgba(0,0,0,.32)}
+        .hero-profile img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;border:2px solid var(--ink)}
         .h-status-bar{position:absolute;bottom:2.5rem;left:2.5rem;z-index:20;display:flex;align-items:center;gap:.5rem;font-family:var(--mo);font-size:.62rem;color:var(--text-d3);letter-spacing:2px}
         .h-sdot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pd 1.8s infinite;flex-shrink:0}
         .h-scroll-hint{position:absolute;bottom:2.5rem;right:2.5rem;z-index:20;font-family:var(--mo);font-size:.58rem;color:var(--text-d3);letter-spacing:3px;display:flex;flex-direction:column;align-items:center;gap:.5rem}
         .h-scroll-hint::after{content:'';width:1px;height:32px;background:linear-gradient(to bottom,rgba(200,240,220,.2),transparent)}
-        @media(max-width:1100px){.hero-inner{flex-direction:column;text-align:center}.h-left{max-width:100%}.h-stats{justify-content:center}.h-btns{justify-content:center}.h-right canvas{width:280px;height:280px}.h-status-bar,.h-scroll-hint{display:none}}
+        @media(max-width:1100px){.hero-inner{flex-direction:column;text-align:center}.h-left{max-width:100%}.h-stats{justify-content:center}.h-btns{justify-content:center}.h-right canvas{width:280px;height:280px}.hero-profile{width:94px;height:94px;right:8px;top:-8px}.h-status-bar,.h-scroll-hint{display:none}}
 
         /* Marquee */
         .mq{background:var(--green);overflow:hidden;padding:13px 0;position:relative;z-index:50}
@@ -717,7 +855,7 @@ const Index = () => {
                 gap: 6,
               }}
             >
-              projects
+              {t.projects}
               <span style={{
                 fontSize: 9, letterSpacing: ".15em",
                 color: "#00e87a", border: "1px solid #00e87a",
@@ -725,11 +863,19 @@ const Index = () => {
               }}>NEW</span>
             </Link>
           </li>
-          <li><a href="#about">about</a></li>
-          <li><a href="#skills">skills</a></li>
-          <li><a href="#writeups">writeups</a></li>
-          <li><a href="#certs">certs</a></li>
-          <li><a href="#contact">contact</a></li>
+          <li><a href="#about">{t.about}</a></li>
+          <li><a href="#skills">{t.skills}</a></li>
+          <li><a href="#writeups">{t.writeups}</a></li>
+          <li><a href="#certs">{t.certs}</a></li>
+          <li><a href="#contact">{t.contact}</a></li>
+          <li className="nav-actions">
+            <button className="lang-toggle" onClick={() => setLanguage(language === "es" ? "en" : "es")} aria-label="Cambiar idioma">
+              <Globe2 size={14} /> {language.toUpperCase()}
+            </button>
+            <button className="icon-toggle" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema">
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+          </li>
         </ul>
         <button className="nmobile-toggle" onClick={() => setMobileNavOpen(!mobileNavOpen)}>
           {mobileNavOpen ? <X size={28} /> : (
@@ -750,10 +896,18 @@ const Index = () => {
             onClick={() => setMobileNavOpen(false)}
             style={{ color: "#00e87a", textDecoration: "none" }}
           >
-            projects ✦ NEW
+            {t.projects} ✦ NEW
           </Link>
-          {["about", "skills", "writeups", "certs", "contact"].map((s) => (
-            <a key={s} href={`#${s}`} onClick={() => setMobileNavOpen(false)}>{s}</a>
+          <div className="mobile-controls">
+            <button className="lang-toggle" onClick={() => setLanguage(language === "es" ? "en" : "es")} aria-label="Cambiar idioma">
+              <Globe2 size={14} /> {language.toUpperCase()}
+            </button>
+            <button className="icon-toggle" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema">
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+          </div>
+          {[["about", t.about], ["skills", t.skills], ["writeups", t.writeups], ["certs", t.certs], ["contact", t.contact]].map(([s, label]) => (
+            <a key={s} href={`#${s}`} onClick={() => setMobileNavOpen(false)}>{label}</a>
           ))}
         </div>
       )}
@@ -767,32 +921,35 @@ const Index = () => {
         <div className="hero-inner rev">
           {/* LEFT — Text */}
           <div className="h-left">
-            <div className="h-eyebrow">// RED TEAM OPERATOR · SEGURIDAD OFENSIVA</div>
+            <div className="h-eyebrow">{t.eyebrow}</div>
             <div className="h-name">
               YOANDY<br />
               <span>RAMÍREZ</span><br />
               DELGADO
             </div>
-            <div className="h-role">Junior Security Analyst &nbsp;·&nbsp; Pentester &nbsp;·&nbsp; eJPTv2 Certified</div>
-            <div className="h-desc">Ethical Hacking | Offensive Cybersecurity | Máster en Ciberseguridad & IA — Evolve Academy 2026.</div>
+            <div className="h-role">{t.role}</div>
+            <div className="h-desc">{t.desc}</div>
             <div className="h-stats">
-              <div className="hstat"><div className="hstat-n">45+</div><div className="hstat-l">MÁQUINAS COMPROMETIDAS</div></div>
-              <div className="hstat"><div className="hstat-n">Med/Hard</div><div className="hstat-l">NIVEL DEMOSTRADO</div></div>
-              <div className="hstat"><div className="hstat-n">86%</div><div className="hstat-l">eJPTv2 SCORE</div></div>
-              <div className="hstat"><div className="hstat-n">4+</div><div className="hstat-l">AÑOS IT/SISTEMAS</div></div>
+              <div className="hstat"><div className="hstat-n">45+</div><div className="hstat-l">{t.statMachines}</div></div>
+              <div className="hstat"><div className="hstat-n">Med/Hard</div><div className="hstat-l">{t.statLevel}</div></div>
+              <div className="hstat"><div className="hstat-n">86%</div><div className="hstat-l">{t.statScore}</div></div>
+              <div className="hstat"><div className="hstat-n">4+</div><div className="hstat-l">{t.statYears}</div></div>
             </div>
             <div className="h-btns">
-              <a href="#writeups" className="hbtn-p">VER WRITEUPS</a>
-              <a href="#contact" className="hbtn-s">CONTACTO</a>
+              <a href="#writeups" className="hbtn-p">{t.writeupsBtn}</a>
+              <a href="#contact" className="hbtn-s">{t.contactBtn}</a>
             </div>
           </div>
           {/* RIGHT — Orb Canvas */}
           <div className="h-right">
+            <div className="hero-profile" aria-label="Foto de perfil de Yoandy Ramírez">
+              <img src={profileImg} alt="Yoandy Ramírez Delgado" />
+            </div>
             <canvas ref={orbRef} />
           </div>
         </div>
-        <div className="h-status-bar"><div className="h-sdot" />OPEN TO WORK · LEPE, HUELVA 🇪🇸</div>
-        <div className="h-scroll-hint">SCROLL</div>
+        <div className="h-status-bar"><div className="h-sdot" />{t.status}</div>
+        <div className="h-scroll-hint">{t.scroll}</div>
       </section>
 
       {/* MARQUEE */}
@@ -809,16 +966,16 @@ const Index = () => {
 
       {/* ABOUT */}
       <section id="about" className="sec sec-dark">
-        <div className="stag rev">01 // SOBRE HEINDALL</div>
+        <div className="stag rev">{t.aboutTag}</div>
         <div className="about-grid">
           <div>
-            <h2 className="bh rev d1" style={{ marginBottom: 28 }}>Sobre <em>Mí</em></h2>
-            <p className="about-p rev d2"><strong>4 años rompiendo sistemas</strong> — primero por accidente, ahora por metodología. Vengo de IT: redes, hardware, sistemas. Cuando descubrí que podía aplicar ese conocimiento para encontrar lo que otros no ven, no volví atrás.</p>
-            <p className="about-p rev d3">Hoy construyo desde <strong>Lepe, Huelva</strong>: pentesting en <span className="hl">HTB/THM</span>, automatización de recon con <strong>Python y Bash</strong>, y herramientas propias bajo el alias <strong>Heindall</strong>. <strong>eJPTv2</strong> certificado. Máster en Ciberseguridad &amp; IA en curso (Evolve Academy, 2026).</p>
-            <p className="about-p rev d4">Busco mi primer rol en <strong>seguridad ofensiva</strong>. No traigo años de empresa — traigo <strong>45+ máquinas comprometidas</strong>, herramientas publicadas, y documentación que demuestra cómo pienso.</p>
+            <h2 className="bh rev d1" style={{ marginBottom: 28 }}>{t.aboutTitleA} <em>{t.aboutTitleB}</em></h2>
+            <p className="about-p rev d2">{t.aboutP1}</p>
+            <p className="about-p rev d3">{t.aboutP2}</p>
+            <p className="about-p rev d4">{t.aboutP3}</p>
             <div className="quote-block rev d5">
-              <div className="qb-rune">🎯 OBJETIVO PROFESIONAL</div>
-              <p className="qb-txt"><strong>Junior Pentester / Red Team Operator.</strong> Busco incorporarme a un equipo de seguridad ofensiva donde pueda comprometer infraestructuras reales, aprender en producción y contribuir con herramientas propias. Disponible para posición junior, prácticas remuneradas o contrato. Lepe, Huelva — abierto a remoto y presencial.</p>
+              <div className="qb-rune">{t.objective}</div>
+              <p className="qb-txt">{t.objectiveText}</p>
             </div>
           </div>
           <div>
@@ -850,10 +1007,10 @@ const Index = () => {
 
       {/* SKILLS */}
       <section id="skills" className="sec sec-mid">
-        <div className="stag rev">02 // ARSENAL OFENSIVO</div>
+        <div className="stag rev">{t.skillsTag}</div>
         <div className="sk-intro">
-          <h2 className="bh rev d1">Arsenal<br /><em>Táctico</em></h2>
-          <p className="sk-desc rev d2">El toolkit de Heindall — herramientas dominadas en CTFs, labs y pentests reales. Cada vector de ataque documentado y probado.</p>
+          <h2 className="bh rev d1">{t.skillsTitleA}<br /><em>{t.skillsTitleB}</em></h2>
+          <p className="sk-desc rev d2">{t.skillsDesc}</p>
         </div>
         <div className="sk-grid">
           {skills.map((s) => (
@@ -882,13 +1039,13 @@ const Index = () => {
 
       {/* PROJECTS TEASER */}
       <section id="projects-teaser" className="sec sec-dark" style={{ borderTop: "1px solid rgba(0,232,122,.12)" }}>
-        <div className="stag rev">02.5 // PROYECTOS</div>
+        <div className="stag rev">{t.projectsTag}</div>
         <div className="sk-intro" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <h2 className="bh rev d1">Proyectos<br /><em>Blue / Purple Team</em></h2>
-            <p className="sk-desc rev d2">Plataformas SOC, honeypots e investigación defensiva. Más allá del CTF: arquitectura real, IA local y compliance.</p>
+            <h2 className="bh rev d1">{t.projectsTitleA}<br /><em>{t.projectsTitleB}</em></h2>
+            <p className="sk-desc rev d2">{t.projectsDesc}</p>
           </div>
-          <Link to="/projects" className="hbtn-p rev d3" style={{ textDecoration: "none" }}>VER TODOS →</Link>
+          <Link to="/projects" className="hbtn-p rev d3" style={{ textDecoration: "none" }}>{t.viewAll}</Link>
         </div>
         <div className="sk-grid" style={{ marginTop: 32 }}>
           {projects.map((p) => (
@@ -916,7 +1073,7 @@ const Index = () => {
                 {p.tags.slice(0, 4).map((t) => <span className="skt" key={t}>{t}</span>)}
               </div>
               <div style={{ marginTop: 14, fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: "#00e87a", letterSpacing: ".12em" }}>
-                ABRIR CASO →
+                {t.openCase}
               </div>
             </Link>
           ))}
@@ -927,8 +1084,8 @@ const Index = () => {
       <section id="writeups" className="wu-hero">
         <div className="wu-bg-num">03</div>
         <div className="wu-top">
-          <h2 className="wu-h rev d1">Brechas<br /><em>Documentadas</em></h2>
-          <p className="wu-hdesc rev d2">Cada máquina comprometida con metodología completa. Busca por técnica, plataforma o dificultad.</p>
+          <h2 className="wu-h rev d1">{t.writeupsTitleA}<br /><em>{t.writeupsTitleB}</em></h2>
+          <p className="wu-hdesc rev d2">{t.writeupsDesc}</p>
         </div>
         <div className="srch rev">
           <input
@@ -966,9 +1123,9 @@ const Index = () => {
           return (
             <>
               <div className="feat-head rev">
-                <span className="feat-title">★ OPERACIONES DESTACADAS</span>
+                <span className="feat-title">{t.featured}</span>
                 <span className="feat-bar" />
-                <span className="feat-sub">{featured.length} SELECCIONADAS</span>
+                <span className="feat-sub">{featured.length} {t.selected}</span>
               </div>
               <div className="feat-grid">
                 {featured.map((w) => {
@@ -983,10 +1140,10 @@ const Index = () => {
                     : "linear-gradient(135deg,#1a0808,#350d0d)";
                   const Wrapper = w.type === "cert" ? "div" : Link;
                   const wrapperProps = w.type === "cert"
-                    ? { className: "wuc feat", key: w.slug }
-                    : { to: `/report/${w.slug}`, className: "wuc feat", key: w.slug };
+                    ? { className: "wuc feat" }
+                    : { to: `/report/${w.slug}`, className: "wuc feat" };
                   return (
-                    <Wrapper {...(wrapperProps as any)}>
+                    <Wrapper key={w.slug} {...(wrapperProps as any)}>
                       <span className="feat-badge">★ DESTACADO</span>
                       <div className="wtop">
                         <div className="wtbg" style={{ background: bgGrad }} />
@@ -1002,7 +1159,7 @@ const Index = () => {
                         </div>
                         {w.type !== "cert" && (
                           <div className="wft">
-                            <span className="wlnk">Leer writeup →</span>
+                            <span className="wlnk">{t.readWriteup}</span>
                           </div>
                         )}
                       </div>
@@ -1027,9 +1184,9 @@ const Index = () => {
               ? "linear-gradient(135deg,#1a1005,#2d1a08)"
               : "linear-gradient(135deg,#1a0808,#350d0d)";
             const Wrapper = w.type === "cert" ? "div" : Link;
-            const wrapperProps = w.type === "cert" ? { className: "wuc", key: w.slug } : { to: `/report/${w.slug}`, className: "wuc", key: w.slug };
+            const wrapperProps = w.type === "cert" ? { className: "wuc" } : { to: `/report/${w.slug}`, className: "wuc" };
             return (
-              <Wrapper {...(wrapperProps as any)}>
+              <Wrapper key={w.slug} {...(wrapperProps as any)}>
                 <div className="wtop">
                   <div className="wtbg" style={{ background: bgGrad }} />
                   <span className="wico">{w.emoji}</span>
@@ -1044,7 +1201,7 @@ const Index = () => {
                   </div>
                   {w.type !== "cert" && (
                     <div className="wft">
-                      <span className="wlnk">Leer writeup →</span>
+                      <span className="wlnk">{t.readWriteup}</span>
                     </div>
                   )}
                 </div>
@@ -1055,14 +1212,14 @@ const Index = () => {
         {filtered.length === 0 && (
           <div style={{ textAlign: "center", padding: 80, fontFamily: "var(--mo)", fontSize: ".8rem", color: "var(--text-l3)" }}>
             <span style={{ display: "block", fontSize: "2rem", marginBottom: 10 }}>🔍</span>
-            Sin resultados — prueba: linux · sqli · jwt · htb...
+            {t.noResults}
           </div>
         )}
       </section>
 
       {/* CERTS */}
       <section id="certs" className="sec sec-dark">
-        <div className="stag rev">04 // CERTIFICATIONS & ROADMAP</div>
+        <div className="stag rev">{t.certsTag}</div>
         <div className="cert-grid">
           {certifications.map((c, i) => (
             <div className={`cc rev ${i > 0 ? `d${Math.min(i, 5)}` : ""}`} key={c.name}>
@@ -1076,7 +1233,7 @@ const Index = () => {
         <div className="rm-wrap">
           <div>
             <h3 className="rm-h rev d1">Roadmap<br /><em>Offensive</em></h3>
-            <p className="rm-sub rev d2">La ruta de Heindall hacia las certificaciones élite del offensive security.</p>
+            <p className="rm-sub rev d2">{t.roadmapDesc}</p>
           </div>
           <div className="rm-steps">
             {roadmap.map((r) => (
@@ -1094,12 +1251,12 @@ const Index = () => {
       <section id="contact" className="contact-sec">
         <div className="contact-grid">
           <div>
-            <div className="stag rev" style={{ marginBottom: 36 }}>05 // CONTACT</div>
-            <h2 className="c-h rev d1">¿Comenzamos<br />la <em>Operación</em>?</h2>
-            <p className="c-desc rev d2">Disponible para roles en Pentesting y Red Team, colaboraciones técnicas y proyectos de ciberseguridad.</p>
+            <div className="stag rev" style={{ marginBottom: 36 }}>{t.contactTag}</div>
+            <h2 className="c-h rev d1">{t.contactTitle.split("\n")[0]}<br /><em>{t.contactTitle.split("\n")[1]}</em></h2>
+            <p className="c-desc rev d2">{t.contactDesc}</p>
             <div className="cbtns rev d3">
-              <a href="https://www.linkedin.com/in/yoandyrd92/" className="bp" target="_blank" rel="noopener noreferrer">Contactar en LinkedIn</a>
-              <a href="https://github.com/heindall92" className="bo" target="_blank" rel="noopener noreferrer">Ver GitHub →</a>
+              <a href="https://www.linkedin.com/in/yoandyrd92/" className="bp" target="_blank" rel="noopener noreferrer">{t.linkedin}</a>
+              <a href="https://github.com/heindall92" className="bo" target="_blank" rel="noopener noreferrer">{t.github}</a>
             </div>
           </div>
           <div className="ccards">
@@ -1123,7 +1280,7 @@ const Index = () => {
         <span className="flogo">HEINDALL</span>
         <div className="fmid">
           <div>© 2025 Yoandy Ramírez Delgado · Alias <span>Heindall</span> · Lepe, España</div>
-          <div style={{ fontSize: ".5rem", marginTop: 3, opacity: .4 }}>Todo el contenido es para fines educativos y entornos autorizados ⚠️</div>
+          <div style={{ fontSize: ".5rem", marginTop: 3, opacity: .4 }}>{t.footer}</div>
         </div>
         <div className="flinks2">
           <a href="https://app.hackthebox.com/users/019c5812-b4ca-7315-b12f-14db6d2b42fa" target="_blank" rel="noopener noreferrer">HTB</a>
