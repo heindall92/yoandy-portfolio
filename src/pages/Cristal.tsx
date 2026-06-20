@@ -406,6 +406,7 @@ const Cristal = () => {
         <div className="cr-blob b2" />
         <div className="cr-blob b3" />
         <div className="cr-blob b4" />
+        <div className="cr-blob b5" />
       </div>
       <div className="cr-grain" />
 
