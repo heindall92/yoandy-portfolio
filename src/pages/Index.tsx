@@ -1219,7 +1219,7 @@ const Index = () => {
 
       {/* CERTS */}
       <section id="certs" className="sec sec-dark">
-        <div className="stag rev">04 // CERTIFICATIONS & ROADMAP</div>
+        <div className="stag rev">{t.certsTag}</div>
         <div className="cert-grid">
           {certifications.map((c, i) => (
             <div className={`cc rev ${i > 0 ? `d${Math.min(i, 5)}` : ""}`} key={c.name}>
@@ -1233,7 +1233,7 @@ const Index = () => {
         <div className="rm-wrap">
           <div>
             <h3 className="rm-h rev d1">Roadmap<br /><em>Offensive</em></h3>
-            <p className="rm-sub rev d2">La ruta de Heindall hacia las certificaciones élite del offensive security.</p>
+            <p className="rm-sub rev d2">{t.roadmapDesc}</p>
           </div>
           <div className="rm-steps">
             {roadmap.map((r) => (
@@ -1251,12 +1251,12 @@ const Index = () => {
       <section id="contact" className="contact-sec">
         <div className="contact-grid">
           <div>
-            <div className="stag rev" style={{ marginBottom: 36 }}>05 // CONTACT</div>
-            <h2 className="c-h rev d1">¿Comenzamos<br />la <em>Operación</em>?</h2>
-            <p className="c-desc rev d2">Disponible para roles en Pentesting y Red Team, colaboraciones técnicas y proyectos de ciberseguridad.</p>
+            <div className="stag rev" style={{ marginBottom: 36 }}>{t.contactTag}</div>
+            <h2 className="c-h rev d1">{t.contactTitle.split("\n")[0]}<br /><em>{t.contactTitle.split("\n")[1]}</em></h2>
+            <p className="c-desc rev d2">{t.contactDesc}</p>
             <div className="cbtns rev d3">
-              <a href="https://www.linkedin.com/in/yoandyrd92/" className="bp" target="_blank" rel="noopener noreferrer">Contactar en LinkedIn</a>
-              <a href="https://github.com/heindall92" className="bo" target="_blank" rel="noopener noreferrer">Ver GitHub →</a>
+              <a href="https://www.linkedin.com/in/yoandyrd92/" className="bp" target="_blank" rel="noopener noreferrer">{t.linkedin}</a>
+              <a href="https://github.com/heindall92" className="bo" target="_blank" rel="noopener noreferrer">{t.github}</a>
             </div>
           </div>
           <div className="ccards">
@@ -1280,7 +1280,7 @@ const Index = () => {
         <span className="flogo">HEINDALL</span>
         <div className="fmid">
           <div>© 2025 Yoandy Ramírez Delgado · Alias <span>Heindall</span> · Lepe, España</div>
-          <div style={{ fontSize: ".5rem", marginTop: 3, opacity: .4 }}>Todo el contenido es para fines educativos y entornos autorizados ⚠️</div>
+          <div style={{ fontSize: ".5rem", marginTop: 3, opacity: .4 }}>{t.footer}</div>
         </div>
         <div className="flinks2">
           <a href="https://app.hackthebox.com/users/019c5812-b4ca-7315-b12f-14db6d2b42fa" target="_blank" rel="noopener noreferrer">HTB</a>
