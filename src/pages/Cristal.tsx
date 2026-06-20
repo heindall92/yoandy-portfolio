@@ -56,11 +56,11 @@ const Cristal = () => {
           --moss: #1a3c2a;
           --neon: #00e87a;
           --neon-soft: rgba(0,232,122,.18);
-          --neon-glow: 0 0 0 1px rgba(255,255,255,.06), 0 20px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);
-          --glass-bg: rgba(255,255,255,.04);
-          --glass-bg-strong: rgba(255,255,255,.07);
-          --glass-border: rgba(255,255,255,.14);
-          --glass-highlight: inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 0 1px rgba(255,255,255,.03);
+          --neon-glow: 0 0 0 1px rgba(255,255,255,.08), 0 20px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);
+          --glass-bg: rgba(255,255,255,.012);
+          --glass-bg-strong: rgba(255,255,255,.022);
+          --glass-border: rgba(255,255,255,.10);
+          --glass-highlight: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 0 1px rgba(255,255,255,.02);
           --hairline: 1px solid rgba(0,232,122,.10);
           --text: #e6f2eb;
           --text-muted: rgba(230,242,235,.55);
