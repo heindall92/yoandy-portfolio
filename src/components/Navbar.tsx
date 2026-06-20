@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { sanitizeSearch } from "@/lib/security";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { X, Search, LogOut } from "lucide-react";
 import { machines } from "@/pages/Machines";
 import { sherlocks } from "@/pages/Sherlocks";
@@ -188,6 +188,11 @@ const Navbar = () => {
         </div>
 
         <ul className="glinks">
+          <li>
+            <Link to="/projects" className="nav-link" style={{ color: location.pathname.startsWith("/projects") ? "#00e87a" : undefined }}>
+              projects
+            </Link>
+          </li>
           {navItems.map((item) => (
             <li key={item.href}>
               <button className="nav-link" onClick={(e) => scrollTo(e, item.href)}>
@@ -449,6 +454,14 @@ const Navbar = () => {
 
           {/* Nav links */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+            <Link
+              to="/projects"
+              className="nav-link"
+              onClick={() => setMobileOpen(false)}
+              style={{ color: location.pathname.startsWith("/projects") ? "#00e87a" : undefined }}
+            >
+              projects
+            </Link>
             {navItems.map((item) => (
               <button key={item.href} className="nav-link" onClick={(e) => scrollTo(e, item.href)}>
                 {item.label}

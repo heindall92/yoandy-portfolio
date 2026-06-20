@@ -14,6 +14,7 @@ const staticEntries: Entry[] = [
   { path: "/machines", changefreq: "weekly", priority: "0.9" },
   { path: "/sherlocks", changefreq: "weekly", priority: "0.9" },
   { path: "/hackmyvm", changefreq: "weekly", priority: "0.9" },
+  { path: "/projects", changefreq: "monthly", priority: "0.9" },
   { path: "/privacy", changefreq: "yearly", priority: "0.3" },
   { path: "/legal", changefreq: "yearly", priority: "0.3" },
 ];
@@ -27,7 +28,15 @@ const reportEntries: Entry[] = allSlugs
   .filter((s) => !protectedSlugs.has(s))
   .map((slug) => ({ path: `/report/${slug}`, changefreq: "monthly", priority: "0.7" }));
 
-const entries = [...staticEntries, ...reportEntries];
+const projectsRegistry = readFileSync(resolve("src/lib/projects-registry.ts"), "utf8");
+const projectSlugs = Array.from(projectsRegistry.matchAll(/^\s*slug:\s*"([a-z0-9-]+)"/gm)).map((m) => m[1]);
+const projectEntries: Entry[] = projectSlugs.map((slug) => ({
+  path: `/projects/${slug}`,
+  changefreq: "monthly",
+  priority: "0.8",
+}));
+
+const entries = [...staticEntries, ...reportEntries, ...projectEntries];
 
 const xml = [
   `<?xml version="1.0" encoding="UTF-8"?>`,
