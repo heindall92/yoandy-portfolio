@@ -219,6 +219,7 @@ const Index = () => {
   useEffect(() => {
     const c3d = particlesRef.current;
     if (!c3d) return;
+    const isLight = theme === "light";
     const renderer = new THREE.WebGLRenderer({ canvas: c3d, antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     const scene = new THREE.Scene();
@@ -233,23 +234,36 @@ const Index = () => {
       pos[i * 3 + 1] = (Math.random() - 0.5) * 18;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 14;
       const t = Math.random();
-      if (t > 0.85) { col[i * 3] = 0; col[i * 3 + 1] = 1; col[i * 3 + 2] = 0.42; }
-      else if (t > 0.7) { col[i * 3] = 0.13; col[i * 3 + 1] = 0.77; col[i * 3 + 2] = 0.37; }
-      else if (t > 0.5) { col[i * 3] = 0.07; col[i * 3 + 1] = 0.42; col[i * 3 + 2] = 0.2; }
-      else if (t > 0.3) { col[i * 3] = 0.04; col[i * 3 + 1] = 0.2; col[i * 3 + 2] = 0.1; }
-      else { col[i * 3] = 0.02; col[i * 3 + 1] = 0.08; col[i * 3 + 2] = 0.04; }
+      if (isLight) {
+        // Dark emerald palette for visibility on mint background
+        if (t > 0.85)      { col[i*3]=0.02; col[i*3+1]=0.36; col[i*3+2]=0.18; }
+        else if (t > 0.7)  { col[i*3]=0.03; col[i*3+1]=0.28; col[i*3+2]=0.15; }
+        else if (t > 0.5)  { col[i*3]=0.02; col[i*3+1]=0.22; col[i*3+2]=0.12; }
+        else if (t > 0.3)  { col[i*3]=0.02; col[i*3+1]=0.18; col[i*3+2]=0.10; }
+        else               { col[i*3]=0.01; col[i*3+1]=0.13; col[i*3+2]=0.07; }
+      } else {
+        if (t > 0.85)      { col[i*3]=0;    col[i*3+1]=1;    col[i*3+2]=0.42; }
+        else if (t > 0.7)  { col[i*3]=0.13; col[i*3+1]=0.77; col[i*3+2]=0.37; }
+        else if (t > 0.5)  { col[i*3]=0.07; col[i*3+1]=0.42; col[i*3+2]=0.20; }
+        else if (t > 0.3)  { col[i*3]=0.04; col[i*3+1]=0.20; col[i*3+2]=0.10; }
+        else               { col[i*3]=0.02; col[i*3+1]=0.08; col[i*3+2]=0.04; }
+      }
     }
     geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
-    const ptMat = new THREE.PointsMaterial({ size: 0.03, vertexColors: true, transparent: true, opacity: 0.8, sizeAttenuation: true });
+    const ptMat = new THREE.PointsMaterial({ size: isLight ? 0.04 : 0.03, vertexColors: true, transparent: true, opacity: isLight ? 0.95 : 0.8, sizeAttenuation: true });
     const pts = new THREE.Points(geo, ptMat);
     scene.add(pts);
 
     // wireframe spheres (3 layers)
-    const spheres = [[1.9, 3, 0.055], [2.7, 1, 0.028], [3.6, 1, 0.014]].map(([r, d, o]) => {
+    const sphereColor = isLight ? 0x0a6a3a : 0x00ff6a;
+    const sphereLayers: [number, number, number][] = isLight
+      ? [[1.9, 3, 0.35], [2.7, 1, 0.22], [3.6, 1, 0.14]]
+      : [[1.9, 3, 0.055], [2.7, 1, 0.028], [3.6, 1, 0.014]];
+    const spheres = sphereLayers.map(([r, d, o]) => {
       const m = new THREE.Mesh(
         new THREE.IcosahedronGeometry(r, d),
-        new THREE.MeshBasicMaterial({ color: 0x00ff6a, wireframe: true, transparent: true, opacity: o })
+        new THREE.MeshBasicMaterial({ color: sphereColor, wireframe: true, transparent: true, opacity: o })
       );
       scene.add(m);
       return m;
@@ -294,7 +308,7 @@ const Index = () => {
       ptMat.dispose();
       spheres.forEach(s => { s.geometry.dispose(); (s.material as THREE.Material).dispose(); });
     };
-  }, []);
+  }, [theme]);
 
   /* Orb — 2D icosahedron wireframe (same shape as Three.js IcosahedronGeometry) */
   useEffect(() => {
@@ -302,6 +316,9 @@ const Index = () => {
     if (!oc) return;
     const ox = oc.getContext("2d");
     if (!ox) return;
+    const isLight = theme === "light";
+    const rgb = isLight ? "8,110,58" : "0,232,122";
+    const glowStrong = isLight ? 0.55 : 0.7;
     let oW = oc.offsetWidth, oH = oc.offsetHeight;
     oc.width = oW; oc.height = oH;
     const onResize = () => { oW = oc.offsetWidth; oH = oc.offsetHeight; oc.width = oW; oc.height = oH; };
@@ -380,8 +397,8 @@ const Index = () => {
 
       // Outer glow
       const grd = ox.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 1.3);
-      grd.addColorStop(0, "rgba(0,232,122,.08)");
-      grd.addColorStop(1, "rgba(0,232,122,0)");
+      grd.addColorStop(0, `rgba(${rgb},.08)`);
+      grd.addColorStop(1, `rgba(${rgb},0)`);
       ox.beginPath(); ox.arc(cx, cy, R * 1.3, 0, Math.PI * 2);
       ox.fillStyle = grd; ox.fill();
 
@@ -389,7 +406,7 @@ const Index = () => {
       const drawLayer = (layer: typeof layer1, ryMul: number, rxMul: number, alpha: number) => {
         const ry = ot * ryMul, rxr = ot * rxMul;
         ox.beginPath();
-        ox.strokeStyle = `rgba(0,232,122,${alpha})`;
+        ox.strokeStyle = `rgba(${rgb},${alpha})`;
         ox.lineWidth = 0.7;
         for (const [a, b] of layer.edges) {
           const va = layer.verts[a], vb = layer.verts[b];
@@ -411,7 +428,7 @@ const Index = () => {
       const orbitR = R * 1.35;
       const drawOrbit = (tiltX: number, tiltZ: number, electronAngle: number) => {
         ox.beginPath();
-        ox.strokeStyle = 'rgba(0,232,122,0.18)';
+        ox.strokeStyle = `rgba(${rgb},0.18)`;
         ox.lineWidth = 0.7;
         const steps = 100;
         for (let i = 0; i <= steps; i++) {
@@ -435,12 +452,12 @@ const Index = () => {
         // Glow
         ox.beginPath();
         ox.arc(cx + ex2, cy + ey3, 3, 0, Math.PI * 2);
-        ox.fillStyle = 'rgba(0,232,122,0.12)';
+        ox.fillStyle = `rgba(${rgb},0.12)`;
         ox.fill();
         // Core electron
         ox.beginPath();
         ox.arc(cx + ex2, cy + ey3, 1.8, 0, Math.PI * 2);
-        ox.fillStyle = 'rgba(0,232,122,0.5)';
+        ox.fillStyle = `rgba(${rgb},0.5)`;
         ox.fill();
       };
       drawOrbit(0, 0.5, ot * 2);
@@ -450,8 +467,8 @@ const Index = () => {
       // Core glow
       const pulse = 0.06 + Math.sin(ot * 2) * 0.03;
       const cg = ox.createRadialGradient(cx, cy, 0, cx, cy, R * 0.35);
-      cg.addColorStop(0, `rgba(0,232,122,${pulse + 0.08})`);
-      cg.addColorStop(1, "rgba(0,232,122,0)");
+      cg.addColorStop(0, `rgba(${rgb},${pulse + 0.08})`);
+      cg.addColorStop(1, `rgba(${rgb},0)`);
       ox.beginPath(); ox.arc(cx, cy, R * 0.35, 0, Math.PI * 2);
       ox.fillStyle = cg; ox.fill();
 
@@ -459,14 +476,14 @@ const Index = () => {
       const txtPulse = 0.65 + Math.sin(ot * 1.8) * 0.2;
       ox.font = `${Math.round(R * 0.38)}px Bebas Neue`;
       ox.textAlign = "center"; ox.textBaseline = "middle";
-      ox.shadowColor = "rgba(0,232,122,.7)"; ox.shadowBlur = 18 + Math.sin(ot * 2) * 6;
-      ox.fillStyle = `rgba(0,232,122,${txtPulse})`;
+      ox.shadowColor = `rgba(${rgb},${glowStrong})`; ox.shadowBlur = 18 + Math.sin(ot * 2) * 6;
+      ox.fillStyle = `rgba(${rgb},${txtPulse})`;
       ox.fillText("YRD", cx, cy + 2);
       ox.shadowBlur = 0;
     };
     animOrb();
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", onResize); };
-  }, []);
+  }, [theme]);
 
   /* Counter animation */
   useEffect(() => {
@@ -549,12 +566,12 @@ const Index = () => {
           font-family:var(--dm);background:var(--ink);color:var(--text-d);overflow-x:hidden;font-size:16px;
         }
         .draft-page.light{
-          /* Mint background so neon-green particles stay visible */
-          --ink:#cfeadb;--forest:#bde0cc;--pine:#e9f6ee;--moss:#a8d4b8;--sage:#245f45;
-          --green:#0a8f55;--green2:rgba(10,143,85,.14);--green3:rgba(10,143,85,.08);
+          /* Mint background with stronger contrast for legibility */
+          --ink:#bfe3d0;--forest:#9fd4b8;--pine:#e0f1e6;--moss:#7fb898;--sage:#1d4f39;
+          --green:#066a3a;--green2:rgba(6,106,58,.20);--green3:rgba(6,106,58,.10);
           --cream:#ffffff;--cream2:#fbf8ef;--cream3:#e2dccd;
-          --text-d:#112318;--text-d2:rgba(17,35,24,.68);--text-d3:rgba(17,35,24,.44);
-          --text-l:#112318;--text-l2:rgba(17,35,24,.62);--text-l3:rgba(17,35,24,.36);
+          --text-d:#06170e;--text-d2:rgba(6,23,14,.78);--text-d3:rgba(6,23,14,.55);
+          --text-l:#06170e;--text-l2:rgba(6,23,14,.72);--text-l3:rgba(6,23,14,.45);
         }
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
