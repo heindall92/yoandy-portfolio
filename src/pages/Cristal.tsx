@@ -314,8 +314,8 @@ const Cristal = () => {
           background: var(--glass-bg-strong);
           border: 1px solid var(--glass-border);
           box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(26px) saturate(170%);
-          -webkit-backdrop-filter: blur(26px) saturate(170%);
+          backdrop-filter: blur(32px) saturate(190%);
+          -webkit-backdrop-filter: blur(32px) saturate(190%);
         }
         .cr-calc-screen {
           padding: 18px 20px; border-radius: 18px;
