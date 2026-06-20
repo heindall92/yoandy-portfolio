@@ -121,8 +121,8 @@ const Cristal = () => {
           background: var(--glass-bg);
           border: 1px solid var(--glass-border);
           box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(24px) saturate(160%);
-          -webkit-backdrop-filter: blur(24px) saturate(160%);
+          backdrop-filter: blur(32px) saturate(180%);
+          -webkit-backdrop-filter: blur(32px) saturate(180%);
           position: sticky; top: 18px; z-index: 10;
         }
         .cr-logo { display: flex; align-items: center; gap: 10px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: .2em; color: var(--neon); text-shadow: 0 0 16px rgba(0,232,122,.4); }
