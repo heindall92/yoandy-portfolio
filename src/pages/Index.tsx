@@ -1140,10 +1140,10 @@ const Index = () => {
                     : "linear-gradient(135deg,#1a0808,#350d0d)";
                   const Wrapper = w.type === "cert" ? "div" : Link;
                   const wrapperProps = w.type === "cert"
-                    ? { className: "wuc feat", key: w.slug }
-                    : { to: `/report/${w.slug}`, className: "wuc feat", key: w.slug };
+                    ? { className: "wuc feat" }
+                    : { to: `/report/${w.slug}`, className: "wuc feat" };
                   return (
-                    <Wrapper {...(wrapperProps as any)}>
+                    <Wrapper key={w.slug} {...(wrapperProps as any)}>
                       <span className="feat-badge">★ DESTACADO</span>
                       <div className="wtop">
                         <div className="wtbg" style={{ background: bgGrad }} />
@@ -1184,9 +1184,9 @@ const Index = () => {
               ? "linear-gradient(135deg,#1a1005,#2d1a08)"
               : "linear-gradient(135deg,#1a0808,#350d0d)";
             const Wrapper = w.type === "cert" ? "div" : Link;
-            const wrapperProps = w.type === "cert" ? { className: "wuc", key: w.slug } : { to: `/report/${w.slug}`, className: "wuc", key: w.slug };
+            const wrapperProps = w.type === "cert" ? { className: "wuc" } : { to: `/report/${w.slug}`, className: "wuc" };
             return (
-              <Wrapper {...(wrapperProps as any)}>
+              <Wrapper key={w.slug} {...(wrapperProps as any)}>
                 <div className="wtop">
                   <div className="wtbg" style={{ background: bgGrad }} />
                   <span className="wico">{w.emoji}</span>
