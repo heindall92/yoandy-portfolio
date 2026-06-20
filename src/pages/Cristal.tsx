@@ -212,8 +212,8 @@ const Cristal = () => {
           background: var(--glass-bg-strong);
           border: 1px solid var(--glass-border);
           box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(26px) saturate(160%);
-          -webkit-backdrop-filter: blur(26px) saturate(160%);
+          backdrop-filter: blur(34px) saturate(180%);
+          -webkit-backdrop-filter: blur(34px) saturate(180%);
         }
         .cr-traffic { display: flex; gap: 6px; margin-bottom: 18px; }
         .cr-traffic span { width: 10px; height: 10px; border-radius: 50%; }
