@@ -607,7 +607,7 @@ const Index = () => {
         .theme-switch:hover .ts-bubble{box-shadow:0 6px 18px rgba(0,0,0,.5),inset 0 1px 1px rgba(0,232,122,.45),inset 0 -2px 4px rgba(0,0,0,.2)}
         .theme-switch:active .ts-bubble{transform:translateX(46px) scale(.94)}
         .theme-switch.is-light:active .ts-bubble{transform:translateX(0) scale(.94)}
-        .lang-toggle{width:auto;border-radius:999px;padding:0 10px;gap:6px;font-family:var(--mo);font-size:.64rem;letter-spacing:.12em}
+        .nmobile-toggle{display:none;background:none;border:none;color:var(--green);cursor:pointer}
         .nmobile-toggle{display:none;background:none;border:none;color:var(--green);cursor:pointer}
         .nmobile-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:299;background:rgba(11,26,16,.97);backdrop-filter:blur(24px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px}
         .light .nmobile-overlay{background:rgba(247,251,246,.97)}
