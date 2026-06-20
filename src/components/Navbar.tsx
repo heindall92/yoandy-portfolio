@@ -172,9 +172,11 @@ const Navbar = () => {
         :root.light .gnav .glogo-s{color:rgba(17,35,24,.55)}
         :root.light .gnav .glinks a,:root.light .gnav .glinks button.nav-link{color:rgba(17,35,24,.65)}
         :root.light .gnav .glinks a:hover,:root.light .gnav .glinks button.nav-link:hover{color:#0a8f55}
-        :root.light .gnav-icon-btn{color:#0a8f55;border-color:rgba(10,143,85,.25);background:rgba(10,143,85,.08)}
-        :root.light .gnav .gsearch-btn{color:rgba(17,35,24,.55);border-color:rgba(10,143,85,.2);background:rgba(10,143,85,.06)}
-        :root.light .gnav .gsearch-btn:hover{color:#0a8f55}
+        :root.light .gnav-icon-btn{color:#06582e;border-color:rgba(10,143,85,.22);background:#d4f0e0}
+        :root.light .gnav-icon-btn:hover{border-color:rgba(10,143,85,.4);color:#0a8f55}
+        :root.light .gnav .gsearch-btn{color:rgba(6,40,22,.65);border-color:rgba(10,143,85,.22);background:#d4f0e0}
+        :root.light .gnav .gsearch-btn:hover{color:#0a8f55;border-color:rgba(10,143,85,.4)}
+        :root.light .gnav .gsearch-btn kbd{background:rgba(10,143,85,.1);border-color:rgba(10,143,85,.18);color:rgba(6,40,22,.45)}
         .gmobile-toggle{display:none;background:none;border:none;color:#00e87a;cursor:pointer}
         .gnav .gback{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:rgba(255,255,255,.4);background:none;border:1px solid rgba(0,232,122,.15);border-radius:8px;padding:5px 14px;cursor:pointer;transition:all .3s;letter-spacing:.05em;margin-right:12px}
         .gnav .gback:hover{color:#00e87a;border-color:rgba(0,232,122,.35)}
