@@ -285,14 +285,14 @@ const Cristal = () => {
           background: var(--glass-bg);
           border: 1px solid var(--glass-border);
           box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(22px) saturate(160%);
-          -webkit-backdrop-filter: blur(22px) saturate(160%);
+          backdrop-filter: blur(32px) saturate(180%);
+          -webkit-backdrop-filter: blur(32px) saturate(180%);
           position: relative; overflow: hidden; cursor: pointer;
           transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease;
         }
         .cr-project::after {
           content: ""; position: absolute; inset: -1px; border-radius: 25px; pointer-events: none;
-          background: radial-gradient(400px 200px at var(--mx,50%) var(--my,0%), rgba(0,232,122,.18), transparent 60%);
+          background: radial-gradient(400px 200px at var(--mx,50%) var(--my,0%), rgba(0,232,122,.14), transparent 60%);
           opacity: 0; transition: opacity .35s ease;
         }
         .cr-project:hover { transform: translateY(-6px); box-shadow: 0 0 0 1px rgba(0,232,122,.34), 0 30px 80px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.12); }
