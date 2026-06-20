@@ -320,11 +320,11 @@ const Cristal = () => {
 
         .cr-calc {
           padding: 24px; border-radius: 28px;
-          background: var(--glass-bg-strong);
-          border: 1px solid var(--glass-border);
-          box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(32px) saturate(190%);
-          -webkit-backdrop-filter: blur(32px) saturate(190%);
+          background: var(--box-bg);
+          border: 1px solid var(--box-border);
+          box-shadow: var(--box-shadow);
+          backdrop-filter: blur(14px) saturate(160%);
+          -webkit-backdrop-filter: blur(14px) saturate(160%);
         }
         .cr-calc-screen {
           padding: 18px 20px; border-radius: 18px;
@@ -359,20 +359,20 @@ const Cristal = () => {
         /* ===== Dropdown / context-menu demo ===== */
         .cr-menu-demo {
           padding: 30px; border-radius: 28px;
-          background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(32px) saturate(180%);
-          -webkit-backdrop-filter: blur(32px) saturate(180%);
+          background: var(--shell-bg);
+          border: 1px solid var(--shell-border);
+          box-shadow: var(--shell-shadow);
+          backdrop-filter: blur(14px) saturate(170%);
+          -webkit-backdrop-filter: blur(14px) saturate(170%);
           display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
         }
         .cr-context {
           width: 100%; max-width: 320px; padding: 8px;
           border-radius: 22px;
-          background: rgba(11,26,16,.55);
-          border: 1px solid var(--glass-border);
-          box-shadow: 0 0 0 1px rgba(0,232,122,.10), 0 20px 60px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.10);
-          backdrop-filter: blur(22px) saturate(160%);
+          background: var(--box-bg);
+          border: 1px solid var(--box-border);
+          box-shadow: var(--box-shadow);
+          backdrop-filter: blur(14px) saturate(160%);
         }
         .cr-context-row {
           display: flex; align-items: center; gap: 12px;
@@ -391,11 +391,11 @@ const Cristal = () => {
         /* ===== CTA bottom ===== */
         .cr-cta {
           margin-top: 80px; padding: 56px 40px; border-radius: 32px;
-          background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(36px) saturate(190%);
-          -webkit-backdrop-filter: blur(36px) saturate(190%);
+          background: var(--shell-bg);
+          border: 1px solid var(--shell-border);
+          box-shadow: var(--shell-shadow);
+          backdrop-filter: blur(14px) saturate(170%);
+          -webkit-backdrop-filter: blur(14px) saturate(170%);
           text-align: center; position: relative; overflow: hidden;
         }
         .cr-cta::before {
