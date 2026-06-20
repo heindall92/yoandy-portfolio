@@ -56,12 +56,21 @@ const Cristal = () => {
           --moss: #1a3c2a;
           --neon: #00e87a;
           --neon-soft: rgba(0,232,122,.18);
-          --neon-glow: 0 0 0 1px rgba(255,255,255,.08), 0 20px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);
-          --glass-bg: rgba(255,255,255,.012);
-          --glass-bg-strong: rgba(255,255,255,.022);
-          --glass-border: rgba(255,255,255,.10);
-          --glass-highlight: inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 0 1px rgba(255,255,255,.02);
-          --hairline: 1px solid rgba(0,232,122,.10);
+          /* === GLASS HIERARCHY (DASDE guide) ===
+             SHELL  → 10-25% acento (transparente, deja pasar el fondo)
+             BOX    → 78-88% oscuro (opaco para legibilidad)
+             SURFACE→ 65-72% oscuro (intermedio, tablas/inputs)            */
+          --shell-bg: linear-gradient(145deg, rgba(0,232,122,.18), rgba(0,180,100,.06));
+          --shell-border: rgba(0,232,122,.32);
+          --shell-shadow: 0 24px 80px rgba(0,0,0,.55), 0 0 48px rgba(0,232,122,.14);
+
+          --box-bg: linear-gradient(145deg, rgba(10,28,18,.88), rgba(5,16,10,.84));
+          --box-border: rgba(0,232,122,.30);
+          --box-shadow: 0 12px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
+
+          --surface-bg: rgba(5,16,10,.72);
+          --surface-border: rgba(0,232,122,.22);
+          --hairline: 1px solid rgba(0,232,122,.18);
           --text: #e6f2eb;
           --text-muted: rgba(230,242,235,.55);
           --text-dim: rgba(230,242,235,.35);
