@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import WriteupGuard from "@/components/WriteupGuard";
+import ProtectedReportRenderer from "@/components/ProtectedReportRenderer";
 import { reports } from "@/lib/reports-registry";
 import { getRemoteWriteupSecurityConfig, resolveWriteupProtection } from "@/lib/bifrost-config";
 import { useSeo } from "@/hooks/use-seo";
@@ -114,16 +115,20 @@ const Report = () => {
   }
 
   return (
-    <WriteupGuard isProtected={securityState.isProtected} slug={slug} sessionMinutes={securityState.sessionMinutes}>
-      <div className="bg-background min-h-screen pt-20">
-        <iframe
-          src={report.file}
-          title={report.title}
-          className="w-full border-none"
-          style={{ height: "calc(100vh - 80px)" }}
-        />
-      </div>
-    </WriteupGuard>
+    securityState.isProtected ? (
+      <ProtectedReportRenderer slug={slug} sessionMinutes={securityState.sessionMinutes} />
+    ) : (
+      <WriteupGuard isProtected={false} slug={slug} sessionMinutes={securityState.sessionMinutes}>
+        <div className="bg-background min-h-screen pt-20">
+          <iframe
+            src={report.file}
+            title={report.title}
+            className="w-full border-none"
+            style={{ height: "calc(100vh - 80px)" }}
+          />
+        </div>
+      </WriteupGuard>
+    )
   );
 };
 
