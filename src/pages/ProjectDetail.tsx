@@ -3,10 +3,19 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ExternalLink, Github } from "lucide-react";
 import { getProject } from "@/lib/projects-registry";
 import { useSeo } from "@/hooks/use-seo";
+import { AlexanaText } from "@/components/AlexanaText";
+import { useEffect, useState } from "react";
 
 const ProjectDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const project = slug ? getProject(slug) : undefined;
+
+  const [vw, setVw] = useState(() => (typeof window !== "undefined" ? window.innerWidth : 1200));
+  useEffect(() => {
+    const onResize = () => setVw(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useSeo({
     title: project ? `${project.name} — ${project.tagline} | Heindall` : "Proyecto no encontrado | Heindall",
@@ -64,9 +73,24 @@ const ProjectDetail = () => {
             <span>·</span>
             <span>{project.role}</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 leading-none" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.03em" }}>
-            <span className="text-3xl md:text-4xl block text-primary/70 mb-2">{project.emoji} {project.codename}</span>
-            {project.name.toUpperCase()}
+          <h1 className="mb-6 leading-none" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.03em" }}>
+            <span className="text-3xl md:text-4xl block text-primary/70 mb-4">{project.emoji} {project.codename}</span>
+            {(() => {
+              const name = project.name.toUpperCase();
+              // Responsive Alexana sizing: roughly fit the title to the container width (~max 880px).
+              const charCount = Math.max(name.length, 6);
+              const containerW = Math.min(vw - 64, 880);
+              const ideal = Math.floor(containerW / (charCount * 0.85));
+              const size = Math.max(36, Math.min(ideal, 130));
+              return (
+                <AlexanaText
+                  text={name}
+                  size={size}
+                  color="hsl(var(--foreground))"
+                  wordColors={{ SOC: "hsl(var(--primary))" }}
+                />
+              );
+            })()}
           </h1>
           <p className="text-xl md:text-2xl text-foreground/80 font-light max-w-3xl mb-2">{project.tagline}</p>
           <p className="font-mono text-xs text-primary/80 tracking-wider">{project.context}</p>
