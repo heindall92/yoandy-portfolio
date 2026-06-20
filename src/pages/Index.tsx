@@ -8,6 +8,7 @@ import profileImg from "@/assets/profile.jpg";
 import { machines } from "./Machines";
 import { sherlocks } from "./Sherlocks";
 import { hmvMachines } from "./HackMyVM";
+import { projects } from "@/lib/projects-registry";
 
 /* ── All writeups combined ── */
 const allWriteups = [
