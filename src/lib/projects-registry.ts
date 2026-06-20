@@ -60,8 +60,8 @@ export const projects: ProjectEntry[] = [
       { label: "STACK", value: "100% OSS" },
     ],
     links: [
-      { label: "Demo cinemático", href: "/projects/valhalla/demo.html", primary: true },
-      { label: "Repositorio GitHub", href: "https://github.com/heindall92/Proyecto-Master-Ciberseguridad-Evolve-Yoandy" },
+      { label: "Repositorio GitHub", href: "https://github.com/heindall92/Proyecto-Master-Ciberseguridad-Evolve-Yoandy", primary: true },
+      { label: "Demo cinemático 8K", href: "/projects/valhalla/demo.html" },
       { label: "Documentación README", href: "https://github.com/heindall92/Proyecto-Master-Ciberseguridad-Evolve-Yoandy#readme" },
     ],
     architecture: `INTERNET / ATACANTES
