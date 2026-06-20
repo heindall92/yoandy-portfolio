@@ -586,8 +586,12 @@ const Index = () => {
         .nlinks a{font-family:var(--mo);font-size:.92rem;color:var(--text-d3);text-decoration:none;letter-spacing:.12em;transition:color .3s}
         .nlinks a:hover{color:var(--green)}
         .nav-actions{display:flex;align-items:center;gap:8px}
-        .icon-toggle,.lang-toggle{width:34px;height:34px;border-radius:50%;border:1px solid var(--green2);background:var(--green3);color:var(--green);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:.25s}
-        .icon-toggle:hover,.lang-toggle:hover{transform:translateY(-1px);border-color:var(--green);box-shadow:0 0 18px var(--green2)}
+        .icon-toggle{width:34px;height:34px;border-radius:50%;border:1px solid var(--green2);background:var(--green3);color:var(--green);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:.25s}
+        .icon-toggle:hover{transform:translateY(-1px);border-color:var(--green);box-shadow:0 0 18px var(--green2)}
+        .lang-toggle{width:auto;height:34px;border-radius:999px;padding:0 12px;gap:6px;font-family:var(--mo);font-size:.64rem;letter-spacing:.12em;background:#07130c;border:1px solid rgba(0,232,122,.18);color:rgba(0,232,122,.7);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s}
+        .lang-toggle:hover{border-color:rgba(0,232,122,.4);color:#00e87a;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+        .light .lang-toggle{background:#d4f0e0;border-color:rgba(10,143,85,.22);color:rgba(6,40,22,.65)}
+        .light .lang-toggle:hover{border-color:rgba(10,143,85,.4);color:#06582e}
 
         /* ─── Theme Switch (glass pill) — green forest palette ─── */
         .theme-switch{position:relative;width:88px;height:32px;border-radius:999px;cursor:pointer;border:1px solid rgba(0,232,122,.12);background:#07130c;display:flex;align-items:center;justify-content:space-between;padding:0 11px;font-family:var(--mo);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,232,122,.55);box-shadow:inset 0 1px 2px rgba(0,232,122,.08),inset 0 -2px 6px rgba(0,0,0,.55),0 6px 14px rgba(0,0,0,.4);transition:background .5s ease,box-shadow .5s ease,color .35s ease,border-color .5s ease;overflow:hidden;-webkit-tap-highlight-color:transparent}
