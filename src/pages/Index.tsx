@@ -929,8 +929,17 @@ const Index = () => {
             <button className="lang-toggle" onClick={() => setLanguage(language === "es" ? "en" : "es")} aria-label="Cambiar idioma">
               <Globe2 size={14} /> {language.toUpperCase()}
             </button>
-            <button className="icon-toggle" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema">
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            <button
+              className={`theme-switch is-${theme}`}
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              aria-label="Cambiar tema"
+              aria-pressed={theme === "light"}
+            >
+              <span className="ts-label ts-dark">Dark</span>
+              <span className="ts-label ts-light">Light</span>
+              <span className="ts-bubble" aria-hidden="true">
+                {theme === "dark" ? <Moon size={13} /> : <Sun size={13} />}
+              </span>
             </button>
           </li>
         </ul>
@@ -959,8 +968,17 @@ const Index = () => {
             <button className="lang-toggle" onClick={() => setLanguage(language === "es" ? "en" : "es")} aria-label="Cambiar idioma">
               <Globe2 size={14} /> {language.toUpperCase()}
             </button>
-            <button className="icon-toggle" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Cambiar tema">
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            <button
+              className={`theme-switch is-${theme}`}
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              aria-label="Cambiar tema"
+              aria-pressed={theme === "light"}
+            >
+              <span className="ts-label ts-dark">Dark</span>
+              <span className="ts-label ts-light">Light</span>
+              <span className="ts-bubble" aria-hidden="true">
+                {theme === "dark" ? <Moon size={13} /> : <Sun size={13} />}
+              </span>
             </button>
           </div>
           {[["about", t.about], ["skills", t.skills], ["writeups", t.writeups], ["certs", t.certs], ["contact", t.contact]].map(([s, label]) => (
