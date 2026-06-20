@@ -219,6 +219,7 @@ const Index = () => {
   useEffect(() => {
     const c3d = particlesRef.current;
     if (!c3d) return;
+    const isLight = theme === "light";
     const renderer = new THREE.WebGLRenderer({ canvas: c3d, antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     const scene = new THREE.Scene();
@@ -233,23 +234,36 @@ const Index = () => {
       pos[i * 3 + 1] = (Math.random() - 0.5) * 18;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 14;
       const t = Math.random();
-      if (t > 0.85) { col[i * 3] = 0; col[i * 3 + 1] = 1; col[i * 3 + 2] = 0.42; }
-      else if (t > 0.7) { col[i * 3] = 0.13; col[i * 3 + 1] = 0.77; col[i * 3 + 2] = 0.37; }
-      else if (t > 0.5) { col[i * 3] = 0.07; col[i * 3 + 1] = 0.42; col[i * 3 + 2] = 0.2; }
-      else if (t > 0.3) { col[i * 3] = 0.04; col[i * 3 + 1] = 0.2; col[i * 3 + 2] = 0.1; }
-      else { col[i * 3] = 0.02; col[i * 3 + 1] = 0.08; col[i * 3 + 2] = 0.04; }
+      if (isLight) {
+        // Dark emerald palette for visibility on mint background
+        if (t > 0.85)      { col[i*3]=0.02; col[i*3+1]=0.36; col[i*3+2]=0.18; }
+        else if (t > 0.7)  { col[i*3]=0.03; col[i*3+1]=0.28; col[i*3+2]=0.15; }
+        else if (t > 0.5)  { col[i*3]=0.02; col[i*3+1]=0.22; col[i*3+2]=0.12; }
+        else if (t > 0.3)  { col[i*3]=0.02; col[i*3+1]=0.18; col[i*3+2]=0.10; }
+        else               { col[i*3]=0.01; col[i*3+1]=0.13; col[i*3+2]=0.07; }
+      } else {
+        if (t > 0.85)      { col[i*3]=0;    col[i*3+1]=1;    col[i*3+2]=0.42; }
+        else if (t > 0.7)  { col[i*3]=0.13; col[i*3+1]=0.77; col[i*3+2]=0.37; }
+        else if (t > 0.5)  { col[i*3]=0.07; col[i*3+1]=0.42; col[i*3+2]=0.20; }
+        else if (t > 0.3)  { col[i*3]=0.04; col[i*3+1]=0.20; col[i*3+2]=0.10; }
+        else               { col[i*3]=0.02; col[i*3+1]=0.08; col[i*3+2]=0.04; }
+      }
     }
     geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
-    const ptMat = new THREE.PointsMaterial({ size: 0.03, vertexColors: true, transparent: true, opacity: 0.8, sizeAttenuation: true });
+    const ptMat = new THREE.PointsMaterial({ size: isLight ? 0.04 : 0.03, vertexColors: true, transparent: true, opacity: isLight ? 0.95 : 0.8, sizeAttenuation: true });
     const pts = new THREE.Points(geo, ptMat);
     scene.add(pts);
 
     // wireframe spheres (3 layers)
-    const spheres = [[1.9, 3, 0.055], [2.7, 1, 0.028], [3.6, 1, 0.014]].map(([r, d, o]) => {
+    const sphereColor = isLight ? 0x0a6a3a : 0x00ff6a;
+    const sphereLayers: [number, number, number][] = isLight
+      ? [[1.9, 3, 0.35], [2.7, 1, 0.22], [3.6, 1, 0.14]]
+      : [[1.9, 3, 0.055], [2.7, 1, 0.028], [3.6, 1, 0.014]];
+    const spheres = sphereLayers.map(([r, d, o]) => {
       const m = new THREE.Mesh(
         new THREE.IcosahedronGeometry(r, d),
-        new THREE.MeshBasicMaterial({ color: 0x00ff6a, wireframe: true, transparent: true, opacity: o })
+        new THREE.MeshBasicMaterial({ color: sphereColor, wireframe: true, transparent: true, opacity: o })
       );
       scene.add(m);
       return m;
@@ -294,7 +308,7 @@ const Index = () => {
       ptMat.dispose();
       spheres.forEach(s => { s.geometry.dispose(); (s.material as THREE.Material).dispose(); });
     };
-  }, []);
+  }, [theme]);
 
   /* Orb — 2D icosahedron wireframe (same shape as Three.js IcosahedronGeometry) */
   useEffect(() => {
@@ -302,6 +316,9 @@ const Index = () => {
     if (!oc) return;
     const ox = oc.getContext("2d");
     if (!ox) return;
+    const isLight = theme === "light";
+    const rgb = isLight ? "8,110,58" : "0,232,122";
+    const glowStrong = isLight ? 0.55 : 0.7;
     let oW = oc.offsetWidth, oH = oc.offsetHeight;
     oc.width = oW; oc.height = oH;
     const onResize = () => { oW = oc.offsetWidth; oH = oc.offsetHeight; oc.width = oW; oc.height = oH; };
