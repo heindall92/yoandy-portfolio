@@ -1,6 +1,7 @@
 // Shared CORS helper — restricts origin to authorized hosts
 const ALLOWED_ORIGIN_PATTERNS: RegExp[] = [
   /^https:\/\/yoandy-portfolio\.lovable\.app$/,
+  /^https:\/\/(www\.)?yoandyramirez\.com$/,
   /^https:\/\/[a-z0-9-]+\.lovable\.app$/, // preview/staging subdomains
   /^https:\/\/[a-z0-9-]+\.lovableproject\.com$/,
   /^http:\/\/localhost:\d+$/,
