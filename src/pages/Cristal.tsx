@@ -127,11 +127,11 @@ const Cristal = () => {
         .cr-nav {
           display: flex; align-items: center; justify-content: space-between;
           padding: 14px 22px; border-radius: 22px;
-          background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(32px) saturate(180%);
-          -webkit-backdrop-filter: blur(32px) saturate(180%);
+          background: var(--shell-bg);
+          border: 1px solid var(--shell-border);
+          box-shadow: var(--shell-shadow);
+          backdrop-filter: blur(14px) saturate(160%);
+          -webkit-backdrop-filter: blur(14px) saturate(160%);
           position: sticky; top: 18px; z-index: 10;
         }
         .cr-logo { display: flex; align-items: center; gap: 10px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: .2em; color: var(--neon); text-shadow: 0 0 16px rgba(0,232,122,.4); }
@@ -163,11 +163,11 @@ const Cristal = () => {
 
         .cr-hero-card {
           padding: 40px; border-radius: 28px;
-          background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(36px) saturate(190%);
-          -webkit-backdrop-filter: blur(36px) saturate(190%);
+          background: var(--shell-bg);
+          border: 1px solid var(--shell-border);
+          box-shadow: var(--shell-shadow);
+          backdrop-filter: blur(14px) saturate(170%);
+          -webkit-backdrop-filter: blur(14px) saturate(170%);
           position: relative; overflow: hidden;
         }
         .cr-hero-card::before {
@@ -218,11 +218,11 @@ const Cristal = () => {
         /* ===== Hero sidebar mock (Zappicon-style) ===== */
         .cr-sidebar {
           padding: 22px; border-radius: 26px;
-          background: var(--glass-bg-strong);
-          border: 1px solid var(--glass-border);
-          box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(34px) saturate(180%);
-          -webkit-backdrop-filter: blur(34px) saturate(180%);
+          background: var(--box-bg);
+          border: 1px solid var(--box-border);
+          box-shadow: var(--box-shadow);
+          backdrop-filter: blur(14px) saturate(160%);
+          -webkit-backdrop-filter: blur(14px) saturate(160%);
         }
         .cr-traffic { display: flex; gap: 6px; margin-bottom: 18px; }
         .cr-traffic span { width: 10px; height: 10px; border-radius: 50%; }
@@ -267,11 +267,11 @@ const Cristal = () => {
         @media (max-width: 760px) { .cr-stats { grid-template-columns: repeat(2, 1fr); } }
         .cr-stat {
           padding: 22px; border-radius: 22px;
-          background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(28px) saturate(180%);
-          -webkit-backdrop-filter: blur(28px) saturate(180%);
+          background: var(--box-bg);
+          border: 1px solid var(--box-border);
+          box-shadow: var(--box-shadow);
+          backdrop-filter: blur(14px) saturate(160%);
+          -webkit-backdrop-filter: blur(14px) saturate(160%);
           position: relative; overflow: hidden;
           transition: transform .3s ease, box-shadow .3s ease;
         }
@@ -291,11 +291,11 @@ const Cristal = () => {
         @media (max-width: 980px) { .cr-projects { grid-template-columns: 1fr; } }
         .cr-project {
           padding: 26px; border-radius: 24px;
-          background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(32px) saturate(180%);
-          -webkit-backdrop-filter: blur(32px) saturate(180%);
+          background: var(--box-bg);
+          border: 1px solid var(--box-border);
+          box-shadow: var(--box-shadow);
+          backdrop-filter: blur(14px) saturate(160%);
+          -webkit-backdrop-filter: blur(14px) saturate(160%);
           position: relative; overflow: hidden; cursor: pointer;
           transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease;
         }
