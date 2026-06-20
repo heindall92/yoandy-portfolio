@@ -360,15 +360,15 @@ const Navbar = () => {
                   {/* Results */}
                   <div style={{ maxHeight: "280px", overflowY: "auto" }}>
                     {!hasFilters && (
-                      <p style={{ padding: "24px 16px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: ".75rem", color: "rgba(255,255,255,.25)" }}>Escribe o filtra para buscar...</p>
+                      <p style={{ padding: "24px 16px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: ".75rem", color: "var(--gd-muted-subtle)" }}>Escribe o filtra para buscar...</p>
                     )}
                     {hasFilters && results.length === 0 && (
-                      <p style={{ padding: "24px 16px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: ".75rem", color: "rgba(255,255,255,.25)" }}>Sin resultados</p>
+                      <p style={{ padding: "24px 16px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: ".75rem", color: "var(--gd-muted-subtle)" }}>Sin resultados</p>
                     )}
                     {hasFilters && results.length > 0 && (
                       <>
                         <div style={{ padding: "8px 16px 4px" }}>
-                          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".65rem", color: "rgba(255,255,255,.2)" }}>{results.length} resultado{results.length !== 1 ? "s" : ""}</span>
+                          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".65rem", color: "var(--gd-muted-subtle)" }}>{results.length} resultado{results.length !== 1 ? "s" : ""}</span>
                         </div>
                         {results.map((r) => (
                           <button
@@ -386,18 +386,18 @@ const Navbar = () => {
                               textAlign: "left",
                               transition: "background .2s",
                             }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,232,122,.06)")}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--gd-hover)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                           >
                             <span style={{ fontSize: "1.1rem" }}>{r.emoji}</span>
-                            <span style={{ flex: 1, fontFamily: "'JetBrains Mono', monospace", fontSize: ".82rem", color: "#e0e0e0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
+                            <span style={{ flex: 1, fontFamily: "'JetBrains Mono', monospace", fontSize: ".82rem", color: "var(--gd-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
                             <span style={{
                               fontFamily: "'JetBrains Mono', monospace",
                               fontSize: ".6rem",
                               padding: "2px 8px",
                               borderRadius: "20px",
-                              border: "1px solid rgba(255,255,255,.1)",
-                              color: "rgba(255,255,255,.5)",
+                              border: "1px solid var(--gd-chip-border)",
+                              color: "var(--gd-chip-color)",
                             }}>{r.difficulty}</span>
                             <span style={{
                               fontFamily: "'JetBrains Mono', monospace",
