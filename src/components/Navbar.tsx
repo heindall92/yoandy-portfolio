@@ -1,19 +1,29 @@
 import { useState, useEffect, useRef } from "react";
 import { sanitizeSearch } from "@/lib/security";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { X, Search, LogOut } from "lucide-react";
+import { X, Search, LogOut, Sun, Moon, Languages } from "lucide-react";
 import { machines } from "@/pages/Machines";
 import { sherlocks } from "@/pages/Sherlocks";
 import { hmvMachines } from "@/pages/HackMyVM";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUI } from "@/contexts/UIContext";
 
-const navItems = [
-  { href: "#about", label: "about" },
-  { href: "#skills", label: "skills" },
-  { href: "#writeups", label: "writeups" },
-  { href: "#certs", label: "certs" },
-  { href: "#contact", label: "contact" },
-];
+const navItemsByLang: Record<"es" | "en", { href: string; label: string }[]> = {
+  es: [
+    { href: "#about", label: "sobre mí" },
+    { href: "#skills", label: "skills" },
+    { href: "#writeups", label: "writeups" },
+    { href: "#certs", label: "certs" },
+    { href: "#contact", label: "contacto" },
+  ],
+  en: [
+    { href: "#about", label: "about" },
+    { href: "#skills", label: "skills" },
+    { href: "#writeups", label: "writeups" },
+    { href: "#certs", label: "certs" },
+    { href: "#contact", label: "contact" },
+  ],
+};
 
 type SearchResult = {
   slug: string;
