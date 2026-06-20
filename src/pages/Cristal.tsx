@@ -56,11 +56,11 @@ const Cristal = () => {
           --moss: #1a3c2a;
           --neon: #00e87a;
           --neon-soft: rgba(0,232,122,.18);
-          --neon-glow: 0 0 0 1px rgba(0,232,122,.18), 0 20px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
-          --glass-bg: rgba(11,26,16,.42);
-          --glass-bg-strong: rgba(11,26,16,.62);
-          --glass-border: rgba(0,232,122,.16);
-          --glass-highlight: inset 0 1px 0 rgba(255,255,255,.08);
+          --neon-glow: 0 0 0 1px rgba(255,255,255,.06), 0 20px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);
+          --glass-bg: rgba(255,255,255,.04);
+          --glass-bg-strong: rgba(255,255,255,.07);
+          --glass-border: rgba(255,255,255,.14);
+          --glass-highlight: inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 0 1px rgba(255,255,255,.03);
           --hairline: 1px solid rgba(0,232,122,.10);
           --text: #e6f2eb;
           --text-muted: rgba(230,242,235,.55);
@@ -73,6 +73,15 @@ const Cristal = () => {
           overflow-x: hidden;
         }
         .cristal-root *, .cristal-root *::before, .cristal-root *::after { box-sizing: border-box; }
+        .cristal-root::before {
+          /* extra static color wash so blobs ALWAYS sit behind glass */
+          content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+          background:
+            radial-gradient(circle at 18% 22%, rgba(0,232,122,.45), transparent 35%),
+            radial-gradient(circle at 82% 18%, rgba(120,255,180,.30), transparent 40%),
+            radial-gradient(circle at 70% 78%, rgba(0,180,100,.40), transparent 45%),
+            radial-gradient(circle at 25% 85%, rgba(0,232,122,.30), transparent 40%);
+        }
 
         /* ===== Animated organic background — the canvas the glass refracts ===== */
         .cristal-bg {
@@ -87,10 +96,11 @@ const Cristal = () => {
           position: absolute; border-radius: 50%; filter: blur(120px);
           will-change: transform;
         }
-        .cr-blob.b1 { width: 620px; height: 620px; background: radial-gradient(circle, #00e87a 0%, transparent 70%); opacity: .28; top: -120px; left: -120px; animation: crFloat 22s ease-in-out infinite; }
-        .cr-blob.b2 { width: 540px; height: 540px; background: radial-gradient(circle, #1a3c2a 0%, transparent 70%); opacity: .55; top: 30%; right: -160px; animation: crFloat 28s ease-in-out infinite reverse; }
-        .cr-blob.b3 { width: 700px; height: 700px; background: radial-gradient(circle, #0a5c3a 0%, transparent 70%); opacity: .35; bottom: -200px; left: 35%; animation: crFloat 34s ease-in-out infinite; }
-        .cr-blob.b4 { width: 380px; height: 380px; background: radial-gradient(circle, #00e87a 0%, transparent 70%); opacity: .12; top: 55%; left: 8%; animation: crFloat 26s ease-in-out infinite reverse; }
+        .cr-blob.b1 { width: 680px; height: 680px; background: radial-gradient(circle, #00ff88 0%, transparent 70%); opacity: .75; top: -140px; left: -120px; animation: crFloat 22s ease-in-out infinite; }
+        .cr-blob.b2 { width: 600px; height: 600px; background: radial-gradient(circle, #2dd4a0 0%, transparent 70%); opacity: .70; top: 25%; right: -160px; animation: crFloat 28s ease-in-out infinite reverse; }
+        .cr-blob.b3 { width: 760px; height: 760px; background: radial-gradient(circle, #00b56a 0%, transparent 70%); opacity: .80; bottom: -220px; left: 28%; animation: crFloat 34s ease-in-out infinite; }
+        .cr-blob.b4 { width: 460px; height: 460px; background: radial-gradient(circle, #7dffba 0%, transparent 70%); opacity: .55; top: 50%; left: 6%; animation: crFloat 26s ease-in-out infinite reverse; }
+        .cr-blob.b5 { width: 520px; height: 520px; background: radial-gradient(circle, #00e87a 0%, transparent 70%); opacity: .55; top: 8%; left: 42%; animation: crFloat 30s ease-in-out infinite; filter: blur(140px); }
         @keyframes crFloat {
           0%, 100% { transform: translate(0, 0) scale(1); }
           33%      { transform: translate(60px, -40px) scale(1.08); }
