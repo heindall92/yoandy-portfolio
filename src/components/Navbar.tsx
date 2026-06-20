@@ -150,11 +150,11 @@ const Navbar = () => {
         .gnav .glinks{display:flex;gap:32px;list-style:none;margin:0;padding:0;align-items:center}
         .gnav .glinks a,.gnav .glinks button.nav-link{font-family:'JetBrains Mono',monospace;font-size:.92rem;color:rgba(255,255,255,.35);text-decoration:none;letter-spacing:.12em;transition:color .3s;background:none;border:none;cursor:pointer;padding:0}
         .gnav .glinks a:hover,.gnav .glinks button.nav-link:hover{color:#00e87a}
-        .gnav .gsearch-btn{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:8px;border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.05);color:rgba(255,255,255,.35);font-family:'JetBrains Mono',monospace;font-size:.78rem;cursor:pointer;transition:all .3s;letter-spacing:.05em}
-        .gnav .gsearch-btn:hover{border-color:rgba(0,232,122,.3);color:#00e87a}
-        .gnav .gsearch-btn kbd{font-size:.6rem;padding:2px 6px;border-radius:4px;background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.1);color:rgba(255,255,255,.3)}
-        .gnav-icon-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;border-radius:8px;border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.05);color:#00e87a;cursor:pointer;transition:all .3s}
-        .gnav-icon-btn:hover{border-color:rgba(0,232,122,.4);box-shadow:0 0 14px rgba(0,232,122,.15)}
+        .gnav .gsearch-btn{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:8px;border:1px solid rgba(0,232,122,.18);background:#07130c;color:rgba(0,232,122,.65);font-family:'JetBrains Mono',monospace;font-size:.78rem;cursor:pointer;transition:all .3s;letter-spacing:.05em}
+        .gnav .gsearch-btn:hover{border-color:rgba(0,232,122,.4);color:#00e87a;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+        .gnav .gsearch-btn kbd{font-size:.6rem;padding:2px 6px;border-radius:4px;background:rgba(0,232,122,.1);border:1px solid rgba(0,232,122,.18);color:rgba(0,232,122,.5)}
+        .gnav-icon-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;border-radius:8px;border:1px solid rgba(0,232,122,.18);background:#07130c;color:#00e87a;cursor:pointer;transition:all .3s}
+        .gnav-icon-btn:hover{border-color:rgba(0,232,122,.4);box-shadow:0 4px 12px rgba(0,0,0,.25)}
 
         /* Theme Switch (glass pill) — green forest palette */
         .gnav-theme-switch{position:relative;width:84px;height:30px;border-radius:999px;cursor:pointer;border:1px solid rgba(0,232,122,.12);background:#07130c;display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,232,122,.55);box-shadow:inset 0 1px 2px rgba(0,232,122,.08),inset 0 -2px 6px rgba(0,0,0,.55),0 4px 12px rgba(0,0,0,.4);transition:background .5s ease,box-shadow .5s ease,color .35s ease,border-color .5s ease;overflow:hidden}
