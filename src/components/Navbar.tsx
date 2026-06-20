@@ -150,11 +150,11 @@ const Navbar = () => {
         .gnav .glinks{display:flex;gap:32px;list-style:none;margin:0;padding:0;align-items:center}
         .gnav .glinks a,.gnav .glinks button.nav-link{font-family:'JetBrains Mono',monospace;font-size:.92rem;color:rgba(255,255,255,.35);text-decoration:none;letter-spacing:.12em;transition:color .3s;background:none;border:none;cursor:pointer;padding:0}
         .gnav .glinks a:hover,.gnav .glinks button.nav-link:hover{color:#00e87a}
-        .gnav .gsearch-btn{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:8px;border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.05);color:rgba(255,255,255,.35);font-family:'JetBrains Mono',monospace;font-size:.78rem;cursor:pointer;transition:all .3s;letter-spacing:.05em}
-        .gnav .gsearch-btn:hover{border-color:rgba(0,232,122,.3);color:#00e87a}
-        .gnav .gsearch-btn kbd{font-size:.6rem;padding:2px 6px;border-radius:4px;background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.1);color:rgba(255,255,255,.3)}
-        .gnav-icon-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;border-radius:8px;border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.05);color:#00e87a;cursor:pointer;transition:all .3s}
-        .gnav-icon-btn:hover{border-color:rgba(0,232,122,.4);box-shadow:0 0 14px rgba(0,232,122,.15)}
+        .gnav .gsearch-btn{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:8px;border:1px solid rgba(0,232,122,.18);background:#07130c;color:rgba(0,232,122,.65);font-family:'JetBrains Mono',monospace;font-size:.78rem;cursor:pointer;transition:all .3s;letter-spacing:.05em}
+        .gnav .gsearch-btn:hover{border-color:rgba(0,232,122,.4);color:#00e87a;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+        .gnav .gsearch-btn kbd{font-size:.6rem;padding:2px 6px;border-radius:4px;background:rgba(0,232,122,.1);border:1px solid rgba(0,232,122,.18);color:rgba(0,232,122,.5)}
+        .gnav-icon-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;border-radius:8px;border:1px solid rgba(0,232,122,.18);background:#07130c;color:#00e87a;cursor:pointer;transition:all .3s}
+        .gnav-icon-btn:hover{border-color:rgba(0,232,122,.4);box-shadow:0 4px 12px rgba(0,0,0,.25)}
 
         /* Theme Switch (glass pill) — green forest palette */
         .gnav-theme-switch{position:relative;width:84px;height:30px;border-radius:999px;cursor:pointer;border:1px solid rgba(0,232,122,.12);background:#07130c;display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,232,122,.55);box-shadow:inset 0 1px 2px rgba(0,232,122,.08),inset 0 -2px 6px rgba(0,0,0,.55),0 4px 12px rgba(0,0,0,.4);transition:background .5s ease,box-shadow .5s ease,color .35s ease,border-color .5s ease;overflow:hidden}
@@ -172,9 +172,16 @@ const Navbar = () => {
         :root.light .gnav .glogo-s{color:rgba(17,35,24,.55)}
         :root.light .gnav .glinks a,:root.light .gnav .glinks button.nav-link{color:rgba(17,35,24,.65)}
         :root.light .gnav .glinks a:hover,:root.light .gnav .glinks button.nav-link:hover{color:#0a8f55}
-        :root.light .gnav-icon-btn{color:#0a8f55;border-color:rgba(10,143,85,.25);background:rgba(10,143,85,.08)}
-        :root.light .gnav .gsearch-btn{color:rgba(17,35,24,.55);border-color:rgba(10,143,85,.2);background:rgba(10,143,85,.06)}
-        :root.light .gnav .gsearch-btn:hover{color:#0a8f55}
+        :root.light .gnav-icon-btn{color:#06582e;border-color:rgba(10,143,85,.22);background:#d4f0e0}
+        :root.light .gnav-icon-btn:hover{border-color:rgba(10,143,85,.4);color:#0a8f55}
+        :root.light .gnav .gsearch-btn{color:rgba(6,40,22,.65);border-color:rgba(10,143,85,.22);background:#d4f0e0}
+        :root.light .gnav .gsearch-btn:hover{color:#0a8f55;border-color:rgba(10,143,85,.4)}
+        :root.light .gnav .gsearch-btn kbd{background:rgba(10,143,85,.1);border-color:rgba(10,143,85,.18);color:rgba(6,40,22,.45)}
+        /* Search dropdown — green forest palette */
+        .gsearch-dropdown{--gd-bg:#07130c;--gd-border:rgba(0,232,122,.18);--gd-border-subtle:rgba(0,232,122,.10);--gd-shadow:0 20px 60px rgba(0,0,0,.5);--gd-text:#00e87a;--gd-muted:rgba(0,232,122,.5);--gd-muted-subtle:rgba(0,232,122,.35);--gd-chip-border:rgba(0,232,122,.12);--gd-chip-bg:rgba(0,232,122,.05);--gd-chip-color:rgba(0,232,122,.5);--gd-hover:rgba(0,232,122,.06)}
+        :root.light .gsearch-dropdown{--gd-bg:#d4f0e0;--gd-border:rgba(10,143,85,.2);--gd-border-subtle:rgba(10,143,85,.12);--gd-shadow:0 20px 60px rgba(0,0,0,.15);--gd-text:#06582e;--gd-muted:rgba(6,40,22,.55);--gd-muted-subtle:rgba(6,40,22,.4);--gd-chip-border:rgba(10,143,85,.15);--gd-chip-bg:rgba(10,143,85,.06);--gd-chip-color:rgba(6,40,22,.55);--gd-hover:rgba(10,143,85,.08)}
+        .gsearch-dropdown input::placeholder{color:var(--gd-muted) !important}
+        .gsearch-dropdown button[style*='background: transparent']:hover{background:var(--gd-hover) !important}
         .gmobile-toggle{display:none;background:none;border:none;color:#00e87a;cursor:pointer}
         .gnav .gback{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:rgba(255,255,255,.4);background:none;border:1px solid rgba(0,232,122,.15);border-radius:8px;padding:5px 14px;cursor:pointer;transition:all .3s;letter-spacing:.05em;margin-right:12px}
         .gnav .gback:hover{color:#00e87a;border-color:rgba(0,232,122,.35)}
@@ -255,22 +262,22 @@ const Navbar = () => {
               </button>
 
               {searchOpen && (
-                <div style={{
+                <div className="gsearch-dropdown" style={{
                   position: "absolute",
                   right: 0,
                   top: "calc(100% + 8px)",
                   width: "400px",
                   borderRadius: "12px",
-                  border: "1px solid rgba(0,232,122,.12)",
-                  background: "rgba(11,26,16,.96)",
+                  border: "1px solid var(--gd-border)",
+                  background: "var(--gd-bg)",
                   backdropFilter: "blur(24px)",
-                  boxShadow: "0 20px 60px rgba(0,0,0,.5)",
+                  boxShadow: "var(--gd-shadow)",
                   overflow: "hidden",
                   zIndex: 500,
                 }}>
                   {/* Search input */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px", borderBottom: "1px solid rgba(0,232,122,.08)" }}>
-                    <Search size={16} style={{ color: "rgba(255,255,255,.3)", flexShrink: 0 }} />
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px", borderBottom: "1px solid var(--gd-border-subtle)" }}>
+                    <Search size={16} style={{ color: "var(--gd-muted)", flexShrink: 0 }} />
                     <input
                       ref={inputRef}
                       value={query}
@@ -281,22 +288,22 @@ const Navbar = () => {
                         background: "transparent",
                         border: "none",
                         outline: "none",
-                        color: "#e0e0e0",
+                        color: "var(--gd-text)",
                         fontFamily: "'JetBrains Mono', monospace",
                         fontSize: ".82rem",
                       }}
                     />
                     {query && (
-                      <button onClick={() => setQuery("")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.3)", cursor: "pointer" }}>
+                      <button onClick={() => setQuery("")} style={{ background: "none", border: "none", color: "var(--gd-muted)", cursor: "pointer" }}>
                         <X size={14} />
                       </button>
                     )}
                   </div>
 
                   {/* Filter chips */}
-                  <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(0,232,122,.06)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div style={{ padding: "10px 16px", borderBottom: "1px solid var(--gd-border-subtle)", display: "flex", flexDirection: "column", gap: "8px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".6rem", color: "rgba(255,255,255,.3)", letterSpacing: ".1em", textTransform: "uppercase", marginRight: "4px" }}>Plataforma</span>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".6rem", color: "var(--gd-muted)", letterSpacing: ".1em", textTransform: "uppercase", marginRight: "4px" }}>Plataforma</span>
                       {platforms.map((p) => (
                         <button
                           key={p}
@@ -306,9 +313,9 @@ const Navbar = () => {
                             borderRadius: "20px",
                             fontFamily: "'JetBrains Mono', monospace",
                             fontSize: ".65rem",
-                            border: `1px solid ${selectedPlatforms.includes(p) ? (p === "HTB" ? "rgba(0,232,122,.4)" : p === "Sherlock" ? "rgba(0,200,255,.4)" : "rgba(200,0,255,.4)") : "rgba(255,255,255,.1)"}`,
-                            background: selectedPlatforms.includes(p) ? (p === "HTB" ? "rgba(0,232,122,.12)" : p === "Sherlock" ? "rgba(0,200,255,.12)" : "rgba(200,0,255,.12)") : "rgba(255,255,255,.03)",
-                            color: selectedPlatforms.includes(p) ? (p === "HTB" ? "#00e87a" : p === "Sherlock" ? "#00c8ff" : "#c800ff") : "rgba(255,255,255,.4)",
+                            border: `1px solid ${selectedPlatforms.includes(p) ? (p === "HTB" ? "rgba(0,232,122,.4)" : p === "Sherlock" ? "rgba(0,200,255,.4)" : "rgba(200,0,255,.4)") : "var(--gd-chip-border)"}`,
+                            background: selectedPlatforms.includes(p) ? (p === "HTB" ? "rgba(0,232,122,.12)" : p === "Sherlock" ? "rgba(0,200,255,.12)" : "rgba(200,0,255,.12)") : "var(--gd-chip-bg)",
+                            color: selectedPlatforms.includes(p) ? (p === "HTB" ? "#00e87a" : p === "Sherlock" ? "#00c8ff" : "#c800ff") : "var(--gd-chip-color)",
                             cursor: "pointer",
                             transition: "all .2s",
                           }}
@@ -318,7 +325,7 @@ const Navbar = () => {
                       ))}
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".6rem", color: "rgba(255,255,255,.3)", letterSpacing: ".1em", textTransform: "uppercase", marginRight: "4px" }}>Dificultad</span>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".6rem", color: "var(--gd-muted)", letterSpacing: ".1em", textTransform: "uppercase", marginRight: "4px" }}>Dificultad</span>
                       {difficulties.map((d) => {
                         const colors: Record<string, { active: string; border: string; bg: string }> = {
                           "VERY EASY": { active: "#c800ff", border: "rgba(200,0,255,.4)", bg: "rgba(200,0,255,.12)" },
@@ -336,9 +343,9 @@ const Navbar = () => {
                               borderRadius: "20px",
                               fontFamily: "'JetBrains Mono', monospace",
                               fontSize: ".65rem",
-                              border: `1px solid ${selectedDifficulties.includes(d) ? c.border : "rgba(255,255,255,.1)"}`,
-                              background: selectedDifficulties.includes(d) ? c.bg : "rgba(255,255,255,.03)",
-                              color: selectedDifficulties.includes(d) ? c.active : "rgba(255,255,255,.4)",
+                              border: `1px solid ${selectedDifficulties.includes(d) ? c.border : "var(--gd-chip-border)"}`,
+                              background: selectedDifficulties.includes(d) ? c.bg : "var(--gd-chip-bg)",
+                              color: selectedDifficulties.includes(d) ? c.active : "var(--gd-chip-color)",
                               cursor: "pointer",
                               transition: "all .2s",
                             }}
@@ -353,15 +360,15 @@ const Navbar = () => {
                   {/* Results */}
                   <div style={{ maxHeight: "280px", overflowY: "auto" }}>
                     {!hasFilters && (
-                      <p style={{ padding: "24px 16px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: ".75rem", color: "rgba(255,255,255,.25)" }}>Escribe o filtra para buscar...</p>
+                      <p style={{ padding: "24px 16px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: ".75rem", color: "var(--gd-muted-subtle)" }}>Escribe o filtra para buscar...</p>
                     )}
                     {hasFilters && results.length === 0 && (
-                      <p style={{ padding: "24px 16px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: ".75rem", color: "rgba(255,255,255,.25)" }}>Sin resultados</p>
+                      <p style={{ padding: "24px 16px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: ".75rem", color: "var(--gd-muted-subtle)" }}>Sin resultados</p>
                     )}
                     {hasFilters && results.length > 0 && (
                       <>
                         <div style={{ padding: "8px 16px 4px" }}>
-                          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".65rem", color: "rgba(255,255,255,.2)" }}>{results.length} resultado{results.length !== 1 ? "s" : ""}</span>
+                          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: ".65rem", color: "var(--gd-muted-subtle)" }}>{results.length} resultado{results.length !== 1 ? "s" : ""}</span>
                         </div>
                         {results.map((r) => (
                           <button
@@ -379,18 +386,18 @@ const Navbar = () => {
                               textAlign: "left",
                               transition: "background .2s",
                             }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,232,122,.06)")}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--gd-hover)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                           >
                             <span style={{ fontSize: "1.1rem" }}>{r.emoji}</span>
-                            <span style={{ flex: 1, fontFamily: "'JetBrains Mono', monospace", fontSize: ".82rem", color: "#e0e0e0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
+                            <span style={{ flex: 1, fontFamily: "'JetBrains Mono', monospace", fontSize: ".82rem", color: "var(--gd-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
                             <span style={{
                               fontFamily: "'JetBrains Mono', monospace",
                               fontSize: ".6rem",
                               padding: "2px 8px",
                               borderRadius: "20px",
-                              border: "1px solid rgba(255,255,255,.1)",
-                              color: "rgba(255,255,255,.5)",
+                              border: "1px solid var(--gd-chip-border)",
+                              color: "var(--gd-chip-color)",
                             }}>{r.difficulty}</span>
                             <span style={{
                               fontFamily: "'JetBrains Mono', monospace",

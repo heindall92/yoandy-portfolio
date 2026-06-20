@@ -586,8 +586,12 @@ const Index = () => {
         .nlinks a{font-family:var(--mo);font-size:.92rem;color:var(--text-d3);text-decoration:none;letter-spacing:.12em;transition:color .3s}
         .nlinks a:hover{color:var(--green)}
         .nav-actions{display:flex;align-items:center;gap:8px}
-        .icon-toggle,.lang-toggle{width:34px;height:34px;border-radius:50%;border:1px solid var(--green2);background:var(--green3);color:var(--green);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:.25s}
-        .icon-toggle:hover,.lang-toggle:hover{transform:translateY(-1px);border-color:var(--green);box-shadow:0 0 18px var(--green2)}
+        .icon-toggle{width:34px;height:34px;border-radius:50%;border:1px solid var(--green2);background:var(--green3);color:var(--green);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:.25s}
+        .icon-toggle:hover{transform:translateY(-1px);border-color:var(--green);box-shadow:0 0 18px var(--green2)}
+        .lang-toggle{width:auto;height:34px;border-radius:999px;padding:0 12px;gap:6px;font-family:var(--mo);font-size:.64rem;letter-spacing:.12em;background:#07130c;border:1px solid rgba(0,232,122,.18);color:rgba(0,232,122,.7);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s}
+        .lang-toggle:hover{border-color:rgba(0,232,122,.4);color:#00e87a;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+        .light .lang-toggle{background:#d4f0e0;border-color:rgba(10,143,85,.22);color:rgba(6,40,22,.65)}
+        .light .lang-toggle:hover{border-color:rgba(10,143,85,.4);color:#06582e}
 
         /* ─── Theme Switch (glass pill) — green forest palette ─── */
         .theme-switch{position:relative;width:88px;height:32px;border-radius:999px;cursor:pointer;border:1px solid rgba(0,232,122,.12);background:#07130c;display:flex;align-items:center;justify-content:space-between;padding:0 11px;font-family:var(--mo);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,232,122,.55);box-shadow:inset 0 1px 2px rgba(0,232,122,.08),inset 0 -2px 6px rgba(0,0,0,.55),0 6px 14px rgba(0,0,0,.4);transition:background .5s ease,box-shadow .5s ease,color .35s ease,border-color .5s ease;overflow:hidden;-webkit-tap-highlight-color:transparent}
@@ -603,7 +607,7 @@ const Index = () => {
         .theme-switch:hover .ts-bubble{box-shadow:0 6px 18px rgba(0,0,0,.5),inset 0 1px 1px rgba(0,232,122,.45),inset 0 -2px 4px rgba(0,0,0,.2)}
         .theme-switch:active .ts-bubble{transform:translateX(46px) scale(.94)}
         .theme-switch.is-light:active .ts-bubble{transform:translateX(0) scale(.94)}
-        .lang-toggle{width:auto;border-radius:999px;padding:0 10px;gap:6px;font-family:var(--mo);font-size:.64rem;letter-spacing:.12em}
+        .nmobile-toggle{display:none;background:none;border:none;color:var(--green);cursor:pointer}
         .nmobile-toggle{display:none;background:none;border:none;color:var(--green);cursor:pointer}
         .nmobile-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:299;background:rgba(11,26,16,.97);backdrop-filter:blur(24px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px}
         .light .nmobile-overlay{background:rgba(247,251,246,.97)}
@@ -722,14 +726,21 @@ const Index = () => {
         .wu-hdesc{font-size:1rem;color:var(--text-l2);line-height:1.8;font-weight:300}
 
         .srch{position:relative;margin-bottom:14px}
-        .sin{width:100%;padding:16px 50px;background:white;border:2px solid rgba(26,46,32,.1);border-radius:10px;font-family:var(--mo);font-size:.9rem;color:var(--text-l);outline:none;letter-spacing:.04em;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-        .sin:focus{border-color:var(--sage);box-shadow:0 0 0 4px rgba(42,96,72,.08)}
-        .sin::placeholder{color:var(--text-l3)}
-        .sico{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:.85rem;color:var(--text-l3);pointer-events:none}
+        .sin{width:100%;padding:16px 50px;background:#07130c;border:2px solid rgba(0,232,122,.15);border-radius:10px;font-family:var(--mo);font-size:.9rem;color:#00e87a;outline:none;letter-spacing:.04em;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+        .sin:focus{border-color:rgba(0,232,122,.45);box-shadow:0 0 0 4px rgba(0,232,122,.08)}
+        .sin::placeholder{color:rgba(0,232,122,.4)}
+        .sico{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:.85rem;color:rgba(0,232,122,.5);pointer-events:none}
         .frow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:48px;position:relative;z-index:2}
-        .fb{padding:7px 18px;border-radius:20px;font-family:var(--mo);font-size:.72rem;border:1.5px solid rgba(26,46,32,.12);background:transparent;color:var(--text-l2);cursor:pointer;transition:all .3s;letter-spacing:.07em}
-        .fb:hover{border-color:var(--sage);color:var(--sage)}
-        .fb.on{background:var(--sage);border-color:var(--sage);color:white}
+        .fb{padding:7px 18px;border-radius:20px;font-family:var(--mo);font-size:.72rem;border:1.5px solid rgba(0,232,122,.15);background:transparent;color:rgba(0,232,122,.65);cursor:pointer;transition:all .3s;letter-spacing:.07em}
+        .fb:hover{border-color:#00e87a;color:#00e87a}
+        .fb.on{background:#00e87a;border-color:#00e87a;color:#07130c}
+        .light .sin{background:#d4f0e0;border-color:rgba(10,143,85,.18);color:#06582e}
+        .light .sin:focus{border-color:rgba(10,143,85,.45);box-shadow:0 0 0 4px rgba(10,143,85,.08)}
+        .light .sin::placeholder{color:rgba(6,40,22,.35)}
+        .light .sico{color:rgba(6,40,22,.45)}
+        .light .fb{border-color:rgba(10,143,85,.18);color:rgba(6,40,22,.55)}
+        .light .fb:hover{border-color:#0a8f55;color:#0a8f55}
+        .light .fb.on{background:#0a8f55;border-color:#0a8f55;color:#d4f0e0}
 
         .wug{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;position:relative;z-index:2}
         .wuc{background:white;border:1.5px solid rgba(26,46,32,.07);border-radius:16px;overflow:hidden;transition:all .4s cubic-bezier(.23,1,.32,1);box-shadow:0 2px 8px rgba(0,0,0,.04);text-decoration:none;display:block}
