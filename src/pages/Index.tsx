@@ -605,13 +605,13 @@ const Index = () => {
         .hbtn-s:hover{border-color:var(--text-d2);color:var(--text-d);transform:translateY(-2px)}
         .h-right{flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center}
         .h-right canvas{width:380px;height:380px}
-        .hero-profile{position:absolute;top:-18px;right:-10px;z-index:4;width:116px;height:116px;border-radius:50%;padding:4px;background:var(--green2);border:1px solid var(--green);box-shadow:0 0 32px var(--green2),0 18px 45px rgba(0,0,0,.32)}
+        .hero-profile{position:absolute;top:-26px;right:-18px;z-index:4;width:188px;height:188px;border-radius:50%;padding:5px;background:var(--green2);border:1.5px solid var(--green);box-shadow:0 0 44px var(--green2),0 22px 55px rgba(0,0,0,.4)}
         .hero-profile img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;border:2px solid var(--ink)}
         .h-status-bar{position:absolute;bottom:2.5rem;left:2.5rem;z-index:20;display:flex;align-items:center;gap:.5rem;font-family:var(--mo);font-size:.62rem;color:var(--text-d3);letter-spacing:2px}
         .h-sdot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pd 1.8s infinite;flex-shrink:0}
         .h-scroll-hint{position:absolute;bottom:2.5rem;right:2.5rem;z-index:20;font-family:var(--mo);font-size:.58rem;color:var(--text-d3);letter-spacing:3px;display:flex;flex-direction:column;align-items:center;gap:.5rem}
         .h-scroll-hint::after{content:'';width:1px;height:32px;background:linear-gradient(to bottom,rgba(200,240,220,.2),transparent)}
-        @media(max-width:1100px){.hero-inner{flex-direction:column;text-align:center}.h-left{max-width:100%}.h-stats{justify-content:center}.h-btns{justify-content:center}.h-right canvas{width:280px;height:280px}.hero-profile{width:94px;height:94px;right:8px;top:-8px}.h-status-bar,.h-scroll-hint{display:none}}
+        @media(max-width:1100px){.hero-inner{flex-direction:column;text-align:center}.h-left{max-width:100%}.h-stats{justify-content:center}.h-btns{justify-content:center}.h-right canvas{width:280px;height:280px}.hero-profile{width:140px;height:140px;right:8px;top:-12px}.h-status-bar,.h-scroll-hint{display:none}}
 
         /* Marquee */
         .mq{background:var(--green);overflow:hidden;padding:13px 0;position:relative;z-index:50}
