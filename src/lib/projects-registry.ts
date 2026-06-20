@@ -100,8 +100,8 @@ export const projects: ProjectEntry[] = [
       { id: "100200", level: 9,  what: "Ollama AI Insight (análisis IA)",      mitre: "—" },
     ],
     screenshots: [
-      { src: "/projects/valhalla/01-vista-general.png",        caption: "Vista General — KPIs en vivo, alertas 24h, agentes activos, tickets abiertos y distribución por severidad" },
       { src: "/projects/valhalla/02-login.png",                caption: "Login VALHALLA SOC PRO — branding Blue Team, Wazuh 4.9.5, CLASSIFIED // EYES ONLY" },
+      { src: "/projects/valhalla/01-vista-general.png",        caption: "Vista General — KPIs en vivo, alertas 24h, agentes activos, tickets abiertos y distribución por severidad" },
       { src: "/projects/valhalla/03-threat-intel.png",         caption: "Threat Intel — motor VT Report Engine: 14/91 vendors marcan la IP como maliciosa, IoC añadido a watchlist y bloqueado en firewall" },
       { src: "/projects/valhalla/04-threat-map.png",           caption: "Cyber-Threat Intelligence Map — visualización geo en tiempo real (Pew-Pew Mode) con geofencing alerts" },
       { src: "/projects/valhalla/05-workspace.png",            caption: "Workspace — panel de respuesta a incidentes estilo Kanban (Triaje · Investigación · Mitigación · Resuelto) con runbooks sugeridos" },
