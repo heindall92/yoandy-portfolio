@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VALHALLA SOC PRO — Demo Cinemático 8K</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;cursor:none}
+.stage{position:relative;width:100vw;height:100vh;background:#000}
+#fx{position:absolute;inset:0;width:100%;height:100%;z-index:1;opacity:0;transition:opacity 1s ease}
+.bar{position:fixed;left:0;right:0;background:#000;z-index:100}
+#bt{top:0} #bb{bottom:0}
+#vig{position:fixed;inset:0;z-index:3;pointer-events:none;
+     background:radial-gradient(ellipse at 35% 50%,rgba(0,40,20,.08) 0%,rgba(0,0,0,.55) 65%,rgba(0,0,0,.9) 100%)}
+#scl{position:fixed;inset:0;z-index:4;pointer-events:none;
+     background:repeating-linear-gradient(to bottom,transparent,transparent 3px,rgba(0,0,0,.06) 3px,rgba(0,0,0,.06) 4px)}
+#grain{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:.04;mix-blend-mode:overlay;animation:grs .13s steps(1) infinite}
+@keyframes grs{0%{background-position:0 0}25%{background-position:15% 5%}55%{background-position:12% -15%}85%{background-position:18% -5%}100%{background-position:0 0}}
+.act{position:absolute;inset:0;z-index:10;opacity:0;pointer-events:none}
+/* ACT 1: BOOT */
+#a-boot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#boot-cur{width:2px;height:20px;background:#00ff88;box-shadow:0 0 8px #00ff88;animation:cur .65s step-end infinite;opacity:0}
+@keyframes cur{50%{opacity:0}}
+#boot-txt{font-family:'Share Tech Mono',monospace;font-size:clamp(9px,1vw,13px);color:#00e878;line-height:2;
+          width:min(640px,82vw);text-shadow:0 0 6px rgba(0,232,120,.45)}
+.bl{opacity:0;animation:blin .08s ease forwards}
+@keyframes blin{to{opacity:1}}
+.b-ok{color:#00e878}.b-dim{color:rgba(0,232,120,.4)}.b-w{color:#fff}
+/* ACT 2: TITLE */
+#a-title{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.al-row{display:flex;align-items:center;gap:3px}
+.al-sep{color:rgba(0,232,120,.25);align-self:center;opacity:0;transition:opacity .3s ease}
+.al-path{stroke-dasharray:100;stroke-dashoffset:100;transition:stroke-dashoffset .38s cubic-bezier(.4,0,.2,1)}
+.al-circle{opacity:0;transition:opacity .15s ease .32s}
+#t-tag{font-family:'Share Tech Mono',monospace;font-size:clamp(7px,.65vw,9px);letter-spacing:.28em;
+       color:rgba(255,255,255,.25);text-transform:uppercase;opacity:0;transition:opacity .7s ease;text-align:center}
+/* ACT 3: LOGIN */
+#a-login{background:url('valhalla-login.png') center/cover no-repeat,
+         linear-gradient(135deg,#041a0d 0%,#061f10 60%,#041410 100%);
+         transform:scale(1.08);filter:brightness(0) blur(4px);
+         transition:transform 3s cubic-bezier(.4,0,.2,1),filter 1.2s ease}
+#a-login.reveal{transform:scale(1);filter:brightness(1) blur(0)}
+#lscan{position:absolute;left:0;right:0;height:3px;top:-3px;
+       background:linear-gradient(90deg,transparent,rgba(0,255,136,.2) 20%,#00ff88 50%,rgba(0,255,136,.2) 80%,transparent);
+       box-shadow:0 0 24px #00ff88,0 0 48px rgba(0,255,136,.25);
+       transition:top 2.2s cubic-bezier(.4,0,.6,1);z-index:20}
+#lmask{position:absolute;inset:0;background:#000;clip-path:inset(0 0 0 0);
+       transition:clip-path 2.2s cubic-bezier(.4,0,.6,1);z-index:15}
+#loverlay{position:absolute;inset:0;background:rgba(0,255,136,.025);opacity:0;transition:opacity .4s ease;z-index:16}
+/* ACT 4: DASHBOARD */
+#a-dash{background:url('valhalla-dashboard.png') center/cover no-repeat,
+        linear-gradient(135deg,#020d07 0%,#031008 100%);
+        transform:scale(1.06);transition:transform 3s cubic-bezier(.4,0,.2,1)}
+#a-dash.reveal{transform:scale(1)}
+#dscan{position:absolute;left:0;right:0;height:2px;top:-2px;
+       background:linear-gradient(90deg,transparent,rgba(0,255,136,.3) 20%,#00ff88 50%,rgba(0,255,136,.3) 80%,transparent);
+       box-shadow:0 0 18px #00ff88;transition:top 2.5s cubic-bezier(.4,0,.6,1);z-index:20}
+#dmask{position:absolute;inset:0;background:#000;clip-path:inset(0 0 0 0);
+       transition:clip-path 2.5s cubic-bezier(.4,0,.6,1);z-index:15}
+#d-aura{position:absolute;inset:0;
+        background:radial-gradient(ellipse 30% 80% at 7% 50%,rgba(0,255,136,.05) 0%,transparent 100%),
+                   radial-gradient(ellipse 100% 15% at 50% 0%,rgba(0,255,136,.08) 0%,transparent 100%);
+        opacity:0;transition:opacity 1.2s ease;z-index:16;pointer-events:none}
+/* ACT 5: END */
+#a-end{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:#000}
+#end-icon{width:clamp(70px,8vw,100px);height:clamp(70px,8vw,100px);
+          background:linear-gradient(135deg,#0a4528,#0d5f32);border:2px solid #00e878;border-radius:20%;
+          display:flex;align-items:center;justify-content:center;
+          box-shadow:0 0 40px rgba(0,232,120,.4),0 0 80px rgba(0,232,120,.12),inset 0 0 30px rgba(0,232,120,.06);
+          opacity:0;transform:scale(.65);transition:all .85s cubic-bezier(.34,1.56,.64,1)}
+#end-icon.show{opacity:1;transform:scale(1)}
+#end-op{font-family:'Orbitron',monospace;font-size:clamp(13px,1.8vw,22px);font-weight:900;
+        letter-spacing:.4em;color:#00e878;text-align:center;
+        text-shadow:0 0 20px rgba(0,232,120,.65),0 0 60px rgba(0,232,120,.2);
+        opacity:0;transition:opacity .6s ease;animation:opP 2.5s ease-in-out infinite}
+@keyframes opP{0%,100%{text-shadow:0 0 20px rgba(0,232,120,.65),0 0 60px rgba(0,232,120,.2)}
+               50%{text-shadow:0 0 35px rgba(0,232,120,.9),0 0 90px rgba(0,232,120,.35)}}
+#end-op.show{opacity:1}
+#end-cl{font-family:'Share Tech Mono',monospace;font-size:clamp(8px,.75vw,10px);letter-spacing:.3em;
+        color:rgba(255,255,255,.2);text-transform:uppercase;opacity:0;transition:opacity .6s ease;text-align:center}
+#end-cl.show{opacity:1}
+#fl{position:fixed;inset:0;background:#fff;z-index:98;opacity:0;pointer-events:none}
+#fd{position:fixed;inset:0;background:#000;z-index:95;opacity:1;pointer-events:none;transition:opacity .8s ease}
+#lf{position:fixed;inset:0;z-index:85;pointer-events:none;opacity:0;
+    background:radial-gradient(ellipse 55% 70% at 62% 48%,rgba(0,255,136,.18) 0%,rgba(0,255,136,.04) 40%,transparent 70%)}
+#rp{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:200;
+    background:rgba(13,92,53,.85);border:1px solid #00e878;border-radius:8px;
+    padding:11px 32px;font-family:'Share Tech Mono',monospace;font-size:11px;
+    font-weight:bold;letter-spacing:.25em;color:#00e878;cursor:pointer;
+    opacity:0;transition:all .4s ease;pointer-events:none;text-transform:uppercase}
+#rp:hover{background:rgba(0,255,136,.15);box-shadow:0 0 20px rgba(0,255,136,.2)}
+</style>
+</head>
+<body>
+<div class="stage">
+<canvas id="fx"></canvas>
+<div id="vig"></div><div id="scl"></div><div id="grain"></div>
+<div class="bar" id="bt"></div><div class="bar" id="bb"></div>
+<div class="act" id="a-boot"><div id="boot-cur"></div><div id="boot-txt"></div></div>
+<div class="act" id="a-title">
+    <div class="al-row" id="al-valhalla"></div>
+    <div class="al-row" id="al-socpro" style="gap:10px;margin-top:4px"></div>
+    <div id="t-tag">PLATAFORMA DE MONITORIZACIÓN Y RESPUESTA TÁCTICA CON IA</div>
+</div>
+<div class="act" id="a-login"><div id="lmask"></div><div id="lscan"></div><div id="loverlay"></div></div>
+<div class="act" id="a-dash"><div id="dmask"></div><div id="dscan"></div><div id="d-aura"></div></div>
+<div class="act" id="a-end">
+    <div id="end-icon"></div>
+    <div class="al-row" id="al-end"></div>
+    <div id="end-op">ESTADO : OPERATIVO</div>
+    <div id="end-cl">VALHALLA SOC PRO &nbsp;·&nbsp; CLASSIFIED // EYES ONLY</div>
+</div>
+<div id="lf"></div><div id="fl"></div><div id="fd"></div>
+<button id="rp" onclick="play()">&#8635; REPRODUCIR</button>
+</div>
+
+<svg style="position:absolute;width:0;height:0;overflow:hidden">
+<defs>
+<filter id="chroma">
+<feColorMatrix in="SourceGraphic" type="matrix"
+    values="1 0 0 0 0.02  0 1 0 0 0  0 0 1 0 -0.02  0 0 0 1 0" result="rg"/>
+<feOffset in="SourceGraphic" dx="-4" result="bs"/>
+<feColorMatrix in="bs" type="matrix"
+    values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="bo"/>
+<feBlend in="rg" in2="bo" mode="screen"/>
+</filter>
+</defs>
+</svg>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════
+// ALEXANA SVG FONT
+// ══════════════════════════════════════════
+const ADEF = {
+    V:{p:['M5,5 L12,19 L19,5'],           c:[{x:12,y:5}]},
+    A:{p:['M12,2 L20,20','M12,2 L8,10'], c:[{x:4,y:20}]},
+    L:{p:['M4,2 L4,20','M12,20 L20,20'], c:[{x:8,y:20}]},
+    H:{p:['M4,2 L4,22','M4,12 L20,12 L20,22'], c:[{x:20,y:4}]},
+    S:{p:['M20,4 L10,4 Q4,4 4,10 Q4,14 12,14 Q20,14 20,18 Q20,22 10,22 L8,22'], c:[{x:4,y:22}]},
+    O:{p:['M12,2 A10,10 0 1 1 2,12'],    c:[{x:5,y:5}]},
+    C:{p:['M20,6 A10,10 0 0 0 12,2 A10,10 0 0 0 12,22 A10,10 0 0 0 20,18'], c:[{x:20,y:22}]},
+    P:{p:['M4,8 L4,22','M8,2 L14,2 A6,6 0 0 1 14,14 L4,14'], c:[{x:4,y:2}]},
+    R:{p:['M4,8 L4,22','M8,2 L14,2 A6,6 0 0 1 14,14 L4,14','M10,14 L18,22'], c:[{x:4,y:2}]},
+};
+const NS='http://www.w3.org/2000/svg';
+
+function mkSVG(ch,sz,clr){
+    clr=clr||'#00e878';
+    const d=ADEF[ch.toUpperCase()];
+    if(!d)return null;
+    const sv=document.createElementNS(NS,'svg');
+    sv.setAttribute('viewBox','0 0 24 24');
+    sv.style.height=sz+'px'; sv.style.width=sz+'px';
+    sv.style.flexShrink='0'; sv.style.overflow='visible';
+    sv.style.filter='drop-shadow(0 0 8px '+clr+'38)';
+    d.p.forEach(function(pd){
+        const p=document.createElementNS(NS,'path');
+        p.setAttribute('d',pd); p.setAttribute('stroke',clr);
+        p.setAttribute('stroke-width','2.5'); p.setAttribute('stroke-linecap','round');
+        p.setAttribute('stroke-linejoin','round'); p.setAttribute('fill','none');
+        p.setAttribute('pathLength','100'); p.classList.add('al-path');
+        sv.appendChild(p);
+    });
+    d.c.forEach(function(ci){
+        const c=document.createElementNS(NS,'circle');
+        c.setAttribute('cx',ci.x); c.setAttribute('cy',ci.y);
+        c.setAttribute('r','1.5'); c.setAttribute('fill',clr);
+        c.setAttribute('stroke','none'); c.classList.add('al-circle');
+        sv.appendChild(c);
+    });
+    return sv;
+}
+
+function buildRow(container,word,sz,clr,dots){
+    container.replaceChildren();
+    const els=[];
+    var chars=word.split('');
+    chars.forEach(function(ch,i){
+        if(ch===' '){
+            var sp=document.createElement('div');
+            sp.style.width=(sz*.55)+'px';
+            container.appendChild(sp); els.push(null); return;
+        }
+        var sv=mkSVG(ch,sz,clr);
+        if(!sv){els.push(null);return;}
+        sv.querySelectorAll('.al-path').forEach(function(p){
+            p.style.strokeDasharray='100'; p.style.strokeDashoffset='100';
+            p.style.transition='stroke-dashoffset .38s cubic-bezier(.4,0,.2,1)';
+        });
+        sv.querySelectorAll('.al-circle').forEach(function(c){
+            c.style.opacity='0'; c.style.transition='opacity .15s ease .32s';
+        });
+        container.appendChild(sv); els.push(sv);
+        if(dots && i<chars.length-1 && chars[i+1]!==' '){
+            var dot=document.createElement('span');
+            dot.className='al-sep'; dot.textContent='·';
+            dot.style.fontSize=(sz*.35)+'px'; dot.style.fontFamily='serif';
+            container.appendChild(dot);
+        }
+    });
+    return els;
+}
+
+function revealLetter(sv){
+    sv.querySelectorAll('.al-path').forEach(function(p){p.style.strokeDashoffset='0';});
+    setTimeout(function(){
+        sv.querySelectorAll('.al-circle').forEach(function(c){c.style.opacity='1';});
+    },360);
+}
+
+// Build end icon V (static, no animation)
+(function(){
+    var ei=$('end-icon');
+    var sv=document.createElementNS(NS,'svg');
+    sv.setAttribute('viewBox','0 0 24 24');
+    sv.style.height='52%'; sv.style.width='52%';
+    var p=document.createElementNS(NS,'path');
+    p.setAttribute('d','M5,5 L12,19 L19,5');
+    p.setAttribute('stroke','#00e878'); p.setAttribute('stroke-width','2.5');
+    p.setAttribute('stroke-linecap','round'); p.setAttribute('stroke-linejoin','round');
+    p.setAttribute('fill','none');
+    sv.appendChild(p);
+    var c=document.createElementNS(NS,'circle');
+    c.setAttribute('cx','12'); c.setAttribute('cy','5'); c.setAttribute('r','1.5');
+    c.setAttribute('fill','#00e878');
+    sv.appendChild(c);
+    ei.appendChild(sv);
+})();
+
+// ══════════════════════════════════════════
+// CANVAS RUNE RAIN
+// ══════════════════════════════════════════
+var cv=document.getElementById('fx');
+var cx=cv.getContext('2d');
+var GLYPHS='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ0123456789ABCDEF⌬∆';
+var streams=[], raf=null, rAlpha=0;
+
+function initCV(){
+    var dpr=window.devicePixelRatio||1;
+    var W=window.innerWidth, H=window.innerHeight;
+    cv.width=W*dpr; cv.height=H*dpr;
+    cv.style.width=W+'px'; cv.style.height=H+'px';
+    cx.scale(dpr,dpr);
+    streams=[];
+    var cols=Math.floor(W/18);
+    for(var i=0;i<cols;i++){
+        streams.push({
+            x:i*18+9, y:Math.random()*H,
+            spd:.35+Math.random()*1.4,
+            len:6+Math.floor(Math.random()*22),
+            lum:.2+Math.random()*.75,
+            g:(function(){var a=[];for(var j=0;j<28;j++)a.push(GLYPHS[Math.floor(Math.random()*GLYPHS.length)]);return a;})(),
+            mt:0
+        });
+    }
+}
+
+function drawCV(){
+    var W=window.innerWidth, H=window.innerHeight;
+    cx.fillStyle='rgba(3,14,9,'+(rAlpha>.8?.84:1)+')';
+    cx.fillRect(0,0,W,H);
+    if(rAlpha>.01){
+        cx.font='12px monospace';
+        for(var si=0;si<streams.length;si++){
+            var s=streams[si];
+            s.y+=s.spd; s.mt++;
+            if(s.mt>9){s.mt=0;s.g[Math.floor(Math.random()*s.g.length)]=GLYPHS[Math.floor(Math.random()*GLYPHS.length)];}
+            if(s.y-s.len*14>H) s.y=-s.len*14;
+            for(var i=0;i<s.len;i++){
+                var gy=s.y-i*14;
+                if(gy<0||gy>H) continue;
+                var t=i/Math.max(s.len-1,1);
+                var a=(i===0?.9:(1-t)*.72)*s.lum*rAlpha;
+                if(i===0) cx.fillStyle='rgba(175,255,215,'+a+')';
+                else cx.fillStyle='rgba(0,'+Math.floor(195*(1-t)+40)+','+Math.floor(125*(1-t)+25)+','+a+')';
+                cx.fillText(s.g[i%s.g.length],s.x,gy);
+            }
+        }
+    }
+    raf=requestAnimationFrame(drawCV);
+}
+
+// ══════════════════════════════════════════
+// GRAIN + LETTERBOX
+// ══════════════════════════════════════════
+function setupGrain(){
+    var gc=document.createElement('canvas');
+    gc.width=gc.height=256;
+    var gx=gc.getContext('2d');
+    var img=gx.createImageData(256,256);
+    for(var i=0;i<img.data.length;i+=4){
+        var v=Math.floor(Math.random()*255);
+        img.data[i]=img.data[i+1]=img.data[i+2]=v; img.data[i+3]=255;
+    }
+    gx.putImageData(img,0,0);
+    var g=document.getElementById('grain');
+    g.style.backgroundImage='url('+gc.toDataURL()+')';
+    g.style.backgroundSize='256px 256px';
+}
+
+function setLB(){
+    var W=window.innerWidth, H=window.innerHeight;
+    var ch=Math.min(W/2.35,H);
+    var bh=Math.max(0,(H-ch)/2);
+    document.getElementById('bt').style.height=bh+'px';
+    document.getElementById('bb').style.height=bh+'px';
+}
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+var tids=[];
+function $(id){return document.getElementById(id);}
+function at(ms,fn){tids.push(setTimeout(fn,ms));}
+function op(id,v,t){
+    var e=$(id); if(!e)return;
+    e.style.transition='opacity '+(t||'.5s')+' ease';
+    e.style.opacity=v;
+}
+function flash(v,d){
+    var f=$('fl'); f.style.transition='none'; f.style.opacity=v||.35;
+    setTimeout(function(){f.style.transition='opacity .38s ease';f.style.opacity='0';},d||90);
+}
+function chroma(el){
+    el.style.filter='url(#chroma)';
+    setTimeout(function(){el.style.filter='';},140);
+}
+
+// ══════════════════════════════════════════
+// BOOT TEXT
+// ══════════════════════════════════════════
+var BOOT=[
+    {t:'VALHALLA_OS v4.9.5 // BOOT SEQUENCE',c:''},
+    {t:'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',c:'b-dim'},
+    {t:'> KERNEL_MODULES ........... [OK]',c:'b-ok'},
+    {t:'> WAZUH_AGENT 4.9.5 ........ [ACTIVE]',c:'b-ok'},
+    {t:'> THREAT_INTEL ENGINE ...... [LOADED]',c:'b-ok'},
+    {t:'> HONEYPOT_LAYER SSH/TEL ... [ARMED]',c:'b-ok'},
+    {t:'> BLUE_TEAM PROTOCOLS ...... [ACTIVE]',c:'b-ok'},
+    {t:'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',c:'b-dim'},
+    {t:'OPERADOR : ADMIN_COMMANDER',c:'b-w'},
+    {t:'ACCESO AUTORIZADO // NIVEL 5',c:'b-ok'},
+];
+function typeBoot(){
+    var cont=$('boot-txt');
+    cont.replaceChildren();
+    BOOT.forEach(function(l,i){
+        setTimeout(function(){
+            var d=document.createElement('div');
+            d.classList.add('bl');
+            if(l.c) d.classList.add(l.c);
+            d.textContent=l.t;
+            cont.appendChild(d);
+        },i*145);
+    });
+}
+
+// ══════════════════════════════════════════
+// RESET + PLAY
+// ══════════════════════════════════════════
+function reset(){
+    tids.forEach(clearTimeout); tids=[];
+    if(raf) cancelAnimationFrame(raf);
+    rAlpha=0;
+    document.querySelectorAll('.act').forEach(function(a){a.style.transition='none';a.style.opacity='0';});
+    ['fl','lf'].forEach(function(id){var e=$(id);e.style.transition='none';e.style.opacity='0';});
+    $('fd').style.transition='none'; $('fd').style.opacity='1';
+    var rp=$('rp'); rp.style.opacity='0'; rp.style.pointerEvents='none';
+    ['al-valhalla','al-socpro','al-end'].forEach(function(id){$(id).replaceChildren();});
+    $('end-icon').classList.remove('show');
+    $('end-op').classList.remove('show');
+    $('end-cl').classList.remove('show');
+    $('t-tag').style.opacity='0';
+    $('boot-cur').style.opacity='0';
+    var al=$('a-login');
+    al.style.filter='brightness(0) blur(4px)'; al.classList.remove('reveal');
+    $('lmask').style.transition='none'; $('lmask').style.clipPath='inset(0 0 0 0)';
+    $('lscan').style.transition='none'; $('lscan').style.top='-3px';
+    $('loverlay').style.opacity='0';
+    var ad=$('a-dash'); ad.classList.remove('reveal');
+    $('dmask').style.transition='none'; $('dmask').style.clipPath='inset(0 0 0 0)';
+    $('dscan').style.transition='none'; $('dscan').style.top='-2px';
+    $('d-aura').style.opacity='0';
+    cv.style.opacity='0';
+}
+
+function play(){
+    reset();
+    var W=window.innerWidth;
+    var bigSz=Math.floor(W*.062);
+    var midSz=Math.floor(W*.034);
+    var endSz=Math.floor(W*.068);
+
+    var valEl=buildRow($('al-valhalla'),'VALHALLA',bigSz,'#ffffff',true);
+    var socEl=buildRow($('al-socpro'),'SOC PRO',midSz,'#00e878',false);
+    buildRow($('al-end'),'VALHALLA',endSz,'#00e878',true);
+
+    initCV(); drawCV(); setLB();
+
+    // 0.0s — open from black
+    at(0,function(){$('fd').style.transition='opacity .8s ease';$('fd').style.opacity='0';});
+    at(150,function(){cv.style.opacity='1';});
+    at(400,function(){$('boot-cur').style.opacity='1';});
+
+    // 0.5s — rune rain ignites
+    at(500,function(){
+        var s=0;
+        var iv=setInterval(function(){rAlpha=Math.min(1,rAlpha+.014);if(++s>71)clearInterval(iv);},16);
+    });
+
+    // 0.7s — boot sequence
+    at(700,function(){op('a-boot','1','.4s');typeBoot();});
+    at(2200,function(){op('a-boot','0','.45s');flash(.04,50);});
+
+    // 2.7s — TITLE: VALHALLA draws on
+    at(2700,function(){op('a-title','1','.5s');});
+    valEl.forEach(function(sv,i){
+        if(!sv)return;
+        at(3000+i*200,function(){
+            revealLetter(sv);
+            var seps=$('al-valhalla').querySelectorAll('.al-sep');
+            if(seps[i]) seps[i].style.opacity='1';
+            flash(.022,35);
+        });
+    });
+
+    // 4.8s — SOC PRO
+    at(4800,function(){
+        socEl.forEach(function(sv,i){if(sv)setTimeout(function(){revealLetter(sv);},i*175);});
+    });
+    at(5200,function(){$('t-tag').style.transition='opacity .8s ease';$('t-tag').style.opacity='1';});
+
+    // 5.6s — Lens flare + chroma + CUT
+    at(5600,function(){
+        var lf=$('lf');
+        lf.style.transition='opacity .35s ease'; lf.style.opacity='1';
+        setTimeout(function(){lf.style.transition='opacity .9s ease';lf.style.opacity='0';},350);
+    });
+    at(5900,function(){chroma($('a-title'));});
+
+    // 6.0s — FLASH CUT → LOGIN SCREEN
+    at(6000,function(){
+        flash(.55,160);
+        setTimeout(function(){
+            op('a-title','0','.15s');
+            var al=$('a-login');
+            al.style.opacity='1';
+            setTimeout(function(){
+                al.classList.add('reveal');
+                setTimeout(function(){
+                    var lm=$('lmask'), ls=$('lscan');
+                    lm.style.transition='clip-path 2.2s cubic-bezier(.4,0,.6,1)';
+                    lm.style.clipPath='inset(100% 0 0 0)';
+                    ls.style.transition='top 2.2s cubic-bezier(.4,0,.6,1)';
+                    ls.style.top='100%';
+                    setTimeout(function(){
+                        $('loverlay').style.transition='opacity .5s ease';
+                        $('loverlay').style.opacity='1';
+                    },2300);
+                },500);
+            },80);
+        },120);
+    });
+
+    // 8.7s — Auth accepted
+    at(8700,function(){flash(.45,200);chroma($('a-login'));});
+
+    // 9.0s — CUT → DASHBOARD
+    at(9000,function(){
+        op('a-login','0','.2s');
+        var ad=$('a-dash');
+        ad.style.opacity='1';
+        setTimeout(function(){
+            ad.classList.add('reveal');
+            var dm=$('dmask'), ds=$('dscan');
+            setTimeout(function(){
+                dm.style.transition='clip-path 2.5s cubic-bezier(.4,0,.6,1)';
+                dm.style.clipPath='inset(100% 0 0 0)';
+                ds.style.transition='top 2.5s cubic-bezier(.4,0,.6,1)';
+                ds.style.top='100%';
+                setTimeout(function(){
+                    $('d-aura').style.transition='opacity 1.2s ease';
+                    $('d-aura').style.opacity='1';
+                },2700);
+            },200);
+        },80);
+    });
+
+    // 12.0s — Fade to black
+    at(11900,function(){var s=0;var iv=setInterval(function(){rAlpha=Math.max(0,rAlpha-.018);if(++s>55)clearInterval(iv);},16);});
+    at(12000,function(){
+        op('a-dash','0','.5s');
+        setTimeout(function(){$('fd').style.transition='opacity 1.1s ease';$('fd').style.opacity='1';},200);
+    });
+
+    // 13.2s — END CARD
+    at(13200,function(){$('fd').style.transition='opacity .6s ease';$('fd').style.opacity='0';op('a-end','1','.5s');});
+    at(13700,function(){$('end-icon').classList.add('show');});
+    at(14200,function(){
+        var ls=$('al-end').querySelectorAll('.alexana-letter');
+        ls.forEach(function(l,i){setTimeout(function(){revealLetter(l);},i*170);});
+    });
+    at(15300,function(){$('end-op').classList.add('show');});
+    at(15800,function(){$('end-cl').classList.add('show');});
+    at(17000,function(){var rp=$('rp');rp.style.transition='opacity .6s ease';rp.style.opacity='1';rp.style.pointerEvents='auto';});
+}
+
+window.addEventListener('resize',function(){initCV();setLB();});
+window.addEventListener('load',function(){setupGrain();setLB();play();});
+</script>
+</body>
+</html>
