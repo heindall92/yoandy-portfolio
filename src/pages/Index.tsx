@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { sanitizeSearch } from "@/lib/security";
 import { useSeo } from "@/hooks/use-seo";
+import { useUI } from "@/contexts/UIContext";
 import * as THREE from "three";
 import { Globe2, Moon, Sun, X } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -207,6 +208,7 @@ const Index = () => {
   const [filter, setFilter] = useState("all");
   const [counter, setCounter] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const { theme, language, setTheme, setLanguage } = useUI();
   const heroRef = useRef<HTMLDivElement>(null);
   const orbRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<HTMLCanvasElement>(null);
