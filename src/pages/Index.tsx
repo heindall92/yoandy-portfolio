@@ -706,6 +706,25 @@ const Index = () => {
           </div>
         </a>
         <ul className="nlinks">
+          <li>
+            <Link
+              to="/projects"
+              style={{
+                color: "#00e87a",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              projects
+              <span style={{
+                fontSize: 9, letterSpacing: ".15em",
+                color: "#00e87a", border: "1px solid #00e87a",
+                padding: "1px 5px", borderRadius: 3, lineHeight: 1,
+              }}>NEW</span>
+            </Link>
+          </li>
           <li><a href="#about">about</a></li>
           <li><a href="#skills">skills</a></li>
           <li><a href="#writeups">writeups</a></li>
@@ -726,6 +745,13 @@ const Index = () => {
           <button style={{ position: "absolute", top: "18px", right: "18px", background: "none", border: "none", color: "var(--green)", cursor: "pointer" }} onClick={() => setMobileNavOpen(false)}>
             <X size={28} />
           </button>
+          <Link
+            to="/projects"
+            onClick={() => setMobileNavOpen(false)}
+            style={{ color: "#00e87a", textDecoration: "none" }}
+          >
+            projects ✦ NEW
+          </Link>
           {["about", "skills", "writeups", "certs", "contact"].map((s) => (
             <a key={s} href={`#${s}`} onClick={() => setMobileNavOpen(false)}>{s}</a>
           ))}
