@@ -155,6 +155,17 @@ const Navbar = () => {
         .gnav .gsearch-btn kbd{font-size:.6rem;padding:2px 6px;border-radius:4px;background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.1);color:rgba(255,255,255,.3)}
         .gnav-icon-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;border-radius:8px;border:1px solid rgba(0,232,122,.15);background:rgba(0,232,122,.05);color:#00e87a;cursor:pointer;transition:all .3s}
         .gnav-icon-btn:hover{border-color:rgba(0,232,122,.4);box-shadow:0 0 14px rgba(0,232,122,.15)}
+
+        /* Theme Switch (glass pill) */
+        .gnav-theme-switch{position:relative;width:84px;height:30px;border-radius:999px;cursor:pointer;border:1px solid rgba(255,255,255,.06);background:#0a0a0a;display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.55);box-shadow:inset 0 1px 2px rgba(255,255,255,.08),inset 0 -2px 6px rgba(0,0,0,.55),0 4px 12px rgba(0,0,0,.4);transition:background .5s ease,box-shadow .5s ease,color .35s ease,border-color .5s ease;overflow:hidden}
+        .gnav-theme-switch .gts-label{position:relative;z-index:1;line-height:1;transition:opacity .35s ease,transform .45s cubic-bezier(.34,1.56,.64,1);user-select:none;pointer-events:none}
+        .gnav-theme-switch .gts-bubble{position:absolute;top:2px;left:2px;width:34px;height:24px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.1));backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%);border:1px solid rgba(255,255,255,.4);box-shadow:0 4px 12px rgba(0,0,0,.45),inset 0 1px 1px rgba(255,255,255,.55),inset 0 -2px 4px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;color:#fff;transition:transform .55s cubic-bezier(.34,1.56,.64,1),background .4s ease,color .4s ease;z-index:2}
+        .gnav-theme-switch.is-dark .gts-bubble{transform:translateX(44px)}
+        .gnav-theme-switch.is-light .gts-bubble{transform:translateX(0)}
+        .gnav-theme-switch.is-dark .gts-light{opacity:0;transform:translateX(6px)}
+        .gnav-theme-switch.is-light .gts-dark{opacity:0;transform:translateX(-6px)}
+        :root.light .gnav-theme-switch,.gnav-theme-switch.is-light{background:#ececec;color:rgba(0,0,0,.5);border-color:rgba(0,0,0,.08);box-shadow:inset 0 1px 2px rgba(255,255,255,.85),inset 0 -2px 6px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.12)}
+        :root.light .gnav-theme-switch .gts-bubble,.gnav-theme-switch.is-light .gts-bubble{color:#1a1a1a;background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.35));border-color:rgba(255,255,255,.85);box-shadow:0 4px 10px rgba(0,0,0,.18),inset 0 1px 1px rgba(255,255,255,.9),inset 0 -2px 4px rgba(0,0,0,.06)}
         :root.light .gnav{background:rgba(220,238,225,.92);border-bottom:1px solid rgba(10,143,85,.16)}
         :root.light .gnav.solid{background:rgba(220,238,225,.96);border-bottom:1px solid rgba(10,143,85,.22)}
         :root.light .gnav .glogo-h{color:#0a8f55}
@@ -412,11 +423,16 @@ const Navbar = () => {
           <li>
             <button
               onClick={toggleTheme}
-              className="gnav-icon-btn"
+              className={`gnav-theme-switch is-${theme}`}
               title={theme === "dark" ? "Modo claro" : "Modo oscuro"}
               aria-label="Toggle theme"
+              aria-pressed={theme === "light"}
             >
-              {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+              <span className="gts-label gts-dark">Dark</span>
+              <span className="gts-label gts-light">Light</span>
+              <span className="gts-bubble" aria-hidden="true">
+                {theme === "dark" ? <Moon size={12} /> : <Sun size={12} />}
+              </span>
             </button>
           </li>
           {user && (
