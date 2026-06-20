@@ -34,9 +34,9 @@ export interface ProjectEntry {
 export const projects: ProjectEntry[] = [
   {
     slug: "valhalla-soc",
-    name: "Valhalla SOC",
-    codename: "VALHALLA",
-    tagline: "Centro de Operaciones de Seguridad con IA local",
+    name: "Valhalla SOC Pro",
+    codename: "VALHALLA SOC PRO",
+    tagline: "Plataforma SOC profesional con IA local · Blue Team · Wazuh 4.9.5",
     emoji: "⚔️",
     status: "PRODUCTION",
     year: "2025 — 2026",
@@ -60,7 +60,8 @@ export const projects: ProjectEntry[] = [
       { label: "STACK", value: "100% OSS" },
     ],
     links: [
-      { label: "Repositorio GitHub", href: "https://github.com/heindall92/Proyecto-Master-Ciberseguridad-Evolve-Yoandy", primary: true },
+      { label: "Demo cinemático", href: "/projects/valhalla/demo.html", primary: true },
+      { label: "Repositorio GitHub", href: "https://github.com/heindall92/Proyecto-Master-Ciberseguridad-Evolve-Yoandy" },
       { label: "Documentación README", href: "https://github.com/heindall92/Proyecto-Master-Ciberseguridad-Evolve-Yoandy#readme" },
     ],
     architecture: `INTERNET / ATACANTES
@@ -99,13 +100,15 @@ export const projects: ProjectEntry[] = [
       { id: "100200", level: 9,  what: "Ollama AI Insight (análisis IA)",      mitre: "—" },
     ],
     screenshots: [
-      { src: "/projects/valhalla/01-dashboard-principal.png", caption: "Dashboard principal — agentes, alertas 24h, módulos de seguridad" },
-      { src: "/projects/valhalla/02-agente-mitre.png",       caption: "Agente INFIERNO mapeado a MITRE ATT&CK (Defense Evasion · Initial Access · Persistence · Privilege Escalation)" },
-      { src: "/projects/valhalla/04-cowrie-honeypot.png",    caption: "Cowrie Honeypot en tiempo real — 12.918 alertas críticas, timeline, top IPs, comandos" },
-      { src: "/projects/valhalla/03-reportes-seguridad.png", caption: "Reportes de Seguridad — top 20 IPs atacantes y cobertura MITRE ATT&CK" },
-      { src: "/projects/valhalla/07-monitores.png",          caption: "Monitores activos — Brute Force, Login Success, Malware, Reverse Shell, Evasion, Persistence" },
-      { src: "/projects/valhalla/06-alerta-activa.png",      caption: "Detalle de alerta activa — monitor de Volumen Anómalo, severidad media" },
-      { src: "/projects/valhalla/09-generacion-informe.png", caption: "Generación de informes PDF directamente desde el dashboard" },
+      { src: "/projects/valhalla/01-vista-general.png",        caption: "Vista General — KPIs en vivo, alertas 24h, agentes activos, tickets abiertos y distribución por severidad" },
+      { src: "/projects/valhalla/02-login.png",                caption: "Login VALHALLA SOC PRO — branding Blue Team, Wazuh 4.9.5, CLASSIFIED // EYES ONLY" },
+      { src: "/projects/valhalla/03-threat-intel.png",         caption: "Threat Intel — motor VT Report Engine: 14/91 vendors marcan la IP como maliciosa, IoC añadido a watchlist y bloqueado en firewall" },
+      { src: "/projects/valhalla/04-threat-map.png",           caption: "Cyber-Threat Intelligence Map — visualización geo en tiempo real (Pew-Pew Mode) con geofencing alerts" },
+      { src: "/projects/valhalla/05-workspace.png",            caption: "Workspace — panel de respuesta a incidentes estilo Kanban (Triaje · Investigación · Mitigación · Resuelto) con runbooks sugeridos" },
+      { src: "/projects/valhalla/06-runbooks.png",             caption: "Runbooks — procedimientos NIST 800-61 r2 con pasos PowerShell ejecutables (Sysmon, VirusTotal, contención por VLAN)" },
+      { src: "/projects/valhalla/07-lsa-monitor.png",          caption: "LSA Monitor · Credential Guard — detección de Mimikatz/Sysmon ID 10 sobre lsass.exe" },
+      { src: "/projects/valhalla/08-honeypot.png",             caption: "Honeypots Cowrie — KPIs de engaño, TTY feed en vivo y top atacantes" },
+      { src: "/projects/valhalla/09-estado-integraciones.png", caption: "Estado de Integraciones — health-check de Wazuh, OpenSearch, PostgreSQL, Ollama AI y VirusTotal con latencias en tiempo real" },
     ],
   },
 ];
