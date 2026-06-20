@@ -385,8 +385,8 @@ const Cristal = () => {
           background: var(--glass-bg);
           border: 1px solid var(--glass-border);
           box-shadow: var(--neon-glow), var(--glass-highlight);
-          backdrop-filter: blur(28px) saturate(170%);
-          -webkit-backdrop-filter: blur(28px) saturate(170%);
+          backdrop-filter: blur(36px) saturate(190%);
+          -webkit-backdrop-filter: blur(36px) saturate(190%);
           text-align: center; position: relative; overflow: hidden;
         }
         .cr-cta::before {
