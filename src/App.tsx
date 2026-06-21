@@ -22,12 +22,13 @@ import Privacy from "./pages/Privacy";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 import Cristal from "./pages/Cristal";
+import VetClinica from "./pages/VetClinica";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
-  const hideNavbar = location.pathname === "/" || location.pathname === "/login" || location.pathname === "/bifrost" || location.pathname === "/cristal";
+  const hideNavbar = location.pathname === "/" || location.pathname === "/login" || location.pathname === "/bifrost" || location.pathname === "/cristal" || location.pathname === "/vet-meneses";
 
   return (
     <>
@@ -44,6 +45,7 @@ const AppContent = () => {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/legal" element={<Legal />} />
         <Route path="/cristal" element={<Cristal />} />
+        <Route path="/vet-meneses" element={<VetClinica />} />
 
         <Route path="/bifrost" element={<ProtectedRoute><Bifrost /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
