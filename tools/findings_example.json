@@ -1,0 +1,47 @@
+{
+  "target_ip": "10.10.10.175",
+  "domain": "EGOTISTICAL-BANK.LOCAL",
+  "dc_ip": "10.10.10.175",
+  "findings": [
+    {
+      "type": "smb_open",
+      "value": "",
+      "extra": {}
+    },
+    {
+      "type": "ldap_open",
+      "value": "",
+      "extra": {}
+    },
+    {
+      "type": "user_no_preauth",
+      "value": "fsmith",
+      "extra": {}
+    },
+    {
+      "type": "creds_asrep",
+      "value": "$krb5asrep$23$fsmith@EGOTISTICAL-BANK.LOCAL:...",
+      "extra": {}
+    },
+    {
+      "type": "creds_plaintext",
+      "value": "fsmith:Thestrokes23",
+      "extra": {}
+    },
+    {
+      "type": "winrm_open",
+      "value": "",
+      "extra": {}
+    },
+    {
+      "type": "laps_readable",
+      "value": "svc_loanmgr",
+      "extra": {}
+    },
+    {
+      "type": "acl_dcsync",
+      "value": "svc_loanmgr",
+      "extra": {}
+    }
+  ]
+}
