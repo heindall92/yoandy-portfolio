@@ -332,9 +332,12 @@ class Runner:
 
 # ─── PARSERS ─────────────────────────────────────────────────────────────────
 def parse_rid_users(output: str) -> list[str]:
+    # FIX #5: la salida real de netexec pone el usuario ANTES de "(SidTypeUser)",
+    # ej. "500: SUPPORT\Administrator (SidTypeUser)" — la regex anterior buscaba
+    # el orden invertido y nunca hacía match.
     users = []
     for line in output.splitlines():
-        m = re.search(r'SidTypeUser.*?\\(\w[\w.-]+)', line)
+        m = re.search(r'\\(\w[\w.-]+)\s*\(SidTypeUser\)', line)
         if m:
             u = m.group(1)
             if u.lower() not in ("guest", "krbtgt") and not u.endswith("$"):
@@ -342,9 +345,11 @@ def parse_rid_users(output: str) -> list[str]:
     return list(set(users))
 
 def parse_netexec_users(output: str) -> list[str]:
+    # FIX #6: anclado al marcador real de netexec ("badpwdcount:") en vez de
+    # un backslash genérico, para no matchear hostnames/dominios de paso.
     users = []
     for line in output.splitlines():
-        m = re.search(r'\\\s*([\w][\w.-]+)\s', line)
+        m = re.search(r'\\([\w][\w.-]*)\s+badpwdcount:', line)
         if m:
             u = m.group(1)
             if u.lower() not in ("guest", "krbtgt") and not u.endswith("$"):
