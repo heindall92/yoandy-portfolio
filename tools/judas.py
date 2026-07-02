@@ -544,6 +544,25 @@ class JudasChain:
         ctx = self.ctx
         log_phase("FASE 2 — ENUMERACIÓN DE USUARIOS")
 
+        # FIX #3: enumerar shares SMB anónimos/guest — independiente de si ya
+        # hay usuarios cargados. Vector clave en máquinas como Support.htb.
+        if 445 in ctx.open_ports:
+            log_step("Enumerando shares SMB con guest...")
+            out_sh, _, _ = self.r.run(
+                f"netexec smb {ctx.dc_ip} -u 'guest' -p '' --shares 2>/dev/null",
+                timeout=60
+            )
+            for line in out_sh.splitlines():
+                if "READ" in line or "WRITE" in line:
+                    log_ok(f"  [GUEST] {line.strip()}")
+
+        # FIX #4: si --users ya cargó la lista, no repetir RID brute/LDAP.
+        if ctx.users:
+            log_info(f"Usuarios ya cargados ({len(ctx.users)}) — saltando RID brute/LDAP")
+            ctx.phase_done.append("enum_users")
+            ctx.save()
+            return
+
         users_found: list[str] = []
 
         log_step("RID brute force (anónimo)...")
@@ -552,6 +571,16 @@ class JudasChain:
             timeout=90
         )
         users_found += parse_rid_users(out)
+
+        # FIX #1: fallback a guest si la sesión null no devuelve usuarios
+        # (varias máquinas, ej. Support.htb, bloquean null pero permiten guest).
+        if not users_found:
+            log_step("Null session vacía — probando RID brute con guest...")
+            out_g, _, _ = self.r.run(
+                f"netexec smb {ctx.dc_ip} -u 'guest' -p '' --rid-brute 2>/dev/null",
+                timeout=90
+            )
+            users_found += parse_rid_users(out_g)
 
         if not users_found and 389 in ctx.open_ports:
             log_step("LDAP anónimo...")
