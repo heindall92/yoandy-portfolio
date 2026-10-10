@@ -60,7 +60,7 @@ $ nmap --skills heindall
 [+] Recon & OSINT          █████████░  85%   Subfinder · Amass · dnsrecon · theHarvester
 [+] Post-Exploitation      ███████░░░  75%   LinPEAS · WinPEAS · PrivEsc Linux/Windows · Pivoting
 [+] Scripting              ████████░░  80%   Python · Bash · Automation
-[+] CTF & Research         █████████░  88%   45+ machines · HTB · THM · HackMyVM
+[+] CTF & Research         █████████░  88%   89 machines on HTB · THM · HackMyVM
 ```
 
 **Tools Arsenal:**
@@ -72,7 +72,7 @@ $ nmap --skills heindall
 ## `> cat ./writeups/stats`
 
 ```
-Total machines compromised: 45+
+HTB machines compromised: 89
 Platforms: HackTheBox · TryHackMe · HackMyVM · The Hacker Labs
 Difficulty range: Easy → Hard
 Notable: eJPTv2 certification (hybrid network, 7 hosts, multi-vector)

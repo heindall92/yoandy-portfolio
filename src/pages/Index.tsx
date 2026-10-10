@@ -103,7 +103,7 @@ const copy = {
     desc: "Ethical Hacking | Offensive Cybersecurity | Máster en Ciberseguridad & IA — Evolve Academy 2026.",
     writeupsBtn: "VER WRITEUPS",
     contactBtn: "CONTACTO",
-    statMachines: "MÁQUINAS COMPROMETIDAS",
+    statMachines: "MÁQUINAS EN HACK THE BOX",
     statLevel: "NIVEL DEMOSTRADO",
     statScore: "eJPTv2 SCORE",
     statYears: "AÑOS IT/SISTEMAS",
@@ -114,7 +114,7 @@ const copy = {
     aboutTitleB: "Mí",
     aboutP1: "4 años rompiendo sistemas — primero por accidente, ahora por metodología. Vengo de IT: redes, hardware, sistemas. Cuando descubrí que podía aplicar ese conocimiento para encontrar lo que otros no ven, no volví atrás.",
     aboutP2: "Hoy construyo desde Lepe, Huelva: pentesting en HTB/THM, automatización de recon con Python y Bash, y herramientas propias bajo el alias Heindall. eJPTv2 certificado. Máster en Ciberseguridad & IA en curso (Evolve Academy, 2026).",
-    aboutP3: "Busco mi primer rol en seguridad ofensiva. No traigo años de empresa — traigo 45+ máquinas comprometidas, herramientas publicadas, y documentación que demuestra cómo pienso.",
+    aboutP3: "Busco mi primer rol en seguridad ofensiva. No traigo años de empresa — traigo 89 máquinas de Hack The Box comprometidas, herramientas publicadas, y documentación que demuestra cómo pienso.",
     objective: "🎯 OBJETIVO PROFESIONAL",
     objectiveText: "Junior Pentester / Red Team Operator. Busco incorporarme a un equipo de seguridad ofensiva donde pueda comprometer infraestructuras reales, aprender en producción y contribuir con herramientas propias. Disponible para posición junior, prácticas remuneradas o contrato. Lepe, Huelva — abierto a remoto y presencial.",
     skillsTag: "02 // ARSENAL OFENSIVO",
@@ -155,7 +155,7 @@ const copy = {
     desc: "Ethical Hacking | Offensive Cybersecurity | Cybersecurity & AI Master's — Evolve Academy 2026.",
     writeupsBtn: "VIEW WRITEUPS",
     contactBtn: "CONTACT",
-    statMachines: "COMPROMISED MACHINES",
+    statMachines: "HACK THE BOX MACHINES",
     statLevel: "PROVEN LEVEL",
     statScore: "eJPTv2 SCORE",
     statYears: "YEARS IT/SYSTEMS",
@@ -166,7 +166,7 @@ const copy = {
     aboutTitleB: "Me",
     aboutP1: "4 years breaking systems — first by accident, now by methodology. I come from IT: networking, hardware and systems. Once I discovered I could use that knowledge to find what others miss, I never looked back.",
     aboutP2: "Today I build from Lepe, Huelva: HTB/THM pentesting, recon automation with Python and Bash, and custom tooling under the Heindall alias. eJPTv2 certified. Cybersecurity & AI Master's in progress (Evolve Academy, 2026).",
-    aboutP3: "I am looking for my first offensive security role. I may not bring years in a security company yet — I bring 45+ compromised machines, published tools, and documentation that proves how I think.",
+    aboutP3: "I am looking for my first offensive security role. I may not bring years in a security company yet — I bring 89 Hack The Box machines compromised, published tools, and documentation that proves how I think.",
     objective: "🎯 PROFESSIONAL OBJECTIVE",
     objectiveText: "Junior Pentester / Red Team Operator. I want to join an offensive security team where I can compromise real infrastructure, learn in production, and contribute with my own tools. Available for junior roles, paid internships or contracts. Lepe, Huelva — open to remote and on-site work.",
     skillsTag: "02 // OFFENSIVE ARSENAL",
@@ -1016,7 +1016,7 @@ const Index = () => {
             <div className="h-role">{t.role}</div>
             <div className="h-desc">{t.desc}</div>
             <div className="h-stats">
-              <div className="hstat"><div className="hstat-n">45+</div><div className="hstat-l">{t.statMachines}</div></div>
+              <div className="hstat"><div className="hstat-n">89</div><div className="hstat-l">{t.statMachines}</div></div>
               <div className="hstat"><div className="hstat-n">Med/Hard</div><div className="hstat-l">{t.statLevel}</div></div>
               <div className="hstat"><div className="hstat-n">86%</div><div className="hstat-l">{t.statScore}</div></div>
               <div className="hstat"><div className="hstat-n">4+</div><div className="hstat-l">{t.statYears}</div></div>

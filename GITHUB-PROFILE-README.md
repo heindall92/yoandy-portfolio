@@ -54,7 +54,7 @@ status : OPEN TO WORK ●
 ### `> cat ./stats`
 
 ```
-Machines compromised : 45+  (HTB · THM · HackMyVM · THL)
+HTB machines owned   : 89   (+ THM · HackMyVM · THL)
 Certifications       : eJPTv2 · Google · IBM · Cisco · HTB Academy
 Specialization       : Web App Security · OSINT · Post-Exploitation
 Experience           : 4+ years IT/Systems & Networks
